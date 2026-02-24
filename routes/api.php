@@ -25,6 +25,7 @@ use App\Http\Controllers\Admin\CityImportController;
 
 use App\Http\Controllers\Admin\PlaceController;
 use App\Http\Controllers\Admin\PlaceImportController;
+use App\Http\Controllers\Admin\RegionController;
 
 use App\Http\Controllers\Admin\CityController;
 use App\Http\Controllers\Admin\VendorController;
@@ -123,7 +124,7 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
         Route::get('/', [UserController::class, 'getAllUsers']); 
         Route::post('/create', [UserController::class, 'createUser']);
         Route::get('/{id}', [UserController::class, 'show']);
-        Route::put('/update', [UserController::class, 'update']);
+        Route::put('/update/{id}', [UserController::class, 'update']);
         Route::delete('/{id}', [UserController::class, 'destroy']);
     });
 
@@ -193,6 +194,15 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
         Route::put('/{id}', [PlaceController::class, 'update']);
         Route::post('/{id}/partial-remove', [PlaceController::class, 'partialRemove']);
         Route::delete('/{id}', [PlaceController::class, 'destroy']);
+    });
+
+    Route::prefix('/regions')->group(function () {
+        Route::get('/', [RegionController::class, 'index']);
+        Route::get('/list', [RegionController::class, 'regionList']);
+        Route::get('/{id}', [RegionController::class, 'show']);
+        Route::post('/', [RegionController::class, 'store']);
+        Route::put('/{id}', [RegionController::class, 'update']);
+        Route::delete('/{id}', [RegionController::class, 'destroy']);
     });
 
     // Admin Side media route

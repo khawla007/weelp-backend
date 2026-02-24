@@ -47,7 +47,8 @@ class ReviewController extends Controller
     
             // Agar item Transfer nahi hai tabhi locations load karo
             if ($item && !($item instanceof \App\Models\Transfer)) {
-                $location = $item?->locations?->first();
+                // Load location relationship on-demand for Activity, Package, Itinerary
+                $location = $item->locations()->with('city.state.country.regions')->first();
                 $city     = $location?->city;
                 $state    = $city?->state;
                 $country  = $state?->country;
