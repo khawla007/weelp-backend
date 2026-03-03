@@ -22,7 +22,16 @@ class PublicCitiesController extends Controller
             return response()->json(['success' => false, 'message' => 'State not found'], 404);
         }
 
-        $cities = City::where('state_id', $state->id)->get();
+        $cities = City::with('mediaGallery.media')
+            ->where('state_id', $state->id)
+            ->get()
+            ->map(function ($city) {
+                // Get featured image from media_gallery
+                $featuredImage = $city->mediaGallery->firstWhere('is_featured', true);
+                $city->feature_image = $featuredImage?->media->url ?? null;
+                unset($city->mediaGallery);
+                return $city;
+            });
 
         if (empty($cities)) {
             return response()->json([
@@ -40,17 +49,21 @@ class PublicCitiesController extends Controller
     public function getFeaturedCities()
     {
         $cities = City::with([
-            'state.country.regions'
+            'state.country.regions',
+            'mediaGallery.media'
         ])
         ->where('featured_destination', true)
         ->get()
         ->map(function ($city) {
+            // Get featured image from media_gallery
+            $featuredImage = $city->mediaGallery->firstWhere('is_featured', true);
+            $featureImageUrl = $featuredImage?->media->url ?? null;
             return [
                 'id' => $city->id,
                 'name' => $city->name,
                 'slug' => $city->slug,
                 'description' => $city->description,
-                'featured_image' => $city->featured_image,
+                'featured_image' => $featureImageUrl,
                 'state' => [
                     'id' => $city->state->id ?? null,
                     'name' => $city->state->name ?? null,
@@ -86,6 +99,7 @@ class PublicCitiesController extends Controller
     public function getCityDetails($slug)
     {
         $city = City::with([
+            'mediaGallery.media',
             'state',
             'country',
             'region',
@@ -105,6 +119,13 @@ class PublicCitiesController extends Controller
             ], 404);
         }
 
+        // Get featured image from media_gallery
+        $featureImageUrl = null;
+        if ($city->mediaGallery && $city->mediaGallery->count()) {
+            $featuredImage = $city->mediaGallery->firstWhere('is_featured', true);
+            $featureImageUrl = $featuredImage?->media->url ?? null;
+        }
+
         return response()->json([
             'success' => true,
             'data' => [
@@ -112,7 +133,7 @@ class PublicCitiesController extends Controller
                 'name' => $city->name,
                 'slug' => $city->slug,
                 'description' => $city->description,
-                'feature_image' => $city->feature_image,
+                'feature_image' => $featureImageUrl,
                 'featured_destination' => $city->featured_destination,
                 'state' => $city->state ? [
                     'id' => $city->state->id,

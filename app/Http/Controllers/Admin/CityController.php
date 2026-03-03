@@ -40,6 +40,8 @@ class CityController extends Controller
     
         // Transform response
         $data = $cities->map(function ($city) {
+            // Get featured image from media_gallery
+            $featuredImage = $city->mediaGallery->firstWhere('is_featured', true);
             return [
                 'id' => $city->id,
                 'name' => $city->name,
@@ -47,7 +49,7 @@ class CityController extends Controller
                 'slug' => $city->slug,
                 'type' => $city->type,
                 'description' => $city->description,
-                'feature_image' => $city->feature_image,
+                'feature_image' => $featuredImage?->media->url ?? null, // Featured from media_gallery
                 'featured_destination' => $city->featured_destination,
                 // Custom Media format
                 'media_gallery' => $city->mediaGallery->map(function ($gallery) {
@@ -55,6 +57,7 @@ class CityController extends Controller
                         'id' => $gallery->id,
                         'city_id' => $gallery->city_id,
                         'media_id' => $gallery->media_id,
+                        'is_featured' => $gallery->is_featured ?? false,
                         'name' => $gallery->media->name ?? null,
                         'alt_text' => $gallery->media->alt_text ?? null,
                         'url' => $gallery->media->url ?? null,
@@ -117,7 +120,6 @@ class CityController extends Controller
             // 'type' => 'required|string|max:255',
             'state_id' => 'required|integer|exists:states,id',
             'description' => 'nullable|string',
-            'feature_image' => 'nullable|url',
             'featured_destination' => 'boolean',
 
             // Media (array of objects)
@@ -199,16 +201,28 @@ class CityController extends Controller
             // 'type' => $validated['type'],
             'state_id' => $validated['state_id'],
             'description' => $validated['description'] ?? null,
-            'feature_image' => $validated['feature_image'] ?? null,
             'featured_destination' => $validated['featured_destination'] ?? false,
         ]);
 
         // Media Details
         if (!empty($validated['media_gallery'])) {
+            // Ensure only one featured image
+            $hasFeatured = false;
             foreach ($validated['media_gallery'] as $media) {
+                $isFeatured = $media['is_featured'] ?? false;
+                if ($isFeatured) {
+                    if ($hasFeatured) {
+                        // Already has featured, skip this one
+                        $isFeatured = false;
+                    } else {
+                        $hasFeatured = true;
+                    }
+                }
+
                 CityMediaGallery::create([
                     'city_id' => $city->id,
                     'media_id'    => $media['media_id'],
+                    'is_featured' => $isFeatured,
                 ]);
             }
         }
@@ -277,7 +291,6 @@ class CityController extends Controller
      */
     public function show(string $id)
     {
-        // return response()->json(City::findOrFail($id));
         $city = City::with([
             'mediaGallery.media',
             'locationDetails',
@@ -288,7 +301,12 @@ class CityController extends Controller
             'faqs',
             'seo'
         ])->find($id);
-    
+
+        // Check if city exists FIRST (before accessing properties)
+        if (!$city) {
+            return response()->json(['message' => 'City not found'], 404);
+        }
+
         // media_gallery ko transform karna
         if ($city->mediaGallery && $city->mediaGallery->count()) {
             $city->media_gallery = $city->mediaGallery->map(function ($gallery) {
@@ -296,18 +314,21 @@ class CityController extends Controller
                     'id' => $gallery->id,
                     'city_id' => $gallery->city_id,
                     'media_id' => $gallery->media_id,
+                    'is_featured' => $gallery->is_featured ?? false,
                     'name' => $gallery->media->name ?? null,
                     'alt_text' => $gallery->media->alt_text ?? null,
                     'url' => $gallery->media->url ?? null,
                 ];
             })->values();
+            // Get featured image from media_gallery
+            $featuredImage = $city->media_gallery->firstWhere('is_featured', true);
+            $city->feature_image = $featuredImage['url'] ?? null;
             unset($city->mediaGallery); // nested relation hatane ke liye
+        } else {
+            $city->media_gallery = [];
+            $city->feature_image = null;
         }
 
-        if (!$city) {
-            return response()->json(['message' => 'City not found'], 404);
-        }
-    
         return response()->json($city);
     }
 
@@ -326,9 +347,8 @@ class CityController extends Controller
             // 'type' => 'nullable|string|max:255',
             'state_id' => 'nullable|integer|exists:states,id',
             'description' => 'nullable|string',
-            'feature_image' => 'nullable|url',
             'featured_destination' => 'boolean',
-    
+
             // Media (array of objects)
             'media_gallery'     => 'nullable|array',
     
@@ -403,17 +423,30 @@ class CityController extends Controller
             // 'type' => $validated['type'] ?? $city->slug,
             'state_id' => $validated['state_id'] ?? $city->state_id,
             'description' => $validated['description'] ?? $city->description,
-            'feature_image' => $validated['feature_image'] ?? $city->feature_image,
             'featured_destination' => $validated['featured_destination'] ?? $city->featured_destination,
         ]);
-    
+
         // === Media (delete old & insert new) ===
         if (isset($validated['media_gallery'])) {
             CityMediaGallery::where('city_id', $city->id)->delete();
+
+            // Ensure only one featured image
+            $hasFeatured = false;
             foreach ($validated['media_gallery'] as $media) {
+                $isFeatured = $media['is_featured'] ?? false;
+                if ($isFeatured) {
+                    if ($hasFeatured) {
+                        // Already has featured, skip this one
+                        $isFeatured = false;
+                    } else {
+                        $hasFeatured = true;
+                    }
+                }
+
                 CityMediaGallery::create([
                     'city_id' => $city->id,
                     'media_id'    => $media['media_id'],
+                    'is_featured' => $isFeatured,
                 ]);
             }
         }

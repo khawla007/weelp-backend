@@ -111,17 +111,20 @@ class CountrySeeder extends Seeder
         ];
 
         $mediaIds = range(1, 5);
-    
+
         foreach ($countries as $data) {
             $country = Country::create($data);
-    
-            // Country_Media (Array of Objects )
+
+            // Country_Media (Array of Objects) - Mark first one as featured
             $randomMedias = collect($mediaIds)->random(3); // ek country ko 3 random media milega
+            $isFirst = true;
             foreach ($randomMedias as $mediaId) {
                 CountryMediaGallery::create([
                     'country_id' => $country->id,
                     'media_id'   => $mediaId,
+                    'is_featured' => $isFirst, // First image marked as featured
                 ]);
+                $isFirst = false;
             }
 
             // Location Details

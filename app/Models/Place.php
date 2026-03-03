@@ -12,10 +12,9 @@ class Place extends Model {
         'name',
         'code',
         'slug',
-        'type', 
+        'type',
         'city_id',
         'description',
-        'feature_image',
         'featured_destination',
     ];
 

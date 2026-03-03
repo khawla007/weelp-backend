@@ -40,6 +40,8 @@ class CountryController extends Controller
     
         // 🎯 Transform response
         $data = $countries->map(function ($country) {
+            // Get featured image from media_gallery
+            $featuredImage = $country->mediaGallery->firstWhere('is_featured', true);
             return [
                 'id' => $country->id,
                 'name' => $country->name,
@@ -47,7 +49,7 @@ class CountryController extends Controller
                 'slug' => $country->slug,
                 'type' => $country->type,
                 'description' => $country->description,
-                'feature_image' => $country->feature_image,
+                'feature_image' => $featuredImage?->media->url ?? null, // Featured from media_gallery
                 'featured_destination' => $country->featured_destination,
                 // ✅ Custom Media format
                 'media_gallery' => $country->mediaGallery->map(function ($gallery) {
@@ -55,6 +57,7 @@ class CountryController extends Controller
                         'id' => $gallery->id,
                         'country_id' => $gallery->country_id,
                         'media_id' => $gallery->media_id,
+                        'is_featured' => $gallery->is_featured ?? false,
                         'name' => $gallery->media->name ?? null,
                         'alt_text' => $gallery->media->alt_text ?? null,
                         'url' => $gallery->media->url ?? null,
@@ -116,7 +119,6 @@ class CountryController extends Controller
             'slug' => 'required|string|max:255',
             // 'type' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'feature_image' => 'nullable|url',
             'featured_destination' => 'boolean',
 
             // Media (array of objects)
@@ -197,16 +199,28 @@ class CountryController extends Controller
             'slug' => $validated['slug'],
             // 'type' => $validated['type'],
             'description' => $validated['description'] ?? null,
-            'feature_image' => $validated['feature_image'] ?? null,
             'featured_destination' => $validated['featured_destination'] ?? false,
         ]);
 
         // Media Details
         if (!empty($validated['media_gallery'])) {
+            // Ensure only one featured image
+            $hasFeatured = false;
             foreach ($validated['media_gallery'] as $media) {
+                $isFeatured = $media['is_featured'] ?? false;
+                if ($isFeatured) {
+                    if ($hasFeatured) {
+                        // Already has featured, skip this one
+                        $isFeatured = false;
+                    } else {
+                        $hasFeatured = true;
+                    }
+                }
+
                 CountryMediaGallery::create([
                     'country_id' => $country->id,
                     'media_id'    => $media['media_id'],
+                    'is_featured' => $isFeatured,
                 ]);
             }
         }
@@ -226,6 +240,7 @@ class CountryController extends Controller
         // Season
         if ($request->has('seasons')) {
             foreach ($request->seasons as $season) {
+                if (empty($season['name'])) continue;
                 $country->seasons()->create($season);
             }
         }
@@ -233,6 +248,7 @@ class CountryController extends Controller
         // Event
         if ($request->has('events')) {
             foreach ($request->events as $event) {
+                if (empty($event['name'])) continue;
                 $country->events()->create($event);
             }
         }
@@ -240,6 +256,7 @@ class CountryController extends Controller
         // Additional Info
         if (!empty($validated['additional_info'])) {
             foreach ($validated['additional_info'] as $additional) {
+                if (empty($additional['title'])) continue;
                 $additional['country_id'] = $country->id;
                 CountryAdditionalInfo::create($additional);
             }
@@ -249,6 +266,7 @@ class CountryController extends Controller
         if (!empty($validated['faqs'])) {
             $questionNumber = 1;
             foreach ($validated['faqs'] as $faq) {
+                if (empty($faq['question'])) continue;
                 CountryFaq::create([
                     'country_id' => $country->id,
                     'question_number' => $questionNumber++,
@@ -275,7 +293,6 @@ class CountryController extends Controller
      */
     public function show(string $id)
     {
-        // return response()->json(Country::findOrFail($id));
         $country = Country::with([
             'mediaGallery.media',
             'locationDetails',
@@ -286,7 +303,12 @@ class CountryController extends Controller
             'faqs',
             'seo'
         ])->find($id);
-    
+
+        // Check if country exists FIRST (before accessing properties)
+        if (!$country) {
+            return response()->json(['message' => 'Country not found'], 404);
+        }
+
         // media_gallery ko transform karna
         if ($country->mediaGallery && $country->mediaGallery->count()) {
             $country->media_gallery = $country->mediaGallery->map(function ($gallery) {
@@ -294,18 +316,21 @@ class CountryController extends Controller
                     'id' => $gallery->id,
                     'country_id' => $gallery->country_id,
                     'media_id' => $gallery->media_id,
+                    'is_featured' => $gallery->is_featured ?? false,
                     'name' => $gallery->media->name ?? null,
                     'alt_text' => $gallery->media->alt_text ?? null,
                     'url' => $gallery->media->url ?? null,
                 ];
             })->values();
+            // Get featured image from media_gallery
+            $featuredImage = $country->media_gallery->firstWhere('is_featured', true);
+            $country->feature_image = $featuredImage['url'] ?? null;
             unset($country->mediaGallery); // nested relation hatane ke liye
+        } else {
+            $country->media_gallery = [];
+            $country->feature_image = null;
         }
 
-        if (!$country) {
-            return response()->json(['message' => 'Country not found'], 404);
-        }
-    
         return response()->json($country);
     }
 
@@ -323,7 +348,6 @@ class CountryController extends Controller
             'slug' => 'nullable|string|max:255',
             // 'type' => 'nullable|string|max:255',
             'description' => 'nullable|string',
-            'feature_image' => 'nullable|url',
             'featured_destination' => 'boolean',
     
             // Media (array of objects)
@@ -399,17 +423,30 @@ class CountryController extends Controller
             'slug' => $validated['slug'] ?? $country->slug,
             // 'type' => $validated['type'] ?? $country->type,
             'description' => $validated['description'] ?? $country->description,
-            'feature_image' => $validated['feature_image'] ?? $country->feature_image,
             'featured_destination' => $validated['featured_destination'] ?? $country->featured_destination,
         ]);
     
         // === Media (delete old & insert new) ===
         if (isset($validated['media_gallery'])) {
             CountryMediaGallery::where('country_id', $country->id)->delete();
+
+            // Ensure only one featured image
+            $hasFeatured = false;
             foreach ($validated['media_gallery'] as $media) {
+                $isFeatured = $media['is_featured'] ?? false;
+                if ($isFeatured) {
+                    if ($hasFeatured) {
+                        // Already has featured, skip this one
+                        $isFeatured = false;
+                    } else {
+                        $hasFeatured = true;
+                    }
+                }
+
                 CountryMediaGallery::create([
                     'country_id' => $country->id,
                     'media_id'    => $media['media_id'],
+                    'is_featured' => $isFeatured,
                 ]);
             }
         }
@@ -438,6 +475,7 @@ class CountryController extends Controller
                 ->delete();
     
             foreach ($request->seasons as $season) {
+                if (empty($season['name'])) continue;
                 if (!empty($season['id'])) {
                     CountrySeason::where('id', $season['id'])->update($season);
                 } else {
@@ -455,6 +493,7 @@ class CountryController extends Controller
                 ->delete();
     
             foreach ($request->events as $event) {
+                if (empty($event['name'])) continue;
                 if (!empty($event['id'])) {
                     CountryEvent::where('id', $event['id'])->update($event);
                 } else {
@@ -472,6 +511,7 @@ class CountryController extends Controller
                 ->delete();
     
             foreach ($request->additional_info as $info) {
+                if (empty($info['title'])) continue;
                 if (!empty($info['id'])) {
                     CountryAdditionalInfo::where('id', $info['id'])->update($info);
                 } else {
@@ -491,6 +531,7 @@ class CountryController extends Controller
     
             $questionNumber = 1;
             foreach ($request->faqs as $faq) {
+                if (empty($faq['question'])) continue;
                 if (!empty($faq['id'])) {
                     CountryFaq::where('id', $faq['id'])->update([
                         'question_number' => $questionNumber++,

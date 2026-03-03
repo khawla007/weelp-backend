@@ -40,6 +40,8 @@ class PlaceController extends Controller
     
         // Transform response
         $data = $places->map(function ($place) {
+            // Get featured image from media_gallery
+            $featuredImage = $place->mediaGallery->firstWhere('is_featured', true);
             return [
                 'id' => $place->id,
                 'name' => $place->name,
@@ -47,7 +49,7 @@ class PlaceController extends Controller
                 'slug' => $place->slug,
                 'type' => $place->type,
                 'description' => $place->description,
-                'feature_image' => $place->feature_image,
+                'feature_image' => $featuredImage?->media->url ?? null, // Featured from media_gallery
                 'featured_destination' => $place->featured_destination,
                 // Custom Media format
                 'media_gallery' => $place->mediaGallery->map(function ($gallery) {
@@ -55,6 +57,7 @@ class PlaceController extends Controller
                         'id' => $gallery->id,
                         'place_id' => $gallery->place_id,
                         'media_id' => $gallery->media_id,
+                        'is_featured' => $gallery->is_featured ?? false,
                         'name' => $gallery->media->name ?? null,
                         'alt_text' => $gallery->media->alt_text ?? null,
                         'url' => $gallery->media->url ?? null,
@@ -117,7 +120,6 @@ class PlaceController extends Controller
             // 'type' => 'required|string|max:255',
             'city_id' => 'required|integer|exists:cities,id',
             'description' => 'nullable|string',
-            'feature_image' => 'nullable|url',
             'featured_destination' => 'boolean',
 
             // Media (array of objects)
@@ -199,16 +201,28 @@ class PlaceController extends Controller
             // 'type'                 => $validated['type'],
             'city_id'              => $validated['city_id'],
             'description'          => $validated['description'] ?? null,
-            'feature_image'        => $validated['feature_image'] ?? null,
             'featured_destination' => $validated['featured_destination'] ?? false,
         ]);
 
         // Media Details
         if (!empty($validated['media_gallery'])) {
+            // Ensure only one featured image
+            $hasFeatured = false;
             foreach ($validated['media_gallery'] as $media) {
+                $isFeatured = $media['is_featured'] ?? false;
+                if ($isFeatured) {
+                    if ($hasFeatured) {
+                        // Already has featured, skip this one
+                        $isFeatured = false;
+                    } else {
+                        $hasFeatured = true;
+                    }
+                }
+
                 PlaceMediaGallery::create([
                     'place_id' => $place->id,
                     'media_id' => $media['media_id'],
+                    'is_featured' => $isFeatured,
                 ]);
             }
         }
@@ -277,7 +291,6 @@ class PlaceController extends Controller
      */
     public function show(string $id)
     {
-        // return response()->json(Place::findOrFail($id));
         $place = Place::with([
             'mediaGallery.media',
             'locationDetails',
@@ -288,7 +301,12 @@ class PlaceController extends Controller
             'faqs',
             'seo'
         ])->find($id);
-    
+
+        // Check if place exists FIRST (before accessing properties)
+        if (!$place) {
+            return response()->json(['message' => 'Place not found'], 404);
+        }
+
         // media_gallery ko transform karna
         if ($place->mediaGallery && $place->mediaGallery->count()) {
             $place->media_gallery = $place->mediaGallery->map(function ($gallery) {
@@ -296,18 +314,21 @@ class PlaceController extends Controller
                     'id' => $gallery->id,
                     'place_id' => $gallery->place_id,
                     'media_id' => $gallery->media_id,
+                    'is_featured' => $gallery->is_featured ?? false,
                     'name' => $gallery->media->name ?? null,
                     'alt_text' => $gallery->media->alt_text ?? null,
                     'url' => $gallery->media->url ?? null,
                 ];
             })->values();
+            // Get featured image from media_gallery
+            $featuredImage = $place->media_gallery->firstWhere('is_featured', true);
+            $place->feature_image = $featuredImage['url'] ?? null;
             unset($place->mediaGallery); // nested relation hatane ke liye
+        } else {
+            $place->media_gallery = [];
+            $place->feature_image = null;
         }
 
-        if (!$place) {
-            return response()->json(['message' => 'Place not found'], 404);
-        }
-    
         return response()->json($place);
     }
 
@@ -326,9 +347,8 @@ class PlaceController extends Controller
             // 'type' => 'nullable|string|max:255',
             'city_id' => 'nullable|integer|exists:cities,id',
             'description' => 'nullable|string',
-            'feature_image' => 'nullable|url',
             'featured_destination' => 'boolean',
-    
+
             // Media (array of objects)
             'media_gallery'     => 'nullable|array',
     
@@ -403,17 +423,30 @@ class PlaceController extends Controller
             // 'type' => $validated['type'] ?? $place->slug,
             'city_id' => $validated['city_id'] ?? $place->city_id,
             'description' => $validated['description'] ?? $place->description,
-            'feature_image' => $validated['feature_image'] ?? $place->feature_image,
             'featured_destination' => $validated['featured_destination'] ?? $place->featured_destination,
         ]);
-    
+
         // === Media (delete old & insert new) ===
         if (isset($validated['media_gallery'])) {
             PlaceMediaGallery::where('place_id', $place->id)->delete();
+
+            // Ensure only one featured image
+            $hasFeatured = false;
             foreach ($validated['media_gallery'] as $media) {
+                $isFeatured = $media['is_featured'] ?? false;
+                if ($isFeatured) {
+                    if ($hasFeatured) {
+                        // Already has featured, skip this one
+                        $isFeatured = false;
+                    } else {
+                        $hasFeatured = true;
+                    }
+                }
+
                 PlaceMediaGallery::create([
                     'place_id' => $place->id,
                     'media_id'    => $media['media_id'],
+                    'is_featured' => $isFeatured,
                 ]);
             }
         }
