@@ -495,6 +495,10 @@ class TransferController extends Controller
             'seo.canonical_url'    => 'sometimes|nullable|string',
             'seo.schema_type'      => 'sometimes|nullable|string',
             'seo.schema_data'      => 'sometimes|nullable|array',
+
+            // Addons
+            'addons' => 'sometimes|nullable|array',
+            'addons.*' => 'integer|exists:addons,id',
         ]);
     
         // === Update Transfer ===
@@ -609,7 +613,23 @@ class TransferController extends Controller
                 ]);
             }
         }
-    
+
+        // === Update Addons ===
+        if ($request->has('addons')) {
+            // Delete existing
+            TransferAddon::where('transfer_id', $transfer->id)->delete();
+
+            // Create new
+            if (!empty($validatedData['addons'])) {
+                foreach ($validatedData['addons'] as $addonId) {
+                    TransferAddon::create([
+                        'transfer_id' => $transfer->id,
+                        'addon_id' => $addonId,
+                    ]);
+                }
+            }
+        }
+
         return response()->json([
             'message' => 'Transfer updated successfully',
             'transfer' => $transfer
