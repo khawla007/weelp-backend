@@ -384,11 +384,12 @@ class TransferController extends Controller
     public function show(string $id)
     {
         $transfer = Transfer::with([
-            'vendorRoutes', 
-            'pricingAvailability', 
-            'mediaGallery.media', 
-            'schedule', 
-            'seo'
+            'vendorRoutes',
+            'pricingAvailability',
+            'mediaGallery.media',
+            'schedule',
+            'seo',
+            'addons.addon'
         ])->find($id);
     
         if (!$transfer) {
@@ -430,7 +431,19 @@ class TransferController extends Controller
 
             unset($transfer->mediaGallery); // nested relation hatane ke liye
         }
-    
+
+        // Transform addons
+        if ($transfer->addons && $transfer->addons->count()) {
+            $transfer->addons = $transfer->addons->map(function ($addon) {
+                return [
+                    'id' => $addon->addon->id ?? null,
+                    'name' => $addon->addon->name ?? null,
+                ];
+            })->filter(function ($addon) {
+                return $addon['id'] !== null;
+            })->values();
+        }
+
         return response()->json($transfer);
     }    
 
