@@ -17,48 +17,122 @@ class MediaController extends Controller
 
     public function store(Request $request)
     {
-        // dd($request->all());
-        $request->validate([
-            'file' => 'required|array',
-            'file.*' => 'file|mimes:jpg,jpeg,png,pdf,doc|max:2048',
-        ]);
+        try {
+            // Get files and normalize to array FIRST (handle both single file and multiple files)
+            $files = $request->file('file');
+            if (!is_array($files)) {
+                $files = $files ? [$files] : []; // Convert single file to array, or empty array if null
+            }
 
-        if ($request->hasFile('file')) {
-            $uploadedMedia = [];
-            foreach ($request->file('file') as $file) {
+            // Debug: Log incoming request with file sizes
+            $fileSizes = array_map(fn($f) => $f ? $f->getSize() : 0, $files);
+            info('[Media Upload] Files received:', [
+                'count' => count($files),
+                'sizes' => $fileSizes,
+                'total_bytes' => array_sum($fileSizes)
+            ]);
 
-               
-                // $filePath = $file->store('media', 'minio', 'public');
-                $filePath = $file->store('media', 'minio');
+            // Check PHP upload limits
+            $uploadMax = intval(ini_get('upload_max_filesize'));
+            $postMax = intval(ini_get('post_max_size'));
+            $contentLength = $request->header('Content-Length');
 
-                // dd($filePath);
-                // Check if filePath is valid and then generate URL
-                if (!$filePath) {
-                    return response()->json([
-                        'message' => 'File upload failed.'
-                    ], 500);
+            info('[Media Upload] PHP Config:', [
+                'upload_max_filesize' => $uploadMax,
+                'post_max_size' => $postMax,
+                'content_length' => $contentLength
+            ]);
+
+            // Validate - accept single file or array of files (increased size limit to 10MB)
+            $request->validate([
+                'file' => 'required',
+                'file.*' => 'file|mimes:jpg,jpeg,png,pdf,doc|max:10240', // 10MB = 10240 KB
+            ]);
+
+            info('[Media Upload] Processing files:', ['count' => count($files)]);
+
+            if (!empty($files)) {
+                $uploadedMedia = [];
+                foreach ($files as $file) {
+                    // Check if file is valid
+                    if (!$file || !$file->isValid()) {
+                        $errorMsg = $file ? $file->getErrorMessage() : 'No file provided';
+                        info('[Media Upload] Invalid file:', ['error' => $errorMsg]);
+                        return response()->json([
+                            'message' => 'File upload failed - invalid file.',
+                            'error' => $errorMsg
+                        ], 500);
+                    }
+
+                    // Use Laravel's store() method instead of manual file_get_contents()
+                    // This is more memory-efficient and handles streaming properly
+                    $filePath = $file->store('media', 'minio');
+
+                    // Check if filePath is valid
+                    if (!$filePath) {
+                        info('[Media Upload] Storage failed:', [
+                            'file' => $file->getClientOriginalName(),
+                            'size' => $file->getSize(),
+                            'mime' => $file->getMimeType()
+                        ]);
+                        return response()->json([
+                            'message' => 'File upload failed - could not store file to Minio.',
+                            'file' => $file->getClientOriginalName(),
+                            'size' => $file->getSize(),
+                            'mime' => $file->getMimeType()
+                        ], 500);
+                    }
+
+                    // Extract image dimensions
+                    $imageInfo = @getimagesize($file->getRealPath());
+                    $width = $imageInfo ? $imageInfo[0] : null;
+                    $height = $imageInfo ? $imageInfo[1] : null;
+
+                    $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+
+                    $media = new Media();
+                    $media->name = $originalName;
+                    $media->alt_text = $originalName;
+                    $media->url = Storage::disk('minio')->url($filePath);
+                    $media->file_size = $file->getSize();
+                    $media->width = $width;
+                    $media->height = $height;
+                    $media->save();
+
+                    $uploadedMedia[] = $media;
+
+                    info('[Media Upload] File uploaded successfully:', [
+                        'media_id' => $media->id,
+                        'path' => $filePath,
+                        'url' => $media->url
+                    ]);
                 }
 
-                $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
-                
-                $media = new Media();
-                $media->name = $originalName;
-                $media->alt_text = $originalName;
-                $media->url = Storage::disk('minio')->url($filePath);
-                $media->save();
-
-                $uploadedMedia[] = $media;
-
+                return response()->json([
+                    'message' => 'Media uploaded successfully!',
+                    'data' => $uploadedMedia
+                ], 201);
             }
+
             return response()->json([
-                'message' => 'Media uploaded successfully!',
-                'data' => $uploadedMedia
-            ], 201);
+                'message' => 'No file was uploaded.'
+            ], 400);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Return validation errors in a consistent format
+            info('[Media Upload] Validation failed:', ['errors' => $e->errors()]);
+            return response()->json([
+                'message' => 'Validation failed.',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            info('[Media Upload] Error:', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json([
+                'message' => 'File upload failed: ' . $e->getMessage()
+            ], 500);
         }
-        
-        return response()->json([
-            'message' => 'No file was uploaded.'
-        ], 400);
     }
     
 
