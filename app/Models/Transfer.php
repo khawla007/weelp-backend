@@ -67,6 +67,11 @@ class Transfer extends Model
         return $this->morphMany(Review::class, 'item', 'item_type', 'item_id');
     }
 
+    public function addons()
+    {
+        return $this->hasMany(TransferAddon::class);
+    }
+
     public function getItemTypeAttribute($value)
     {
         return $value ?? strtolower(class_basename($this));
