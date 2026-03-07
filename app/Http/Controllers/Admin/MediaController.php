@@ -9,9 +9,13 @@ use App\Models\Media;
 
 class MediaController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return response()->json(Media::all());
+        $perPage = $request->query('per_page', 10);
+        $page = $request->query('page', 1);
+
+        return Media::orderBy('id', 'desc')
+            ->paginate($perPage, ['*'], 'page', $page);
     }
 
 
