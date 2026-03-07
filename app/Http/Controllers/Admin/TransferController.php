@@ -10,6 +10,7 @@ use App\Models\TransferPricingAvailability;
 use App\Models\TransferSchedule;
 use App\Models\TransferMediaGallery;
 use App\Models\TransferSeo;
+use App\Models\TransferAddon;
 
 class TransferController extends Controller
 {
@@ -22,12 +23,13 @@ class TransferController extends Controller
         $page = $request->get('page', 1);
         $sortBy = $request->get('sort_by', 'id_desc');
     
+        $search = $request->get('search');
         $vehicleType = $request->get('vehicle_type');
         $capacity = $request->get('capacity');
         $minPrice = $request->get('min_price', 0);
         $maxPrice = $request->get('max_price');
         $availabilityDate = $request->get('availability_date');
-    
+
         $query = Transfer::query()
             ->with([
                 'vendorRoutes.route',
@@ -38,6 +40,12 @@ class TransferController extends Controller
                 'mediaGallery.media',
                 'seo',
             ])
+            // Search filter
+            ->when($search, function ($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%')
+                  ->orWhere('slug', 'like', '%' . $search . '%')
+                  ->orWhere('description', 'like', '%' . $search . '%');
+            })
             // Vehicle type & Capacity filter
             ->when($vehicleType || $capacity, function ($q) use ($vehicleType, $capacity) {
                 $q->whereHas('vendorRoutes', function ($q1) use ($vehicleType, $capacity) {
@@ -131,17 +139,32 @@ class TransferController extends Controller
     
         $transformed = $paginated->getCollection()->map(function ($transfer) {
             $data = $transfer->toArray();
-    
+
             $data['media_gallery'] = collect($transfer->mediaGallery)->map(function ($media) {
                 return [
-                    'id'       => $media->id,
-                    'media_id' => $media->media_id,
-                    'name'     => $media->media->name ?? null,
-                    'alt_text' => $media->media->alt_text ?? null,
-                    'url'      => $media->media->url ?? null,
+                    'id'         => $media->id,
+                    'media_id'   => $media->media_id,
+                    'name'       => $media->media->name ?? null,
+                    'alt_text'   => $media->media->alt_text ?? null,
+                    'url'        => $media->media->url ?? null,
+                    'is_featured'=> $media->is_featured ?? false,
                 ];
             });
-    
+
+            // Get featured image from media_gallery
+            $featuredImage = $transfer->mediaGallery->firstWhere('is_featured', true);
+            $data['feature_image'] = $featuredImage?->media->url ?? null;
+            $data['is_featured'] = $featuredImage !== null;
+
+            // Add vendor_routes with is_vendor flag (required by frontend for Edit link routing)
+            $data['vendor_routes'] = [
+                'is_vendor' => $transfer->vendorRoutes?->is_vendor ?? false,
+            ];
+
+            // Tags and attributes not yet implemented for Transfers - return empty arrays
+            $data['tags'] = [];
+            $data['attributes'] = [];
+
             return $data;
         });
     
@@ -212,6 +235,10 @@ class TransferController extends Controller
             'seo.canonical_url'    => 'nullable|string',
             'seo.schema_type'      => 'nullable|string',
             'seo.schema_data'      => 'nullable|array',
+
+            // Addons
+            'addons' => 'nullable|array',
+            'addons.*' => 'integer|exists:addons,id',
         ]);
     
         // Conditional validations
@@ -284,10 +311,27 @@ class TransferController extends Controller
     
         // === Media Gallery ===
         if (!empty($validatedData['media_gallery'])) {
+            $hasFeatured = false;
             foreach ($validatedData['media_gallery'] as $media) {
+                // Skip null media_id
+                if (!isset($media['media_id']) || $media['media_id'] === null) {
+                    continue;
+                }
+
+                // Ensure only ONE featured
+                $isFeatured = $media['is_featured'] ?? false;
+                if ($isFeatured) {
+                    if ($hasFeatured) {
+                        $isFeatured = false;
+                    } else {
+                        $hasFeatured = true;
+                    }
+                }
+
                 TransferMediaGallery::create([
                     'transfer_id' => $transfer->id,
                     'media_id'    => $media['media_id'],
+                    'is_featured' => $isFeatured,
                 ]);
             }
         }
@@ -308,7 +352,17 @@ class TransferController extends Controller
                     : ($validatedData['seo']['schema_data'] ?? null),
             ]);
         }
-    
+
+        // Create Addons
+        if (!empty($validatedData['addons'])) {
+            foreach ($validatedData['addons'] as $addonId) {
+                TransferAddon::create([
+                    'transfer_id' => $transfer->id,
+                    'addon_id' => $addonId,
+                ]);
+            }
+        }
+
         return response()->json([
             'message' => 'Transfer created successfully',
             'transfer' => $transfer,
@@ -366,8 +420,14 @@ class TransferController extends Controller
                     'name' => $gallery->media->name ?? null,
                     'alt_text' => $gallery->media->alt_text ?? null,
                     'url' => $gallery->media->url ?? null,
+                    'is_featured' => $gallery->is_featured ?? false,
                 ];
             })->values();
+
+            // Get featured image from media_gallery
+            $featuredImage = $transfer->mediaGallery->firstWhere('is_featured', true);
+            $transfer->feature_image = $featuredImage?->media->url ?? null;
+
             unset($transfer->mediaGallery); // nested relation hatane ke liye
         }
     
@@ -385,7 +445,7 @@ class TransferController extends Controller
         // Validate only the fields coming in request
         $validatedData = $request->validate([
             'name' => 'sometimes|required|string|max:255',
-            'slug' => 'sometimes|required|string|unique:transfers,slug,',
+            'slug' => 'sometimes|required|string|unique:transfers,slug,' . $id,
             'description' => 'sometimes|nullable|string',
             'transfer_type' => 'sometimes|required|string',
             'is_vendor' => 'sometimes|required|boolean',
@@ -490,12 +550,45 @@ class TransferController extends Controller
     
         // === Update Media Gallery ===
         if (isset($validatedData['media_gallery'])) {
-            TransferMediaGallery::where('transfer_id', $transfer->id)->delete();
-            foreach ($validatedData['media_gallery'] as $media) {
-                TransferMediaGallery::create([
-                    'transfer_id' => $transfer->id,
-                    'media_id'    => $media['media_id'],
-                ]);
+            $hasFeatured = false;
+            $mediaGallery = collect($validatedData['media_gallery'])
+                ->filter(function ($item) {
+                    return isset($item['media_id']) && $item['media_id'] !== null;
+                })
+                ->map(function ($item) use ($transfer, &$hasFeatured) {
+                    $isFeatured = $item['is_featured'] ?? false;
+                    if ($isFeatured) {
+                        if ($hasFeatured) {
+                            $isFeatured = false;
+                        } else {
+                            $hasFeatured = true;
+                        }
+                    }
+                    return [
+                        'id'         => $item['id'] ?? null,
+                        'transfer_id'=> $transfer->id,
+                        'media_id'   => $item['media_id'],
+                        'is_featured'=> $isFeatured,
+                    ];
+                })->toArray();
+
+            // Delete missing, update/create existing
+            $existingIds = $transfer->mediaGallery->pluck('id')->toArray();
+            $incomingIds = collect($mediaGallery)->pluck('id')->filter()->toArray();
+            $deleteIds = array_diff($existingIds, $incomingIds);
+            if (!empty($deleteIds)) {
+                TransferMediaGallery::whereIn('id', $deleteIds)->delete();
+            }
+
+            foreach ($mediaGallery as $item) {
+                if (!empty($item['id'])) {
+                    $model = TransferMediaGallery::find($item['id']);
+                    if ($model) {
+                        $model->fill($item)->save();
+                    }
+                } else {
+                    TransferMediaGallery::create($item);
+                }
             }
         }
     
