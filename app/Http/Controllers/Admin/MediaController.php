@@ -173,4 +173,19 @@ class MediaController extends Controller
         $media->delete();
         return response()->json(['message' => 'Media deleted successfully']);
     }
+
+    public function bulkDestroy(Request $request)
+    {
+        $request->validate([
+            'media_ids' => 'required|array',
+            'media_ids.*' => 'integer|exists:media,id'
+        ]);
+
+        $deletedCount = Media::whereIn('id', $request->media_ids)->delete();
+
+        return response()->json([
+            'message' => "{$deletedCount} media deleted successfully",
+            'deleted_count' => $deletedCount
+        ], 200);
+    }
 }

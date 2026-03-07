@@ -87,9 +87,9 @@ Route::middleware(['auth:api', 'customer'])->prefix('customer')->group(function 
     Route::prefix('review')->group(function () {
         Route::get('/', [UserProfileController::class, 'reviewIndex']);
         Route::post('/', [UserProfileController::class, 'reviewStore']);
-        Route::get('/{id}', [UserProfileController::class, 'reviewShow']);
-        Route::post('/{id}', [UserProfileController::class, 'reviewUpdate']);
-        Route::delete('/{id}', [UserProfileController::class, 'reviewDelete']);
+        Route::get('{id}', [UserProfileController::class, 'reviewShow']);
+        Route::post('{id}', [UserProfileController::class, 'reviewUpdate']);
+        Route::delete('{id}', [UserProfileController::class, 'reviewDelete']);
     });
 });
 
@@ -123,9 +123,9 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
     Route::prefix('users')->group(function () {
         Route::get('/', [UserController::class, 'getAllUsers']); 
         Route::post('/create', [UserController::class, 'createUser']);
-        Route::get('/{id}', [UserController::class, 'show']);
-        Route::put('/update/{id}', [UserController::class, 'update']);
-        Route::delete('/{id}', [UserController::class, 'destroy']);
+        Route::get('{id}', [UserController::class, 'show']);
+        Route::put('/update{id}', [UserController::class, 'update']);
+        Route::delete('{id}', [UserController::class, 'destroy']);
     });
 
     // Admin Side Category Routes
@@ -138,11 +138,11 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
 
     Route::prefix('attributes')->group(function () {
         Route::get('/slug/{slug}', [AttributeController::class, 'getValuesBySlug']);
-        Route::get('/{id}', [AttributeController::class, 'show']);
+        Route::get('{id}', [AttributeController::class, 'show']);
         Route::get('/', [AttributeController::class, 'index']);
         Route::post('/', [AttributeController::class, 'store']);
-        Route::put('/{id}', [AttributeController::class, 'update']);
-        Route::delete('/{id}', [AttributeController::class, 'destroy']);
+        Route::put('{id}', [AttributeController::class, 'update']);
+        Route::delete('{id}', [AttributeController::class, 'destroy']);
     });
 
 
@@ -159,68 +159,66 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
     Route::prefix('/countries')->group(function () {
         Route::get('/', [CountryController::class, 'index']);
         Route::get('/list', [CountryController::class, 'countryList']);
-        Route::get('/{id}', [CountryController::class, 'show']);
+        Route::get('{id}', [CountryController::class, 'show']);
         Route::post('/', [CountryController::class, 'store']);
-        Route::put('/{id}', [CountryController::class, 'update']);
-        Route::post('/{id}/partial-remove', [CountryController::class, 'partialRemove']);
-        Route::delete('/{id}', [CountryController::class, 'destroy']);
+        Route::put('{id}', [CountryController::class, 'update']);
+        Route::post('{id}/partial-remove', [CountryController::class, 'partialRemove']);
+        Route::delete('{id}', [CountryController::class, 'destroy']);
     });
 
     Route::prefix('/states')->group(function () {
         Route::get('/', [StateController::class, 'index']);
         Route::get('/list', [StateController::class, 'stateList']);
-        Route::get('/{id}', [StateController::class, 'show']);
+        Route::get('{id}', [StateController::class, 'show']);
         Route::post('/', [StateController::class, 'store']);
-        Route::put('/{id}', [StateController::class, 'update']);
-        Route::post('/{id}/partial-remove', [StateController::class, 'partialRemove']);
-        Route::delete('/{id}', [StateController::class, 'destroy']);
+        Route::put('{id}', [StateController::class, 'update']);
+        Route::post('{id}/partial-remove', [StateController::class, 'partialRemove']);
+        Route::delete('{id}', [StateController::class, 'destroy']);
     });
     
     Route::prefix('/cities')->group(function () {
         Route::get('/', [CityController::class, 'index']);
         Route::get('/list', [CityController::class, 'cityList']);
-        Route::get('/{id}', [CityController::class, 'show']);
+        Route::get('{id}', [CityController::class, 'show']);
         Route::post('/', [CityController::class, 'store']);
-        Route::put('/{id}', [CityController::class, 'update']);
-        Route::post('/{id}/partial-remove', [CityController::class, 'partialRemove']);
-        Route::delete('/{id}', [CityController::class, 'destroy']);
+        Route::put('{id}', [CityController::class, 'update']);
+        Route::post('{id}/partial-remove', [CityController::class, 'partialRemove']);
+        Route::delete('{id}', [CityController::class, 'destroy']);
     });
 
     Route::prefix('/places')->group(function () {
         Route::get('/', [PlaceController::class, 'index']);
         Route::get('/list', [PlaceController::class, 'placeList']);
-        Route::get('/{id}', [PlaceController::class, 'show']);
+        Route::get('{id}', [PlaceController::class, 'show']);
         Route::post('/', [PlaceController::class, 'store']);
-        Route::put('/{id}', [PlaceController::class, 'update']);
-        Route::post('/{id}/partial-remove', [PlaceController::class, 'partialRemove']);
-        Route::delete('/{id}', [PlaceController::class, 'destroy']);
+        Route::put('{id}', [PlaceController::class, 'update']);
+        Route::post('{id}/partial-remove', [PlaceController::class, 'partialRemove']);
+        Route::delete('{id}', [PlaceController::class, 'destroy']);
     });
 
     Route::prefix('/regions')->group(function () {
         Route::get('/', [RegionController::class, 'index']);
         Route::get('/list', [RegionController::class, 'regionList']);
-        Route::get('/{id}', [RegionController::class, 'show']);
+        Route::get('{id}', [RegionController::class, 'show']);
         Route::post('/', [RegionController::class, 'store']);
-        Route::put('/{id}', [RegionController::class, 'update']);
-        Route::delete('/{id}', [RegionController::class, 'destroy']);
+        Route::put('{id}', [RegionController::class, 'update']);
+        Route::delete('{id}', [RegionController::class, 'destroy']);
     });
 
     // Admin Side media route
     Route::prefix('media')->group(function () {
         Route::get('/', [MediaController::class, 'index']);
-        Route::get('/{id}', [MediaController::class, 'show']);
+        Route::get('{id}', [MediaController::class, 'show']);
         Route::post('/store', [MediaController::class, 'store']);
         Route::put('/update/{id}', [MediaController::class, 'update']);
         Route::delete('/delete/{id}', [MediaController::class, 'destroy']);
+        Route::post('/bulk-delete', [MediaController::class, 'bulkDestroy']);
     });
 
     // Admin Side vendors route
-    Route::prefix('/vendors')->group(function () {
-        Route::get('/', [VendorController::class, 'index']);      // List vendors
-        Route::get('/vendor-select', [VendorController::class, 'getVendorsForSelect']);
-
-        Route::get('/{id}', [VendorController::class, 'show']); // Show a vendor
-
+    Route::prefix('vendors')->group(function () {
+        Route::get('', [VendorController::class, 'index']);      // List vendors
+        Route::get('vendor-select', [VendorController::class, 'getVendorsForSelect']);
         Route::get('{vendor}/routes', [VendorController::class, 'getRoutes']);
         Route::get('{vendor}/routes-select', [VendorController::class, 'getRoutesForSelect']);
 
@@ -238,21 +236,22 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
         Route::get('{vendor}/availability-time-slots', [VendorController::class, 'getAvailabilityTimeSlots']);
         Route::get('{vendor}/availability-time-slots-select', [VendorController::class, 'getAvailabilityTimeSlotsForSelect']);
 
+        Route::get('{id}', [VendorController::class, 'show']); // Show a vendor
 
-        Route::delete('/{id}', [VendorController::class, 'destroy']);  // Delete vendor
+        Route::delete('{id}', [VendorController::class, 'destroy']);  // Delete vendor
         Route::post('/store/{request_type}', [VendorController::class, 'store']);
         Route::put('/update/{request_type}/{id}', [VendorController::class, 'update']);
-        // Route::delete('/relation/{request-type}/{id}', [VendorController::class, 'destroy']);
+        // Route::delete('/relation/{request-type}{id}', [VendorController::class, 'destroy']);
     });
     Route::get('/drivers/{driver}/schedules', [VendorController::class, 'getDriverSchedules']);
 
     // Admin Side Transfer route
     Route::prefix('/transfers')->group(function () {
         Route::post('/', [TransferController::class, 'store']); // Create
-        Route::put('/{id}', [TransferController::class, 'update']); // Update
+        Route::put('{id}', [TransferController::class, 'update']); // Update
         Route::get('/', [TransferController::class, 'index']);
-        Route::get('/{id}', [TransferController::class, 'show']);
-        Route::delete('/{id}', [TransferController::class, 'destroy']);
+        Route::get('{id}', [TransferController::class, 'show']);
+        Route::delete('{id}', [TransferController::class, 'destroy']);
         Route::post('/bulk-delete', [TransferController::class, 'destroyMultiple']);
     });
 
@@ -260,12 +259,12 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
     // Route::apiResource('activities', ActivityController::class);
     Route::prefix('/activities')->group(function () {
         Route::post('/', [ActivityController::class, 'store']); // Create
-        Route::put('/{id}', [ActivityController::class, 'update']); // Update
-        Route::patch('/{id}', [ActivityController::class, 'update']); // Partial Update
+        Route::put('{id}', [ActivityController::class, 'update']); // Update
+        Route::patch('{id}', [ActivityController::class, 'update']); // Partial Update
         Route::get('/', [ActivityController::class, 'index']); // Get all
-        Route::get('/{id}', [ActivityController::class, 'show']); // Get single
-        Route::delete('/{id}', [ActivityController::class, 'destroy']); // Delete
-        Route::delete('/{id}/partial-delete', [ActivityController::class, 'partialDelete']); //partialDelete
+        Route::get('{id}', [ActivityController::class, 'show']); // Get single
+        Route::delete('{id}', [ActivityController::class, 'destroy']); // Delete
+        Route::delete('{id}/partial-delete', [ActivityController::class, 'partialDelete']); //partialDelete
         Route::post('/bulk-delete', [ActivityController::class, 'bulkDestroy']);
     });
 
@@ -273,12 +272,12 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
     // Route::apiResource('itineraries', ItineraryController::class);
     Route::prefix('/itineraries')->group(function () {
         Route::post('/', [ItineraryController::class, 'store']); // Create
-        Route::put('/{id}', [ItineraryController::class, 'update']); // Update
-        Route::patch('/{id}', [ItineraryController::class, 'update']); // Partial Update
+        Route::put('{id}', [ItineraryController::class, 'update']); // Update
+        Route::patch('{id}', [ItineraryController::class, 'update']); // Partial Update
         Route::get('/', [ItineraryController::class, 'index']); // Get all
-        Route::get('/{id}', [ItineraryController::class, 'show']); // Get single
-        Route::delete('/{id}', [ItineraryController::class, 'destroy']); // Delete
-        Route::delete('/{id}/partial-delete', [ItineraryController::class, 'partialDelete']); //partialDelete
+        Route::get('{id}', [ItineraryController::class, 'show']); // Get single
+        Route::delete('{id}', [ItineraryController::class, 'destroy']); // Delete
+        Route::delete('{id}/partial-delete', [ItineraryController::class, 'partialDelete']); //partialDelete
         Route::post('/bulk-delete', [ItineraryController::class, 'bulkDestroy']);
     });
 
@@ -286,12 +285,12 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
     // Route::apiResource('packages', PackageController::class);
     Route::prefix('/packages')->group(function () {
         Route::post('/', [PackageController::class, 'store']); // Create
-        Route::put('/{id}', [PackageController::class, 'update']); // Update
-        Route::patch('/{id}', [PackageController::class, 'update']); // Partial Update
+        Route::put('{id}', [PackageController::class, 'update']); // Update
+        Route::patch('{id}', [PackageController::class, 'update']); // Partial Update
         Route::get('/', [PackageController::class, 'index']); // Get all
-        Route::get('/{id}', [PackageController::class, 'show']); // Get single
-        Route::delete('/{id}', [PackageController::class, 'destroy']); // Delete
-        Route::delete('/{id}/partial-delete', [PackageController::class, 'partialDelete']); //partialDelete
+        Route::get('{id}', [PackageController::class, 'show']); // Get single
+        Route::delete('{id}', [PackageController::class, 'destroy']); // Delete
+        Route::delete('{id}/partial-delete', [PackageController::class, 'partialDelete']); //partialDelete
         Route::post('/bulk-delete', [PackageController::class, 'bulkDestroy']);
     });
 
@@ -301,17 +300,17 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
     Route::prefix('orders')->group(function () {
         Route::post('/', [OrderController::class, 'store']);
         Route::get('/', [OrderController::class, 'index']);
-        Route::get('/{id}', [OrderController::class, 'show']);
-        Route::put('/{id}', [OrderController::class, 'updateOrder']);
-        Route::delete('/{id}', [OrderController::class, 'destroy']);
+        Route::get('{id}', [OrderController::class, 'show']);
+        Route::put('{id}', [OrderController::class, 'updateOrder']);
+        Route::delete('{id}', [OrderController::class, 'destroy']);
     });
 
     Route::prefix('blogs')->group(function () {
         Route::get('/', [BlogController::class, 'index']); // List all blogs
-        Route::get('/{id}', [BlogController::class, 'show']); // Show a single blog
+        Route::get('{id}', [BlogController::class, 'show']); // Show a single blog
         Route::post('/', [BlogController::class, 'store']); // Store a new blog
-        Route::put('/{id}', [BlogController::class, 'update']); // Update an existing blog
-        Route::delete('/{id}', [BlogController::class, 'destroy']); // Delete a blog
+        Route::put('{id}', [BlogController::class, 'update']); // Update an existing blog
+        Route::delete('{id}', [BlogController::class, 'destroy']); // Delete a blog
         Route::post('/bulk-delete', [BlogController::class, 'bulkDestroy']);
     });
 
@@ -319,19 +318,24 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
         Route::get('/', [ReviewController::class, 'index']); // सब reviews की list
         Route::get('/items', [ReviewController::class, 'getItemsByType']);
         Route::post('/', [ReviewController::class, 'store']); // नया review create
-        Route::get('/{id}', [ReviewController::class, 'show']); // single review detail
-        Route::put('/{id}', [ReviewController::class, 'update']); // review update
-        Route::delete('/{id}', [ReviewController::class, 'destroy']); // review delete
+        Route::get('{id}', [ReviewController::class, 'show']); // single review detail
+        Route::put('{id}', [ReviewController::class, 'update']); // review update
+        Route::delete('{id}', [ReviewController::class, 'destroy']); // review delete
         Route::post('/bulk-delete', [ReviewController::class, 'bulkDelete']);
     });
 
     Route::prefix('addons')->group(function () {
-        Route::get('/', [AddonController::class, 'index']); 
-        Route::get('/list-addon', [AddonController::class, 'dropdownAddon']); 
+        Route::get('/', [AddonController::class, 'index']);
+        Route::get('/list-addon', [AddonController::class, 'dropdownAddon']);
+        // Type-specific addon endpoints
+        Route::get('/list-activity-addons', [AddonController::class, 'listActivityAddons']);
+        Route::get('/list-itinerary-addons', [AddonController::class, 'listItineraryAddons']);
+        Route::get('/list-package-addons', [AddonController::class, 'listPackageAddons']);
+        Route::get('/list-transfer-addons', [AddonController::class, 'listTransferAddons']);
         Route::post('/', [AddonController::class, 'store']); // नया review create
-        Route::get('/{id}', [AddonController::class, 'show']); // single review detail
-        Route::put('/{id}', [AddonController::class, 'update']); // review update
-        Route::delete('/{id}', [AddonController::class, 'destroy']); // review delete
+        Route::get('{id}', [AddonController::class, 'show']); // single review detail
+        Route::put('{id}', [AddonController::class, 'update']); // review update
+        Route::delete('{id}', [AddonController::class, 'destroy']); // review delete
         Route::post('/bulk-delete', [AddonController::class, 'bulkDelete']);
     });
 
@@ -388,7 +392,7 @@ Route::prefix('activities')->group(function () {
 // transfer api
 Route::prefix('transfers')->group(function () {
     Route::get('/', [PublicTransferController::class, 'index']);
-    Route::get('/{id}', [PublicTransferController::class, 'show']);
+    Route::get('{id}', [PublicTransferController::class, 'show']);
 });
 
 // itineraries api
