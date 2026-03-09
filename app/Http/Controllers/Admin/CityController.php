@@ -51,6 +51,18 @@ class CityController extends Controller
                 'description' => $city->description,
                 'feature_image' => $featuredImage?->media->url ?? null, // Featured from media_gallery
                 'featured_destination' => $city->featured_destination,
+                // State for city cards
+                'state' => $city->state ? [
+                    'id' => $city->state->id,
+                    'name' => $city->state->name,
+                    'slug' => $city->state->slug,
+                ] : null,
+                // Country (for reference)
+                'country' => $city->state && $city->state->country ? [
+                    'id' => $city->state->country->id,
+                    'name' => $city->state->country->name,
+                    'slug' => $city->state->country->slug,
+                ] : null,
                 // Regions from state.country.regions
                 'regions' => $city->state && $city->state->country && $city->state->country->regions
                     ? $city->state->country->regions->map(function ($region) {
