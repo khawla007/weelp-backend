@@ -48,6 +48,7 @@ class CountryController extends Controller
                 'code' => $country->code,
                 'slug' => $country->slug,
                 'type' => $country->type,
+                'region' => $country->region,
                 'description' => $country->description,
                 'feature_image' => $featuredImage?->media->url ?? null, // Featured from media_gallery
                 'featured_destination' => $country->featured_destination,

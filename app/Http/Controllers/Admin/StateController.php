@@ -27,17 +27,17 @@ class StateController extends Controller
 
     public function index(Request $request)
     {
-        $query = State::query()->with('mediaGallery.media');
-    
+        $query = State::query()->with('mediaGallery.media', 'country');
+
         // Name search
         if ($request->has('name') && !empty($request->name)) {
             $query->where('name', 'like', '%' . $request->name . '%');
         }
-        
+
         // Pagination (perPage fix)
         $perPage = 4;
         $states = $query->orderBy('id', 'desc')->paginate($perPage, ['*'], 'page', $request->input('page', 1));
-    
+
         // Transform response
         $data = $states->map(function ($state) {
             // Get featured image from media_gallery
@@ -51,6 +51,10 @@ class StateController extends Controller
                 'description' => $state->description,
                 'feature_image' => $featuredImage?->media->url ?? null, // Featured from media_gallery
                 'featured_destination' => $state->featured_destination,
+                'country' => $state->country ? [
+                    'id' => $state->country->id,
+                    'name' => $state->country->name,
+                ] : null,
                 // Custom Media format
                 'media_gallery' => $state->mediaGallery->map(function ($gallery) {
                     return [
@@ -72,7 +76,7 @@ class StateController extends Controller
             'total' => $states->total(),
             'per_page' => $states->perPage(),
             'last_page' => $states->lastPage(),
-            'current_page' => $states->currentPage(), 
+            'current_page' => $states->currentPage(),
         ]);
     }
     
