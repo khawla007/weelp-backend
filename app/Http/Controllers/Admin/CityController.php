@@ -27,17 +27,17 @@ class CityController extends Controller
 
     public function index(Request $request)
     {
-        $query = City::query()->with('mediaGallery.media');
-    
+        $query = City::query()->with('mediaGallery.media', 'state.country.regions');
+
         // Name search
         if ($request->has('name') && !empty($request->name)) {
             $query->where('name', 'like', '%' . $request->name . '%');
         }
-        
+
         // Pagination (perPage fix)
         $perPage = 4;
         $cities = $query->orderBy('id', 'desc')->paginate($perPage, ['*'], 'page', $request->input('page', 1));
-    
+
         // Transform response
         $data = $cities->map(function ($city) {
             // Get featured image from media_gallery
@@ -51,6 +51,16 @@ class CityController extends Controller
                 'description' => $city->description,
                 'feature_image' => $featuredImage?->media->url ?? null, // Featured from media_gallery
                 'featured_destination' => $city->featured_destination,
+                // Regions from state.country.regions
+                'regions' => $city->state && $city->state->country && $city->state->country->regions
+                    ? $city->state->country->regions->map(function ($region) {
+                        return [
+                            'id' => $region->id,
+                            'name' => $region->name,
+                            'slug' => $region->slug,
+                        ];
+                    })->values()
+                    : [],
                 // Custom Media format
                 'media_gallery' => $city->mediaGallery->map(function ($gallery) {
                     return [
