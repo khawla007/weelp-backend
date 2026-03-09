@@ -16,114 +16,103 @@ use App\Models\StateSeo;
 
 class StateSeeder extends Seeder
 {
+    /**
+     * Generate a random date/datetime in 2027
+     * @param bool $dateOnly If true, return date only (Y-m-d), otherwise datetime (Y-m-d H:i:s)
+     */
+    private function random2027Date(bool $dateOnly = false): string
+    {
+        $start = strtotime('2027-01-01');
+        $end = strtotime('2027-12-31');
+        $timestamp = mt_rand($start, $end);
+        return date($dateOnly ? 'Y-m-d' : 'Y-m-d H:i:s', $timestamp);
+    }
+
     public function run()
     {
+        // Delete all existing states and related data
+        DB::statement('SET FOREIGN_KEY_CHECKS=0');
+        State::query()->delete();
+        DB::statement('SET FOREIGN_KEY_CHECKS=1');
+        echo "All existing states deleted.\n";
+
         // Insert States
         $states = [
-            // India states
-            [
-                'country_id' => 1,
-                'name' => 'Rajasthan',
-                'code' => 'RJ',
-                'slug' => 'rajasthan',
-                'type' => 'state',
-                'description' => 'The land of kings and palaces.',
-                'feature_image' => 'https://example.com/rajasthan.jpg',
-                'featured_destination' => true,
-            ],
-            [
-                'country_id' => 1,
-                'name' => 'Goa',
-                'code' => 'GA',
-                'slug' => 'goa',
-                'type' => 'state',
-                'description' => 'The party capital of India.',
-                'feature_image' => 'https://example.com/goa.jpg',
-                'featured_destination' => false,
-            ],
-            [
-                'country_id' => 1,
-                'name' => 'Maharashtra',
-                'code' => 'MH',
-                'slug' => 'maharashtra',
-                'type' => 'state',
-                'description' => 'The economic hub of India.',
-                'feature_image' => 'https://example.com/maharashtra.jpg',
-                'featured_destination' => true,
-            ],
-            [
-                'country_id' => 1,
-                'name' => 'Kerala',
-                'code' => 'KL',
-                'slug' => 'kerala',
-                'type' => 'state',
-                'description' => 'God\'s own country.',
-                'feature_image' => 'https://example.com/kerala.jpg',
-                'featured_destination' => false,
-            ],
-            [
-                'country_id' => 1,
-                'name' => 'Tamil Nadu',
-                'code' => 'TN',
-                'slug' => 'tamil-nadu',
-                'type' => 'state',
-                'description' => 'Land of temples and culture.',
-                'feature_image' => 'https://example.com/tamil-nadu.jpg',
-                'featured_destination' => true,
-            ],
-        
-            // France states
-            [
-                'country_id' => 5,
-                'name' => 'Île-de-France',
-                'code' => 'IDF',
-                'slug' => 'ile-de-france',
-                'type' => 'state',
-                'description' => 'The state around Paris.',
-                'feature_image' => 'https://example.com/ile-de-france.jpg',
-                'featured_destination' => true,
-            ],
-            [
-                'country_id' => 5,
-                'name' => 'Provence-Alpes-Côte d\'Azur',
-                'code' => 'PACA',
-                'slug' => 'provence-alpes-cote-dazur',
-                'type' => 'state',
-                'description' => 'Beautiful Mediterranean coastline.',
-                'feature_image' => 'https://example.com/paca.jpg',
-                'featured_destination' => true,
-            ],
-            [
-                'country_id' => 5,
-                'name' => 'Nouvelle-Aquitaine',
-                'code' => 'NAQ',
-                'slug' => 'nouvelle-aquitaine',
-                'type' => 'state',
-                'description' => 'The largest state of France.',
-                'feature_image' => 'https://example.com/nouvelle-aquitaine.jpg',
-                'featured_destination' => false,
-            ],
-            [
-                'country_id' => 5,
-                'name' => 'Occitanie',
-                'code' => 'OCC',
-                'slug' => 'occitanie',
-                'type' => 'state',
-                'description' => 'Southern France with rich history.',
-                'feature_image' => 'https://example.com/occitanie.jpg',
-                'featured_destination' => false,
-            ],
-            [
-                'country_id' => 5,
-                'name' => 'Brittany',
-                'code' => 'BRE',
-                'slug' => 'brittany',
-                'type' => 'state',
-                'description' => 'Coastal state with Celtic heritage.',
-                'feature_image' => 'https://example.com/brittany.jpg',
-                'featured_destination' => true,
-            ],
-        ];        
+            // France
+            ['country_id' => null, 'name' => 'Île-de-France', 'code' => 'IDF', 'slug' => 'ile-de-france'],
+            ['country_id' => null, 'name' => 'Provence-Alpes-Côte d\'Azur', 'code' => 'PACA', 'slug' => 'provence-alpes-cote-dazur'],
+
+            // Italy
+            ['country_id' => null, 'name' => 'Lombardy', 'code' => 'LOM', 'slug' => 'lombardy'],
+            ['country_id' => null, 'name' => 'Tuscany', 'code' => 'TOS', 'slug' => 'tuscany'],
+
+            // Spain
+            ['country_id' => null, 'name' => 'Catalonia', 'code' => 'CAT', 'slug' => 'catalonia'],
+            ['country_id' => null, 'name' => 'Andalusia', 'code' => 'AND', 'slug' => 'andalusia'],
+
+            // Turkey
+            ['country_id' => null, 'name' => 'Istanbul', 'code' => 'IST', 'slug' => 'istanbul'],
+            ['country_id' => null, 'name' => 'Antalya', 'code' => 'ANT', 'slug' => 'antalya'],
+
+            // Thailand
+            ['country_id' => null, 'name' => 'Bangkok', 'code' => 'BKK', 'slug' => 'bangkok'],
+            ['country_id' => null, 'name' => 'Phuket', 'code' => 'PHU', 'slug' => 'phuket'],
+
+            // Japan
+            ['country_id' => null, 'name' => 'Tokyo', 'code' => 'TYO', 'slug' => 'tokyo'],
+            ['country_id' => null, 'name' => 'Osaka', 'code' => 'OSA', 'slug' => 'osaka'],
+
+            // UAE
+            ['country_id' => null, 'name' => 'Dubai', 'code' => 'DXB', 'slug' => 'dubai'],
+            ['country_id' => null, 'name' => 'Abu Dhabi', 'code' => 'AUH', 'slug' => 'abu-dhabi'],
+
+            // UK
+            ['country_id' => null, 'name' => 'England', 'code' => 'ENG', 'slug' => 'england'],
+            ['country_id' => null, 'name' => 'Scotland', 'code' => 'SCO', 'slug' => 'scotland'],
+
+            // India
+            ['country_id' => null, 'name' => 'Maharashtra', 'code' => 'MH', 'slug' => 'maharashtra'],
+            ['country_id' => null, 'name' => 'Kerala', 'code' => 'KL', 'slug' => 'kerala'],
+
+            // Singapore
+            ['country_id' => null, 'name' => 'Central', 'code' => 'CNT', 'slug' => 'central'],
+            ['country_id' => null, 'name' => 'East', 'code' => 'EST', 'slug' => 'east'],
+        ];
+
+        // Get country IDs
+        $countryMap = [
+            'Île-de-France' => 'France',
+            'Provence-Alpes-Côte d\'Azur' => 'France',
+            'Lombardy' => 'Italy',
+            'Tuscany' => 'Italy',
+            'Catalonia' => 'Spain',
+            'Andalusia' => 'Spain',
+            'Istanbul' => 'Turkey',
+            'Antalya' => 'Turkey',
+            'Bangkok' => 'Thailand',
+            'Phuket' => 'Thailand',
+            'Tokyo' => 'Japan',
+            'Osaka' => 'Japan',
+            'Dubai' => 'United Arab Emirates',
+            'Abu Dhabi' => 'United Arab Emirates',
+            'England' => 'United Kingdom',
+            'Scotland' => 'United Kingdom',
+            'Maharashtra' => 'India',
+            'Kerala' => 'India',
+            'Central' => 'Singapore',
+            'East' => 'Singapore',
+        ];
+
+        foreach ($states as &$stateData) {
+            $countryName = $countryMap[$stateData['name']];
+            $country = \App\Models\Country::where('name', $countryName)->first();
+            if (!$country) {
+                echo "WARNING: Country '{$countryName}' not found for state '{$stateData['name']}' - skipping\n";
+                continue;
+            }
+            $stateData['country_id'] = $country->id;
+        }
+        unset($stateData);
 
         $mediaIds = range(1, 5);
 
@@ -131,13 +120,14 @@ class StateSeeder extends Seeder
             $state = State::create($data);
 
             // Country_Media (Array of Objects )
-            $randomMedias = collect($mediaIds)->random(3); // ek state ko 3 random media milega
-            foreach ($randomMedias as $mediaId) {
-                StateMediaGallery::create([
-                    'state_id' => $state->id,
-                    'media_id'   => $mediaId,
-                ]);
-            }
+            // DISABLED: Media will be imported via auto-import feature
+            // $randomMedias = collect($mediaIds)->random(3); // ek state ko 3 random media milega
+            // foreach ($randomMedias as $mediaId) {
+            //     StateMediaGallery::create([
+            //         'state_id' => $state->id,
+            //         'media_id'   => $mediaId,
+            //     ]);
+            // }
 
             // Insert State Details
             StateLocationDetail::create([
