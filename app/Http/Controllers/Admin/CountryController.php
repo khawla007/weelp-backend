@@ -612,4 +612,22 @@ class CountryController extends Controller
             'message' => 'Country deleted successfully'
         ]);
     }
+
+    /**
+     * Get counts for all destination types
+     */
+    public function getDestinationsCounts()
+    {
+        $counts = [
+            'countries' => \App\Models\Country::count(),
+            'states' => \App\Models\State::count(),
+            'cities' => \App\Models\City::count(),
+            'places' => \App\Models\Place::count(),
+        ];
+
+        return response()->json([
+            'success' => true,
+            'data' => $counts
+        ]);
+    }
 }

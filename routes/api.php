@@ -156,6 +156,8 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
     Route::post('/import-cities', [CityImportController::class, 'import']);
     Route::post('/import-places', [PlaceImportController::class, 'import']);
 
+    Route::get('/destinations/counts', [CountryController::class, 'getDestinationsCounts']);
+
     Route::prefix('/countries')->group(function () {
         Route::get('/', [CountryController::class, 'index']);
         Route::get('/list', [CountryController::class, 'countryList']);
