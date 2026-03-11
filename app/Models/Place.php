@@ -12,10 +12,9 @@ class Place extends Model {
         'name',
         'code',
         'slug',
-        'type', 
+        'type',
         'city_id',
         'description',
-        'feature_image',
         'featured_destination',
     ];
 
@@ -27,7 +26,12 @@ class Place extends Model {
     {
         return $this->hasMany(PlaceMediaGallery::class, 'place_id');
     }
-    
+
+    public function city()
+    {
+        return $this->belongsTo(City::class, 'city_id');
+    }
+
     public function locationDetails() {
         return $this->hasOne(PlaceLocationDetail::class);
     }

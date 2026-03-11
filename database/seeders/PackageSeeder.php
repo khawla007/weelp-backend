@@ -36,6 +36,7 @@ class PackageSeeder extends Seeder
 
         // Tables ko truncate ki jagah delete karo
         Package::query()->delete();
+        PackageLocation::query()->delete(); // Added: Was missing!
         PackageInformation::query()->delete();
         PackageSchedule::query()->delete();
         PackageActivity::query()->delete();
@@ -339,7 +340,7 @@ class PackageSeeder extends Seeder
 
             PackageLocation::create([
                 'package_id' => $package->id,
-                'city_id'    => rand(1, 4),
+                'city_id'    => rand(382, 441), // Updated: Cities are IDs 382-441 (60 cities)
             ]);
 
             for ($day = 1; $day <= 3; $day++) {
@@ -350,7 +351,7 @@ class PackageSeeder extends Seeder
 
                 PackageTransfer::create([
                     'schedule_id'      => $schedule->id,
-                    'transfer_id'      => rand(1, 4),
+                    'transfer_id'      => [1, 5, 6, 7][array_rand([1, 5, 6, 7])], // Updated: Valid transfer IDs
                     'start_time'       => '12:00:00',
                     'end_time'         => '14:00:00',
                     'notes'            => 'Sample transfer note',
@@ -363,7 +364,7 @@ class PackageSeeder extends Seeder
 
                 PackageActivity::create([
                     'schedule_id' => $schedule->id,
-                    'activity_id' => rand(1, 8),
+                    'activity_id' => rand(1, 35), // Updated: Activities are IDs 1-35 (35 activities)
                     'start_time'  => '09:00:00',
                     'end_time'    => '11:00:00',
                     'notes'       => 'Sample activity note',
@@ -373,7 +374,7 @@ class PackageSeeder extends Seeder
 
                 PackageItinerary::create([
                     'schedule_id'  => $schedule->id,
-                    'itinerary_id' => rand(1, 8),
+                    'itinerary_id' => [38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72][array_rand([38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72])], // Updated: Valid itinerary IDs (non-sequential)
                     'start_time'   => '09:00:00',
                     'end_time'     => '11:00:00',
                     'notes'        => 'Sample itinerary note',
@@ -413,10 +414,14 @@ class PackageSeeder extends Seeder
                 'included'    => true,
             ]);
 
-            PackageMediaGallery::create([
-                'package_id' => $package->id,
-                'media_id'   => rand(1, 5),
-            ]);
+            // Media Gallery - 3-6 images per package
+            $mediaCount = rand(3, 6);
+            for ($i = 0; $i < $mediaCount; $i++) {
+                PackageMediaGallery::create([
+                    'package_id' => $package->id,
+                    'media_id'   => rand(78, 548), // Updated: Media are IDs 78-548 (471 images)
+                ]);
+            }
 
             // $packageId = $package->id;
 

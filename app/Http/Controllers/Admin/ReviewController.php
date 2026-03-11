@@ -28,10 +28,14 @@ class ReviewController extends Controller
         if ($request->filled('item_type')) {
             $query->where('item_type', $request->item_type);
         }
-    
-        if ($request->filled('item_name')) {
-            $query->whereHas('item', function ($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->item_name . '%');
+
+        if ($request->filled('status') && $request->status !== 'all') {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('customer_name')) {
+            $query->whereHas('user', function ($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->customer_name . '%');
             });
         }
     
@@ -47,7 +51,8 @@ class ReviewController extends Controller
     
             // Agar item Transfer nahi hai tabhi locations load karo
             if ($item && !($item instanceof \App\Models\Transfer)) {
-                $location = $item?->locations?->first();
+                // Load location relationship on-demand for Activity, Package, Itinerary
+                $location = $item->locations()->with('city.state.country.regions')->first();
                 $city     = $location?->city;
                 $state    = $city?->state;
                 $country  = $state?->country;

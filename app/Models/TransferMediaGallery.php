@@ -14,7 +14,16 @@ class TransferMediaGallery extends Model
     protected $fillable = [
         'transfer_id',
         'media_id',
+        'is_featured',
     ];
+
+    /**
+     * Scope to get featured media only
+     */
+    public function scopeFeatured($query)
+    {
+        return $query->where('is_featured', true);
+    }
 
     // Relationship with Transfer
     public function transfer()

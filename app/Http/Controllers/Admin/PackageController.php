@@ -179,8 +179,13 @@ class PackageController extends Controller
                     'name'       => $media->media->name ?? null,
                     'alt_text'   => $media->media->alt_text ?? null,
                     'url'        => $media->media->url ?? null,
+                    'is_featured'=> $media->is_featured ?? false,
                 ];
             });
+
+            // Get featured image from media_gallery
+            $featuredImage = $package->mediaGallery->firstWhere('is_featured', true);
+            $data['feature_image'] = $featuredImage?->media->url ?? null;
         
             $data['attributes'] = collect($package->attributes)->map(function ($attribute) {
                 return [
@@ -396,11 +401,28 @@ class PackageController extends Controller
             }
     
             // === Media Gallery ===
-            if ($request->has('media_gallery')) {
+            $hasFeatured = false;
+            if ($request->has('media_gallery') && is_array($request->media_gallery)) {
                 foreach ($request->media_gallery as $media) {
+                    // Skip null media_id
+                    if (!isset($media['media_id']) || $media['media_id'] === null) {
+                        continue;
+                    }
+
+                    // Ensure only ONE featured
+                    $isFeatured = $media['is_featured'] ?? false;
+                    if ($isFeatured) {
+                        if ($hasFeatured) {
+                            $isFeatured = false;
+                        } else {
+                            $hasFeatured = true;
+                        }
+                    }
+
                     PackageMediaGallery::create([
                         'package_id' => $package->id,
                         'media_id'   => $media['media_id'],
+                        'is_featured'=> $isFeatured,
                     ]);
                 }
             }
@@ -682,13 +704,18 @@ class PackageController extends Controller
         $packageData['media_gallery'] = collect($package->mediaGallery)->map(function ($media) {
             return [
                 'id'            => $media->id,
-                'package_id'  => $media->package_id,
+                'package_id'    => $media->package_id,
                 'media_id'      => $media->media_id,
                 'name'          => $media->media->name,
                 'alt_text'      => $media->media->alt_text,
                 'url'           => $media->media->url ?? null,
+                'is_featured'   => $media->is_featured ?? false,
             ];
         });
+
+        // Get featured image from media_gallery
+        $featuredImage = $package->mediaGallery->firstWhere('is_featured', true);
+        $packageData['feature_image'] = $featuredImage?->media->url ?? null;
 
         // Replace attributes with just `attribute_name`
         $packageData['attributes'] = collect($package->attributes)->map(function ($attribute) {
@@ -816,9 +843,56 @@ class PackageController extends Controller
                 }
             }; 
     
-            foreach (['information', 'faqs', 'inclusionsExclusions', 'mediaGallery'] as $relation) {
+            foreach (['information', 'faqs', 'inclusionsExclusions'] as $relation) {
                 if ($request->has(Str::snake($relation))) {
                     $updateOrCreateRelation($relation, $request->{Str::snake($relation)});
+                }
+            }
+
+            // === Media Gallery === (special handling for featured image)
+            if ($request->has('media_gallery')) {
+                // Filter out null media_id and ensure only ONE featured
+                $hasFeatured = false;
+                $mediaGallery = collect($request->input('media_gallery'))
+                    ->filter(function ($item) {
+                        return isset($item['media_id']) && $item['media_id'] !== null;
+                    })
+                    ->map(function ($item) use ($package, &$hasFeatured) {
+                        // Ensure only ONE featured
+                        $isFeatured = $item['is_featured'] ?? false;
+                        if ($isFeatured) {
+                            if ($hasFeatured) {
+                                $isFeatured = false;
+                            } else {
+                                $hasFeatured = true;
+                            }
+                        }
+                        return [
+                            'id'         => $item['id'] ?? null,
+                            'package_id' => $package->id,
+                            'media_id'   => $item['media_id'],
+                            'is_featured'=> $isFeatured,
+                        ];
+                    })->toArray();
+
+                // Use updateOrCreateRelation pattern
+                $existingIds = $package->mediaGallery->pluck('id')->toArray();
+                $incomingIds = collect($mediaGallery)->pluck('id')->filter()->toArray();
+                $deleteIds = array_diff($existingIds, $incomingIds);
+
+                if (!empty($deleteIds)) {
+                    $package->mediaGallery()->whereIn('id', $deleteIds)->delete();
+                }
+
+                foreach ($mediaGallery as $item) {
+                    if (!empty($item['id'])) {
+                        $model = PackageMediaGallery::find($item['id']);
+                        if ($model) {
+                            $model->fill($item)->save();
+                        }
+                    } else {
+                        PackageMediaGallery::create($item);
+                    }
                 }
             }
     

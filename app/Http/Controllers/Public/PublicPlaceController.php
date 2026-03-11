@@ -27,7 +27,16 @@ class PublicPlaceController extends Controller
             return response()->json(['success' => false, 'message' => 'City not found'], 404);
         }
 
-        $places = Place::where('city_id', $city->id)->get();
+        $places = Place::with('mediaGallery.media')
+            ->where('city_id', $city->id)
+            ->get()
+            ->map(function ($place) {
+                // Get featured image from media_gallery
+                $featuredImage = $place->mediaGallery->firstWhere('is_featured', true);
+                $place->feature_image = $featuredImage?->media->url ?? null;
+                unset($place->mediaGallery);
+                return $place;
+            });
 
         if (collect($places)->isEmpty()) {
             return response()->json([
@@ -35,7 +44,7 @@ class PublicPlaceController extends Controller
                 'message' => 'Place not found'
             ], 404);
         }
-        
+
         return response()->json([
             'success' => true,
             'data' => $places

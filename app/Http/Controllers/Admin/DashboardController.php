@@ -28,19 +28,23 @@ class DashboardController extends Controller
             $lastMonth = now()->subMonth()->month;
             $currentYear = now()->year;
 
-            // Total Revenue (current month)
+            // Total Revenue (current month) - join with order_payments for total_amount
             $totalRevenue = DB::table('orders')
-                ->whereMonth('created_at', $currentMonth)
-                ->whereYear('created_at', $currentYear)
-                ->where('status', 'completed')
-                ->sum('total_amount');
+                ->leftJoin('order_payments', 'orders.id', '=', 'order_payments.order_id')
+                ->whereMonth('orders.created_at', $currentMonth)
+                ->whereYear('orders.created_at', $currentYear)
+                ->where('orders.status', 'completed')
+                ->where('order_payments.payment_status', 'completed')
+                ->sum('order_payments.total_amount');
 
             // Total Revenue (last month) for growth calculation
             $lastMonthRevenue = DB::table('orders')
-                ->whereMonth('created_at', $lastMonth)
-                ->whereYear('created_at', $lastMonth)
-                ->where('status', 'completed')
-                ->sum('total_amount');
+                ->leftJoin('order_payments', 'orders.id', '=', 'order_payments.order_id')
+                ->whereMonth('orders.created_at', $lastMonth)
+                ->whereYear('orders.created_at', $lastMonth)
+                ->where('orders.status', 'completed')
+                ->where('order_payments.payment_status', 'completed')
+                ->sum('order_payments.total_amount');
 
             // Calculate revenue growth percentage
             $revenueGrowth = $lastMonthRevenue > 0 
@@ -136,15 +140,17 @@ class DashboardController extends Controller
         try {
             $currentYear = now()->year;
 
-            // Get monthly revenue for current year
+            // Get monthly revenue for current year - join with order_payments for total_amount
             $monthlyRevenue = DB::table('orders')
+                ->leftJoin('order_payments', 'orders.id', '=', 'order_payments.order_id')
                 ->select(
-                    DB::raw('MONTH(created_at) as month'),
-                    DB::raw('SUM(total_amount) as total')
+                    DB::raw('MONTH(orders.created_at) as month'),
+                    DB::raw('SUM(order_payments.total_amount) as total')
                 )
-                ->whereYear('created_at', $currentYear)
-                ->where('status', 'completed')
-                ->groupBy(DB::raw('MONTH(created_at)'))
+                ->whereYear('orders.created_at', $currentYear)
+                ->where('orders.status', 'completed')
+                ->where('order_payments.payment_status', 'completed')
+                ->groupBy(DB::raw('MONTH(orders.created_at)'))
                 ->orderBy('month')
                 ->get();
 
@@ -186,14 +192,16 @@ class DashboardController extends Controller
             $recentSales = DB::table('orders')
                 ->select(
                     'orders.id',
-                    'orders.total_amount as amount',
+                    'order_payments.total_amount as amount',
                     'orders.created_at',
                     'users.name as username',
                     'users.email',
-                    'users.avatar_url as avatar'
+                    'users.avatar as avatar'
                 )
+                ->leftJoin('order_payments', 'orders.id', '=', 'order_payments.order_id')
                 ->leftJoin('users', 'orders.user_id', '=', 'users.id')
                 ->where('orders.status', 'completed')
+                ->where('order_payments.payment_status', 'completed')
                 ->orderBy('orders.created_at', 'desc')
                 ->limit(10)
                 ->get();

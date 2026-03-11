@@ -82,6 +82,11 @@ class Itinerary extends Model
         return $this->morphMany(Review::class, 'item', 'item_type', 'item_id');
     }
 
+    public function getItemTypeAttribute($value)
+    {
+        return $value ?? strtolower(class_basename($this));
+    }
+
     public function addons()
     {
         return $this->hasMany(ItineraryAddon::class);

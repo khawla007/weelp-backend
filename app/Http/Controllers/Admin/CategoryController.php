@@ -15,8 +15,8 @@ class CategoryController extends Controller
     {
         $perPage = 6;
         $page    = $request->get('page', 1);
-    
-        $categories = Category::paginate($perPage, ['*'], 'page', $page);
+
+        $categories = Category::orderBy('id', 'desc')->paginate($perPage, ['*'], 'page', $page);
     
         return response()->json([
             'success'      => true,
@@ -102,5 +102,25 @@ class CategoryController extends Controller
         $category->delete();
 
         return response()->json(['message' => 'Category deleted successfully']);
+    }
+
+    /**
+     * Bulk delete multiple categories.
+     */
+    public function bulkDelete(Request $request)
+    {
+        $request->validate([
+            'category_ids' => 'required|array',
+            'category_ids.*' => 'integer|exists:categories,id',
+        ]);
+
+        $categoryIds = $request->category_ids;
+
+        $deletedCount = Category::whereIn('id', $categoryIds)->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => "$deletedCount categor(ies) deleted successfully",
+        ]);
     }
 }

@@ -62,6 +62,63 @@ class AddonController extends Controller
         ]);
     }
 
+    // Type-specific addon endpoints for forms
+    public function listActivityAddons()
+    {
+        $addons = Addon::select('id', 'name', 'active_status', 'type')
+            ->where('type', 'activity')
+            ->where('active_status', true)
+            ->orderBy('name', 'asc')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $addons
+        ]);
+    }
+
+    public function listItineraryAddons()
+    {
+        $addons = Addon::select('id', 'name', 'active_status', 'type')
+            ->where('type', 'itinerary')
+            ->where('active_status', true)
+            ->orderBy('name', 'asc')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $addons
+        ]);
+    }
+
+    public function listPackageAddons()
+    {
+        $addons = Addon::select('id', 'name', 'active_status', 'type')
+            ->where('type', 'package')
+            ->where('active_status', true)
+            ->orderBy('name', 'asc')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $addons
+        ]);
+    }
+
+    public function listTransferAddons()
+    {
+        $addons = Addon::select('id', 'name', 'active_status', 'type')
+            ->where('type', 'transfer')
+            ->where('active_status', true)
+            ->orderBy('name', 'asc')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $addons
+        ]);
+    }
+
     /**
      * Store a newly created resource in storage.
      */
@@ -74,12 +131,16 @@ class AddonController extends Controller
             'price'             => 'required|numeric|min:0',
             'sale_price'        => 'nullable|numeric|min:0',
             'price_calculation' => 'required|string',
-            'active_status'     => 'boolean',
+            'active_status'     => 'sometimes|boolean',
         ]);
 
         $addon = Addon::create($validated);
 
-        return response()->json(['success' => true, 'data' => $addon], 201);
+        return response()->json([
+            'success' => true,
+            'message' => 'Add-on created successfully',
+            'data'    => $addon
+        ], 201);
     }
 
     /**
@@ -107,17 +168,18 @@ class AddonController extends Controller
             'price'             => 'sometimes|numeric|min:0',
             'sale_price'        => 'nullable|numeric|min:0',
             'price_calculation' => 'required|string',
-            'active_status'     => 'boolean',
+            'active_status'     => 'sometimes|boolean',
         ]);
-    
+
         $addon = Addon::findOrFail($id);
-    
+
         // सिर्फ वही fields update होंगे जो request में आए
         $addon->update($validated);
-    
+
         return response()->json([
             'success' => true,
-            'data'    => $addon
+            'message' => 'Add-on updated successfully',
+            'data'    => $addon->fresh()
         ]);
     }
     

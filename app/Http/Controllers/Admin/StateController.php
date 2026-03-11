@@ -27,19 +27,21 @@ class StateController extends Controller
 
     public function index(Request $request)
     {
-        $query = State::query()->with('mediaGallery.media');
-    
+        $query = State::query()->with('mediaGallery.media', 'country.regions');
+
         // Name search
         if ($request->has('name') && !empty($request->name)) {
             $query->where('name', 'like', '%' . $request->name . '%');
         }
-        
+
         // Pagination (perPage fix)
         $perPage = 4;
         $states = $query->orderBy('id', 'desc')->paginate($perPage, ['*'], 'page', $request->input('page', 1));
-    
+
         // Transform response
         $data = $states->map(function ($state) {
+            // Get featured image from media_gallery
+            $featuredImage = $state->mediaGallery->firstWhere('is_featured', true);
             return [
                 'id' => $state->id,
                 'name' => $state->name,
@@ -47,14 +49,26 @@ class StateController extends Controller
                 'slug' => $state->slug,
                 'type' => $state->type,
                 'description' => $state->description,
-                'feature_image' => $state->feature_image,
+                'feature_image' => $featuredImage?->media->url ?? null, // Featured from media_gallery
                 'featured_destination' => $state->featured_destination,
+                'country' => $state->country ? [
+                    'id' => $state->country->id,
+                    'name' => $state->country->name,
+                ] : null,
+                'regions' => $state->country && $state->country->regions ? $state->country->regions->map(function ($region) {
+                    return [
+                        'id' => $region->id,
+                        'name' => $region->name,
+                        'slug' => $region->slug,
+                    ];
+                })->toArray() : [],
                 // Custom Media format
                 'media_gallery' => $state->mediaGallery->map(function ($gallery) {
                     return [
                         'id' => $gallery->id,
                         'state_id' => $gallery->state_id,
                         'media_id' => $gallery->media_id,
+                        'is_featured' => $gallery->is_featured ?? false,
                         'name' => $gallery->media->name ?? null,
                         'alt_text' => $gallery->media->alt_text ?? null,
                         'url' => $gallery->media->url ?? null,
@@ -69,7 +83,7 @@ class StateController extends Controller
             'total' => $states->total(),
             'per_page' => $states->perPage(),
             'last_page' => $states->lastPage(),
-            'current_page' => $states->currentPage(), 
+            'current_page' => $states->currentPage(),
         ]);
     }
     
@@ -117,7 +131,6 @@ class StateController extends Controller
             // 'type' => 'required|string|max:255',
             'country_id' => 'required|integer|exists:countries,id',
             'description' => 'nullable|string',
-            'feature_image' => 'nullable|url',
             'featured_destination' => 'boolean',
 
             // Media (array of objects)
@@ -199,16 +212,28 @@ class StateController extends Controller
             // 'type' => $validated['type'],
             'country_id' => $validated['country_id'],
             'description' => $validated['description'] ?? null,
-            'feature_image' => $validated['feature_image'] ?? null,
             'featured_destination' => $validated['featured_destination'] ?? false,
         ]);
 
         // Media Details
         if (!empty($validated['media_gallery'])) {
+            // Ensure only one featured image
+            $hasFeatured = false;
             foreach ($validated['media_gallery'] as $media) {
+                $isFeatured = $media['is_featured'] ?? false;
+                if ($isFeatured) {
+                    if ($hasFeatured) {
+                        // Already has featured, skip this one
+                        $isFeatured = false;
+                    } else {
+                        $hasFeatured = true;
+                    }
+                }
+
                 StateMediaGallery::create([
                     'state_id' => $state->id,
                     'media_id'    => $media['media_id'],
+                    'is_featured' => $isFeatured,
                 ]);
             }
         }
@@ -228,6 +253,7 @@ class StateController extends Controller
         // Season
         if ($request->has('seasons')) {
             foreach ($request->seasons as $season) {
+                if (empty($season['name'])) continue;
                 $state->seasons()->create($season);
             }
         }
@@ -235,6 +261,7 @@ class StateController extends Controller
         // Event
         if ($request->has('events')) {
             foreach ($request->events as $event) {
+                if (empty($event['name'])) continue;
                 $state->events()->create($event);
             }
         }
@@ -242,6 +269,7 @@ class StateController extends Controller
         // Additional Info
         if (!empty($validated['additional_info'])) {
             foreach ($validated['additional_info'] as $additional) {
+                if (empty($additional['title'])) continue;
                 $additional['state_id'] = $state->id;
                 StateAdditionalInfo::create($additional);
             }
@@ -251,6 +279,7 @@ class StateController extends Controller
         if (!empty($validated['faqs'])) {
             $questionNumber = 1;
             foreach ($validated['faqs'] as $faq) {
+                if (empty($faq['question'])) continue;
                 StateFaq::create([
                     'state_id' => $state->id,
                     'question_number' => $questionNumber++,
@@ -277,7 +306,6 @@ class StateController extends Controller
      */
     public function show(string $id)
     {
-        // return response()->json(State::findOrFail($id));
         $state = State::with([
             'mediaGallery.media',
             'locationDetails',
@@ -288,7 +316,12 @@ class StateController extends Controller
             'faqs',
             'seo'
         ])->find($id);
-    
+
+        // Check if state exists FIRST (before accessing properties)
+        if (!$state) {
+            return response()->json(['message' => 'State not found'], 404);
+        }
+
         // media_gallery ko transform karna
         if ($state->mediaGallery && $state->mediaGallery->count()) {
             $state->media_gallery = $state->mediaGallery->map(function ($gallery) {
@@ -296,18 +329,21 @@ class StateController extends Controller
                     'id' => $gallery->id,
                     'state_id' => $gallery->state_id,
                     'media_id' => $gallery->media_id,
+                    'is_featured' => $gallery->is_featured ?? false,
                     'name' => $gallery->media->name ?? null,
                     'alt_text' => $gallery->media->alt_text ?? null,
                     'url' => $gallery->media->url ?? null,
                 ];
             })->values();
+            // Get featured image from media_gallery
+            $featuredImage = $state->media_gallery->firstWhere('is_featured', true);
+            $state->feature_image = $featuredImage['url'] ?? null;
             unset($state->mediaGallery); // nested relation hatane ke liye
+        } else {
+            $state->media_gallery = [];
+            $state->feature_image = null;
         }
 
-        if (!$state) {
-            return response()->json(['message' => 'State not found'], 404);
-        }
-    
         return response()->json($state);
     }
 
@@ -326,9 +362,8 @@ class StateController extends Controller
             // 'type' => 'nullable|string|max:255',
             'country_id' => 'nullable|integer|exists:countries,id',
             'description' => 'nullable|string',
-            'feature_image' => 'nullable|url',
             'featured_destination' => 'boolean',
-    
+
             // Media (array of objects)
             'media_gallery'     => 'nullable|array',
     
@@ -403,17 +438,30 @@ class StateController extends Controller
             // 'type' => $validated['type'] ?? $state->type,
             'country_id' => $validated['country_id'] ?? $state->country_id,
             'description' => $validated['description'] ?? $state->description,
-            'feature_image' => $validated['feature_image'] ?? $state->feature_image,
             'featured_destination' => $validated['featured_destination'] ?? $state->featured_destination,
         ]);
-    
+
         // === Media (delete old & insert new) ===
         if (isset($validated['media_gallery'])) {
             StateMediaGallery::where('state_id', $state->id)->delete();
+
+            // Ensure only one featured image
+            $hasFeatured = false;
             foreach ($validated['media_gallery'] as $media) {
+                $isFeatured = $media['is_featured'] ?? false;
+                if ($isFeatured) {
+                    if ($hasFeatured) {
+                        // Already has featured, skip this one
+                        $isFeatured = false;
+                    } else {
+                        $hasFeatured = true;
+                    }
+                }
+
                 StateMediaGallery::create([
                     'state_id' => $state->id,
                     'media_id'    => $media['media_id'],
+                    'is_featured' => $isFeatured,
                 ]);
             }
         }
@@ -442,6 +490,7 @@ class StateController extends Controller
                 ->delete();
     
             foreach ($request->seasons as $season) {
+                if (empty($season['name'])) continue;
                 if (!empty($season['id'])) {
                     StateSeason::where('id', $season['id'])->update($season);
                 } else {
@@ -459,6 +508,7 @@ class StateController extends Controller
                 ->delete();
     
             foreach ($request->events as $event) {
+                if (empty($event['name'])) continue;
                 if (!empty($event['id'])) {
                     StateEvent::where('id', $event['id'])->update($event);
                 } else {
@@ -476,6 +526,7 @@ class StateController extends Controller
                 ->delete();
     
             foreach ($request->additional_info as $info) {
+                if (empty($info['title'])) continue;
                 if (!empty($info['id'])) {
                     StateAdditionalInfo::where('id', $info['id'])->update($info);
                 } else {
@@ -495,6 +546,7 @@ class StateController extends Controller
     
             $questionNumber = 1;
             foreach ($request->faqs as $faq) {
+                if (empty($faq['question'])) continue;
                 if (!empty($faq['id'])) {
                     StateFaq::where('id', $faq['id'])->update([
                         'question_number' => $questionNumber++,
@@ -571,5 +623,30 @@ class StateController extends Controller
     {
         State::findOrFail($id)->delete();
         return response()->json(['message' => 'State deleted successfully']);
+    }
+
+    /**
+     * Bulk delete multiple states.
+     */
+    public function bulkDelete(Request $request)
+    {
+        $validated = $request->validate([
+            'state_ids' => 'required|array|min:1',
+            'state_ids.*' => 'integer|exists:states,id',
+        ]);
+
+        try {
+            $count = State::whereIn('id', $validated['state_ids'])->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => "{$count} states deleted successfully"
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Failed to delete states: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

@@ -163,8 +163,13 @@ class ActivityController extends Controller
                     'name'       => $media->media->name ?? null,
                     'alt_text'   => $media->media->alt_text ?? null,
                     'url'        => $media->media->url ?? null,
+                    'is_featured' => $media->is_featured ?? false,
                 ];
             });
+
+            // Get featured image from media_gallery
+            $featuredImage = $activity->mediaGallery->firstWhere('is_featured', true);
+            $data['feature_image'] = $featuredImage?->media->url ?? null;
         
             $data['attributes'] = collect($activity->attributes)->map(function ($attribute) {
                 return [
@@ -369,12 +374,28 @@ class ActivityController extends Controller
                 }
             }
 
-            // Media Gallery 
-            if ($request->has('media_gallery')) {
+            // Media Gallery - ensure only one featured
+            if ($request->has('media_gallery') && is_array($request->media_gallery)) {
+                $hasFeatured = false;
                 foreach ($request->media_gallery as $media) {
+                    // Skip if media_id is not present
+                    if (!isset($media['media_id']) || $media['media_id'] === null) {
+                        continue;
+                    }
+
+                    $isFeatured = $media['is_featured'] ?? false;
+                    // Ensure only ONE featured image
+                    if ($isFeatured) {
+                        if ($hasFeatured) {
+                            $isFeatured = false; // Already has a featured, set this to false
+                        } else {
+                            $hasFeatured = true;
+                        }
+                    }
                     ActivityMediaGallery::create([
                         'activity_id' => $activity->id,
                         'media_id'    => $media['media_id'],
+                        'is_featured' => $isFeatured,
                     ]);
                 }
             }
@@ -485,8 +506,14 @@ class ActivityController extends Controller
                 'media_id' => $media->media_id,
                 'name'     => $media->media->name ?? null,
                 'url'      => $media->media->url ?? null,
+                'alt_text' => $media->media->alt_text ?? null,
+                'is_featured' => $media->is_featured ?? false,
             ];
         });
+
+        // Get featured image from media_gallery
+        $featuredImage = $activity->mediaGallery->firstWhere('is_featured', true);
+        $activityData['feature_image'] = $featuredImage?->media->url ?? null;
     
         return response()->json($activityData, 200);
     }
@@ -565,15 +592,36 @@ class ActivityController extends Controller
                 $activity->attributes()->createMany($attributes);
             }  
             
-            // Handle Media (requires full object)
-            if ($request->has('media_gallery')) {
+            // Handle Media (requires full object) - ensure only one featured
+            if ($request->has('media_gallery') && is_array($request->input('media_gallery'))) {
                 $activity->mediaGallery()->delete();
-            
-                $mediaGallery = collect($request->input('media_gallery'))->map(function ($item) use ($activity) {
-                    return array_merge($item, ['activity_id' => $activity->id]);
-                })->toArray();
-            
-                $activity->mediaGallery()->createMany($mediaGallery);
+
+                $hasFeatured = false;
+                $mediaGallery = collect($request->input('media_gallery'))
+                    ->filter(function ($item) {
+                        // Only include items that have a valid media_id
+                        return isset($item['media_id']) && $item['media_id'] !== null;
+                    })
+                    ->map(function ($item) use ($activity, &$hasFeatured) {
+                        $isFeatured = $item['is_featured'] ?? false;
+                        // Ensure only ONE featured image
+                        if ($isFeatured) {
+                            if ($hasFeatured) {
+                                $isFeatured = false; // Already has a featured, set this to false
+                            } else {
+                                $hasFeatured = true;
+                            }
+                        }
+                        return [
+                            'activity_id' => $activity->id,
+                            'media_id'    => $item['media_id'],
+                            'is_featured' => $isFeatured,
+                        ];
+                    })->toArray();
+
+                if (!empty($mediaGallery)) {
+                    $activity->mediaGallery()->createMany($mediaGallery);
+                }
             }
 
             // // Handle Addons (requires full object)

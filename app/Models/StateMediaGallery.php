@@ -14,16 +14,23 @@ class StateMediaGallery extends Model
     protected $fillable = [
         'state_id',
         'media_id',
+        'is_featured',
     ];
 
     // Relations
     public function state()
     {
-        return $this->belongsTo(state::class);
+        return $this->belongsTo(State::class);
     }
 
     public function media()
     {
         return $this->belongsTo(Media::class, 'media_id');
+    }
+
+    // Scopes
+    public function scopeFeatured($query)
+    {
+        return $query->where('is_featured', true);
     }
 }

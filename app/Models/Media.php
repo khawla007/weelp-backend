@@ -8,7 +8,7 @@ class Media extends Model
 {
     protected $table = 'media';
 
-    protected $fillable = ['name', 'alt_text', 'url'];
+    protected $fillable = ['name', 'alt_text', 'url', 'file_size', 'width', 'height'];
 
     public function userAvatar()
     {
@@ -41,7 +41,7 @@ class Media extends Model
     // }
     public function blogs()
     {
-        return $this->belongsToMany(Blog::class, 'blog_media');
+        return $this->belongsToMany(Blog::class, 'blog_media_gallery');
     }
 
     public function itineraryMedia()

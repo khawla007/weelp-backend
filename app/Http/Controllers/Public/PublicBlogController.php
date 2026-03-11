@@ -125,10 +125,11 @@ class PublicBlogController extends Controller
     
                 'media_gallery' => $blog->media->map(function ($m) {
                     return [
-                        'media_id' => $m->id,
-                        'name'     => $m->name ?? null,
-                        'alt'      => $m->alt_text ?? null,
-                        'url'      => $m->url ?? null,
+                        'media_id'   => $m->id,
+                        'name'       => $m->name ?? null,
+                        'alt'        => $m->alt_text ?? null,
+                        'url'        => $m->url ?? null,
+                        'is_featured' => (int)($m->pivot->is_featured ?? 0), // ← Include is_featured from pivot
                     ];
                 }),
     
@@ -186,9 +187,10 @@ class PublicBlogController extends Controller
             'media_gallery' => $blog->media->map(function ($m) {
                 return [
                     'media_id'   => $m->id,
-                    'name' => $m->name ?? null,
-                    'alt'  => $m->alt_text ?? null,
-                    'url'  => $m->url ?? null,
+                    'name'       => $m->name ?? null,
+                    'alt'        => $m->alt_text ?? null,
+                    'url'        => $m->url ?? null,
+                    'is_featured' => (int)($m->pivot->is_featured ?? 0), // ← Include is_featured from pivot
                 ];
             }),
     

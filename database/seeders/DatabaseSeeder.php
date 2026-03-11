@@ -24,11 +24,11 @@ class DatabaseSeeder extends Seeder
             CategorySeeder::class,
             TagSeeder::class,
             AttributeSeeder::class,
+            RegionSeeder::class,        // Must run before CountrySeeder
             CountrySeeder::class,
             StateSeeder::class,
             CitySeeder::class,
             PlaceSeeder::class,
-            RegionSeeder::class,
             AddonSeeder::class,
             ActivitySeeder::class,
             VendorSeeder::class,

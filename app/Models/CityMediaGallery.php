@@ -14,6 +14,7 @@ class CityMediaGallery extends Model
     protected $fillable = [
         'city_id',
         'media_id',
+        'is_featured',
     ];
 
     // Relations
@@ -25,5 +26,11 @@ class CityMediaGallery extends Model
     public function media()
     {
         return $this->belongsTo(Media::class, 'media_id');
+    }
+
+    // Scopes
+    public function scopeFeatured($query)
+    {
+        return $query->where('is_featured', true);
     }
 }

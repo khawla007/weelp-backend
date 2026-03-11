@@ -10,8 +10,13 @@ class PackageMediaGallery extends Model
     protected $table = 'package_media_gallery';
 
     protected $fillable = [
-        'package_id', 'media_id'
+        'package_id', 'media_id', 'is_featured'
     ];
+
+    public function scopeFeatured($query)
+    {
+        return $query->where('is_featured', true);
+    }
 
     public function package()
     {

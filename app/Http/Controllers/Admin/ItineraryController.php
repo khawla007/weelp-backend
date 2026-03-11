@@ -50,7 +50,7 @@ class ItineraryController extends Controller
         $season         = $request->get('season');
         $minPrice       = $request->get('min_price', 0);
         $maxPrice       = $request->get('max_price');
-        $sortBy         = $request->get('sort_by', 'id_asc'); // Default: Newest First
+        $sortBy         = $request->get('sort_by', 'id_desc'); // Default: Newest First
 
         $category       = $categorySlug ? Category::where('slug', $categorySlug)->first() : null;
         $categoryId     = $category ? $category->id : null;
@@ -177,8 +177,13 @@ class ItineraryController extends Controller
                     'name'       => $media->media->name ?? null,
                     'alt_text'   => $media->media->alt_text ?? null,
                     'url'        => $media->media->url ?? null,
+                    'is_featured'=> $media->is_featured ?? false,
                 ];
             });
+
+            // Set feature_image from featured media
+            $featuredImage = $itinerary->mediaGallery->firstWhere('is_featured', true);
+            $data['feature_image'] = $featuredImage?->media->url ?? null;
         
             $data['attributes'] = collect($itinerary->attributes)->map(function ($attribute) {
                 return [
@@ -373,11 +378,28 @@ class ItineraryController extends Controller
             }
     
             // === Media Gallery ===
-            if ($request->has('media_gallery')) {
+            if ($request->has('media_gallery') && is_array($request->media_gallery)) {
+                $hasFeatured = false;
                 foreach ($request->media_gallery as $media) {
+                    // Skip entries without valid media_id
+                    if (!isset($media['media_id']) || $media['media_id'] === null) {
+                        continue;
+                    }
+
+                    // Ensure only ONE featured image
+                    $isFeatured = $media['is_featured'] ?? false;
+                    if ($isFeatured) {
+                        if ($hasFeatured) {
+                            $isFeatured = false;
+                        } else {
+                            $hasFeatured = true;
+                        }
+                    }
+
                     ItineraryMediaGallery::create([
                         'itinerary_id' => $itinerary->id,
                         'media_id'     => $media['media_id'],
+                        'is_featured'  => $isFeatured,
                     ]);
                 }
             }
@@ -638,8 +660,13 @@ class ItineraryController extends Controller
                 'name'          => $media->media->name,
                 'alt_text'      => $media->media->alt_text,
                 'url'           => $media->media->url ?? null,
+                'is_featured'   => $media->is_featured ?? false,
             ];
         });
+
+        // Set feature_image from featured media
+        $featuredImage = $itinerary->mediaGallery->firstWhere('is_featured', true);
+        $itineraryData['feature_image'] = $featuredImage?->media->url ?? null;
     
         // Replace attributes with just `attribute_name`
         $itineraryData['attributes'] = collect($itinerary->attributes)->map(function ($attribute) {
@@ -896,6 +923,38 @@ class ItineraryController extends Controller
                 $itinerary->attributes()->createMany($attributes);
             } 
     
+            // === Media Gallery ===
+            if ($request->has('media_gallery') && is_array($request->media_gallery)) {
+                $itinerary->mediaGallery()->delete();
+
+                $hasFeatured = false;
+                $mediaGallery = collect($request->input('media_gallery'))
+                    ->filter(function ($item) {
+                        return isset($item['media_id']) && $item['media_id'] !== null;
+                    })
+                    ->map(function ($item) use ($itinerary, &$hasFeatured) {
+                        // Ensure only ONE featured image
+                        $isFeatured = $item['is_featured'] ?? false;
+                        if ($isFeatured) {
+                            if ($hasFeatured) {
+                                $isFeatured = false;
+                            } else {
+                                $hasFeatured = true;
+                            }
+                        }
+
+                        return [
+                            'itinerary_id' => $itinerary->id,
+                            'media_id'     => $item['media_id'],
+                            'is_featured'  => $isFeatured,
+                        ];
+                    })->toArray();
+
+                if (!empty($mediaGallery)) {
+                    ItineraryMediaGallery::insert($mediaGallery);
+                }
+            }
+
             if ($request->has('availability')) {
                 $itinerary->availability()->updateOrCreate([], $request->availability);
             }
