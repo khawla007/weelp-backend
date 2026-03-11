@@ -27,7 +27,8 @@ class PlaceController extends Controller
 
     public function index(Request $request)
     {
-        $query = Place::query()->with('mediaGallery.media');
+        $query = Place::query()->with('mediaGallery.media')
+            ->with(['city.state.country.regions']);
     
         // Name search
         if ($request->has('name') && !empty($request->name)) {
@@ -49,8 +50,25 @@ class PlaceController extends Controller
                 'slug' => $place->slug,
                 'type' => $place->type,
                 'description' => $place->description,
-                'feature_image' => $featuredImage?->media->url ?? null, // Featured from media_gallery
+                'feature_image' => $featuredImage?->media->url ?? null,
                 'featured_destination' => $place->featured_destination,
+                // Location data for badges
+                'city' => $place->city ? [
+                    'id' => $place->city->id,
+                    'name' => $place->city->name,
+                    'slug' => $place->city->slug,
+                ] : null,
+                'state' => $place->city?->state ? [
+                    'id' => $place->city->state->id,
+                    'name' => $place->city->state->name,
+                    'slug' => $place->city->state->slug,
+                ] : null,
+                'country' => $place->city?->state?->country ? [
+                    'id' => $place->city->state->country->id,
+                    'name' => $place->city->state->country->name,
+                    'slug' => $place->city->state->country->slug,
+                ] : null,
+                'regions' => $place->city?->state?->country?->regions ?? [],
                 // Custom Media format
                 'media_gallery' => $place->mediaGallery->map(function ($gallery) {
                     return [
@@ -83,14 +101,6 @@ class PlaceController extends Controller
     {
         try {
             $places = Place::select('id', 'name', 'type')->orderBy('name')->get();
-
-            if ($places->isEmpty()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'No Place found',
-                    'data' => []
-                ], 404);
-            }
 
             return response()->json([
                 'success' => true,
@@ -604,5 +614,30 @@ class PlaceController extends Controller
     {
         Place::findOrFail($id)->delete();
         return response()->json(['message' => 'Place deleted successfully']);
+    }
+
+    /**
+     * Bulk delete multiple places.
+     */
+    public function bulkDelete(Request $request)
+    {
+        $validated = $request->validate([
+            'place_ids' => 'required|array|min:1',
+            'place_ids.*' => 'integer|exists:places,id',
+        ]);
+
+        try {
+            $count = Place::whereIn('id', $validated['place_ids'])->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => "{$count} places deleted successfully"
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Failed to delete places: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

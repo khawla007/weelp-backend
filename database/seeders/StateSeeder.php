@@ -39,44 +39,44 @@ class StateSeeder extends Seeder
         // Insert States
         $states = [
             // France
-            ['country_id' => null, 'name' => 'Île-de-France', 'code' => 'IDF', 'slug' => 'ile-de-france'],
-            ['country_id' => null, 'name' => 'Provence-Alpes-Côte d\'Azur', 'code' => 'PACA', 'slug' => 'provence-alpes-cote-dazur'],
+            ['country_id' => null, 'name' => 'Île-de-France', 'code' => 'IDF', 'slug' => 'ile-de-france', 'description' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Île-de-France is home to Paris and offers world-renowned landmarks, cuisine, and culture.'],
+            ['country_id' => null, 'name' => 'Provence-Alpes-Côte d\'Azur', 'code' => 'PACA', 'slug' => 'provence-alpes-cote-dazur', 'description' => 'Ut enim ad minim veniam, quis nostrud exercitation ullamco. The French Riviera offers stunning Mediterranean coastline, lavender fields, and charming medieval villages.'],
 
             // Italy
-            ['country_id' => null, 'name' => 'Lombardy', 'code' => 'LOM', 'slug' => 'lombardy'],
-            ['country_id' => null, 'name' => 'Tuscany', 'code' => 'TOS', 'slug' => 'tuscany'],
+            ['country_id' => null, 'name' => 'Lombardy', 'code' => 'LOM', 'slug' => 'lombardy', 'description' => 'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum. Lombardy is Italy\'s economic powerhouse, featuring Milan\'s fashion district and the beautiful Italian Lakes region.'],
+            ['country_id' => null, 'name' => 'Tuscany', 'code' => 'TOS', 'slug' => 'tuscany', 'description' => 'Excepteur sint occaecat cupidatat non proident. Tuscany is renowned for its Renaissance art, rolling vineyards, and historic cities like Florence and Siena.'],
 
             // Spain
-            ['country_id' => null, 'name' => 'Catalonia', 'code' => 'CAT', 'slug' => 'catalonia'],
-            ['country_id' => null, 'name' => 'Andalusia', 'code' => 'AND', 'slug' => 'andalusia'],
+            ['country_id' => null, 'name' => 'Catalonia', 'code' => 'CAT', 'slug' => 'catalonia', 'description' => 'Sunt in culpa qui officia deserunt mollit anim. Catalonia boasts Barcelona\'s architecture, the Costa Brava\'s beaches, and the Pyrenees mountains.'],
+            ['country_id' => null, 'name' => 'Andalusia', 'code' => 'AND', 'slug' => 'andalusia', 'description' => 'Nemo enim ipsam voluptatem quia voluptas sit. Andalusia offers flamenco dancing, Moorish architecture in Granada, and beautiful sherry wine country.'],
 
             // Turkey
-            ['country_id' => null, 'name' => 'Istanbul', 'code' => 'IST', 'slug' => 'istanbul'],
-            ['country_id' => null, 'name' => 'Antalya', 'code' => 'ANT', 'slug' => 'antalya'],
+            ['country_id' => null, 'name' => 'Istanbul', 'code' => 'IST', 'slug' => 'istanbul', 'description' => 'Neque porro quisquam est, qui dolorem ipsum. Istanbul straddles two continents, offering rich Byzantine and Ottoman heritage with stunning mosques and palaces.'],
+            ['country_id' => null, 'name' => 'Antalya', 'code' => 'ANT', 'slug' => 'antalya', 'description' => 'Ut aut reiciendis voluptatibus maiores alias. Antalya is the Turkish Riviera, featuring turquoise waters, ancient ruins, and stunning Mediterranean coastline.'],
 
             // Thailand
-            ['country_id' => null, 'name' => 'Bangkok', 'code' => 'BKK', 'slug' => 'bangkok'],
-            ['country_id' => null, 'name' => 'Phuket', 'code' => 'PHU', 'slug' => 'phuket'],
+            ['country_id' => null, 'name' => 'Bangkok', 'code' => 'BKK', 'slug' => 'bangkok', 'description' => 'Nam libero tempore, cum soluta nobis est. Bangkok is a vibrant metropolis featuring ornate temples, floating markets, and world-class street food.'],
+            ['country_id' => null, 'name' => 'Phuket', 'code' => 'PHU', 'slug' => 'phuket', 'description' => 'Omnis voluptas assumenda est, omnis dolor repellendus. Phuket offers pristine beaches, crystal waters, and vibrant nightlife in southern Thailand.'],
 
             // Japan
-            ['country_id' => null, 'name' => 'Tokyo', 'code' => 'TYO', 'slug' => 'tokyo'],
-            ['country_id' => null, 'name' => 'Osaka', 'code' => 'OSA', 'slug' => 'osaka'],
+            ['country_id' => null, 'name' => 'Tokyo', 'code' => 'TYO', 'slug' => 'tokyo', 'description' => 'Temporibus autem quibusdam et aut officiis. Tokyo seamlessly blends ultramodern neon-lit skyscrapers with traditional temples and gardens.'],
+            ['country_id' => null, 'name' => 'Osaka', 'code' => 'OSA', 'slug' => 'osaka', 'description' => 'Itaque earum rerum hic tenetur a sapiente. Osaka is known for its street food, comedy culture, and historic Osaka Castle.'],
 
             // UAE
-            ['country_id' => null, 'name' => 'Dubai', 'code' => 'DXB', 'slug' => 'dubai'],
-            ['country_id' => null, 'name' => 'Abu Dhabi', 'code' => 'AUH', 'slug' => 'abu-dhabi'],
+            ['country_id' => null, 'name' => 'Dubai', 'code' => 'DXB', 'slug' => 'dubai', 'description' => 'Et harum quidem rerum facilis est et expedita. Dubai is a futuristic city of luxury shopping, ultramodern architecture, and lively nightlife scenes.'],
+            ['country_id' => null, 'name' => 'Abu Dhabi', 'code' => 'AUH', 'slug' => 'abu-dhabi', 'description' => 'Distinctio nam libero tempore, cum soluta. Abu Dhabi combines modern marvels like the Louvre with traditional Arabian culture and stunning mosques.'],
 
             // UK
-            ['country_id' => null, 'name' => 'England', 'code' => 'ENG', 'slug' => 'england'],
-            ['country_id' => null, 'name' => 'Scotland', 'code' => 'SCO', 'slug' => 'scotland'],
+            ['country_id' => null, 'name' => 'England', 'code' => 'ENG', 'slug' => 'england', 'description' => 'Nisi ut aliquid ex ea commodi consequatur. England offers historic landmarks, rolling countryside, and vibrant cities from London to the Cotswolds.'],
+            ['country_id' => null, 'name' => 'Scotland', 'code' => 'SCO', 'slug' => 'scotland', 'description' => 'Quis autem vel eum iure reprehenderit. Scotland features dramatic highlands, historic castles, lochs, and the cultural hub of Edinburgh.'],
 
             // India
-            ['country_id' => null, 'name' => 'Maharashtra', 'code' => 'MH', 'slug' => 'maharashtra'],
-            ['country_id' => null, 'name' => 'Kerala', 'code' => 'KL', 'slug' => 'kerala'],
+            ['country_id' => null, 'name' => 'Maharashtra', 'code' => 'MH', 'slug' => 'maharashtra', 'description' => 'Velit esse quam nihil molestiae consequatur. Maharashtra is home to Mumbai\'s Bollywood, ancient Ajanta caves, and beautiful coastal Konkan region.'],
+            ['country_id' => null, 'name' => 'Kerala', 'code' => 'KL', 'slug' => 'kerala', 'description' => 'Neque porro quisquam est, qui dolorem. Kerala is God\'s Own Country with backwaters, tea plantations, and pristine beaches.'],
 
             // Singapore
-            ['country_id' => null, 'name' => 'Central', 'code' => 'CNT', 'slug' => 'central'],
-            ['country_id' => null, 'name' => 'East', 'code' => 'EST', 'slug' => 'east'],
+            ['country_id' => null, 'name' => 'Central', 'code' => 'CNT', 'slug' => 'central', 'description' => 'Ut aut reiciendis voluptatibus maiores. Central Singapore features Marina Bay Sands, Orchard Road shopping, and the Civic District.'],
+            ['country_id' => null, 'name' => 'East', 'code' => 'EST', 'slug' => 'east', 'description' => 'Duis aute irure dolor in reprehenderit. East Singapore offers Changi Airport, East Coast Park, and beautiful coastal neighborhoods.'],
         ];
 
         // Get country IDs

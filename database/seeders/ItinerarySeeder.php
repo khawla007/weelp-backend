@@ -303,7 +303,7 @@ class ItinerarySeeder extends Seeder
 
             ItineraryLocation::create([
                 'itinerary_id' => $itinerary->id,
-                'city_id'      => rand(1, 4),
+                'city_id'      => rand(382, 441),
             ]);
 
             for ($day = 1; $day <= 3; $day++) {
@@ -314,7 +314,7 @@ class ItinerarySeeder extends Seeder
 
                 ItineraryActivity::create([
                     'schedule_id' => $schedule->id,
-                    'activity_id' => rand(1, 8),
+                    'activity_id' => rand(1, 35),
                     'start_time'  => '09:00:00',
                     'end_time'    => '11:00:00',
                     'notes'       => 'Sample activity note',
@@ -324,7 +324,7 @@ class ItinerarySeeder extends Seeder
 
                 ItineraryTransfer::create([
                     'schedule_id'      => $schedule->id,
-                    'transfer_id'      => rand(1, 4),
+                    'transfer_id'      => [1, 5, 6, 7][array_rand([1, 5, 6, 7])],
                     'start_time'       => '12:00:00',
                     'end_time'         => '14:00:00',
                     'notes'            => 'Sample transfer note',
@@ -367,10 +367,14 @@ class ItinerarySeeder extends Seeder
                 'included'     => true,
             ]);
 
-            ItineraryMediaGallery::create([
-                'itinerary_id' => $itinerary->id,
-                'media_id'     => rand(1, 5),
-            ]);
+            // Assign 3-6 random media images per itinerary
+            $mediaCount = rand(3, 6);
+            for ($i = 0; $i < $mediaCount; $i++) {
+                ItineraryMediaGallery::create([
+                    'itinerary_id' => $itinerary->id,
+                    'media_id'     => rand(78, 548),
+                ]);
+            }
 
             ItinerarySeo::create([
                 'itinerary_id'     => $itinerary->id,

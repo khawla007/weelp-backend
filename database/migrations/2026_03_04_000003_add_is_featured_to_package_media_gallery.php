@@ -11,10 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('blog_media_gallery', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('blog_id')->constrained('blogs')->onDelete('cascade');
-            $table->foreignId('media_id')->constrained('media')->onDelete('cascade');
+        Schema::table('package_media_gallery', function (Blueprint $table) {
+            $table->boolean('is_featured')->default(false)->after('media_id');
         });
     }
 
@@ -23,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('blog_media_gallery');
+        Schema::table('package_media_gallery', function (Blueprint $table) {
+            $table->dropColumn('is_featured');
+        });
     }
 };

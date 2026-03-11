@@ -16,7 +16,7 @@ class TagController extends Controller
         $perPage = 6;
         $page    = $request->get('page', 1);
     
-        $tags = Tag::paginate($perPage, ['*'], 'page', $page);
+        $tags = Tag::orderBy('id', 'desc')->paginate($perPage, ['*'], 'page', $page);
     
         return response()->json([
             'success'      => true,
@@ -97,5 +97,25 @@ class TagController extends Controller
         $tag->delete();
 
         return response()->json(['message' => 'Tag deleted successfully']);
+    }
+
+    /**
+     * Bulk delete multiple tags.
+     */
+    public function bulkDelete(Request $request)
+    {
+        $request->validate([
+            'tag_ids' => 'required|array',
+            'tag_ids.*' => 'integer|exists:tags,id',
+        ]);
+
+        $tagIds = $request->tag_ids;
+
+        $deletedCount = Tag::whereIn('id', $tagIds)->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => "$deletedCount tag(s) deleted successfully",
+        ]);
     }
 }

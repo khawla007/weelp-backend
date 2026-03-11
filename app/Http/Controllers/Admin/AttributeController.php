@@ -25,8 +25,8 @@ class AttributeController extends Controller
     {
         $perPage = 6;
         $page    = $request->get('page', 1);
-    
-        $attributes = Attribute::paginate($perPage, ['*'], 'page', $page);
+
+        $attributes = Attribute::orderBy('id', 'desc')->paginate($perPage, ['*'], 'page', $page);
     
         return response()->json([
             'success'      => true,
@@ -192,5 +192,25 @@ class AttributeController extends Controller
     {
         Attribute::findOrFail($id)->delete();
         return response()->json(['message' => 'Attribute deleted successfully']);
+    }
+
+    /**
+     * Bulk delete multiple attributes.
+     */
+    public function bulkDelete(Request $request)
+    {
+        $request->validate([
+            'attribute_ids' => 'required|array',
+            'attribute_ids.*' => 'integer|exists:attributes,id',
+        ]);
+
+        $attributeIds = $request->attribute_ids;
+
+        $deletedCount = Attribute::whereIn('id', $attributeIds)->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => "$deletedCount attribute(s) deleted successfully",
+        ]);
     }
 }

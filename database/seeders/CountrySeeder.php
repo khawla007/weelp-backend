@@ -13,6 +13,7 @@ use App\Models\CountryAdditionalInfo;
 use App\Models\CountryFaq;
 use App\Models\CountrySeo;
 use App\Models\CountryMediaGallery;
+use App\Models\Region;
 
 class CountrySeeder extends Seeder
 {
@@ -241,6 +242,10 @@ class CountrySeeder extends Seeder
         ];
 
         foreach ($countries as $data) {
+            // Extract region name for attachment later
+            $regionName = $data['region'] ?? null;
+            unset($data['region']);
+
             $country = Country::create($data);
 
             // Set 2027 timestamps
@@ -382,6 +387,16 @@ class CountrySeeder extends Seeder
                     'image' => 'https://example.com/' . $country->slug . '.jpg',
                 ],
             ]);
+
+            // Attach region via relationship
+            if ($regionName) {
+                $region = Region::where('name', $regionName)->first();
+                if ($region) {
+                    $country->regions()->attach($region->id);
+                } else {
+                    $this->command->warn("Region '{$regionName}' not found for country '{$country->name}'");
+                }
+            }
         }
     }
 

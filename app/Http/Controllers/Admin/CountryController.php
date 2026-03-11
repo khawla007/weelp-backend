@@ -27,17 +27,17 @@ class CountryController extends Controller
 
     public function index(Request $request)
     {
-        $query = Country::query()->with('mediaGallery.media');
-    
+        $query = Country::query()->with('mediaGallery.media', 'regions');
+
         // 🔍 Name search
         if ($request->has('name') && !empty($request->name)) {
             $query->where('name', 'like', '%' . $request->name . '%');
         }
-        
+
         // 📄 Pagination (perPage fix)
         $perPage = 4;
         $countries = $query->orderBy('id', 'desc')->paginate($perPage, ['*'], 'page', $request->input('page', 1));
-    
+
         // 🎯 Transform response
         $data = $countries->map(function ($country) {
             // Get featured image from media_gallery
@@ -48,7 +48,14 @@ class CountryController extends Controller
                 'code' => $country->code,
                 'slug' => $country->slug,
                 'type' => $country->type,
-                'region' => $country->region,
+                'region' => $country->region, // Legacy field for backward compatibility
+                'regions' => $country->regions->map(function ($region) {
+                    return [
+                        'id' => $region->id,
+                        'name' => $region->name,
+                        'slug' => $region->slug,
+                    ];
+                }),
                 'description' => $country->description,
                 'feature_image' => $featuredImage?->media->url ?? null, // Featured from media_gallery
                 'featured_destination' => $country->featured_destination,
@@ -69,7 +76,7 @@ class CountryController extends Controller
         // 🎯 Custom response format
         return response()->json([
             'success' => true,
-            'data' => $data, 
+            'data' => $data,
             'total' => $countries->total(),
             'per_page' => $countries->perPage(),
             'last_page' => $countries->lastPage(),
@@ -612,6 +619,31 @@ class CountryController extends Controller
             'success' => true,
             'message' => 'Country deleted successfully'
         ]);
+    }
+
+    /**
+     * Bulk delete multiple countries.
+     */
+    public function bulkDelete(Request $request)
+    {
+        $validated = $request->validate([
+            'country_ids' => 'required|array|min:1',
+            'country_ids.*' => 'integer|exists:countries,id',
+        ]);
+
+        try {
+            $count = Country::whereIn('id', $validated['country_ids'])->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => "{$count} countries deleted successfully"
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Failed to delete countries: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**

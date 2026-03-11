@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 use App\Models\Activity;
 use App\Models\ActivityCategory;
 use App\Models\ActivityAttribute;
@@ -22,6 +23,28 @@ use App\Models\ActivityAddon;
 
 class ActivitySeeder extends Seeder {
     public function run() {
+        // Disable foreign key checks for truncating
+        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+
+        // Truncate existing activities and related data
+        ActivityAvailability::truncate();
+        ActivityPromoCode::truncate();
+        ActivityLastMinuteDiscount::truncate();
+        ActivityEarlyBirdDiscount::truncate();
+        ActivityGroupDiscount::truncate();
+        ActivitySeasonalPricing::truncate();
+        ActivityPricing::truncate();
+        ActivityMediaGallery::truncate();
+        ActivityLocation::truncate();
+        ActivityAddon::truncate();
+        ActivityAttribute::truncate();
+        ActivityTag::truncate();
+        ActivityCategory::truncate();
+        Activity::truncate();
+
+        // Re-enable foreign key checks
+        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+
         $activities = [
             [
                 'name' => 'Desert Safari Adventure',
@@ -328,15 +351,15 @@ class ActivitySeeder extends Seeder {
 
             ActivityLocation::create([
                 'activity_id' => $activity->id,
-                'city_id' => rand(1, 4),
+                'city_id' => rand(382, 441),
                 'location_type' => 'primary',
                 'location_label' => 'Main Location',
                 'duration' => null
             ]);
-        
+
             ActivityLocation::create([
                 'activity_id' => $activity->id,
-                'city_id' => rand(1, 4),
+                'city_id' => rand(382, 441),
                 'location_type' => 'additional',
                 'location_label' => 'Highlight', // Custom value allowed
                 'duration' => rand(5, 20)
@@ -417,10 +440,14 @@ class ActivitySeeder extends Seeder {
                 'valid_from' => '2025-06-01',
                 'valid_to' => '2025-08-31',
             ]);
-            ActivityMediaGallery::create([
-                'activity_id' => $activity->id,
-                'media_id' => rand(1, 5),
-            ]);
+            // Media Gallery - 3 to 6 random images (media_id: 78-548)
+            $mediaCount = rand(3, 6);
+            for ($i = 0; $i < $mediaCount; $i++) {
+                ActivityMediaGallery::create([
+                    'activity_id' => $activity->id,
+                    'media_id' => rand(78, 548),
+                ]);
+            }
             ActivityAvailability::create([
                 'activity_id' => $activity->id,
                 'date_based_activity' => $dateBased = fake()->boolean, // Random true or false

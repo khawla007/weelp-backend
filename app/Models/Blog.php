@@ -19,7 +19,9 @@ class Blog extends Model
 
     public function media()
     {
-        return $this->belongsToMany(Media::class, 'blog_media');
+        return $this->belongsToMany(Media::class, 'blog_media_gallery')
+            ->using(BlogMedia::class)
+            ->withPivot('is_featured');
     }
 
     public function categories()

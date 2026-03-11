@@ -121,20 +121,23 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
 
     // Admin Side Users Routes
     Route::prefix('users')->group(function () {
-        Route::get('/', [UserController::class, 'getAllUsers']); 
+        Route::get('/', [UserController::class, 'getAllUsers']);
         Route::post('/create', [UserController::class, 'createUser']);
         Route::get('{id}', [UserController::class, 'show']);
         Route::put('/update{id}', [UserController::class, 'update']);
         Route::delete('{id}', [UserController::class, 'destroy']);
+        Route::post('/bulk-delete', [UserController::class, 'bulkDelete']);
     });
 
     // Admin Side Category Routes
     Route::apiResource('/categories', CategoryController::class);
     Route::get('/categorylist', [CategoryController::class, 'getCatList']);
+    Route::post('/categories/bulk-delete', [CategoryController::class, 'bulkDelete']);
 
     // Admin Side Acitivty Tag Routes
     Route::apiResource('/tags', TagController::class);
     Route::get('/taglist', [TagController::class, 'getTagList']);
+    Route::post('/tags/bulk-delete', [TagController::class, 'bulkDelete']);
 
     Route::prefix('attributes')->group(function () {
         Route::get('/slug/{slug}', [AttributeController::class, 'getValuesBySlug']);
@@ -143,6 +146,7 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
         Route::post('/', [AttributeController::class, 'store']);
         Route::put('{id}', [AttributeController::class, 'update']);
         Route::delete('{id}', [AttributeController::class, 'destroy']);
+        Route::post('/bulk-delete', [AttributeController::class, 'bulkDelete']);
     });
 
 
@@ -166,6 +170,7 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
         Route::put('{id}', [CountryController::class, 'update']);
         Route::post('{id}/partial-remove', [CountryController::class, 'partialRemove']);
         Route::delete('{id}', [CountryController::class, 'destroy']);
+        Route::post('/bulk-delete', [CountryController::class, 'bulkDelete']);
     });
 
     Route::prefix('/states')->group(function () {
@@ -176,6 +181,7 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
         Route::put('{id}', [StateController::class, 'update']);
         Route::post('{id}/partial-remove', [StateController::class, 'partialRemove']);
         Route::delete('{id}', [StateController::class, 'destroy']);
+        Route::post('/bulk-delete', [StateController::class, 'bulkDelete']);
     });
     
     Route::prefix('/cities')->group(function () {
@@ -186,6 +192,7 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
         Route::put('{id}', [CityController::class, 'update']);
         Route::post('{id}/partial-remove', [CityController::class, 'partialRemove']);
         Route::delete('{id}', [CityController::class, 'destroy']);
+        Route::post('/bulk-delete', [CityController::class, 'bulkDelete']);
     });
 
     Route::prefix('/places')->group(function () {
@@ -196,6 +203,7 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
         Route::put('{id}', [PlaceController::class, 'update']);
         Route::post('{id}/partial-remove', [PlaceController::class, 'partialRemove']);
         Route::delete('{id}', [PlaceController::class, 'destroy']);
+        Route::post('/bulk-delete', [PlaceController::class, 'bulkDelete']);
     });
 
     Route::prefix('/regions')->group(function () {

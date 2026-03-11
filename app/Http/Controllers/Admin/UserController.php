@@ -226,4 +226,21 @@ class UserController extends Controller
         ]);
     }
 
+    public function bulkDelete(Request $request)
+    {
+        $request->validate([
+            'user_ids' => 'required|array',
+            'user_ids.*' => 'integer|exists:users,id',
+        ]);
+
+        $userIds = $request->user_ids;
+
+        $deletedCount = User::whereIn('id', $userIds)->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => "$deletedCount user(s) deleted successfully",
+        ]);
+    }
+
 }

@@ -51,9 +51,19 @@ class BlogSeeder extends Seeder
             );
 
             // ⭐ Random Media (1–5)
-            $blog->media()->sync(
-                $faker->randomElements($allMediaIds, rand(1, 5))
-            );
+            $selectedMediaIds = $faker->randomElements($allMediaIds, rand(1, 5));
+
+            // Attach media with pivot data, randomly selecting one as featured
+            $mediaToAttach = [];
+            $featuredIndex = array_rand($selectedMediaIds); // Random index for featured
+
+            foreach ($selectedMediaIds as $index => $mediaId) {
+                $mediaToAttach[$mediaId] = [
+                    'is_featured' => $index === $featuredIndex, // Only one image is featured
+                ];
+            }
+
+            $blog->media()->sync($mediaToAttach);
         }
     }
 }

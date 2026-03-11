@@ -11,7 +11,8 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        //
+        // HandleCors is already included in Laravel 11's global middleware by default
+        // Configure CORS settings in config/cors.php
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

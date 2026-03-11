@@ -27,7 +27,7 @@ class StateController extends Controller
 
     public function index(Request $request)
     {
-        $query = State::query()->with('mediaGallery.media', 'country');
+        $query = State::query()->with('mediaGallery.media', 'country.regions');
 
         // Name search
         if ($request->has('name') && !empty($request->name)) {
@@ -55,6 +55,13 @@ class StateController extends Controller
                     'id' => $state->country->id,
                     'name' => $state->country->name,
                 ] : null,
+                'regions' => $state->country && $state->country->regions ? $state->country->regions->map(function ($region) {
+                    return [
+                        'id' => $region->id,
+                        'name' => $region->name,
+                        'slug' => $region->slug,
+                    ];
+                })->toArray() : [],
                 // Custom Media format
                 'media_gallery' => $state->mediaGallery->map(function ($gallery) {
                     return [
@@ -616,5 +623,30 @@ class StateController extends Controller
     {
         State::findOrFail($id)->delete();
         return response()->json(['message' => 'State deleted successfully']);
+    }
+
+    /**
+     * Bulk delete multiple states.
+     */
+    public function bulkDelete(Request $request)
+    {
+        $validated = $request->validate([
+            'state_ids' => 'required|array|min:1',
+            'state_ids.*' => 'integer|exists:states,id',
+        ]);
+
+        try {
+            $count = State::whereIn('id', $validated['state_ids'])->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => "{$count} states deleted successfully"
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Failed to delete states: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

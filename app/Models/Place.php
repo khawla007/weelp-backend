@@ -26,7 +26,12 @@ class Place extends Model {
     {
         return $this->hasMany(PlaceMediaGallery::class, 'place_id');
     }
-    
+
+    public function city()
+    {
+        return $this->belongsTo(City::class, 'city_id');
+    }
+
     public function locationDetails() {
         return $this->hasOne(PlaceLocationDetail::class);
     }

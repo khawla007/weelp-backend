@@ -627,4 +627,29 @@ class CityController extends Controller
         City::findOrFail($id)->delete();
         return response()->json(['message' => 'City deleted successfully']);
     }
+
+    /**
+     * Bulk delete multiple cities.
+     */
+    public function bulkDelete(Request $request)
+    {
+        $validated = $request->validate([
+            'city_ids' => 'required|array|min:1',
+            'city_ids.*' => 'integer|exists:cities,id',
+        ]);
+
+        try {
+            $count = City::whereIn('id', $validated['city_ids'])->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => "{$count} cities deleted successfully"
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Failed to delete cities: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

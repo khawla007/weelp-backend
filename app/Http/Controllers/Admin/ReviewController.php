@@ -28,10 +28,14 @@ class ReviewController extends Controller
         if ($request->filled('item_type')) {
             $query->where('item_type', $request->item_type);
         }
-    
-        if ($request->filled('item_name')) {
-            $query->whereHas('item', function ($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->item_name . '%');
+
+        if ($request->filled('status') && $request->status !== 'all') {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('customer_name')) {
+            $query->whereHas('user', function ($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->customer_name . '%');
             });
         }
     

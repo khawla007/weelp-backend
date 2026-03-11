@@ -170,7 +170,33 @@ class MediaController extends Controller
             return response()->json(['message' => 'Media not found'], 404);
         }
 
+        // Delete file from MinIO first
+        try {
+            // URL format: http://localhost:9000/weelp-media/media/abc123.jpg
+            $parsedUrl = parse_url($media->url);
+            $path = $parsedUrl['path'] ?? ''; // /weelp-media/media/abc123.jpg
+
+            // Remove bucket prefix and get relative path
+            $path = ltrim($path, '/'); // weelp-media/media/abc123.jpg
+
+            // Remove bucket name if present
+            $path = str_replace('weelp-media/', '', $path); // media/abc123.jpg
+
+            if ($path && Storage::disk('minio')->exists($path)) {
+                Storage::disk('minio')->delete($path);
+                info('[Media Delete] Deleted from MinIO:', ['path' => $path]);
+            }
+        } catch (\Exception $e) {
+            // Log error but continue with database deletion
+            info('[Media Delete] Failed to delete from MinIO:', [
+                'media_id' => $media->id,
+                'error' => $e->getMessage()
+            ]);
+        }
+
+        // Delete from database
         $media->delete();
+
         return response()->json(['message' => 'Media deleted successfully']);
     }
 
@@ -181,7 +207,43 @@ class MediaController extends Controller
             'media_ids.*' => 'integer|exists:media,id'
         ]);
 
+        // Get all media items before deletion
+        $mediaItems = Media::whereIn('id', $request->media_ids)->get();
+
+        // Delete files from MinIO first
+        $minioDeletions = 0;
+        foreach ($mediaItems as $media) {
+            try {
+                // URL format: http://localhost:9000/weelp-media/media/abc123.jpg
+                $parsedUrl = parse_url($media->url);
+                $path = $parsedUrl['path'] ?? ''; // /weelp-media/media/abc123.jpg
+
+                // Remove bucket prefix and get relative path
+                $path = ltrim($path, '/'); // weelp-media/media/abc123.jpg
+
+                // Remove bucket name if present
+                $path = str_replace('weelp-media/', '', $path); // media/abc123.jpg
+
+                if ($path && Storage::disk('minio')->exists($path)) {
+                    Storage::disk('minio')->delete($path);
+                    $minioDeletions++;
+                }
+            } catch (\Exception $e) {
+                // Log error but continue with other files
+                info('[Media Bulk Delete] Failed to delete from MinIO:', [
+                    'media_id' => $media->id,
+                    'error' => $e->getMessage()
+                ]);
+            }
+        }
+
+        // Delete from database
         $deletedCount = Media::whereIn('id', $request->media_ids)->delete();
+
+        info('[Media Bulk Delete] Completed:', [
+            'database_deletions' => $deletedCount,
+            'minio_deletions' => $minioDeletions
+        ]);
 
         return response()->json([
             'message' => "{$deletedCount} media deleted successfully",
