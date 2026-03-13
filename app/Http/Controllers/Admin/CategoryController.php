@@ -50,6 +50,7 @@ class CategoryController extends Controller
             'slug'        => 'sometimes|required|string|max:255|unique:categories,slug',
             'description' => 'nullable|string',
             'parent_id'   => 'nullable|exists:categories,id',
+            'status'      => 'required|in:active,draft',
         ]);
 
         // $validated['slug']     = str_replace(' ', '-', strtolower($validated['name']));
@@ -82,6 +83,7 @@ class CategoryController extends Controller
             'slug'        => 'sometimes|required|string|max:255|unique:categories,slug,' . $category->id,
             'description' => 'nullable|string',
             'parent_id'   => 'nullable|exists:categories,id',
+            'status'      => 'sometimes|required|in:active,draft',
         ]);
 
         // if (isset($validated['name'])) {
