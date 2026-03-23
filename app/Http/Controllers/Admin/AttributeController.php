@@ -59,6 +59,7 @@ class AttributeController extends Controller
             'values' => 'nullable|array',
             'default_value' => 'nullable|string',
             'status' => 'required|in:active,draft',
+            'is_featured' => 'nullable|boolean',
         ]);
 
         $slug = Str::slug($request->name, '-');
@@ -78,6 +79,7 @@ class AttributeController extends Controller
             'default_value' => $request->default_value ?? null,
             'taxonomy' => $taxonomy,
             'status' => $request->status ?? 'active',
+            'is_featured' => $request->boolean('is_featured'),
         ]);
 
         return response()->json($attribute, 201);
@@ -107,6 +109,7 @@ class AttributeController extends Controller
             'values' => 'nullable|array',
             'default_value' => 'nullable|string',
             'status' => 'sometimes|required|in:active,draft',
+            'is_featured' => 'nullable|boolean',
         ]);
 
         $slug = Str::slug($request->name, '-');
@@ -126,6 +129,7 @@ class AttributeController extends Controller
             'default_value' => $request->default_value ?? null,
             'taxonomy' => $taxonomy,
             'status' => $request->status ?? $attribute->status,
+            'is_featured' => $request->boolean('is_featured'),
         ]);
 
         return response()->json($attribute);

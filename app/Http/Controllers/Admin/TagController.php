@@ -55,6 +55,7 @@ class TagController extends Controller
             'slug'        => 'sometimes|required|string|max:255|unique:tags,slug',
             'description' => 'nullable|string',
             'status'      => 'required|in:active,draft',
+            'is_featured' => 'nullable|boolean',
         ]);
 
         // $validated['slug'] = str_replace(' ', '_', strtolower($validated['name']));
@@ -87,6 +88,7 @@ class TagController extends Controller
             'slug'        => 'sometimes|required|string|max:255|unique:tags,slug,' . $tag->id,
             'description' => 'nullable|string',
             'status'      => 'sometimes|required|in:active,draft',
+            'is_featured' => 'nullable|boolean',
         ]);
 
         // if (isset($validated['name'])) {

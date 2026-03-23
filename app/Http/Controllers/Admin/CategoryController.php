@@ -59,6 +59,7 @@ class CategoryController extends Controller
             'description' => 'nullable|string',
             'parent_id'   => 'nullable|exists:categories,id',
             'status'      => 'required|in:active,draft',
+            'is_featured' => 'nullable|boolean',
         ]);
 
         // $validated['slug']     = str_replace(' ', '-', strtolower($validated['name']));
@@ -92,6 +93,7 @@ class CategoryController extends Controller
             'description' => 'nullable|string',
             'parent_id'   => 'nullable|exists:categories,id',
             'status'      => 'sometimes|required|in:active,draft',
+            'is_featured' => 'nullable|boolean',
         ]);
 
         // if (isset($validated['name'])) {
