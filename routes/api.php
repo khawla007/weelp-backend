@@ -41,23 +41,23 @@ use App\Http\Controllers\Admin\AddonController;
 use App\Http\Controllers\Admin\DashboardController;
 
 // Public
-use App\Http\Controllers\Public\PublicMenuController;
-use App\Http\Controllers\Public\PublicRegionController;
-use App\Http\Controllers\Public\PublicCountryController;
-use App\Http\Controllers\Public\PublicStateController;
-use App\Http\Controllers\Public\PublicCitiesController;
-use App\Http\Controllers\Public\PublicPlaceController;
-use App\Http\Controllers\Public\PublicActivityController;
-use App\Http\Controllers\Public\PublicItineraryController;
-use App\Http\Controllers\Public\PublicPackageController;
-use App\Http\Controllers\Public\PublicTransferController;
-use App\Http\Controllers\Public\PublicHomeSearchController;
-use App\Http\Controllers\Public\PublicShopController;
-use App\Http\Controllers\Public\PublicCategoryController;
-use App\Http\Controllers\Public\PublicTagController;
-use App\Http\Controllers\Public\PublicFilterController;
-use App\Http\Controllers\Public\PublicBlogController;
-use App\Http\Controllers\Public\PublicReviewController;
+use App\Http\Controllers\Guest\PublicMenuController;
+use App\Http\Controllers\Guest\PublicRegionController;
+use App\Http\Controllers\Guest\PublicCountryController;
+use App\Http\Controllers\Guest\PublicStateController;
+use App\Http\Controllers\Guest\PublicCitiesController;
+use App\Http\Controllers\Guest\PublicPlaceController;
+use App\Http\Controllers\Guest\PublicActivityController;
+use App\Http\Controllers\Guest\PublicItineraryController;
+use App\Http\Controllers\Guest\PublicPackageController;
+use App\Http\Controllers\Guest\PublicTransferController;
+use App\Http\Controllers\Guest\PublicHomeSearchController;
+use App\Http\Controllers\Guest\PublicShopController;
+use App\Http\Controllers\Guest\PublicCategoryController;
+use App\Http\Controllers\Guest\PublicTagController;
+use App\Http\Controllers\Guest\PublicFilterController;
+use App\Http\Controllers\Guest\PublicBlogController;
+use App\Http\Controllers\Guest\PublicReviewController;
 
 Route::get('/test', function () {
     return response()->json(['message' => 'Route Working!']);
