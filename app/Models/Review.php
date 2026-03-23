@@ -14,10 +14,12 @@ class Review extends Model
         'review_text',
         'media_gallery',
         'status',
+        'is_featured',
     ];
 
     protected $casts = [
         'media_gallery' => 'array',
+        'is_featured' => 'boolean',
     ];
 
     public function user()

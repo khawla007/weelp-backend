@@ -13,11 +13,19 @@ class CategoryController extends Controller
      */
     public function index(Request $request)
     {
+        if ($request->get('all')) {
+            $categories = Category::orderBy('id', 'desc')->get();
+            return response()->json([
+                'success' => true,
+                'data'    => $categories,
+            ]);
+        }
+
         $perPage = 6;
         $page    = $request->get('page', 1);
 
         $categories = Category::orderBy('id', 'desc')->paginate($perPage, ['*'], 'page', $page);
-    
+
         return response()->json([
             'success'      => true,
             'data'         => $categories->items(),

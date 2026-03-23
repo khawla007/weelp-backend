@@ -98,9 +98,9 @@ class ItineraryController extends Controller
                     ->where('attribute_value', $ageGroup)
                 )
             )
-            ->when($season, fn($query) => 
-                $query->whereHas('seasonalPricing', fn($q) => 
-                    $q->where('season_name', $season)
+            ->when($season, fn($query) =>
+                $query->whereHas('locations.city.seasons', fn($q) =>
+                    $q->where('name', $season)
                 )
             )
             ->when($maxPrice !== null, fn($query) => 

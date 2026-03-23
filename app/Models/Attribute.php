@@ -19,6 +19,7 @@ class Attribute extends Model
         'default_value',
         'taxonomy',
         'post_type',
+        'status',
     ];
 
     protected $casts = [

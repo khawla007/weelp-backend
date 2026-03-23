@@ -26,9 +26,12 @@ class TransferController extends Controller
         $search = $request->get('search');
         $vehicleType = $request->get('vehicle_type');
         $capacity = $request->get('capacity');
-        $minPrice = $request->get('min_price', 0);
+        $minPrice = $request->get('min_price');
         $maxPrice = $request->get('max_price');
-        $availabilityDate = $request->get('availability_date');
+        $availabilityType = $request->get('availability_type');
+        $availableDays = $request->get('available_days');
+        $timeSlotStart = preg_match('/^\d{2}:\d{2}$/', $request->get('time_slot_start', '')) ? $request->get('time_slot_start') : null;
+        $timeSlotEnd = preg_match('/^\d{2}:\d{2}$/', $request->get('time_slot_end', '')) ? $request->get('time_slot_end') : null;
 
         $query = Transfer::query()
             ->with([
@@ -38,6 +41,7 @@ class TransferController extends Controller
                 'pricingAvailability.pricingTier',
                 'pricingAvailability.availability',
                 'mediaGallery.media',
+                'schedule',
                 'seo',
             ])
             // Search filter
@@ -46,31 +50,27 @@ class TransferController extends Controller
                   ->orWhere('slug', 'like', '%' . $search . '%')
                   ->orWhere('description', 'like', '%' . $search . '%');
             })
-            // Vehicle type & Capacity filter
-            ->when($vehicleType || $capacity, function ($q) use ($vehicleType, $capacity) {
-                $q->whereHas('vendorRoutes', function ($q1) use ($vehicleType, $capacity) {
-                    $q1->where(function ($q2) use ($vehicleType, $capacity) {
+            // Vehicle type filter
+            ->when($vehicleType, function ($q) use ($vehicleType) {
+                $q->whereHas('vendorRoutes', function ($q1) use ($vehicleType) {
+                    $q1->where(function ($q2) use ($vehicleType) {
                         // Case 1: is_vendor = true → vendor's vehicles filter
                         $q2->where('is_vendor', true)
-                            ->whereHas('vendor.vehicles', function ($q3) use ($vehicleType, $capacity) {
-                                if ($vehicleType) {
-                                    $q3->where('vehicle_type', $vehicleType);
-                                }
-                                if ($capacity) {
-                                    $q3->where('capacity', $capacity);
-                                }
+                            ->whereHas('vendor.vehicles', function ($q3) use ($vehicleType) {
+                                $q3->where('vehicle_type', $vehicleType);
                             });
                     })
-                    ->orWhere(function ($q2) use ($vehicleType, $capacity) {
+                    ->orWhere(function ($q2) use ($vehicleType) {
                         // Case 2: is_vendor = false → filter directly on transfer_vendor_routes
-                        $q2->where('is_vendor', false);
-                        if ($vehicleType) {
-                            $q2->where('vehicle_type', $vehicleType);
-                        }
-                        // if ($capacity) {
-                        //     $q2->where('capacity', '>=', $capacity);
-                        // }
+                        $q2->where('is_vendor', false)
+                            ->where('vehicle_type', $vehicleType);
                     });
+                });
+            })
+            // Capacity filter (via transfer_schedules.maximum_passengers)
+            ->when($capacity, function ($q) use ($capacity) {
+                $q->whereHas('schedule', function ($q2) use ($capacity) {
+                    $q2->where('maximum_passengers', '>=', (int) $capacity);
                 });
             })
             // Price filter
@@ -102,10 +102,32 @@ class TransferController extends Controller
                     });
                 });
             })                             
-            // Availability date filter
-            ->when($availabilityDate, function ($q) use ($availabilityDate) {
-                $q->whereHas('vendorRoutes.vendor.availabilityTimeSlots', function ($q3) use ($availabilityDate) {
-                    $q3->whereDate('date', $availabilityDate);
+            // Availability type filter (via transfer_schedules)
+            ->when($availabilityType, function ($q) use ($availabilityType) {
+                $q->whereHas('schedule', function ($q2) use ($availabilityType) {
+                    $q2->where('availability_type', $availabilityType);
+                });
+            })
+            // Available days filter (for custom_schedule type)
+            ->when($availableDays, function ($q) use ($availableDays) {
+                $days = explode(',', $availableDays);
+                $q->whereHas('schedule', function ($q2) use ($days) {
+                    $q2->where('availability_type', 'custom_schedule');
+                    foreach ($days as $day) {
+                        $q2->where('available_days', 'like', '%' . trim($day) . '%');
+                    }
+                });
+            })
+            // Time slot filter (for custom_schedule type)
+            ->when($timeSlotStart || $timeSlotEnd, function ($q) use ($timeSlotStart, $timeSlotEnd) {
+                $q->whereHas('schedule', function ($q2) use ($timeSlotStart, $timeSlotEnd) {
+                    $q2->where('availability_type', 'custom_schedule');
+                    if ($timeSlotStart) {
+                        $q2->where('time_slots', 'like', '%"start":"' . $timeSlotStart . '"%');
+                    }
+                    if ($timeSlotEnd) {
+                        $q2->where('time_slots', 'like', '%"end":"' . $timeSlotEnd . '"%');
+                    }
                 });
             });
     

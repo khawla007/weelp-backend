@@ -64,6 +64,7 @@ class ReviewController extends Controller
                 'rating'      => $review->rating,
                 'review_text' => $review->review_text,
                 'status'      => $review->status,
+                'is_featured' => $review->is_featured,
                 'item'        => $item ? [
                     'id'   => $item->id,
                     'name' => $item->name,
@@ -219,8 +220,9 @@ class ReviewController extends Controller
             'media_gallery'   => 'nullable|array',
             'media_gallery.*' => 'integer|exists:media,id',
             'status'           => 'nullable|in:approved,pending',
+            'is_featured'      => 'nullable|boolean',
         ]);
-    
+
         // media_gallery ko JSON store karna
         // if (isset($validated['media_gallery'])) {
         //     $validated['media_gallery'] = json_encode($validated['media_gallery']);
@@ -262,6 +264,7 @@ class ReviewController extends Controller
             'rating'       => $review->rating,
             'review_text'  => $review->review_text,
             'status'       => $review->status,
+            'is_featured'  => $review->is_featured,
             'item'         => $item ? [
                 'id'           => $item->id,
                 'name'         => $item->name,
@@ -309,6 +312,7 @@ class ReviewController extends Controller
             'media_gallery'    => 'nullable|array',
             'media_gallery.*'  => 'integer|exists:media,id',
             'status'           => 'nullable|in:approved,pending',
+            'is_featured'      => 'nullable|boolean',
         ]);
 
         // Agar media_gallery bheja gaya hai to JSON store karo

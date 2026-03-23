@@ -105,7 +105,7 @@ class PublicRegionController extends Controller
 
     // -----------------------Code to get activity based on location type primary city with location details--------------------------
     // public function getActivityByCity($region_slug, $city_slug)
-    public function getActivityByCity($city_slug)
+    public function getFeaturedActivitiesByCity($city_slug)
     {
         $city = City::with(['state.country.regions'])->where('slug', $city_slug)->first();
 
@@ -117,8 +117,8 @@ class PublicRegionController extends Controller
             $query->where('city_id', $city->id)
                 ->where('location_type', 'primary');
         })
-        ->with(['pricing', 'groupDiscounts', 'categories.category', 'locations.city.state.country.regions'])
-        ->where('featured_activity', true) 
+        ->with(['pricing', 'groupDiscounts', 'categories.category', 'locations.city.state.country.regions', 'mediaGallery.media'])
+        ->where('featured_activity', true)
         ->get();
 
         if ($activities->isEmpty()) {
@@ -134,6 +134,8 @@ class PublicRegionController extends Controller
                 'slug' => $activity->slug,
                 'item_type' => $activity->item_type,
                 'featured_activity' => $activity->featured_activity,
+                'featured_image' => $activity->mediaGallery->where('is_featured', true)->first()?->media?->url
+                    ?? $activity->mediaGallery->first()?->media?->url,
                 'pricing' => $activity->pricing,
                 'groupDiscounts' => $activity->groupDiscounts,
                 'categories' => $activity->categories->map(function ($category) {
@@ -184,7 +186,7 @@ class PublicRegionController extends Controller
 
     // -----------------------Code to get Itineraries based on city with location details--------------------------
     // public function getItinerariesByCity($region_slug, $city_slug)
-    public function getItinerariesByCity($city_slug)
+    public function getFeaturedItinerariesByCity($city_slug)
     {
 
         $city = City::with(['state.country.regions'])->where('slug', $city_slug)->first();
@@ -196,7 +198,7 @@ class PublicRegionController extends Controller
         // Itineraries ke saath schedules aur related data fetch karo
         $itineraries = $city->itineraries()->with([
             'basePricing.variations',
-            'mediaGallery',
+            'mediaGallery.media',
             'categories.category',
             'tags'
         ])->where('featured_itinerary', true)->get();
@@ -212,6 +214,8 @@ class PublicRegionController extends Controller
                 'slug' => $itinerary->slug,
                 'item_type' => $itinerary->item_type,
                 'featured_itinerary' => $itinerary->featured_itinerary,
+                'featured_image' => $itinerary->mediaGallery->where('is_featured', true)->first()?->media?->url
+                    ?? $itinerary->mediaGallery->first()?->media?->url,
                 'locations' => $itinerary->locations->map(function ($location) {
                     $city = $location->city;
                     return [
@@ -265,7 +269,7 @@ class PublicRegionController extends Controller
     // -----------------------Code to get Packages based on city with location details--------------------------
 
     // public function getPackagesByCity($region_slug, $city_slug)
-    public function getPackagesByCity($city_slug)
+    public function getFeaturedPackagesByCity($city_slug)
     {
         $city = City::where('slug', $city_slug)->first();
 
@@ -273,22 +277,31 @@ class PublicRegionController extends Controller
             return response()->json(['message' => 'City not found.'], 404);
         }
 
-        $packages = $city->packages()->with([
-            'basePricing.variations',
-            'mediaGallery',
-            'categories.category',
-            'tags'
-        ])->where('featured_package', true)->get();
+        // All tags from ALL city packages (unaffected by filters/pagination)
+        $allTags = $city->packages()->with('tags.tag')
+            ->get()
+            ->pluck('tags')
+            ->flatten()
+            ->filter(fn ($pt) => $pt->tag !== null)
+            ->map(fn ($pt) => ['id' => $pt->tag->id, 'name' => $pt->tag->name])
+            ->unique('id')
+            ->values();
 
-        // if ($packages->isEmpty()) {
-        //     return response()->json(['message' => 'No packages found for this city.'], 404);
-        // }
-        if ($packages->isEmpty()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'No packages found for this city.'
-            ], 404);
+        // Build query with filters
+        $query = $city->packages()->with([
+            'basePricing.variations',
+            'mediaGallery.media',
+            'categories.category',
+            'tags.tag'
+        ]);
+
+        // Tag filter — filter via the tag relationship through PackageTag
+        $tagNames = request()->has('tags') ? array_filter(explode(',', request()->get('tags'))) : [];
+        if (!empty($tagNames)) {
+            $query->whereHas('tags.tag', fn ($q) => $q->whereIn('name', $tagNames));
         }
+
+        $packages = $query->get();
 
         $formattedPackages = $packages->map(function ($package) {
             return [
@@ -297,6 +310,8 @@ class PublicRegionController extends Controller
                 'slug' => $package->slug,
                 'item_type' => $package->item_type,
                 'featured_package' => $package->featured_package,
+                'featured_image' => $package->mediaGallery->where('is_featured', true)->first()?->media?->url
+                    ?? $package->mediaGallery->first()?->media?->url,
                 'locations' => $package->locations->map(function ($location) {
                     $city = $location->city;
                     return [
@@ -320,33 +335,50 @@ class PublicRegionController extends Controller
                         'name' => $category->category->name,
                     ];
                 })->toArray(),
-                'tags' => $package->tags->map(function ($tag) {
+                'tags' => $package->tags->filter(fn ($pt) => $pt->tag !== null)->map(function ($pt) {
                     return [
-                        'id' => $tag->id,
-                        'name' => $tag->name,
+                        'id' => $pt->tag->id,
+                        'name' => $pt->tag->name,
                     ];
-                })->toArray(),
+                })->values()->toArray(),
                 'base_pricing' => $package->basePricing,
                 'media_gallery' => $package->mediaGallery,
             ];
         });
 
-        // Tag list
-        $tagList = $formattedPackages->flatMap(fn ($item) => $item['tags'])
-        ->unique('id')
-        ->values();
-
-        if (collect($formattedPackages)->isEmpty()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Packages not found'
-            ], 404);
+        // Sorting
+        $sortBy = request()->get('sort_by', 'id_desc');
+        switch ($sortBy) {
+            case 'name_asc':
+                $formattedPackages = $formattedPackages->sortBy('name');
+                break;
+            case 'name_desc':
+                $formattedPackages = $formattedPackages->sortByDesc('name');
+                break;
+            case 'price_asc':
+                $formattedPackages = $formattedPackages->sortBy(fn ($item) => $item['base_pricing']?->variations?->first()?->regular_price ?? 0);
+                break;
+            case 'price_desc':
+                $formattedPackages = $formattedPackages->sortByDesc(fn ($item) => $item['base_pricing']?->variations?->first()?->regular_price ?? 0);
+                break;
+            default:
+                $formattedPackages = $formattedPackages->sortByDesc('id');
         }
-        
+
+        // Pagination
+        $perPage = (int) request()->get('per_page', 8);
+        $page = (int) request()->get('page', 1);
+        $total = $formattedPackages->count();
+        $paginatedItems = $formattedPackages->forPage($page, $perPage)->values();
+
         return response()->json([
             'success' => true,
-            'data' => $formattedPackages,
-            'tag_list' => $tagList
+            'data' => $paginatedItems,
+            'all_tags' => $allTags,
+            'current_page' => $page,
+            'last_page' => (int) ceil($total / $perPage) ?: 1,
+            'per_page' => $perPage,
+            'total' => $total,
         ], 200);
     }
 
@@ -367,52 +399,50 @@ class PublicRegionController extends Controller
         $maxPrice = request()->get('max_price', null);
         // $minRating = request()->get('min_rating', 0);
         $sortBy = request()->get('sort_by', 'id_desc'); // Default: Newest First
+        $itemType = request()->get('item_type', null); // Filter by item type: activity, itinerary, package
 
         $categoryIds = Category::whereIn('slug', $categorySlugs)->pluck('id')->toArray();
         $tagIds = Tag::whereIn('slug', $tagSlugs)->pluck('id')->toArray();
-        // dd($categoryIds, $tagIds);
-        
-        $activities = Activity::whereHas('locations', fn ($query) =>  
-            $query->where('city_id', $city->id)
-        )->with(['pricing', 'groupDiscounts', 'categories.category', 'locations.city.state.country.regions']);
 
-        $itineraries = Itinerary::whereHas('locations', fn ($query) =>  
-            $query->where('city_id', $city->id)
-        )->with(['basePricing.variations', 'mediaGallery', 'categories.category', 'tags']);
+        $activities = (!$itemType || $itemType === 'activity')
+            ? Activity::whereHas('locations', fn ($query) =>
+                $query->where('city_id', $city->id)
+            )->with(['pricing', 'groupDiscounts', 'categories.category', 'locations.city.state.country.regions', 'mediaGallery.media'])
+            : null;
 
-        $packages = Package::whereHas('locations', fn ($query) =>  
-            $query->where('city_id', $city->id)
-        )->with(['basePricing.variations', 'mediaGallery', 'categories.category', 'tags']);
+        $itineraries = (!$itemType || $itemType === 'itinerary')
+            ? Itinerary::whereHas('locations', fn ($query) =>
+                $query->where('city_id', $city->id)
+            )->with(['basePricing.variations', 'mediaGallery.media', 'categories.category', 'tags'])
+            : null;
+
+        $packages = (!$itemType || $itemType === 'package')
+            ? Package::whereHas('locations', fn ($query) =>
+                $query->where('city_id', $city->id)
+            )->with(['basePricing.variations', 'mediaGallery.media', 'categories.category', 'tags'])
+            : null;
 
         
         if (!empty($categoryIds)) {
-            $activities->whereHas('categories', fn ($q) => $q->whereIn('category_id', $categoryIds));
-            $itineraries->whereHas('categories', fn ($q) => $q->whereIn('category_id', $categoryIds));
-            $packages->whereHas('categories', fn ($q) => $q->whereIn('category_id', $categoryIds));
+            $activities?->whereHas('categories', fn ($q) => $q->whereIn('category_id', $categoryIds));
+            $itineraries?->whereHas('categories', fn ($q) => $q->whereIn('category_id', $categoryIds));
+            $packages?->whereHas('categories', fn ($q) => $q->whereIn('category_id', $categoryIds));
         }
 
         if (!empty($tagIds)) {
-            // $activities->whereHas('tags', fn ($q) => $q->whereIn('id', $tagIds));
-            $itineraries->whereHas('tags', fn ($q) => $q->whereIn('tags.id', $tagIds));
-            $packages->whereHas('tags', fn ($q) => $q->whereIn('tags.id', $tagIds));
-
+            $itineraries?->whereHas('tags', fn ($q) => $q->whereIn('tags.id', $tagIds));
+            $packages?->whereHas('tags', fn ($q) => $q->whereIn('tags.id', $tagIds));
         }
 
         if ($maxPrice !== null) {
-            $activities->whereHas('pricing', fn ($q) => $q->whereBetween('regular_price', [$minPrice, $maxPrice]));
-            $itineraries->whereHas('basePricing.variations', fn ($q) => $q->whereBetween('regular_price', [$minPrice, $maxPrice]));
-            $packages->whereHas('basePricing.variations', fn ($q) => $q->whereBetween('regular_price', [$minPrice, $maxPrice]));
+            $activities?->whereHas('pricing', fn ($q) => $q->whereBetween('regular_price', [$minPrice, $maxPrice]));
+            $itineraries?->whereHas('basePricing.variations', fn ($q) => $q->whereBetween('regular_price', [$minPrice, $maxPrice]));
+            $packages?->whereHas('basePricing.variations', fn ($q) => $q->whereBetween('regular_price', [$minPrice, $maxPrice]));
         }
 
-        // if ($minRating > 0) {
-        //     $activities->where('rating', '>=', $minRating);
-        //     $itineraries->where('rating', '>=', $minRating);
-        //     $packages->where('rating', '>=', $minRating);
-        // }
-
-        $activities = $activities->get();
-        $itineraries = $itineraries->get();
-        $packages = $packages->get();
+        $activities = $activities?->get() ?? collect();
+        $itineraries = $itineraries?->get() ?? collect();
+        $packages = $packages?->get() ?? collect();
 
         $allItems = collect()
             ->merge($activities->map(fn ($activity) => [
@@ -421,6 +451,8 @@ class PublicRegionController extends Controller
                 'slug' => $activity->slug,
                 'item_type' => 'activity',
                 'featured' => $activity->featured_activity,
+                'featured_image' => $activity->mediaGallery->where('is_featured', true)->first()?->media?->url
+                    ?? $activity->mediaGallery->first()?->media?->url,
                 'pricing' => $activity->pricing,
                 // 'rating' => $activity->rating,
                 'categories' => $activity->categories->map(fn ($category) => [
@@ -434,6 +466,8 @@ class PublicRegionController extends Controller
                 'slug' => $itinerary->slug,
                 'item_type' => 'itinerary',
                 'featured' => $itinerary->featured_itinerary,
+                'featured_image' => $itinerary->mediaGallery->where('is_featured', true)->first()?->media?->url
+                    ?? $itinerary->mediaGallery->first()?->media?->url,
                 'base_pricing' => $itinerary->basePricing,
                 // 'rating' => $itinerary->rating,
                 'categories' => $itinerary->categories->map(fn ($category) => [
@@ -451,6 +485,8 @@ class PublicRegionController extends Controller
                 'slug' => $package->slug,
                 'item_type' => 'package',
                 'featured' => $package->featured_package,
+                'featured_image' => $package->mediaGallery->where('is_featured', true)->first()?->media?->url
+                    ?? $package->mediaGallery->first()?->media?->url,
                 'base_pricing' => $package->basePricing,
                 // 'rating' => $package->rating,
                 'categories' => $package->categories->map(fn ($category) => [
@@ -487,7 +523,7 @@ class PublicRegionController extends Controller
         }
 
         // Pagination
-        $perPage = 10;
+        $perPage = (int) request()->get('per_page', 8);
         $page = request()->get('page', 1);
         $paginatedItems = $allItems->forPage($page, $perPage);
 
@@ -591,11 +627,13 @@ class PublicRegionController extends Controller
                 'slug' => $package->slug,
                 'item_type' => $package->item_type,
                 'featured_package' => $package->featured_package,
+                'city_slug' => $package->locations->first()?->city?->slug,
                 'locations' => $package->locations->map(function ($location) {
                     $city = $location->city;
                     return [
                         'city_id' => $city->id,
                         'city' => $city->name,
+                        'city_slug' => $city->slug,
                         'state_id' => $city->state->id ?? null,
                         'state' => $city->state->name ?? null,
                         'country_id' => $city->state->country->id ?? null,
@@ -782,6 +820,7 @@ class PublicRegionController extends Controller
                 'slug' => $activity->slug,
                 'item_type' => 'activity',
                 'featured' => $activity->featured_activity,
+                'city_slug' => $activity->locations->first()?->city?->slug,
                 'pricing' => $activity->pricing,
                 'categories' => $activity->categories->map(fn ($category) => [
                     'slug' => $category->category->slug,
@@ -792,6 +831,7 @@ class PublicRegionController extends Controller
                     return [
                         'city_id' => $city->id,
                         'city' => $city->name,
+                        'city_slug' => $city->slug,
                         'state_id' => $city->state?->id,
                         'state' => $city->state?->name,
                         'country_id' => $city->state?->country?->id,
@@ -807,6 +847,7 @@ class PublicRegionController extends Controller
                 'slug' => $itinerary->slug,
                 'item_type' => 'itinerary',
                 'featured' => $itinerary->featured_itinerary,
+                'city_slug' => $itinerary->locations->first()?->city?->slug,
                 'pricing' => $itinerary->basePricing,
                 'categories' => $itinerary->categories->map(fn ($category) => [
                     'slug' => $category->category->slug,
@@ -821,6 +862,7 @@ class PublicRegionController extends Controller
                     return [
                         'city_id' => $city->id,
                         'city' => $city->name,
+                        'city_slug' => $city->slug,
                         'state_id' => $city->state?->id,
                         'state' => $city->state?->name,
                         'country_id' => $city->state?->country?->id,
@@ -836,6 +878,7 @@ class PublicRegionController extends Controller
                 'slug' => $package->slug,
                 'item_type' => 'package',
                 'featured' => $package->featured_package,
+                'city_slug' => $package->locations->first()?->city?->slug,
                 'pricing' => $package->basePricing,
                 'categories' => $package->categories->map(fn ($category) => [
                     'slug' => $category->category->slug,
@@ -850,6 +893,7 @@ class PublicRegionController extends Controller
                     return [
                         'city_id' => $city->id,
                         'city' => $city->name,
+                        'city_slug' => $city->slug,
                         'state_id' => $city->state?->id,
                         'state' => $city->state?->name,
                         'country_id' => $city->state?->country?->id,

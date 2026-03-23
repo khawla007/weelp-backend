@@ -5,8 +5,11 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 
 use Illuminate\Support\Facades\Mail;
-use App\Mail\Customer\CustomerProcessingOrderMail;
-use App\Mail\Admin\AdminNewOrderMail;
+use App\Mail\CustomerProcessingOrderMail;
+use App\Mail\CustomerFailedOrderMail;
+use App\Mail\CustomerRefundedOrderMail;
+use App\Mail\CustomerCancelledOrderMail;
+use App\Mail\AdminNewOrderMail;
 
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
@@ -140,7 +143,19 @@ class StripeController extends Controller
     public function handleWebhook(Request $request)
     {
         $payload = $request->getContent();
-        $event = json_decode($payload);
+        $sigHeader = $request->header('Stripe-Signature');
+        $webhookSecret = env('STRIPE_WEBHOOK_SECRET');
+
+        if ($webhookSecret && $sigHeader) {
+            try {
+                $event = \Stripe\Webhook::constructEvent($payload, $sigHeader, $webhookSecret);
+            } catch (\Stripe\Exception\SignatureVerificationException $e) {
+                Log::error('Stripe webhook signature verification failed: ' . $e->getMessage());
+                return response('Invalid signature', 400);
+            }
+        } else {
+            $event = json_decode($payload);
+        }
 
         if ($event->type == 'payment_intent.succeeded') {
             $intent_id = $event->data->object->id;
@@ -166,9 +181,9 @@ class StripeController extends Controller
                 ]);
 
                 // Send customer mail
-                Mail::to($order->user->email)->send(new \App\Mail\CustomerProcessingOrderMail($order));
+                Mail::to($order->user->email)->send(new CustomerProcessingOrderMail($order));
                 // Send admin mail
-                Mail::to(config('mail.admin_address', 'khawla@fanaticcoders.com'))->send(new \App\Mail\AdminNewOrderMail($order));
+                Mail::to(config('mail.admin_address', 'khawla@fanaticcoders.com'))->send(new AdminNewOrderMail($order));
             }
         }
         
@@ -192,9 +207,9 @@ class StripeController extends Controller
 
         // 💸 Refunded
         elseif ($event->type == 'charge.refunded') {
-            $charge_id = $event->data->object->id;
+            $intent_id = $event->data->object->payment_intent;
 
-            $payment = OrderPayment::where('charge_id', $charge_id)->first();
+            $payment = OrderPayment::where('payment_intent_id', $intent_id)->first();
             if ($payment) {
                 $payment->update(['payment_status' => 'refunded']);
                 $order = Order::with(['user'])->find($payment->order_id);

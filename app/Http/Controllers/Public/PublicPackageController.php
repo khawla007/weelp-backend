@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
 use App\Models\Package;
-// use App\Models\City;
+use App\Models\City;
 use App\Models\Category;
 use App\Models\Attribute;
 use App\Models\Tag;
@@ -106,44 +106,58 @@ class PublicPackageController extends Controller
     //  -------------------Code to get Packages featured based with location details-------------------
     public function getFeaturedPackages(): JsonResponse
     {
-        $packages = Package::with([
+        $citySlug = request()->query('city');
+
+        $query = Package::with([
             'locations.city',
-            'schedules.activities',
-            'schedules.transfers',
             'basePricing.variations',
-            'basePricing.blackoutDates',
-            'inclusionsExclusions',
             'mediaGallery.media',
-            'seo',
-            'categories.category', 
+            'categories.category',
             'attributes',
-            'tags'
+            'tags.tag',
         ])
-        ->where('featured_package', true)
-        ->get()
-        ->map(function ($package) {
+        ->where('featured_package', true);
+
+        if ($citySlug) {
+            $city = City::where('slug', $citySlug)->first();
+            if (!$city) {
+                return response()->json(['success' => false, 'message' => 'City not found'], 404);
+            }
+            $query->whereHas('locations', fn($q) => $q->where('city_id', $city->id));
+        }
+
+        // Tag filter
+        $tagNames = request()->has('tags') ? array_filter(explode(',', request()->get('tags'))) : [];
+        if (!empty($tagNames)) {
+            $query->whereHas('tags.tag', fn($q) => $q->whereIn('name', $tagNames));
+        }
+
+        $packages = $query->get();
+
+        // Get all tags from result set (for filter UI)
+        $allTags = $packages->pluck('tags')->flatten()
+            ->filter(fn($pt) => $pt->tag !== null)
+            ->map(fn($pt) => ['id' => $pt->tag->id, 'name' => $pt->tag->name])
+            ->unique('id')
+            ->values();
+
+        $formattedPackages = $packages->map(function ($package) {
             return [
                 'id' => $package->id,
                 'name' => $package->name,
                 'slug' => $package->slug,
-                'featured_package' => $package->featured_package,
                 'description' => $package->description,
                 'item_type' => $package->item_type,
+                'featured_package' => $package->featured_package,
+                'city_slug' => $package->locations->first()?->city?->slug,
+                'featured_image' => $package->mediaGallery->where('is_featured', true)->first()?->media?->url
+                    ?? $package->mediaGallery->first()?->media?->url,
                 'locations' => $package->locations->map(function ($location) {
                     $city = $location->city;
                     return [
                         'city_id' => $city->id,
                         'city' => $city->name,
-                        'state_id' => $city->state ? $city->state->id : null,
-                        'state' => $city->state ? $city->state->name : null,
-                        'country_id' => $city->state && $city->state->country ? $city->state->country->id : null,
-                        'country' => $city->state && $city->state->country ? $city->state->country->name : null,
-                        'region_id' => $city->state && $city->state->country && $city->state->country->regions->isNotEmpty()
-                            ? $city->state->country->regions->first()->id
-                            : null,
-                        'region' => $city->state && $city->state->country && $city->state->country->regions->isNotEmpty()
-                            ? $city->state->country->regions->first()->name
-                            : null,
+                        'city_slug' => $city->slug,
                     ];
                 }),
                 'categories' => $package->categories->map(function ($category) {
@@ -152,44 +166,51 @@ class PublicPackageController extends Controller
                         'name' => $category->category->name,
                     ];
                 })->toArray(),
+                'tags' => $package->tags->filter(fn($pt) => $pt->tag !== null)->map(function ($pt) {
+                    return [
+                        'id' => $pt->tag->id,
+                        'name' => $pt->tag->name,
+                    ];
+                })->values()->toArray(),
                 'attributes' => $package->attributes->map(function ($attribute) {
                     return [
                         'name' => $attribute->attribute->name,
                         'attribute_value' => $attribute->attribute_value,
                     ];
                 }),
-                // 'tags' => $package->tags->pluck('name')->toArray(),
-                'tags' => $package->tags->map(function ($tag) {
-                    return [
-                        'id' => $tag->tag->id,
-                        'name' => $tag->tag->name,
-                    ];
-                })->toArray(),
-                // 'media_gallery' => $package->mediaGallery->pluck('url')->toArray(),
                 'media_gallery' => $package->mediaGallery->map(function ($media) {
                     return [
-                        'id' => $media->media->id,
-                        'name' => $media->media->name,
-                        'alt_text' => $media->media->alt_text,
                         'url' => $media->media->url,
                     ];
                 })->toArray(),
+                'base_pricing' => $package->basePricing,
             ];
         });
 
-        // return response()->json([
-        //     'data' => $packages
-        // ]);
-        if ($packages->isEmpty()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Packages not found'
-            ]);
-        }
+        // Sorting
+        $sortBy = request()->get('sort_by', 'id_desc');
+        $formattedPackages = match ($sortBy) {
+            'name_asc' => $formattedPackages->sortBy('name'),
+            'name_desc' => $formattedPackages->sortByDesc('name'),
+            'price_asc' => $formattedPackages->sortBy(fn($item) => $item['base_pricing']?->variations?->first()?->regular_price ?? 0),
+            'price_desc' => $formattedPackages->sortByDesc(fn($item) => $item['base_pricing']?->variations?->first()?->regular_price ?? 0),
+            default => $formattedPackages->sortByDesc('id'),
+        };
+
+        // Pagination
+        $perPage = (int) request()->get('per_page', 8);
+        $page = (int) request()->get('page', 1);
+        $total = $formattedPackages->count();
+        $paginatedItems = $formattedPackages->forPage($page, $perPage)->values();
 
         return response()->json([
             'success' => true,
-            'data' => $packages
+            'data' => $paginatedItems,
+            'all_tags' => $allTags,
+            'current_page' => $page,
+            'last_page' => (int) ceil($total / $perPage) ?: 1,
+            'per_page' => $perPage,
+            'total' => $total,
         ]);
     }
 

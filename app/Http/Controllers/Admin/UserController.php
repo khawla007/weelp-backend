@@ -17,23 +17,44 @@ class UserController extends Controller
     //     return response()->json(['user' => auth()->user()]);
     // }
 
-    public function getAllUsers()
+    public function getAllUsers(Request $request)
     {
-        // $users = User::all();
-        $users = User::with(['meta', 'profile'])->get();
+        $query = User::with(['meta', 'profile']);
 
-        // Count Users Based on Status
-        $totalUsers = $users->count();
-        $activeUsers = $users->where('status', 'active')->count();
-        $inactiveUsers = $users->where('status', 'inactive')->count();
-        $pendingUsers = $users->where('status', 'pending')->count();
+        // Search by name or email
+        if ($request->has('search') && !empty($request->search)) {
+            $searchTerm = $request->search;
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('name', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('email', 'like', '%' . $searchTerm . '%');
+            });
+        }
+
+        // Filter by status
+        if ($request->has('status') && !empty($request->status) && $request->status !== 'all') {
+            $query->where('status', $request->status);
+        }
+
+        // Get stats before pagination
+        $totalUsers = User::count();
+        $activeUsers = User::where('status', 'active')->count();
+        $inactiveUsers = User::where('status', 'inactive')->count();
+
+        // Pagination
+        $perPage = $request->get('per_page', 10);
+        $page = $request->get('page', 1);
+        $users = $query->paginate($perPage, ['*'], 'page', $page);
 
         return response()->json([
-            'users'             => $users,
+            'data' => [
+                'users'         => $users->items(),
+                'current_page'  => $users->currentPage(),
+                'per_page'      => $users->perPage(),
+                'total'         => $users->total(),
+            ],
             'total_users'       => $totalUsers,
             'active_users'      => $activeUsers,
             'inactive_users'    => $inactiveUsers,
-            'pending_users'     => $pendingUsers
         ], 200);
     }
 
@@ -46,7 +67,7 @@ class UserController extends Controller
             'password' => 'required|min:8',
             'confirm_password' => 'required|same:password',
             'role' => 'required|in:admin,customer',
-            'status' => 'required|in:active,inactive,pending',
+            'status' => 'required|in:active,inactive',
             'avatar' => 'nullable|exists:media,id',
         ]);
 
@@ -144,7 +165,7 @@ class UserController extends Controller
             'password' => 'sometimes|min:8',
             'confirm_password' => 'sometimes|same:password',
             'role' => 'sometimes|in:admin,customer',
-            'status' => 'sometimes|in:active,inactive,pending',
+            'status' => 'sometimes|in:active,inactive',
             'avatar' => 'nullable|exists:media,id',
         ]);
 

@@ -393,6 +393,7 @@ class PublicShopController extends Controller
             'slug' => $item->slug,
             'item_type' => $type,
             'featured' => $featured,
+            'city_slug' => $item->locations->first()?->city?->slug,
             'price' => $price,
             'group_discount' => $groupDiscount,
             'early_bird_discount' => $earlyBirdDiscount,
@@ -406,6 +407,7 @@ class PublicShopController extends Controller
                 return [
                     'city_id' => $city->id,
                     'city' => $city->name,
+                    'city_slug' => $city->slug,
                     'state_id' => $city->state?->id,
                     'state' => $city->state?->name,
                     'country_id' => $city->state?->country?->id,

@@ -23,11 +23,19 @@ class AttributeController extends Controller
     // }
     public function index(Request $request)
     {
+        if ($request->get('all')) {
+            $attributes = Attribute::orderBy('id', 'desc')->get();
+            return response()->json([
+                'success' => true,
+                'data'    => $attributes,
+            ]);
+        }
+
         $perPage = 6;
         $page    = $request->get('page', 1);
 
         $attributes = Attribute::orderBy('id', 'desc')->paginate($perPage, ['*'], 'page', $page);
-    
+
         return response()->json([
             'success'      => true,
             'data'         => $attributes->items(),
@@ -50,6 +58,7 @@ class AttributeController extends Controller
             'description' => 'nullable|string',
             'values' => 'nullable|array',
             'default_value' => 'nullable|string',
+            'status' => 'required|in:active,draft',
         ]);
 
         $slug = Str::slug($request->name, '-');
@@ -68,6 +77,7 @@ class AttributeController extends Controller
             // 'default_value' => in_array($request->type, ['single_select', 'multi_select']) ? $request->default_value : null,
             'default_value' => $request->default_value ?? null,
             'taxonomy' => $taxonomy,
+            'status' => $request->status ?? 'active',
         ]);
 
         return response()->json($attribute, 201);
@@ -96,6 +106,7 @@ class AttributeController extends Controller
             'description' => 'nullable|string',
             'values' => 'nullable|array',
             'default_value' => 'nullable|string',
+            'status' => 'sometimes|required|in:active,draft',
         ]);
 
         $slug = Str::slug($request->name, '-');
@@ -114,6 +125,7 @@ class AttributeController extends Controller
             // 'default_value' => in_array($request->type, ['single_select', 'multi_select', 'text', 'number']) ? $request->default_value : null,
             'default_value' => $request->default_value ?? null,
             'taxonomy' => $taxonomy,
+            'status' => $request->status ?? $attribute->status,
         ]);
 
         return response()->json($attribute);

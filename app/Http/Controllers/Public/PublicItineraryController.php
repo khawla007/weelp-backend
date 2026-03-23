@@ -107,7 +107,9 @@ class PublicItineraryController extends Controller
     //  -------------------Code to grt itineraries featured based with location details-------------------
     public function getFeaturedItineraries(): JsonResponse
     {
-        $itineraries = Itinerary::with([
+        $citySlug = request()->query('city');
+
+        $query = Itinerary::with([
             'locations.city',
             'schedules.activities',
             'schedules.transfers',
@@ -116,12 +118,21 @@ class PublicItineraryController extends Controller
             'inclusionsExclusions',
             'mediaGallery.media',
             'seo',
-            'categories.category', 
+            'categories.category',
             'attributes',
             'tags'
         ])
-        ->where('featured_itinerary', true) 
-        ->get()
+        ->where('featured_itinerary', true);
+
+        if ($citySlug) {
+            $city = City::where('slug', $citySlug)->first();
+            if (!$city) {
+                return response()->json(['success' => false, 'message' => 'City not found'], 404);
+            }
+            $query->whereHas('locations', fn($q) => $q->where('city_id', $city->id));
+        }
+
+        $itineraries = $query->get()
         ->map(function ($itinerary) {
             return [
                 'id' => $itinerary->id,
@@ -130,6 +141,7 @@ class PublicItineraryController extends Controller
                 'featured_itinerary' => $itinerary->featured_itinerary,
                 'description' => $itinerary->description,
                 'item_type' => $itinerary->item_type,
+                'city_slug' => $itinerary->locations->first()?->city?->slug,
                 'locations' => $itinerary->locations->map(function ($location) {
                     $city = $location->city;
                     return [

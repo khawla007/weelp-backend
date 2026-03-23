@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Activity;
+use App\Models\City;
 use App\Models\Category;
 use App\Models\Attribute;
 use App\Models\Tag;
@@ -115,21 +116,32 @@ class PublicActivityController extends Controller
     // ----------------------Code to get all activities featured based with all location details----------------------
     public function getFeaturedActivities()
     {
-        $activities = Activity::with([
-            'categories.category', 
-            'attributes.attribute', 
+        $citySlug = request()->query('city');
+
+        $query = Activity::with([
+            'categories.category',
+            'attributes.attribute',
             'locations.city',
-            'pricing', 
-            'seasonalPricing', 
-            'groupDiscounts', 
-            'earlyBirdDiscount', 
-            'lastMinuteDiscount', 
+            'pricing',
+            'seasonalPricing',
+            'groupDiscounts',
+            'earlyBirdDiscount',
+            'lastMinuteDiscount',
             'promoCodes',
             'availability',
             'mediaGallery.media',
         ])
-        ->where('featured_activity', true) 
-        ->get()
+        ->where('featured_activity', true);
+
+        if ($citySlug) {
+            $city = City::where('slug', $citySlug)->first();
+            if (!$city) {
+                return response()->json(['success' => false, 'message' => 'City not found'], 404);
+            }
+            $query->whereHas('locations', fn($q) => $q->where('city_id', $city->id));
+        }
+
+        $activities = $query->get()
         ->map(function ($activity) {
             return [
                 'id' => $activity->id,
@@ -140,6 +152,7 @@ class PublicActivityController extends Controller
                 'item_type' => $activity->item_type,
                 'short_description' => $activity->short_description,
                 'featured_images' => $activity->featured_images,
+                'city_slug' => $activity->locations->first()?->city?->slug,
                 'categories' => $activity->categories->map(function ($category) {
                     return [
                         'id' => $category->category->id,
@@ -155,11 +168,12 @@ class PublicActivityController extends Controller
                 'locations' => $activity->locations->map(function ($location) {
                     $city = $location->city;
                     return [
-                        'location_type' => $location->location_type, 
-                        'location_label' => $location->location_label, 
-                        'duration' => $location->duration, 
+                        'location_type' => $location->location_type,
+                        'location_label' => $location->location_label,
+                        'duration' => $location->duration,
                         'city_id' => $city->id,
                         'city' => $city->name,
+                        'city_slug' => $city->slug,
                         'state_id' => $city->state ? $city->state->id : null,
                         'state' => $city->state ? $city->state->name : null,
                         'country_id' => $city->state && $city->state->country ? $city->state->country->id : null,
@@ -172,7 +186,7 @@ class PublicActivityController extends Controller
                             : null,
                     ];
                 }),
-                'pricing' => $activity->pricing,  
+                'pricing' => $activity->pricing,
                 'seasonalPricing' => $activity->seasonalPricing,
                 'groupDiscounts' => $activity->groupDiscounts,
                 'earlyBirdDiscount' => $activity->earlyBirdDiscount,

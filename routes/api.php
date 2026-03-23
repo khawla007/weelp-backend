@@ -57,6 +57,7 @@ use App\Http\Controllers\Public\PublicCategoryController;
 use App\Http\Controllers\Public\PublicTagController;
 use App\Http\Controllers\Public\PublicFilterController;
 use App\Http\Controllers\Public\PublicBlogController;
+use App\Http\Controllers\Public\PublicReviewController;
 
 Route::get('/test', function () {
     return response()->json(['message' => 'Route Working!']);
@@ -373,24 +374,17 @@ Route::prefix('region')->group(function () {
     Route::get('/{region_slug}/region-all-items', [PublicRegionController::class, 'getAllItemsByRegion']);
 });
 
+// get all cities with pagination
+Route::get('/cities', [PublicCitiesController::class, 'index']);
+
 // get all featured Cities for home page
 Route::get('/featured-cities', [PublicCitiesController::class, 'getFeaturedCities']);
 
 // get single city page by slug
 Route::get('/city/{slug}', [PublicCitiesController::class, 'getCityDetails']);
 
-// getting activity beahlf of city
-Route::get('/{city_slug}/activities', [PublicRegionController::class, 'getActivityByCity']);
-
-// getting itinerary beahlf of city
-Route::get('/{city_slug}/itineraries/', [PublicRegionController::class, 'getItinerariesByCity']);
-
-// getting package beahlf of city
-
-Route::get('/{city_slug}/packages/', [PublicRegionController::class, 'getPackagesByCity']);
-
-// getting all items beahlf of city
-Route::get('/{city_slug}/all-items/', [PublicRegionController::class, 'getAllItemsByCity']);
+// getting all items by city (filter section)
+Route::get('/cities/{city_slug}/all-items', [PublicCitiesController::class, 'getAllItemsByCity']);
 
 // activity api
 Route::prefix('activities')->group(function () {
@@ -431,3 +425,9 @@ Route::get('/shop', [PublicShopController::class, 'index']);
 
 Route::get('blogs', [PublicBlogController::class, 'index']);
 Route::get('blogs/{slug}', [PublicBlogController::class, 'show']);
+
+// Public reviews api
+Route::prefix('reviews')->group(function () {
+    Route::get('/', [PublicReviewController::class, 'index']);
+    Route::get('/featured-reviews', [PublicReviewController::class, 'getFeaturedReviews']);
+});

@@ -7,7 +7,7 @@ use Illuminate\Support\Str;
 
 class Tag extends Model
 {
-    protected $fillable = ['name', 'slug', 'description', 'taxonomy', 'post_type'];
+    protected $fillable = ['name', 'slug', 'description', 'taxonomy', 'post_type', 'status'];
 
     // Automatically generate slug when creating or updating
     protected static function boot()

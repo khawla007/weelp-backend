@@ -13,11 +13,19 @@ class TagController extends Controller
      */
     public function index(Request $request)
     {
+        if ($request->get('all')) {
+            $tags = Tag::orderBy('id', 'desc')->get();
+            return response()->json([
+                'success' => true,
+                'data'    => $tags,
+            ]);
+        }
+
         $perPage = 6;
         $page    = $request->get('page', 1);
-    
+
         $tags = Tag::orderBy('id', 'desc')->paginate($perPage, ['*'], 'page', $page);
-    
+
         return response()->json([
             'success'      => true,
             'data'         => $tags->items(),
@@ -46,6 +54,7 @@ class TagController extends Controller
             'name' => 'required|string|max:255',
             'slug'        => 'sometimes|required|string|max:255|unique:tags,slug',
             'description' => 'nullable|string',
+            'status'      => 'required|in:active,draft',
         ]);
 
         // $validated['slug'] = str_replace(' ', '_', strtolower($validated['name']));
@@ -77,6 +86,7 @@ class TagController extends Controller
             'name' => 'sometimes|required|string|max:255',
             'slug'        => 'sometimes|required|string|max:255|unique:tags,slug,' . $tag->id,
             'description' => 'nullable|string',
+            'status'      => 'sometimes|required|in:active,draft',
         ]);
 
         // if (isset($validated['name'])) {

@@ -13,7 +13,7 @@ class PublicBlogController extends Controller
 {
     public function index(Request $request)
     {
-        $perPage        = 04; 
+        $perPage        = (int) $request->get('per_page', 4);
         $page           = $request->get('page', 1); 
         
         $search         = $request->get('search'); // search name/slug/content

@@ -18,23 +18,25 @@ class PublicHomeSearchController extends Controller
     public function getRegionsAndCities()
     {
         // Get all regions
-        $regions = Region::select('id', 'name')
+        $regions = Region::select('id', 'name', 'slug')
             ->get()
             ->map(function ($region) {
                 return [
-                    'id' => 'region_' . $region->id, 
+                    'id' => 'region_' . $region->id,
                     'name' => $region->name,
+                    'slug' => $region->slug,
                     'type' => 'region'
                 ];
             });
 
         // Get all cities
-        $cities = City::select('id', 'name')
+        $cities = City::select('id', 'name', 'slug')
             ->get()
             ->map(function ($city) {
                 return [
-                    'id' => 'city_' . $city->id, 
+                    'id' => 'city_' . $city->id,
                     'name' => $city->name,
+                    'slug' => $city->slug,
                     'type' => 'city'
                 ];
             });
@@ -189,11 +191,12 @@ class PublicHomeSearchController extends Controller
     {
         $query = Activity::with([
             'categories' => function ($q) {
-                $q->with('category:id,name'); 
+                $q->with('category:id,name');
             },
             'pricing',
             'groupDiscounts',
-            'earlyBirdDiscount'
+            'earlyBirdDiscount',
+            'locations.city',
         ])->whereHas('locations', function ($q) use ($cityIds) {
             $q->whereIn('city_id', $cityIds);
         });
@@ -266,6 +269,7 @@ class PublicHomeSearchController extends Controller
                 'slug' => $activity->slug,
                 'item_type' => $activity->item_type,
                 'featured'  => $activity->featured_activity,
+                'city_slug' => $activity->locations->first()?->city?->slug,
                 'categories' => $categories,
                 'pricing' => $activity->pricing ? [
                     'regular_price' => $activity->pricing->regular_price,
@@ -295,10 +299,10 @@ class PublicHomeSearchController extends Controller
     {
         $query = Itinerary::with([
             'categories' => function ($q) {
-                $q->with('category:id,name'); 
+                $q->with('category:id,name');
             },
             // 'tags:id,name',
-            'locations',
+            'locations.city',
             'basePricing.variations',
         ])->whereHas('locations', function ($q) use ($cityIds) {
             $q->whereIn('city_id', $cityIds);
@@ -361,7 +365,7 @@ class PublicHomeSearchController extends Controller
         }
 
         if (!empty($tagIds)) {
-            $query->whereHas('tags', fn ($q) => $q->whereIn('tags.id', $tagIds));
+            $query->whereHas('tags', fn ($q) => $q->whereIn('tag_id', $tagIds));
         }
 
         if (!empty($tagSlugs) && empty($tagIds)) {
@@ -388,6 +392,7 @@ class PublicHomeSearchController extends Controller
                 'slug' => $itinerary->slug,
                 'item_type' => $itinerary->item_type,
                 'featured'  => $itinerary->featured_itinerary,
+                'city_slug' => $itinerary->locations->first()?->city?->slug,
                 'categories' => $categories,
                 'tags' => $itinerary->tags->map(fn ($tag) => [
                     'slug' => $tag->slug,
@@ -423,10 +428,10 @@ class PublicHomeSearchController extends Controller
     {
         $query = Package::with([
             'categories' => function ($q) {
-                $q->with('category:id,name'); 
+                $q->with('category:id,name');
             },
             // 'tags:id,name',
-            'locations',
+            'locations.city',
             'basePricing.variations',
         ])->whereHas('locations', function ($q) use ($cityIds) {
             $q->whereIn('city_id', $cityIds);
@@ -488,7 +493,7 @@ class PublicHomeSearchController extends Controller
         }
 
         if (!empty($tagIds)) {
-            $query->whereHas('tags', fn ($q) => $q->whereIn('tags.id', $tagIds));
+            $query->whereHas('tags', fn ($q) => $q->whereIn('tag_id', $tagIds));
         }
 
         if (!empty($tagSlugs) && empty($tagIds)) {
@@ -516,6 +521,7 @@ class PublicHomeSearchController extends Controller
                 'slug' => $package->slug,
                 'item_type' => $package->item_type,
                 'featured'  => $package->featured_package,
+                'city_slug' => $package->locations->first()?->city?->slug,
                 'categories' => $categories,
                 'tags' => $package->tags->map(fn ($tag) => [
                     'slug' => $tag->slug,

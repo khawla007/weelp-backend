@@ -22,7 +22,6 @@ class User extends Authenticatable implements JWTSubject
     // Status constants
     const STATUS_ACTIVE = 'active';
     const STATUS_INACTIVE = 'inactive';
-    const STATUS_PENDING = 'pending';
 
 
     /**
@@ -76,7 +75,7 @@ class User extends Authenticatable implements JWTSubject
             }
 
             if (empty($user->status)) {
-                $user->status = self::STATUS_PENDING; // Default status to 'pending'
+                $user->status = self::STATUS_ACTIVE; // Default status to 'active'
             }
         });
         
