@@ -7,7 +7,11 @@ use Illuminate\Support\Str;
 
 class Category extends Model
 {
-    protected $fillable = ['name', 'slug', 'description', 'taxonomy', 'post_type', 'parent_id', 'status'];
+    protected $fillable = ['name', 'slug', 'description', 'taxonomy', 'post_type', 'parent_id', 'status', 'is_featured'];
+
+    protected $casts = [
+        'is_featured' => 'boolean',
+    ];
 
     // Automatically generate slug when creating or updating
     protected static function boot()

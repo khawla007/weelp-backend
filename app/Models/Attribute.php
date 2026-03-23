@@ -20,10 +20,12 @@ class Attribute extends Model
         'taxonomy',
         'post_type',
         'status',
+        'is_featured',
     ];
 
     protected $casts = [
         'values' => 'array', // Automatically handles JSON conversion
+        'is_featured' => 'boolean',
     ];
 
     /**
