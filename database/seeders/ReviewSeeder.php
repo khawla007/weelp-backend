@@ -3,40 +3,41 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Arr; 
 use App\Models\Review;
-use App\Models\User;
+use App\Models\ReviewMediaGallery;
 use App\Models\Media;
+use Illuminate\Support\Arr;
 
 class ReviewSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
         $itemTypes = ['activity', 'itinerary', 'package', 'transfer'];
         $statuses = ['approved', 'pending'];
-
-        $reviews = [];
+        $mediaIds = Media::pluck('id')->toArray();
 
         for ($i = 1; $i <= 11; $i++) {
-            $reviews[] = [
-                'user_id'       => rand(1, 5), 
-                'item_type'     => $itemTypes[array_rand($itemTypes)],
-                'item_id'       => rand(1, 10), 
-                'rating'        => rand(1, 5),
+            $review = Review::create([
+                'user_id'     => rand(1, 5),
+                'item_type'   => $itemTypes[array_rand($itemTypes)],
+                'item_id'     => rand(1, 10),
+                'rating'      => rand(1, 5),
                 'review_text' => fake()->sentence(12),
-                'media_gallery' => json_encode(
-                    Arr::random([1, 2, 3, 4, 5], rand(1, 5)) 
-                ),
-                'status'        => $statuses[array_rand($statuses)],
-                'created_at'    => now(),
-                'updated_at'    => now(),
-            ];
-        }
+                'status'      => $statuses[array_rand($statuses)],
+                'is_featured' => (bool) rand(0, 1),
+            ]);
 
-        DB::table('reviews')->insert($reviews);
+            // Attach random media if any exist
+            if (!empty($mediaIds)) {
+                $selectedIds = Arr::random($mediaIds, min(rand(1, 3), count($mediaIds)));
+                foreach ((array) $selectedIds as $index => $mediaId) {
+                    ReviewMediaGallery::create([
+                        'review_id'  => $review->id,
+                        'media_id'   => $mediaId,
+                        'sort_order' => $index,
+                    ]);
+                }
+            }
+        }
     }
 }
