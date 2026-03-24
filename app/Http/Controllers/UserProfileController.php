@@ -179,22 +179,20 @@ class UserProfileController extends Controller
                 //     ->where('item_id', $order->orderable_id)
                 //     ->first();
 
-                $review = \App\Models\Review::where('user_id', $user->id)
+                $review = \App\Models\Review::with('mediaGallery.media')
+                            ->where('user_id', $user->id)
                             ->where('item_id', $order->orderable_id)
                             ->first();
 
                 $reviewData = null;
 
                 if ($review) {
-                    $reviewMedia = collect($review->media_gallery ?? [])->map(function ($mediaId) {
-                        $media = \App\Models\Media::find($mediaId);
-                        return $media ? [
-                            'id' => $media->id,
-                            'name' => $media->name,
-                            'alt_text' => $media->alt_text,
-                            'url' => $media->url,
-                        ] : null;
-                    })->filter(); // null values remove kar diya
+                    $reviewMedia = $review->mediaGallery->map(fn($rmg) => [
+                        'id' => $rmg->media->id,
+                        'name' => $rmg->media->name,
+                        'alt_text' => $rmg->media->alt_text,
+                        'url' => $rmg->media->url,
+                    ]);
 
                     $reviewData = [
                         'id' => $review->id,
@@ -253,38 +251,19 @@ class UserProfileController extends Controller
         $user = auth()->user();
 
         // Fetch reviews of the logged-in customer with media details
-        $reviews = \App\Models\Review::where('user_id', $user->id)
+        $reviews = \App\Models\Review::with(['mediaGallery.media', 'item'])
+            ->where('user_id', $user->id)
             ->latest()
             ->get()
             ->map(function ($review) {
-                $media = collect($review->media_gallery ?? [])->map(function ($mediaId) {
-                    $m = \App\Models\Media::find($mediaId);
-                    return $m ? [
-                        'id'       => $m->id,
-                        'name'     => $m->name,
-                        'alt_text' => $m->alt_text,
-                        'url'      => $m->url,
-                    ] : null;
-                })->filter()->values();
+                $media = $review->mediaGallery->map(fn($rmg) => [
+                    'id'       => $rmg->media->id,
+                    'name'     => $rmg->media->name,
+                    'alt_text' => $rmg->media->alt_text,
+                    'url'      => $rmg->media->url,
+                ])->values();
 
-                // Fetch item name dynamically
-                $itemName = null;
-                switch ($review->item_type) {
-                    case 'activity':
-                        $item = \App\Models\Activity::find($review->item_id);
-                        $itemName = $item?->name;
-                        break;
-
-                    case 'package':
-                        $item = \App\Models\Package::find($review->item_id);
-                        $itemName = $item?->name;
-                        break;
-
-                    case 'itinerary':
-                        $item = \App\Models\Itinerary::find($review->item_id);
-                        $itemName = $item?->name;
-                        break;
-                }
+                $itemName = $review->item?->name;
 
                 return [
                     'id'           => $review->id,
@@ -353,20 +332,25 @@ class UserProfileController extends Controller
             'item_id' => $request->item_id,
             'rating' => $request->rating,
             'review_text' => $request->review_text,
-            'media_gallery' => $uploadedMediaIds,
             'status' => 'pending',
         ]);
 
+        // Sync media to review_media_gallery table
+        foreach ($uploadedMediaIds as $index => $mediaId) {
+            $review->mediaGallery()->create([
+                'media_id' => $mediaId,
+                'sort_order' => $index,
+            ]);
+        }
+        $review->load('mediaGallery.media');
+
         // Full media details
-        $media = collect($review->media_gallery ?? [])->map(function ($mediaId) {
-            $m = \App\Models\Media::find($mediaId);
-            return $m ? [
-                'id' => $m->id,
-                'name' => $m->name,
-                'alt_text' => $m->alt_text,
-                'url' => $m->url,
-            ] : null;
-        })->filter()->values();
+        $media = $review->mediaGallery->map(fn($rmg) => [
+            'id' => $rmg->media->id,
+            'name' => $rmg->media->name,
+            'alt_text' => $rmg->media->alt_text,
+            'url' => $rmg->media->url,
+        ])->values();
 
         $reviewData = [
             'id' => $review->id,
@@ -391,7 +375,8 @@ class UserProfileController extends Controller
     {
         $user = auth()->user();
 
-        $review = \App\Models\Review::where('id', $id)
+        $review = \App\Models\Review::with(['mediaGallery.media', 'item'])
+            ->where('id', $id)
             ->where('user_id', $user->id)
             ->first();
 
@@ -403,34 +388,14 @@ class UserProfileController extends Controller
         }
 
         // Load media details
-        $media = collect($review->media_gallery ?? [])->map(function ($mediaId) {
-            $m = \App\Models\Media::find($mediaId);
-            return $m ? [
-                'id'       => $m->id,
-                'name'     => $m->name,
-                'alt_text' => $m->alt_text,
-                'url'      => $m->url,
-            ] : null;
-        })->filter()->values();
+        $media = $review->mediaGallery->map(fn($rmg) => [
+            'id'       => $rmg->media->id,
+            'name'     => $rmg->media->name,
+            'alt_text' => $rmg->media->alt_text,
+            'url'      => $rmg->media->url,
+        ])->values();
 
-        // Fetch item name dynamically
-        $itemName = null;
-        switch ($review->item_type) {
-            case 'activity':
-                $item = \App\Models\Activity::find($review->item_id);
-                $itemName = $item?->name;
-                break;
-
-            case 'package':
-                $item = \App\Models\Package::find($review->item_id);
-                $itemName = $item?->name;
-                break;
-
-            case 'itinerary':
-                $item = \App\Models\Itinerary::find($review->item_id);
-                $itemName = $item?->name;
-                break;
-        }
+        $itemName = $review->item?->name;
 
         $reviewData = [
             'id'           => $review->id,
@@ -481,7 +446,7 @@ class UserProfileController extends Controller
 
         // Cast existing_media_ids to integer array
         $existingMediaIdsFromRequest = collect($request->existing_media_ids ?? [])->map(fn($id) => (int)$id)->toArray();
-        $currentMediaIds = $review->media_gallery ?? [];
+        $currentMediaIds = $review->load('mediaGallery')->mediaGallery->pluck('media_id')->toArray();
 
         // Delete media not present in request
         foreach ($currentMediaIds as $oldMediaId) {
@@ -523,20 +488,24 @@ class UserProfileController extends Controller
             }
         }
 
-        // Update review media gallery
-        $review->media_gallery = $updatedMediaIds;
+        // Sync to review_media_gallery table
+        $review->mediaGallery()->delete();
+        foreach ($updatedMediaIds as $index => $mediaId) {
+            $review->mediaGallery()->create([
+                'media_id' => $mediaId,
+                'sort_order' => $index,
+            ]);
+        }
         $review->save();
+        $review->load('mediaGallery.media');
 
         // Full media details
-        $media = collect($review->media_gallery ?? [])->map(function ($mediaId) {
-            $m = \App\Models\Media::find($mediaId);
-            return $m ? [
-                'id' => $m->id,
-                'name' => $m->name,
-                'alt_text' => $m->alt_text,
-                'url' => $m->url,
-            ] : null;
-        })->filter()->values();
+        $media = $review->mediaGallery->map(fn($rmg) => [
+            'id' => $rmg->media->id,
+            'name' => $rmg->media->name,
+            'alt_text' => $rmg->media->alt_text,
+            'url' => $rmg->media->url,
+        ])->values();
 
         $reviewData = [
             'id' => $review->id,
@@ -570,7 +539,8 @@ class UserProfileController extends Controller
         $user = auth()->user();
 
         // Find the review by id and user
-        $review = \App\Models\Review::where('id', $id)
+        $review = \App\Models\Review::with('mediaGallery')
+            ->where('id', $id)
             ->where('user_id', $user->id)
             ->first();
 
@@ -579,7 +549,7 @@ class UserProfileController extends Controller
         }
 
         // Delete associated media (if any)
-        $currentMediaIds = $review->media_gallery ?? [];
+        $currentMediaIds = $review->mediaGallery->pluck('media_id')->toArray();
 
         foreach ($currentMediaIds as $mediaId) {
             $media = \App\Models\Media::find($mediaId);
