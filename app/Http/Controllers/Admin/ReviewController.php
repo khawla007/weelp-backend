@@ -23,8 +23,8 @@ class ReviewController extends Controller
             return (int) $request->input('page', 1);
         });
     
-        $query = Review::with(['user', 'item']);
-    
+        $query = Review::with(['user', 'item', 'mediaGallery.media']);
+
         if ($request->filled('item_type')) {
             $query->where('item_type', $request->item_type);
         }
@@ -80,14 +80,12 @@ class ReviewController extends Controller
                     'id'   => $review->user->id,
                     'name' => $review->user->name,
                 ] : null,
-                'media_gallery' => $review->medias()
-                    ? $review->medias()->map(fn($media) => [
-                        'id'   => $media->id,
-                        'name' => $media->name,
-                        'alt'  => $media->alt_text,
-                        'url'  => $media->url,
-                    ])
-                    : [],
+                'media_gallery' => $review->mediaGallery->map(fn($rmg) => [
+                    'id'   => $rmg->media->id,
+                    'name' => $rmg->media->name,
+                    'alt'  => $rmg->media->alt_text,
+                    'url'  => $rmg->media->url,
+                ]),
                     'created_at' => $review->created_at ? $review->created_at->format('Y-m-d') : null,
                     'updated_at' => $review->updated_at ? $review->updated_at->format('Y-m-d') : null,
             ];
@@ -216,20 +214,29 @@ class ReviewController extends Controller
             'item_id'          => 'required|integer',
             'user_id'          => 'required|integer|exists:users,id',
             'rating'           => 'required|integer|min:1|max:5',
-            'review_text'      => 'nullable|string', 
-            'media_gallery'   => 'nullable|array',
-            'media_gallery.*' => 'integer|exists:media,id',
+            'review_text'      => 'nullable|string',
+            'media_gallery'    => 'nullable|array',
+            'media_gallery.*'  => 'integer|exists:media,id',
             'status'           => 'nullable|in:approved,pending',
             'is_featured'      => 'nullable|boolean',
         ]);
 
-        // media_gallery ko JSON store karna
-        // if (isset($validated['media_gallery'])) {
-        //     $validated['media_gallery'] = json_encode($validated['media_gallery']);
-        // }
-    
+        // Remove media_gallery from validated data (not a column anymore)
+        $mediaIds = $validated['media_gallery'] ?? [];
+        unset($validated['media_gallery']);
+
         $review = Review::create($validated);
-    
+
+        // Sync media to review_media_gallery table
+        foreach ($mediaIds as $index => $mediaId) {
+            $review->mediaGallery()->create([
+                'media_id' => $mediaId,
+                'sort_order' => $index,
+            ]);
+        }
+
+        $review->load('mediaGallery.media');
+
         return response()->json([
             'success' => true,
             'data'    => $review
@@ -243,7 +250,7 @@ class ReviewController extends Controller
         $frontendBase = env('FRONTEND_URL', 'http://localhost:3000');
     
         // Review fetch karo, item aur user ke saath
-        $review = Review::with(['user', 'item'])->findOrFail($id);
+        $review = Review::with(['user', 'item', 'mediaGallery.media'])->findOrFail($id);
     
         $item = $review->item;
     
@@ -279,14 +286,12 @@ class ReviewController extends Controller
                 'id'   => $review->user->id,
                 'name' => $review->user->name,
             ] : null,
-            'media_gallery' => $review->medias() 
-                                ? $review->medias()->map(fn($media) => [
-                                    'id'   => $media->id,
-                                    'name' => $media->name,
-                                    'alt'  => $media->alt_text,
-                                    'url'  => $media->url,
-                                ]) 
-                                : [],
+            'media_gallery' => $review->mediaGallery->map(fn($rmg) => [
+                'id'   => $rmg->media->id,
+                'name' => $rmg->media->name,
+                'alt'  => $rmg->media->alt_text,
+                'url'  => $rmg->media->url,
+            ]),
             'created_at' => $review->created_at ? $review->created_at->format('Y-m-d') : null,
             'updated_at' => $review->updated_at ? $review->updated_at->format('Y-m-d') : null,
         ];
@@ -315,12 +320,24 @@ class ReviewController extends Controller
             'is_featured'      => 'nullable|boolean',
         ]);
 
-        // Agar media_gallery bheja gaya hai to JSON store karo
-        // if (isset($validated['media_gallery'])) {
-        //     $validated['media_gallery'] = json_encode($validated['media_gallery']);
-        // }
+        // Remove media_gallery from validated data (not a column anymore)
+        $mediaIds = $validated['media_gallery'] ?? null;
+        unset($validated['media_gallery']);
 
         $review->update($validated);
+
+        // Sync media if provided
+        if ($mediaIds !== null) {
+            $review->mediaGallery()->delete();
+            foreach ($mediaIds as $index => $mediaId) {
+                $review->mediaGallery()->create([
+                    'media_id' => $mediaId,
+                    'sort_order' => $index,
+                ]);
+            }
+        }
+
+        $review->load('mediaGallery.media');
 
         return response()->json([
             'success' => true,
