@@ -430,4 +430,6 @@ Route::get('blogs/{slug}', [PublicBlogController::class, 'show']);
 Route::prefix('reviews')->group(function () {
     Route::get('/', [PublicReviewController::class, 'index']);
     Route::get('/featured-reviews', [PublicReviewController::class, 'getFeaturedReviews']);
+    Route::get('/activity/{activity_slug}', [PublicReviewController::class, 'getActivityReviews']);
+    Route::get('/activity/{activity_slug}/featured', [PublicReviewController::class, 'getActivityFeaturedReviews']);
 });

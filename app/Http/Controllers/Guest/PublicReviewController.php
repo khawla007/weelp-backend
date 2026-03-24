@@ -25,7 +25,7 @@ class PublicReviewController extends Controller
         $citySlug = request()->query('city');
         $perPage = (int) request()->query('per_page', 10);
 
-        $query = Review::with(['user', 'item'])
+        $query = Review::with(['user', 'item', 'mediaGallery.media'])
             ->where('status', 'approved')
             ->orderBy('created_at', 'desc');
 
@@ -61,7 +61,7 @@ class PublicReviewController extends Controller
     {
         $citySlug = request()->query('city');
 
-        $query = Review::with(['user', 'item'])
+        $query = Review::with(['user', 'item', 'mediaGallery.media'])
             ->where('status', 'approved')
             ->where('is_featured', true)
             ->orderBy('created_at', 'desc');
@@ -81,6 +81,138 @@ class PublicReviewController extends Controller
         if ($data->isEmpty()) {
             return response()->json(['success' => false, 'message' => 'No featured reviews found']);
         }
+
+        return response()->json([
+            'success' => true,
+            'data' => $data,
+        ]);
+    }
+
+    /**
+     * Get approved reviews for a specific activity.
+     * Used on: Single Activity Page — review section.
+     *
+     * Query params:
+     *   ?sort=top|recent   — sort by rating desc or date desc (default: recent)
+     *   ?photos_only=true  — filter to reviews with media only
+     *   ?per_page=N        — pagination (default 10, max 50)
+     *   ?page=N            — page number
+     */
+    public function getActivityReviews($activitySlug)
+    {
+        $activity = Activity::where('slug', $activitySlug)->first();
+
+        if (!$activity) {
+            return response()->json(['success' => false, 'message' => 'Activity not found'], 404);
+        }
+
+        $perPage = min((int) request()->query('per_page', 10), 50);
+        $sort = request()->query('sort', 'recent');
+        $photosOnly = filter_var(request()->query('photos_only', false), FILTER_VALIDATE_BOOLEAN);
+
+        // Summary stats (only approved reviews)
+        $approvedQuery = Review::where('item_type', 'activity')
+            ->where('item_id', $activity->id)
+            ->where('status', 'approved');
+
+        $totalReviews = (clone $approvedQuery)->count();
+        $averageRating = $totalReviews > 0 ? round((clone $approvedQuery)->avg('rating'), 1) : 0;
+        $totalPhotos = \App\Models\ReviewMediaGallery::whereIn(
+            'review_id',
+            fn($q) => $q->select('id')->from('reviews')
+                ->where('item_type', 'activity')
+                ->where('item_id', $activity->id)
+                ->where('status', 'approved')
+        )->count();
+
+        // Paginated reviews
+        $query = Review::with(['user', 'mediaGallery.media'])
+            ->where('item_type', 'activity')
+            ->where('item_id', $activity->id)
+            ->where('status', 'approved');
+
+        if ($photosOnly) {
+            $query->whereHas('mediaGallery');
+        }
+
+        if ($sort === 'top') {
+            $query->orderBy('rating', 'desc')->orderBy('created_at', 'desc');
+        } else {
+            $query->orderBy('created_at', 'desc');
+        }
+
+        $reviews = $query->paginate($perPage);
+
+        $reviews->getCollection()->transform(fn($review) => [
+            'id' => $review->id,
+            'rating' => $review->rating,
+            'review_text' => $review->review_text,
+            'is_featured' => $review->is_featured,
+            'user' => $review->user ? [
+                'id' => $review->user->id,
+                'name' => $review->user->name,
+            ] : null,
+            'media_gallery' => $review->mediaGallery->map(fn($rmg) => [
+                'id'   => $rmg->media->id,
+                'name' => $rmg->media->name,
+                'alt'  => $rmg->media->alt_text,
+                'url'  => $rmg->media->url,
+            ]),
+            'created_at' => $review->created_at?->format('Y-m-d'),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'summary' => [
+                'average_rating' => $averageRating,
+                'total_reviews' => $totalReviews,
+                'total_photos' => $totalPhotos,
+            ],
+            'data' => $reviews->items(),
+            'current_page' => $reviews->currentPage(),
+            'per_page' => $reviews->perPage(),
+            'total' => $reviews->total(),
+        ]);
+    }
+
+    /**
+     * Get featured approved reviews for a specific activity.
+     * Used on: Single Activity Page — featured review carousel.
+     */
+    public function getActivityFeaturedReviews($activitySlug)
+    {
+        $activity = Activity::where('slug', $activitySlug)->first();
+
+        if (!$activity) {
+            return response()->json(['success' => false, 'message' => 'Activity not found'], 404);
+        }
+
+        $reviews = Review::with(['user', 'mediaGallery.media'])
+            ->where('item_type', 'activity')
+            ->where('item_id', $activity->id)
+            ->where('status', 'approved')
+            ->where('is_featured', true)
+            ->orderBy('created_at', 'desc')
+            ->limit(20)
+            ->get();
+
+        $data = $reviews->map(fn($review) => [
+            'id' => $review->id,
+            'rating' => $review->rating,
+            'review_text' => $review->review_text,
+            'is_featured' => $review->is_featured,
+            'user' => $review->user ? [
+                'id' => $review->user->id,
+                'name' => $review->user->name,
+            ] : null,
+            'media_gallery' => $review->mediaGallery->map(fn($rmg) => [
+                'id'   => $rmg->media->id,
+                'name' => $rmg->media->name,
+                'alt'  => $rmg->media->alt_text,
+                'url'  => $rmg->media->url,
+            ]),
+            'created_at' => $review->created_at?->format('Y-m-d'),
+        ]);
 
         return response()->json([
             'success' => true,
@@ -138,14 +270,12 @@ class PublicReviewController extends Controller
                 'id' => $review->user->id,
                 'name' => $review->user->name,
             ] : null,
-            'media_gallery' => $review->medias()
-                ? $review->medias()->map(fn($media) => [
-                    'id' => $media->id,
-                    'name' => $media->name,
-                    'alt' => $media->alt_text,
-                    'url' => $media->url,
-                ])
-                : [],
+            'media_gallery' => $review->mediaGallery->map(fn($rmg) => [
+                'id'   => $rmg->media->id,
+                'name' => $rmg->media->name,
+                'alt'  => $rmg->media->alt_text,
+                'url'  => $rmg->media->url,
+            ]),
             'created_at' => $review->created_at?->format('Y-m-d'),
         ];
     }
