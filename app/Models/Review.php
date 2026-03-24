@@ -12,13 +12,11 @@ class Review extends Model
         'item_id',
         'rating',
         'review_text',
-        'media_gallery',
         'status',
         'is_featured',
     ];
 
     protected $casts = [
-        'media_gallery' => 'array',
         'is_featured' => 'boolean',
     ];
 
@@ -33,9 +31,8 @@ class Review extends Model
         return $this->morphTo(__FUNCTION__, 'item_type', 'item_id');
     }
 
-    // Gallery images → directly from media IDs stored in JSON
-    public function medias()
+    public function mediaGallery()
     {
-        return Media::whereIn('id', $this->media_gallery ?? [])->get();
+        return $this->hasMany(ReviewMediaGallery::class)->orderBy('sort_order');
     }
 }
