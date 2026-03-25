@@ -8,10 +8,12 @@ use App\Models\User;
 use App\Models\UserMeta;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class OtpController extends Controller
 {
@@ -161,8 +163,17 @@ class OtpController extends Controller
         }
 
         // OTP is correct - create user account
+
+        // Check if email already registered (race condition check)
+        if (User::where('email', $otpData['email'])->exists()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Email already registered',
+            ], 422);
+        }
+
         try {
-            \DB::beginTransaction();
+            DB::beginTransaction();
 
             // Create user
             $user = User::create([
@@ -180,12 +191,12 @@ class OtpController extends Controller
             ]);
 
             // Generate JWT token
-            $token = auth('api')->login($user);
+            $token = JWTAuth::fromUser($user);
 
             // Clear OTP from cache
             Cache::forget("otp:{$email}");
 
-            \DB::commit();
+            DB::commit();
 
             return response()->json([
                 'success' => true,
@@ -200,7 +211,7 @@ class OtpController extends Controller
             ], 201);
 
         } catch (\Exception $e) {
-            \DB::rollBack();
+            DB::rollBack();
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to create account',
