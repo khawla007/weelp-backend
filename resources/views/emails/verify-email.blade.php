@@ -5,7 +5,7 @@ Thank you for registering on {{ config('app.name') }}.
 
 Click the button below to verify your email:
 
-<x-mail::button :url="'https://weelp-frontend.vercel.app/user/email/verify?token=' . $token">
+<x-mail::button :url="config('app.frontend_url') . '/user/email/verify?token=' . $token">
 Verify Email
 </x-mail::button>
 

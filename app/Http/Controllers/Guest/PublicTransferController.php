@@ -16,21 +16,33 @@ class PublicTransferController extends Controller
             'vendorRoutes.route',
             'pricingAvailability.pricingTier',
             'pricingAvailability.availability',
-            'media',
+            'mediaGallery.media',
             'seo'
-        ])->get();
+        ])->get()->map(function ($transfer) {
+            $data = $transfer->toArray();
+            $featuredImage = $transfer->mediaGallery->where('is_featured', true)->first();
+            $data['featured_image'] = $featuredImage?->media?->url
+                ?? $transfer->mediaGallery->first()?->media?->url;
+            $data['media_gallery'] = $transfer->mediaGallery->map(function ($media) {
+                return [
+                    'id' => $media->media->id,
+                    'name' => $media->media->name,
+                    'alt_text' => $media->media->alt_text,
+                    'url' => $media->media->url,
+                    'is_featured' => (bool) $media->is_featured,
+                ];
+            })->toArray();
+            unset($data['media_gallery_raw']);
+            return $data;
+        });
 
-        // return response()->json([
-        //     'success' => true,
-        //     'data' => $transfers
-        // ]);
-        if (collect($transfers)->isEmpty()) {
+        if ($transfers->isEmpty()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Transfers not found'
             ], 404);
         }
-        
+
         return response()->json([
             'success' => true,
             'data' => $transfers
@@ -44,7 +56,7 @@ class PublicTransferController extends Controller
             'vendorRoutes.route',
             'pricingAvailability.pricingTier',
             'pricingAvailability.availability',
-            'media',
+            'mediaGallery.media',
             'seo'
         ])->find($id);
 
@@ -65,10 +77,24 @@ class PublicTransferController extends Controller
                 'message' => 'Transfer not found'
             ], 404);
         }
-        
+
+        $data = $transfer->toArray();
+        $featuredImage = $transfer->mediaGallery->where('is_featured', true)->first();
+        $data['featured_image'] = $featuredImage?->media?->url
+            ?? $transfer->mediaGallery->first()?->media?->url;
+        $data['media_gallery'] = $transfer->mediaGallery->map(function ($media) {
+            return [
+                'id' => $media->media->id,
+                'name' => $media->media->name,
+                'alt_text' => $media->media->alt_text,
+                'url' => $media->media->url,
+                'is_featured' => (bool) $media->is_featured,
+            ];
+        })->toArray();
+
         return response()->json([
             'success' => true,
-            'data' => $transfer
+            'data' => $data
         ], 200);
     }
 }

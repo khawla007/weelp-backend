@@ -36,6 +36,8 @@ class PublicPackageController extends Controller
                 'featured_package' => $package->featured_package,
                 'description' => $package->description,
                 'item_type' => $package->item_type,
+                'featured_image' => $package->mediaGallery->where('is_featured', true)->first()?->media?->url
+                    ?? $package->mediaGallery->first()?->media?->url,
                 'locations' => $package->locations->map(function ($location) {
                     $city = $location->city;
                     return [
@@ -51,7 +53,7 @@ class PublicPackageController extends Controller
                         'region' => $city->state && $city->state->country && $city->state->country->regions->isNotEmpty()
                             ? $city->state->country->regions->first()->name
                             : null,
-                        
+
                     ];
                 }),
                 'categories' => $package->categories->map(function ($category) {
@@ -81,6 +83,7 @@ class PublicPackageController extends Controller
                         'name' => $media->media->name,
                         'alt_text' => $media->media->alt_text,
                         'url' => $media->media->url,
+                        'is_featured' => (bool) $media->is_featured,
                     ];
                 })->toArray(),
             ];
@@ -247,6 +250,8 @@ class PublicPackageController extends Controller
             'featured_package' => $package->featured_package,
             'description' => $package->description,
             'item_type' => $package->item_type,
+            'featured_image' => $package->mediaGallery->where('is_featured', true)->first()?->media?->url
+                ?? $package->mediaGallery->first()?->media?->url,
             'locations' => $package->locations->map(function ($location) {
                 $city = $location->city;
                 return [
@@ -322,6 +327,7 @@ class PublicPackageController extends Controller
                     'name' => $media->media->name,
                     'alt_text' => $media->media->alt_text,
                     'url' => $media->media->url,
+                    'is_featured' => (bool) $media->is_featured,
                 ];
             })->toArray(),
             'information' => $package->information,

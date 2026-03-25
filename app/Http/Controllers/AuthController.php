@@ -64,7 +64,7 @@ class AuthController extends Controller
         $request->validate([
             'name' => 'required|string',
             'email' => 'required|email|unique:users,email',
-            'password' => 'required|min:6|confirmed',
+            'password' => 'required|min:8|confirmed|regex:/[A-Za-z]/|regex:/\d/|regex:/[@#$%^&+=]/',
         ]);
 
         $user = User::create([
@@ -92,7 +92,7 @@ class AuthController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Registration successful! Please verify your email.',
-        ]);
+        ], 201);
     }
 
     /**
@@ -121,14 +121,11 @@ class AuthController extends Controller
                 'message' => 'Email verified successfully!'
             ]);
         } catch (\Exception $e) {
-            $payload = JWTAuth::setToken($token)->getPayload();
-            $email = $payload['email'];
-
             return response()->json([
                 'success' => false,
-                'email'   => $email,
+                'email'   => null,
                 'message' => 'Invalid or expired token.'
-            ]);
+            ], 400);
         }
     }
 
@@ -274,7 +271,7 @@ class AuthController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Email address not found.',
-            ]);
+            ], 404);
         }
 
         // Generate JWT token with 10 minutes expiry
@@ -309,9 +306,9 @@ class AuthController extends Controller
     {
         $request->validate([
             'token' => 'required',
-            'password' => 'required|min:6|confirmed',
+            'password' => 'required|min:8|confirmed|regex:/[A-Za-z]/|regex:/\d/|regex:/[@#$%^&+=]/',
         ]);
-    
+
         try {
             $decodedToken = JWTAuth::setToken($request->token)->getPayload();
         } catch (\Exception $e) {

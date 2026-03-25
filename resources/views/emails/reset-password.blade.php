@@ -5,7 +5,7 @@ You are receiving this email because we received a password reset request for yo
 
 Click the link below to reset your password:
 
-<x-mail::button :url="'https://weelp-frontend.vercel.app/user/reset-password?token=' . $token">
+<x-mail::button :url="config('app.frontend_url') . '/user/reset-password?token=' . $token">
 Reset Password
 </x-mail::button>
 

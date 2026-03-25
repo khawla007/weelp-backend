@@ -36,6 +36,8 @@ class PublicItineraryController extends Controller
                 'featured_itinerary' => $itinerary->featured_itinerary,
                 'description' => $itinerary->description,
                 'item_type' => $itinerary->item_type,
+                'featured_image' => $itinerary->mediaGallery->where('is_featured', true)->first()?->media?->url
+                    ?? $itinerary->mediaGallery->first()?->media?->url,
                 'locations' => $itinerary->locations->map(function ($location) {
                     $city = $location->city;
                     return [
@@ -51,7 +53,7 @@ class PublicItineraryController extends Controller
                         'region' => $city->state && $city->state->country && $city->state->country->regions->isNotEmpty()
                             ? $city->state->country->regions->first()->name
                             : null,
-                        
+
                     ];
                 }),
                 // 'categories' => $itinerary->categories->pluck('name')->toArray(),
@@ -81,6 +83,7 @@ class PublicItineraryController extends Controller
                         'name' => $media->media->name,
                         'alt_text' => $media->media->alt_text,
                         'url' => $media->media->url,
+                        'is_featured' => (bool) $media->is_featured,
                     ];
                 })->toArray(),
                 'seo' => $itinerary->seo ? [
@@ -141,6 +144,8 @@ class PublicItineraryController extends Controller
                 'featured_itinerary' => $itinerary->featured_itinerary,
                 'description' => $itinerary->description,
                 'item_type' => $itinerary->item_type,
+                'featured_image' => $itinerary->mediaGallery->where('is_featured', true)->first()?->media?->url
+                    ?? $itinerary->mediaGallery->first()?->media?->url,
                 'city_slug' => $itinerary->locations->first()?->city?->slug,
                 'locations' => $itinerary->locations->map(function ($location) {
                     $city = $location->city;
@@ -185,6 +190,7 @@ class PublicItineraryController extends Controller
                         'name' => $media->media->name,
                         'alt_text' => $media->media->alt_text,
                         'url' => $media->media->url,
+                        'is_featured' => (bool) $media->is_featured,
                     ];
                 })->toArray(),
                 'seo' => $itinerary->seo ? [
@@ -239,6 +245,8 @@ class PublicItineraryController extends Controller
             'featured_itinerary' => $itinerary->featured_itinerary,
             'description' => $itinerary->description,
             'item_type' => $itinerary->item_type,
+            'featured_image' => $itinerary->mediaGallery->where('is_featured', true)->first()?->media?->url
+                ?? $itinerary->mediaGallery->first()?->media?->url,
             'locations' => $itinerary->locations->map(function ($location) {
                     $city = $location->city;
                     return [
@@ -313,6 +321,7 @@ class PublicItineraryController extends Controller
                     'name' => $media->media->name,
                     'alt_text' => $media->media->alt_text,
                     'url' => $media->media->url,
+                    'is_featured' => (bool) $media->is_featured,
                 ];
             })->toArray(),
             'seo' => $itinerary->seo,
