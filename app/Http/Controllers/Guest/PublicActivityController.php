@@ -233,17 +233,18 @@ class PublicActivityController extends Controller
     public function getActivityBySlug($activityslug)
     {
         $activity = Activity::with([
-            'categories.category', 
-            'attributes.attribute', 
+            'categories.category',
+            'attributes.attribute',
             'locations.city',
-            'pricing', 
-            'seasonalPricing', 
-            'groupDiscounts', 
-            'earlyBirdDiscount', 
-            'lastMinuteDiscount', 
+            'pricing',
+            'seasonalPricing',
+            'groupDiscounts',
+            'earlyBirdDiscount',
+            'lastMinuteDiscount',
             'promoCodes',
             'mediaGallery.media',
-        ])->where('slug', $activityslug)->first(); 
+            'addons.addon',
+        ])->where('slug', $activityslug)->first();
     
         if (!$activity) {
             return response()->json(['message' => 'Activity not found'], 404);
@@ -311,6 +312,19 @@ class PublicActivityController extends Controller
                     'is_featured' => (bool) $media->is_featured,
                 ];
             })->toArray(),
+
+            'addons' => $activity->addons
+                ->filter(fn($a) => $a->addon && $a->addon->active_status)
+                ->map(fn($a) => [
+                    'id'                      => $a->id,
+                    'addon_id'                => $a->addon_id,
+                    'addon_name'              => $a->addon->name,
+                    'addon_type'              => $a->addon->type,
+                    'addon_description'       => $a->addon->description,
+                    'addon_price'             => $a->addon->price,
+                    'addon_sale_price'        => $a->addon->sale_price,
+                    'addon_price_calculation' => $a->addon->price_calculation,
+                ])->values()->toArray(),
 
             'review_summary' => [
                 'average_rating' => round(
