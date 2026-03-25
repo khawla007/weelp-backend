@@ -3,14 +3,12 @@
 
 Your verification code is:
 
-# <x-mail::button>{{ $otp }}</x-mail::button>
+# {{ $otp }}
 
 This code will expire in 10 minutes.
 
 If you didn't request this, please ignore this email.
 
-<x-mail::hr />
-
-With regards,<br>
+Thanks,<br>
 **Weelp Team**
 </x-mail::message>
