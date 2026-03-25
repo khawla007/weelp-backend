@@ -78,12 +78,9 @@ Route::post('/password/forgot', [AuthController::class, 'forgotPassword']);
 Route::post('/password/reset', [AuthController::class, 'resetPassword']);
 Route::post('/refresh-token', [AuthController::class, 'refreshToken']);
 
-Route::middleware('auth:api')->group(function () {
-    Route::post('/logout', [AuthController::class, 'logout']);
-});
-
 // Route::middleware('auth:api')->group(function () {
 Route::middleware(['auth:api', 'customer'])->prefix('customer')->group(function () {
+    Route::post('/logout', [AuthController::class, 'logout']);
     // Route::get('/getuserdetails', [AuthController::class, 'getUserDetails']);
     // Route::get('/user', [UserController::class, 'getUser']);
     Route::get('/profile', [UserProfileController::class, 'show']);
