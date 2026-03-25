@@ -58,12 +58,16 @@ use App\Http\Controllers\Guest\PublicTagController;
 use App\Http\Controllers\Guest\PublicFilterController;
 use App\Http\Controllers\Guest\PublicBlogController;
 use App\Http\Controllers\Guest\PublicReviewController;
+use App\Http\Controllers\Guest\OtpController;
 
 Route::get('/test', function () {
     return response()->json(['message' => 'Route Working!']);
 });
 
 Route::post('/register', [AuthController::class, 'register']);
+
+Route::post('/send-otp', [OtpController::class, 'sendOtp']);
+Route::post('/verify-otp', [OtpController::class, 'verifyOtp']);
 
 Route::get('/verify-email', [AuthController::class, 'verifyEmail']);
 
@@ -74,9 +78,12 @@ Route::post('/password/forgot', [AuthController::class, 'forgotPassword']);
 Route::post('/password/reset', [AuthController::class, 'resetPassword']);
 Route::post('/refresh-token', [AuthController::class, 'refreshToken']);
 
+Route::middleware('auth:api')->group(function () {
+    Route::post('/logout', [AuthController::class, 'logout']);
+});
+
 // Route::middleware('auth:api')->group(function () {
 Route::middleware(['auth:api', 'customer'])->prefix('customer')->group(function () {
-    Route::post('/logout', [AuthController::class, 'logout']);
     // Route::get('/getuserdetails', [AuthController::class, 'getUserDetails']);
     // Route::get('/user', [UserController::class, 'getUser']);
     Route::get('/profile', [UserProfileController::class, 'show']);
