@@ -65,6 +65,7 @@ Route::get('/test', function () {
 });
 
 Route::post('/register', [AuthController::class, 'register']);
+Route::get('/check-username', [AuthController::class, 'checkUsername']);
 
 Route::post('/send-otp', [OtpController::class, 'sendOtp']);
 Route::post('/verify-otp', [OtpController::class, 'verifyOtp']);
@@ -408,6 +409,7 @@ Route::prefix('itineraries')->group(function () {
     Route::get('/', [PublicItineraryController::class, 'index']);
     Route::get('/featured-itineraries', [PublicItineraryController::class, 'getFeaturedItineraries']);
     Route::get('/{slug}', [PublicItineraryController::class, 'show']);
+    Route::get('/{slug}/addons', [PublicItineraryController::class, 'getAddons']);
 });
 
 // Packages api
@@ -415,6 +417,7 @@ Route::prefix('packages')->group(function () {
     Route::get('/', [PublicPackageController::class, 'index']);
     Route::get('/featured-packages', [PublicPackageController::class, 'getFeaturedPackages']);
     Route::get('/{slug}', [PublicPackageController::class, 'show']);
+    Route::get('/{slug}/addons', [PublicPackageController::class, 'getAddons']);
 });
 
 // Search API

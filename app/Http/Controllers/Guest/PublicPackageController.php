@@ -352,4 +352,42 @@ class PublicPackageController extends Controller
         ]);
     }
 
+    /**
+     * Get addons for a specific package
+     * Used on: Single Package Page - sidebar addon selection
+     */
+    public function getAddons($slug): JsonResponse
+    {
+        $package = Package::where('slug', $slug)->first();
+
+        if (!$package) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Package not found'
+            ], 404);
+        }
+
+        // Get addons linked to this package via package_addons pivot table
+        $addons = \App\Models\Addon::where('active_status', true)
+            ->whereHas('packagesAddon', function ($query) use ($package) {
+                $query->where('package_id', $package->id);
+            })
+            ->get()
+            ->map(function ($addon) {
+                return [
+                    'addon_id' => $addon->id,
+                    'addon_name' => $addon->name,
+                    'addon_description' => $addon->description,
+                    'addon_price' => $addon->price,
+                    'addon_sale_price' => $addon->sale_price,
+                    'addon_type' => $addon->type,
+                ];
+            });
+
+        return response()->json([
+            'success' => true,
+            'data' => $addons
+        ]);
+    }
+
 }

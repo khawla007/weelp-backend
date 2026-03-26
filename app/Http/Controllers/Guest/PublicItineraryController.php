@@ -343,4 +343,42 @@ class PublicItineraryController extends Controller
         ]);
     }
 
+    /**
+     * Get addons for a specific itinerary
+     * Used on: Single Itinerary Page - sidebar addon selection
+     */
+    public function getAddons($slug): JsonResponse
+    {
+        $itinerary = Itinerary::where('slug', $slug)->first();
+
+        if (!$itinerary) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Itinerary not found'
+            ], 404);
+        }
+
+        // Get addons linked to this itinerary via itinerary_addons pivot table
+        $addons = \App\Models\Addon::where('active_status', true)
+            ->whereHas('itinerariesAddon', function ($query) use ($itinerary) {
+                $query->where('itinerary_id', $itinerary->id);
+            })
+            ->get()
+            ->map(function ($addon) {
+                return [
+                    'addon_id' => $addon->id,
+                    'addon_name' => $addon->name,
+                    'addon_description' => $addon->description,
+                    'addon_price' => $addon->price,
+                    'addon_sale_price' => $addon->sale_price,
+                    'addon_type' => $addon->type,
+                ];
+            });
+
+        return response()->json([
+            'success' => true,
+            'data' => $addons
+        ]);
+    }
+
 }
