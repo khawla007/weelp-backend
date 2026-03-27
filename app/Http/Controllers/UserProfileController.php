@@ -46,6 +46,7 @@ class UserProfileController extends Controller
     {
         $validated = $request->validate([
             'avatar' => 'nullable|url',
+            'name' => 'nullable|string|max:255',
             'address_line_1' => 'nullable|string|max:255',
             'city' => 'nullable|string|max:255',
             'state' => 'nullable|string|max:255',
@@ -67,6 +68,12 @@ class UserProfileController extends Controller
 
         $user = $request->user();
         $profile = $user->profile ?? new UserProfile(['user_id' => $user->id]);
+
+        // Update user name if provided
+        if (isset($validated['name'])) {
+            $user->name = $validated['name'];
+            $user->save();
+        }
 
         $profile->fill($validated);
         $profile->save();
