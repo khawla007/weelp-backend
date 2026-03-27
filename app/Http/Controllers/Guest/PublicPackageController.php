@@ -223,7 +223,8 @@ class PublicPackageController extends Controller
         $package = Package::with([
             'locations.city',
             'information',
-            'schedules.activities.activity',
+            'schedules.activities.activity.locations.city',
+            'schedules.activities.activity.mediaGallery.media',
             'schedules.transfers.transfer',
             'basePricing.variations',
             'basePricing.blackoutDates',
@@ -273,15 +274,23 @@ class PublicPackageController extends Controller
             'schedules' => $package->schedules->map(function ($schedule) {
                 return [
                     'day' => $schedule->day,
-                    'activities' => $schedule->activities->map(function ($package) {
+                    'activities' => $schedule->activities->map(function ($scheduleActivity) {
+                        $activityModel = $scheduleActivity->activity;
+                        $primaryLocation = $activityModel?->locations->where('location_type', 'primary')->first();
+                        $featuredMedia = $activityModel?->mediaGallery->where('is_featured', true)->first();
+
                         return [
-                            'id' => $package->id,
-                            'name' => $package->activity ? $package->activity->name : null,
-                            'start_time' => $package->start_time,
-                            'end_time' => $package->end_time,
-                            'notes' => $package->notes,
-                            'price' => $package->price,
-                            'include_in_package' => $package->include_in_package,
+                            'id' => $scheduleActivity->id,
+                            'name' => $activityModel?->name,
+                            'start_time' => $scheduleActivity->start_time,
+                            'end_time' => $scheduleActivity->end_time,
+                            'notes' => $scheduleActivity->notes,
+                            'price' => $scheduleActivity->price,
+                            'include_in_package' => $scheduleActivity->include_in_package,
+                            'main_location' => $primaryLocation?->city?->name,
+                            'duration_minutes' => $primaryLocation?->duration,
+                            'featured_image' => $featuredMedia?->media?->url
+                                ?? $activityModel?->mediaGallery->first()?->media?->url,
                         ];
                     }),
                     'transfers' => $schedule->transfers->map(function ($transfer) {

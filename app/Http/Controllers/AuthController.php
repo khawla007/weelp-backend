@@ -57,6 +57,31 @@ class AuthController extends Controller
     // }
 
     /**
+     * Check if username is available
+     */
+    public function checkUsername(Request $request)
+    {
+        $username = $request->input('username');
+
+        if (!$username || strlen($username) < 3) {
+            return response()->json([
+                'available' => false,
+                'message' => 'Username must be at least 3 characters',
+            ]);
+        }
+
+        // Check in user_meta table (has direct username column)
+        $exists = DB::table('user_meta')
+            ->where('username', $username)
+            ->exists();
+
+        return response()->json([
+            'available' => !$exists,
+            'message' => $exists ? 'Username already taken. Please choose another.' : 'Username available',
+        ]);
+    }
+
+    /**
      * Handle the user register request New.
     */
     public function register(Request $request)

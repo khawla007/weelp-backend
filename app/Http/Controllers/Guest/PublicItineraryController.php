@@ -219,7 +219,8 @@ class PublicItineraryController extends Controller
     {
         $itinerary = Itinerary::with([
             'locations.city',
-            'schedules.activities.activity',
+            'schedules.activities.activity.locations.city',
+            'schedules.activities.activity.mediaGallery.media',
             'schedules.transfers.transfer',
             'basePricing.variations',
             'basePricing.blackoutDates',
@@ -269,14 +270,22 @@ class PublicItineraryController extends Controller
                 return [
                     'day' => $schedule->day,
                     'activities' => $schedule->activities->map(function ($activity) {
+                        $activityModel = $activity->activity;
+                        $primaryLocation = $activityModel?->locations->where('location_type', 'primary')->first();
+                        $featuredMedia = $activityModel?->mediaGallery->where('is_featured', true)->first();
+
                         return [
                             'id' => $activity->id,
-                            'name' => $activity->activity ? $activity->activity->name : null,
+                            'name' => $activityModel?->name,
                             'start_time' => $activity->start_time,
                             'end_time' => $activity->end_time,
                             'notes' => $activity->notes,
                             'price' => $activity->price,
                             'include_in_package' => $activity->include_in_package,
+                            'main_location' => $primaryLocation?->city?->name,
+                            'duration_minutes' => $primaryLocation?->duration,
+                            'featured_image' => $featuredMedia?->media?->url
+                                ?? $activityModel?->mediaGallery->first()?->media?->url,
                         ];
                     }),
                     'transfers' => $schedule->transfers->map(function ($transfer) {

@@ -32,7 +32,7 @@ class Addon extends Model
 
     public function itinerariesAddon()
     {
-        return $this->hasMany(IitineraryAddon::class, 'addon_id');
+        return $this->hasMany(ItineraryAddon::class, 'addon_id');
     }
 
     public function packagesAddon()
