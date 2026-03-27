@@ -86,6 +86,7 @@ Route::middleware(['auth:api', 'customer'])->prefix('customer')->group(function 
     // Route::get('/user', [UserController::class, 'getUser']);
     Route::get('/profile', [UserProfileController::class, 'show']);
     Route::put('/profile', [UserProfileController::class, 'update']);
+    Route::post('/avatar', [UserProfileController::class, 'uploadAvatar']);
 
     // 👇 Logged-in user ke orders
     Route::get('/userorders', [UserProfileController::class, 'getUserOrders']);
