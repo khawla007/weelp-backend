@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 use App\Models\UserProfile;
 use App\Models\UserMeta;  // Import UserMeta model
@@ -207,6 +208,35 @@ class UserProfileController extends Controller
                 unlink($filePath);
             }
         }
+    }
+
+    /**
+     * Handle password change request.
+     */
+    public function changePassword(Request $request)
+    {
+        $validated = $request->validate([
+            'current_password' => 'required|string',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $user = $request->user();
+
+        // Verify current password
+        if (!Hash::check($validated['current_password'], $user->password)) {
+            return response()->json([
+                'error' => 'Current password is incorrect'
+            ], 401);
+        }
+
+        // Update password
+        $user->password = Hash::make($validated['password']);
+        $user->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Password changed successfully'
+        ]);
     }
 
     public function getUserOrders(Request $request)
