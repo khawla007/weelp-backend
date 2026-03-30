@@ -220,6 +220,20 @@ class DashboardController extends Controller
                 $payment = $order->payment;
                 $avatarMedia = $user?->avatarMedia;
 
+                // Handle orders without users
+                if (!$user) {
+                    $amount = 0;
+                    if ($payment) {
+                        $amount = ($payment->total_amount ?? 0) + ($payment->custom_amount ?? 0);
+                    }
+                    return [
+                        'username' => 'Unknown',
+                        'email' => '',
+                        'amount' => (float) $amount,
+                        'icon' => 'https://ui-avatars.com/api/?name=User&background=random',
+                    ];
+                }
+
                 // Generate avatar URL
                 $avatarUrl = null;
                 if ($avatarMedia && !empty($avatarMedia->url)) {
