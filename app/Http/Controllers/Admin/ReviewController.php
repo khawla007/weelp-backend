@@ -23,7 +23,7 @@ class ReviewController extends Controller
             return (int) $request->input('page', 1);
         });
     
-        $query = Review::with(['user', 'item', 'mediaGallery.media']);
+        $query = Review::with(['user', 'item', 'mediaGallery.media', 'order']);
 
         if ($request->filled('item_type')) {
             $query->where('item_type', $request->item_type);
@@ -45,38 +45,42 @@ class ReviewController extends Controller
     
         $reviews->getCollection()->transform(function ($review) use ($frontendBase) {
             $item = $review->item;
-    
+
             $city = null;
             $region = null;
-    
+
             // Agar item Transfer nahi hai tabhi locations load karo
             if ($item && !($item instanceof \App\Models\Transfer)) {
-                // Load location relationship on-demand for Activity, Package, Itinerary
                 $location = $item->locations()->with('city.state.country.regions')->first();
                 $city     = $location?->city;
                 $state    = $city?->state;
                 $country  = $state?->country;
                 $region   = $country?->regions?->first();
             }
-    
+
+            // Use helper methods
+            $displayName = $review->getDisplayName();
+            $hasLiveItem = $review->hasLiveItem();
+
             return [
-                'id'          => $review->id,
-                'rating'      => $review->rating,
-                'review_text' => $review->review_text,
-                'status'      => $review->status,
-                'is_featured' => $review->is_featured,
-                'item'        => $item ? [
-                    'id'   => $item->id,
-                    'name' => $item->name,
-                    'type' => $item->item_type,
-                    // Transfer ke liye frontend_url null hoga
+                'id'            => $review->id,
+                'rating'        => $review->rating,
+                'review_text'   => $review->review_text,
+                'status'        => $review->status,
+                'is_featured'   => $review->is_featured,
+                'order_id'      => $review->order_id,          // NEW
+                'item'          => $item ? [
+                    'id'           => $item->id,
+                    'name'         => $displayName,            // Changed: use helper
+                    'type'         => $item->item_type,
+                    'has_live_item'=> $hasLiveItem,            // NEW
                     'frontend_url' => ($item instanceof \App\Models\Transfer)
                         ? null
                         : (($city && $region)
                             ? "{$frontendBase}/{$region->slug}/{$city->slug}/{$item->slug}"
                             : null),
                 ] : null,
-                'user'        => $review->user ? [
+                'user'          => $review->user ? [
                     'id'   => $review->user->id,
                     'name' => $review->user->name,
                 ] : null,
@@ -86,8 +90,8 @@ class ReviewController extends Controller
                     'alt'  => $rmg->media->alt_text,
                     'url'  => $rmg->media->url,
                 ]),
-                    'created_at' => $review->created_at ? $review->created_at->format('Y-m-d') : null,
-                    'updated_at' => $review->updated_at ? $review->updated_at->format('Y-m-d') : null,
+                'created_at'    => $review->created_at ? $review->created_at->format('Y-m-d') : null,
+                'updated_at'    => $review->updated_at ? $review->updated_at->format('Y-m-d') : null,
             ];
         });
     
@@ -213,6 +217,7 @@ class ReviewController extends Controller
             'item_type'        => 'required|string',
             'item_id'          => 'required|integer',
             'user_id'          => 'required|integer|exists:users,id',
+            'order_id'         => 'nullable|integer|exists:orders,id',  // NEW
             'rating'           => 'required|integer|min:1|max:5',
             'review_text'      => 'nullable|string',
             'media_gallery'    => 'nullable|array',
@@ -225,7 +230,40 @@ class ReviewController extends Controller
         $mediaIds = $validated['media_gallery'] ?? [];
         unset($validated['media_gallery']);
 
-        $review = Review::create($validated);
+        // Fetch item to populate snapshots
+        $item = null;
+        $itemName = null;
+        $itemSlug = null;
+
+        switch ($validated['item_type']) {
+            case 'activity':
+                $item = \App\Models\Activity::find($validated['item_id']);
+                break;
+            case 'package':
+                $item = \App\Models\Package::find($validated['item_id']);
+                break;
+            case 'itinerary':
+                $item = \App\Models\Itinerary::find($validated['item_id']);
+                break;
+        }
+
+        if ($item) {
+            $itemName = $item->name;
+            $itemSlug = $item->slug;
+        }
+
+        $review = Review::create([
+            'user_id'            => $validated['user_id'],
+            'order_id'           => $validated['order_id'] ?? null,
+            'item_type'          => $validated['item_type'],
+            'item_id'            => $validated['item_id'],
+            'item_name_snapshot' => $itemName,
+            'item_slug_snapshot' => $itemSlug,
+            'rating'             => $validated['rating'],
+            'review_text'        => $validated['review_text'] ?? null,
+            'status'             => $validated['status'] ?? 'pending',
+            'is_featured'        => $validated['is_featured'] ?? false,
+        ]);
 
         // Sync media to review_media_gallery table
         foreach ($mediaIds as $index => $mediaId) {
@@ -250,7 +288,7 @@ class ReviewController extends Controller
         $frontendBase = env('FRONTEND_URL', 'http://localhost:3000');
     
         // Review fetch karo, item aur user ke saath
-        $review = Review::with(['user', 'item', 'mediaGallery.media'])->findOrFail($id);
+        $review = Review::with(['user', 'item', 'mediaGallery.media', 'order'])->findOrFail($id);
     
         $item = $review->item;
     
@@ -267,22 +305,24 @@ class ReviewController extends Controller
         }
     
         $data = [
-            'id'           => $review->id,
-            'rating'       => $review->rating,
-            'review_text'  => $review->review_text,
-            'status'       => $review->status,
-            'is_featured'  => $review->is_featured,
-            'item'         => $item ? [
+            'id'            => $review->id,
+            'rating'        => $review->rating,
+            'review_text'   => $review->review_text,
+            'status'        => $review->status,
+            'is_featured'   => $review->is_featured,
+            'order_id'      => $review->order_id,          // NEW
+            'item'          => $item ? [
                 'id'           => $item->id,
-                'name'         => $item->name,
+                'name'         => $review->getDisplayName(),  // Changed: use helper
                 'type'         => $item->item_type,
-                'frontend_url' => ($item instanceof \App\Models\Transfer) 
-                                    ? null 
-                                    : (($city && $region) 
-                                        ? "{$frontendBase}/{$region->slug}/{$city->slug}/{$item->slug}" 
-                                        : null),
+                'has_live_item'=> $review->hasLiveItem(),     // NEW
+                'frontend_url' => ($item instanceof \App\Models\Transfer)
+                    ? null
+                    : (($city && $region)
+                        ? "{$frontendBase}/{$region->slug}/{$city->slug}/{$item->slug}"
+                        : null),
             ] : null,
-            'user'         => $review->user ? [
+            'user'          => $review->user ? [
                 'id'   => $review->user->id,
                 'name' => $review->user->name,
             ] : null,
@@ -292,8 +332,8 @@ class ReviewController extends Controller
                 'alt'  => $rmg->media->alt_text,
                 'url'  => $rmg->media->url,
             ]),
-            'created_at' => $review->created_at ? $review->created_at->format('Y-m-d') : null,
-            'updated_at' => $review->updated_at ? $review->updated_at->format('Y-m-d') : null,
+            'created_at'    => $review->created_at ? $review->created_at->format('Y-m-d') : null,
+            'updated_at'    => $review->updated_at ? $review->updated_at->format('Y-m-d') : null,
         ];
     
         return response()->json([
@@ -312,6 +352,7 @@ class ReviewController extends Controller
             'item_type'        => 'sometimes|string',
             'item_id'          => 'sometimes|integer',
             'user_id'          => 'sometimes|integer|exists:users,id',
+            'order_id'         => 'sometimes|integer|exists:orders,id',
             'rating'           => 'sometimes|integer|min:1|max:5',
             'review_text'      => 'nullable|string',
             'media_gallery'    => 'nullable|array',
@@ -325,6 +366,13 @@ class ReviewController extends Controller
         unset($validated['media_gallery']);
 
         $review->update($validated);
+
+        // Refresh snapshots if item still exists
+        if ($review->item) {
+            $review->item_name_snapshot = $review->item->name;
+            $review->item_slug_snapshot = $review->item->slug;
+            $review->save();
+        }
 
         // Sync media if provided
         if ($mediaIds !== null) {

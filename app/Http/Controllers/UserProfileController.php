@@ -250,6 +250,10 @@ class UserProfileController extends Controller
     {
         $user = auth()->user();
 
+        // Get pagination parameters
+        $perPage = min($request->get('per_page', 6), 50); // Max 50 per page
+        $page = $request->get('page', 1);
+
         $orders = Order::with([
             'payment',
             'emergencyContact',
@@ -269,10 +273,19 @@ class UserProfileController extends Controller
                     ],
                 ]);
             },
-        ])->where('user_id', auth()->id())->latest()->get();
+        ])->where('user_id', auth()->id())->latest()->paginate($perPage, ['*'], 'page', $page);
 
         if ($orders->isEmpty()) {
-            return response()->json(['error' => 'No orders found'], 404);
+            return response()->json([
+                'success' => true,
+                'orders' => [],
+                'pagination' => [
+                    'total' => 0,
+                    'per_page' => $perPage,
+                    'current_page' => $page,
+                    'last_page' => 1,
+                ]
+            ]);
         }
 
         $userProfile = $user->profile;
@@ -371,7 +384,13 @@ class UserProfileController extends Controller
 
         return response()->json([
             'success' => true,
-            'orders' => $transformed->values()
+            'orders' => $transformed->values(),
+            'pagination' => [
+                'total' => $orders->total(),
+                'per_page' => $orders->perPage(),
+                'current_page' => $orders->currentPage(),
+                'last_page' => $orders->lastPage(),
+            ]
         ]);
     }
 
@@ -382,38 +401,56 @@ class UserProfileController extends Controller
     {
         $user = auth()->user();
 
+        // Get pagination parameters
+        $perPage = min($request->get('per_page', 6), 50);
+        $page = $request->get('page', 1);
+
         // Fetch reviews of the logged-in customer with media details
-        $reviews = \App\Models\Review::with(['mediaGallery.media', 'item'])
+        $reviewsQuery = \App\Models\Review::with(['mediaGallery.media', 'item', 'order'])
             ->where('user_id', $user->id)
-            ->latest()
-            ->get()
-            ->map(function ($review) {
-                $media = $review->mediaGallery->map(fn($rmg) => [
-                    'id'       => $rmg->media->id,
-                    'name'     => $rmg->media->name,
-                    'alt_text' => $rmg->media->alt_text,
-                    'url'      => $rmg->media->url,
-                ])->values();
+            ->latest();
 
-                $itemName = $review->item?->name;
+        $paginatedReviews = $reviewsQuery->paginate($perPage, ['*'], 'page', $page);
 
-                return [
-                    'id'           => $review->id,
-                    'item_type'    => $review->item_type,
-                    'item_id'      => $review->item_id,
-                    'item_name'    => $itemName,
-                    'rating'       => $review->rating,
-                    'review_text'  => $review->review_text,
-                    'status'       => $review->status,
-                    'media_gallery'=> $media,
-                    'created_at'   => $review->created_at,
-                    'updated_at'   => $review->updated_at,
-                ];
-            });
+        $reviews = $paginatedReviews->getCollection()->map(function ($review) {
+            $media = $review->mediaGallery->map(fn($rmg) => [
+                'id'       => $rmg->media->id,
+                'name'     => $rmg->media->name,
+                'alt_text' => $rmg->media->alt_text,
+                'url'      => $rmg->media->url,
+            ])->values();
+
+            // Use helper methods for display data
+            $displayName = $review->getDisplayName();
+            $displaySlug = $review->getDisplaySlug();
+            $hasLiveItem = $review->hasLiveItem();
+
+            return [
+                'id'            => $review->id,
+                'order_id'      => $review->order_id,          // NEW
+                'item_type'     => $review->item_type,
+                'item_id'       => $review->item_id,
+                'item_name'     => $displayName,               // Changed: use helper
+                'item_slug'     => $displaySlug,               // NEW
+                'has_live_item' => $hasLiveItem,               // NEW
+                'rating'        => $review->rating,
+                'review_text'   => $review->review_text,
+                'status'        => $review->status,
+                'media_gallery' => $media,
+                'created_at'    => $review->created_at,
+                'updated_at'    => $review->updated_at,
+            ];
+        });
 
         return response()->json([
             'success' => true,
             'reviews' => $reviews,
+            'pagination' => [
+                'total'        => $paginatedReviews->total(),
+                'per_page'     => $paginatedReviews->perPage(),
+                'current_page' => $paginatedReviews->currentPage(),
+                'last_page'    => $paginatedReviews->lastPage(),
+            ]
         ]);
     }
 
@@ -423,12 +460,13 @@ class UserProfileController extends Controller
 
         // Validate review + optional file upload
         $request->validate([
-            'item_type' => 'required|string|in:activity,package,itinerary',
-            'item_id' => 'required|integer',
-            'rating' => 'required|integer|min:1|max:5',
-            'review_text' => 'required|string',
-            'file' => 'nullable|array',
-            'file.*' => 'file|mimes:jpg,jpeg,png,pdf,doc|max:2048',
+            'item_type'  => 'required|string|in:activity,package,itinerary',
+            'item_id'    => 'required|integer',
+            'order_id'   => 'nullable|integer|exists:orders,id',
+            'rating'     => 'required|integer|min:1|max:5',
+            'review_text'=> 'required|string',
+            'file'       => 'nullable|array',
+            'file.*'     => 'file|mimes:jpg,jpeg,png,pdf,doc|max:2048',
         ]);
 
         $uploadedMediaIds = [];
@@ -457,14 +495,44 @@ class UserProfileController extends Controller
             }
         }
 
-        // Create review with uploaded media IDs
+        // Fetch item to populate snapshots
+        $item = null;
+
+        switch ($request->item_type) {
+            case 'activity':
+                $item = \App\Models\Activity::find($request->item_id);
+                break;
+            case 'package':
+                $item = \App\Models\Package::find($request->item_id);
+                break;
+            case 'itinerary':
+                $item = \App\Models\Itinerary::find($request->item_id);
+                break;
+        }
+
+        // Ensure item exists before creating review
+        if (!$item) {
+            return response()->json([
+                'success' => false,
+                'message' => 'The requested item could not be found.'
+            ], 404);
+        }
+
+        // Snapshots - item is guaranteed to exist at this point
+        $itemName = $item->name;
+        $itemSlug = $item->slug;
+
+        // Create review with snapshots
         $review = \App\Models\Review::create([
-            'user_id' => $user->id,
-            'item_type' => $request->item_type,
-            'item_id' => $request->item_id,
-            'rating' => $request->rating,
-            'review_text' => $request->review_text,
-            'status' => 'pending',
+            'user_id'            => $user->id,
+            'order_id'           => $request->order_id,
+            'item_type'          => $request->item_type,
+            'item_id'            => $request->item_id,
+            'item_name_snapshot' => $itemName,
+            'item_slug_snapshot' => $itemSlug,
+            'rating'             => $request->rating,
+            'review_text'        => $request->review_text,
+            'status'             => 'pending',
         ]);
 
         // Sync media to review_media_gallery table
@@ -507,7 +575,7 @@ class UserProfileController extends Controller
     {
         $user = auth()->user();
 
-        $review = \App\Models\Review::with(['mediaGallery.media', 'item'])
+        $review = \App\Models\Review::with(['mediaGallery.media', 'item', 'order'])
             ->where('id', $id)
             ->where('user_id', $user->id)
             ->first();
@@ -527,19 +595,25 @@ class UserProfileController extends Controller
             'url'      => $rmg->media->url,
         ])->values();
 
-        $itemName = $review->item?->name;
+        // Use helper methods
+        $displayName = $review->getDisplayName();
+        $displaySlug = $review->getDisplaySlug();
+        $hasLiveItem = $review->hasLiveItem();
 
         $reviewData = [
-            'id'           => $review->id,
-            'item_type'    => $review->item_type,
-            'item_id'      => $review->item_id,
-            'item_name'    => $itemName, 
-            'rating'       => $review->rating,
-            'review_text'  => $review->review_text,
-            'status'       => $review->status,
-            'media_gallery'=> $media,
-            'created_at'   => $review->created_at,
-            'updated_at'   => $review->updated_at,
+            'id'            => $review->id,
+            'order_id'      => $review->order_id,          // NEW
+            'item_type'     => $review->item_type,
+            'item_id'       => $review->item_id,
+            'item_name'     => $displayName,               // Changed
+            'item_slug'     => $displaySlug,               // NEW
+            'has_live_item' => $hasLiveItem,               // NEW
+            'rating'        => $review->rating,
+            'review_text'   => $review->review_text,
+            'status'        => $review->status,
+            'media_gallery' => $media,
+            'created_at'    => $review->created_at,
+            'updated_at'    => $review->updated_at,
         ];
 
         return response()->json([
@@ -566,6 +640,7 @@ class UserProfileController extends Controller
         $request->validate([
             'rating'               => 'nullable|integer|min:1|max:5',
             'review_text'          => 'nullable|string',
+            'order_id'             => 'nullable|integer|exists:orders,id',
             'file'                 => 'nullable|array',
             'file.*'               => 'file|mimes:jpg,jpeg,png,pdf,doc|max:2048',
             'existing_media_ids'   => 'nullable|array',
@@ -575,6 +650,10 @@ class UserProfileController extends Controller
         // Update basic fields if provided
         $review->rating = $request->rating ?? $review->rating;
         $review->review_text = $request->review_text ?? $review->review_text;
+
+        if ($request->has('order_id')) {
+            $review->order_id = $request->order_id;
+        }
 
         // Cast existing_media_ids to integer array
         $existingMediaIdsFromRequest = collect($request->existing_media_ids ?? [])->map(fn($id) => (int)$id)->toArray();
@@ -627,6 +706,12 @@ class UserProfileController extends Controller
                 'media_id' => $mediaId,
                 'sort_order' => $index,
             ]);
+        }
+
+        // Refresh snapshots if item still exists
+        if ($review->item) {
+            $review->item_name_snapshot = $review->item->name;
+            $review->item_slug_snapshot = $review->item->slug;
         }
         $review->save();
         $review->load('mediaGallery.media');

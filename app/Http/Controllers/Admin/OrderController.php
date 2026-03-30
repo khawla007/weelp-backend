@@ -140,14 +140,113 @@ class OrderController extends Controller
         // Summary based on **all orders**, NOT filtered
         $allOrders = Order::with('payment')->get();
 
+        // Get current month and last month for growth calculation
+        $now = now();
+        $currentMonth = $now->month;
+        $currentYear = $now->year;
+        $lastMonth = $now->copy()->subMonthNoOverflow();
+        $lastMonthNum = $lastMonth->month;
+        $lastMonthYear = $lastMonth->year;
+
+        // Total Orders - current month
+        $totalOrdersCurrent = Order::whereMonth('created_at', $currentMonth)
+            ->whereYear('created_at', $currentYear)
+            ->count();
+        // Total Orders - last month
+        $totalOrdersLast = Order::whereMonth('created_at', $lastMonthNum)
+            ->whereYear('created_at', $lastMonthYear)
+            ->count();
+        // Calculate growth
+        if ($totalOrdersLast > 0) {
+            $totalOrdersGrowth = round((($totalOrdersCurrent - $totalOrdersLast) / $totalOrdersLast) * 100, 1);
+        } elseif ($totalOrdersCurrent > 0) {
+            $totalOrdersGrowth = 100;
+        } else {
+            $totalOrdersGrowth = 0;
+        }
+
+        // Pending Orders - current month
+        $pendingOrdersCurrent = Order::where('status', 'pending')
+            ->whereMonth('created_at', $currentMonth)
+            ->whereYear('created_at', $currentYear)
+            ->count();
+        // Pending Orders - last month
+        $pendingOrdersLast = Order::where('status', 'pending')
+            ->whereMonth('created_at', $lastMonthNum)
+            ->whereYear('created_at', $lastMonthYear)
+            ->count();
+        // Calculate growth
+        if ($pendingOrdersLast > 0) {
+            $pendingOrdersGrowth = round((($pendingOrdersCurrent - $pendingOrdersLast) / $pendingOrdersLast) * 100, 1);
+        } elseif ($pendingOrdersCurrent > 0) {
+            $pendingOrdersGrowth = 100;
+        } else {
+            $pendingOrdersGrowth = 0;
+        }
+
+        // Completed Orders - current month
+        $completedOrdersCurrent = Order::where('status', 'completed')
+            ->whereMonth('created_at', $currentMonth)
+            ->whereYear('created_at', $currentYear)
+            ->count();
+        // Completed Orders - last month
+        $completedOrdersLast = Order::where('status', 'completed')
+            ->whereMonth('created_at', $lastMonthNum)
+            ->whereYear('created_at', $lastMonthYear)
+            ->count();
+        // Calculate growth
+        if ($completedOrdersLast > 0) {
+            $completedOrdersGrowth = round((($completedOrdersCurrent - $completedOrdersLast) / $completedOrdersLast) * 100, 1);
+        } elseif ($completedOrdersCurrent > 0) {
+            $completedOrdersGrowth = 100;
+        } else {
+            $completedOrdersGrowth = 0;
+        }
+
+        // Total Revenue - current month (only completed orders)
+        $totalRevenueCurrent = Order::where('status', 'completed')
+            ->whereMonth('created_at', $currentMonth)
+            ->whereYear('created_at', $currentYear)
+            ->with('payment')
+            ->get()
+            ->pluck('payment')
+            ->filter()
+            ->sum(function ($payment) {
+                return ($payment->total_amount ?? 0) + ($payment->custom_amount ?? 0);
+            });
+        // Total Revenue - last month (only completed orders)
+        $totalRevenueLast = Order::where('status', 'completed')
+            ->whereMonth('created_at', $lastMonthNum)
+            ->whereYear('created_at', $lastMonthYear)
+            ->with('payment')
+            ->get()
+            ->pluck('payment')
+            ->filter()
+            ->sum(function ($payment) {
+                return ($payment->total_amount ?? 0) + ($payment->custom_amount ?? 0);
+            });
+        // Calculate growth
+        if ($totalRevenueLast > 0) {
+            $totalRevenueGrowth = round((($totalRevenueCurrent - $totalRevenueLast) / $totalRevenueLast) * 100, 1);
+        } elseif ($totalRevenueCurrent > 0) {
+            $totalRevenueGrowth = 100;
+        } else {
+            $totalRevenueGrowth = 0;
+        }
+
         $summary = [
             'total_orders'     => $allOrders->count(),
+            'total_orders_growth' => $totalOrdersGrowth,
             'pending_orders'   => $allOrders->where('status', 'pending')->count(),
+            'pending_orders_growth' => $pendingOrdersGrowth,
             'confirmed_orders' => $allOrders->where('status', 'confirmed')->count(),
+            'completed_orders' => $allOrders->where('status', 'completed')->count(),
+            'completed_orders_growth' => $completedOrdersGrowth,
             'cancelled_orders' => $allOrders->where('status', 'cancelled')->count(),
             'total_revenue'    => $allOrders->pluck('payment')->filter()->sum(function ($payment) {
                 return ($payment->total_amount ?? 0) + ($payment->custom_amount ?? 0);
             }),
+            'total_revenue_growth' => $totalRevenueGrowth,
         ];
 
         // Final Response

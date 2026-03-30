@@ -24,68 +24,90 @@ class DashboardController extends Controller
     {
         try {
             // Get current month and last month for comparison
-            $currentMonth = now()->month;
-            $lastMonth = now()->subMonth()->month;
-            $currentYear = now()->year;
+            $now = now();
+            $currentMonth = $now->month;
+            $currentYear = $now->year;
 
-            // Total Revenue (current month) - join with order_payments for total_amount
+            $lastMonth = $now->copy()->subMonthNoOverflow();
+            $lastMonthNum = $lastMonth->month;
+            $lastMonthYear = $lastMonth->year;
+
+            // Total Revenue (current month) - only completed orders
             $totalRevenue = DB::table('orders')
                 ->leftJoin('order_payments', 'orders.id', '=', 'order_payments.order_id')
                 ->whereMonth('orders.created_at', $currentMonth)
                 ->whereYear('orders.created_at', $currentYear)
                 ->where('orders.status', 'completed')
-                ->where('order_payments.payment_status', 'completed')
                 ->sum('order_payments.total_amount');
 
             // Total Revenue (last month) for growth calculation
             $lastMonthRevenue = DB::table('orders')
                 ->leftJoin('order_payments', 'orders.id', '=', 'order_payments.order_id')
-                ->whereMonth('orders.created_at', $lastMonth)
-                ->whereYear('orders.created_at', $lastMonth)
+                ->whereMonth('orders.created_at', $lastMonthNum)
+                ->whereYear('orders.created_at', $lastMonthYear)
                 ->where('orders.status', 'completed')
-                ->where('order_payments.payment_status', 'completed')
                 ->sum('order_payments.total_amount');
 
             // Calculate revenue growth percentage
-            $revenueGrowth = $lastMonthRevenue > 0 
-                ? round((($totalRevenue - $lastMonthRevenue) / $lastMonthRevenue) * 100, 1)
-                : 0;
+            if ($lastMonthRevenue > 0) {
+                $revenueGrowth = round((($totalRevenue - $lastMonthRevenue) / $lastMonthRevenue) * 100, 1);
+            } elseif ($totalRevenue > 0) {
+                // Last month was 0, current month has revenue - show 100% growth
+                $revenueGrowth = 100;
+            } else {
+                // Both months are 0
+                $revenueGrowth = 0;
+            }
 
-            // Total Bookings (current month)
+            // Total Bookings (current month) - exclude cancelled orders
             $totalBookings = DB::table('orders')
                 ->whereMonth('created_at', $currentMonth)
                 ->whereYear('created_at', $currentYear)
+                ->where('status', '!=', 'cancelled')
                 ->count();
 
-            // Total Bookings (last month) for growth calculation
+            // Total Bookings (last month) for growth calculation - exclude cancelled orders
             $lastMonthBookings = DB::table('orders')
-                ->whereMonth('created_at', $lastMonth)
-                ->whereYear('created_at', $lastMonth)
+                ->whereMonth('created_at', $lastMonthNum)
+                ->whereYear('created_at', $lastMonthYear)
+                ->where('status', '!=', 'cancelled')
                 ->count();
 
             // Calculate bookings growth percentage
-            $bookingsGrowth = $lastMonthBookings > 0 
-                ? round((($totalBookings - $lastMonthBookings) / $lastMonthBookings) * 100, 1)
-                : 0;
+            if ($lastMonthBookings > 0) {
+                $bookingsGrowth = round((($totalBookings - $lastMonthBookings) / $lastMonthBookings) * 100, 1);
+            } elseif ($totalBookings > 0) {
+                // Last month was 0, current month has bookings - show 100% growth
+                $bookingsGrowth = 100;
+            } else {
+                // Both months are 0
+                $bookingsGrowth = 0;
+            }
 
-            // Active Users (users with orders in current month)
-            $activeUsers = DB::table('orders')
+            // Active Users (current month) - users with status = 'active' who registered this month
+            $activeUsers = DB::table('users')
+                ->where('status', 'active')
                 ->whereMonth('created_at', $currentMonth)
                 ->whereYear('created_at', $currentYear)
-                ->distinct('user_id')
-                ->count('user_id');
+                ->count();
 
-            // Active Users (last month) for growth calculation
-            $lastMonthActiveUsers = DB::table('orders')
-                ->whereMonth('created_at', $lastMonth)
-                ->whereYear('created_at', $lastMonth)
-                ->distinct('user_id')
-                ->count('user_id');
+            // Active Users (last month) - for growth comparison
+            $lastMonthActiveUsers = DB::table('users')
+                ->where('status', 'active')
+                ->whereMonth('created_at', $lastMonthNum)
+                ->whereYear('created_at', $lastMonthYear)
+                ->count();
 
             // Calculate users growth percentage
-            $usersGrowth = $lastMonthActiveUsers > 0 
-                ? round((($activeUsers - $lastMonthActiveUsers) / $lastMonthActiveUsers) * 100, 1)
-                : 0;
+            if ($lastMonthActiveUsers > 0) {
+                $usersGrowth = round((($activeUsers - $lastMonthActiveUsers) / $lastMonthActiveUsers) * 100, 1);
+            } elseif ($activeUsers > 0) {
+                // Last month was 0, current month has users - show 100% growth
+                $usersGrowth = 100;
+            } else {
+                // Both months are 0
+                $usersGrowth = 0;
+            }
 
             // Total Activities count
             $totalActivities = DB::table('activities')->count();
@@ -140,7 +162,7 @@ class DashboardController extends Controller
         try {
             $currentYear = now()->year;
 
-            // Get monthly revenue for current year - join with order_payments for total_amount
+            // Get monthly revenue for current year - only completed orders
             $monthlyRevenue = DB::table('orders')
                 ->leftJoin('order_payments', 'orders.id', '=', 'order_payments.order_id')
                 ->select(
@@ -149,7 +171,6 @@ class DashboardController extends Controller
                 )
                 ->whereYear('orders.created_at', $currentYear)
                 ->where('orders.status', 'completed')
-                ->where('order_payments.payment_status', 'completed')
                 ->groupBy(DB::raw('MONTH(orders.created_at)'))
                 ->orderBy('month')
                 ->get();
