@@ -182,33 +182,72 @@ class DashboardController extends Controller
 
     /**
      * Get recent sales
-     * Returns recent completed orders with user details
+     * Returns recent pending/confirmed orders with user details and monthly total from completed orders
      *
      * @return JsonResponse
      */
     public function getRecentSales(): JsonResponse
     {
         try {
-            $recentSales = DB::table('orders')
-                ->select(
-                    'orders.id',
-                    'order_payments.total_amount as amount',
-                    'orders.created_at',
-                    'users.name as username',
-                    'users.email',
-                    'users.avatar as avatar'
-                )
-                ->leftJoin('order_payments', 'orders.id', '=', 'order_payments.order_id')
-                ->leftJoin('users', 'orders.user_id', '=', 'users.id')
-                ->where('orders.status', 'completed')
-                ->where('order_payments.payment_status', 'completed')
+            // Fetch recent pending/confirmed orders (currently processing)
+            $recentOrders = \App\Models\Order::with(['user.avatarMedia', 'payment'])
+                ->whereIn('orders.status', ['pending', 'confirmed'])
                 ->orderBy('orders.created_at', 'desc')
-                ->limit(10)
+                ->limit(5)
                 ->get();
+
+            // Calculate monthly total from completed orders this month
+            $currentMonth = now()->month;
+            $currentYear = now()->year;
+
+            $completedOrders = \App\Models\Order::with('payment')
+                ->where('status', 'completed')
+                ->whereMonth('created_at', $currentMonth)
+                ->whereYear('created_at', $currentYear)
+                ->get();
+
+            $monthlyTotal = $completedOrders->sum(function ($order) {
+                $payment = $order->payment;
+                if (!$payment) {
+                    return 0;
+                }
+                return ($payment->total_amount ?? 0) + ($payment->custom_amount ?? 0);
+            });
+
+            // Format response data
+            $formattedOrders = $recentOrders->map(function ($order) {
+                $user = $order->user;
+                $payment = $order->payment;
+                $avatarMedia = $user?->avatarMedia;
+
+                // Generate avatar URL
+                $avatarUrl = null;
+                if ($avatarMedia && !empty($avatarMedia->url)) {
+                    $avatarUrl = $avatarMedia->url;
+                } else {
+                    // Fallback to UI Avatars API
+                    $name = urlencode($user->name ?? 'User');
+                    $avatarUrl = "https://ui-avatars.com/api/?name={$name}&background=random";
+                }
+
+                // Calculate amount
+                $amount = 0;
+                if ($payment) {
+                    $amount = ($payment->total_amount ?? 0) + ($payment->custom_amount ?? 0);
+                }
+
+                return [
+                    'username' => $user->name ?? 'Unknown',
+                    'email' => $user->email ?? '',
+                    'amount' => (float) $amount,
+                    'icon' => $avatarUrl,
+                ];
+            });
 
             return response()->json([
                 'success' => true,
-                'data' => $recentSales,
+                'data' => $formattedOrders,
+                'monthly_total' => (float) $monthlyTotal,
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
