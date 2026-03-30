@@ -189,9 +189,9 @@ class DashboardController extends Controller
     public function getRecentSales(): JsonResponse
     {
         try {
-            // Fetch recent pending/confirmed orders (currently processing)
+            // Fetch recent pending/confirmed/completed orders (latest 5)
             $recentOrders = \App\Models\Order::with(['user.avatarMedia', 'payment'])
-                ->whereIn('orders.status', ['pending', 'confirmed'])
+                ->whereIn('orders.status', ['pending', 'confirmed', 'completed'])
                 ->orderBy('orders.created_at', 'desc')
                 ->limit(5)
                 ->get();
