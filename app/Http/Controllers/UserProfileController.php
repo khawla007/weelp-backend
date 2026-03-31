@@ -665,10 +665,17 @@ class UserProfileController extends Controller
         foreach ($currentMediaIds as $oldMediaId) {
             if (!in_array($oldMediaId, $existingMediaIdsFromRequest)) {
                 $oldMedia = \App\Models\Media::find($oldMediaId);
-                if ($oldMedia && !empty($oldMedia->url)) {
-                    // Delete from MinIO
-                    $parsedUrl = parse_url($oldMedia->url, PHP_URL_PATH);
-                    $relativePath = ltrim($parsedUrl, '/');
+                if ($oldMedia && !empty($oldMedia->getRawOriginal('url'))) {
+                    $relativePath = $oldMedia->getRawOriginal('url');
+
+                    // Legacy fallback: handle full URLs from before migration cleanup
+                    if (str_starts_with($relativePath, 'http')) {
+                        $parsed = parse_url($relativePath, PHP_URL_PATH);
+                        $relativePath = ltrim($parsed, '/');
+                        $bucket = config('filesystems.disks.minio.bucket');
+                        $relativePath = preg_replace('#^' . preg_quote($bucket, '#') . '/#', '', $relativePath);
+                    }
+
                     if ($relativePath) {
                         Storage::disk('minio')->delete($relativePath);
                     }
@@ -772,10 +779,17 @@ class UserProfileController extends Controller
 
         foreach ($currentMediaIds as $mediaId) {
             $media = \App\Models\Media::find($mediaId);
-            if ($media && !empty($media->url)) {
-                // Delete from MinIO
-                $parsedUrl = parse_url($media->url, PHP_URL_PATH);
-                $relativePath = ltrim($parsedUrl, '/');
+            if ($media && !empty($media->getRawOriginal('url'))) {
+                $relativePath = $media->getRawOriginal('url');
+
+                // Legacy fallback: handle full URLs from before migration cleanup
+                if (str_starts_with($relativePath, 'http')) {
+                    $parsed = parse_url($relativePath, PHP_URL_PATH);
+                    $relativePath = ltrim($parsed, '/');
+                    $bucket = config('filesystems.disks.minio.bucket');
+                    $relativePath = preg_replace('#^' . preg_quote($bucket, '#') . '/#', '', $relativePath);
+                }
+
                 if ($relativePath) {
                     Storage::disk('minio')->delete($relativePath);
                 }
