@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class UserProfile extends Model
 {
@@ -24,6 +25,26 @@ class UserProfile extends Model
         'myspace_url',
         'pinterest_url',
     ];
+
+    protected $appends = ['avatar'];
+
+    /**
+     * Get the full URL for the avatar.
+     * Converts stored relative path to full URL using Storage facade.
+     */
+    public function getAvatarAttribute($value)
+    {
+        if (!$value) {
+            return null;
+        }
+
+        // Legacy data: already a full URL (before migration cleanup)
+        if (str_starts_with($value, 'http')) {
+            return $value;
+        }
+
+        return Storage::disk('minio')->url($value);
+    }
 
     public function user()
     {
