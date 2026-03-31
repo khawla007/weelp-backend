@@ -4,7 +4,7 @@ return [
 
     'paths' => ['api/*'],
 
-    'allowed_methods' => ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    'allowed_methods' => ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
 
     'allowed_origins' => [env('FRONTEND_URL', 'http://localhost:3000')],
 
