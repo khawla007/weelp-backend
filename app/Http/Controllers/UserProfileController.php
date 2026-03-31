@@ -191,12 +191,14 @@ class UserProfileController extends Controller
             $storagePath = 'avatars/' . $user->id . '.' . $extension;
             Storage::disk('minio')->put($storagePath, file_get_contents($filePath), 'public');
 
-            // Get URL
-            $url = Storage::disk('minio')->url($storagePath);
+            // Save path to user profile
+            $profile = $user->profile ?? new UserProfile(['user_id' => $user->id]);
+            $profile->avatar = $storagePath;
+            $profile->save();
 
             return response()->json([
                 'success' => true,
-                'url' => $url
+                'url' => Storage::disk('minio')->url($storagePath),
             ]);
 
         } catch (\Exception $e) {
@@ -308,7 +310,7 @@ class UserProfileController extends Controller
                     'url' => $mediaLink['url'] ?? null,
                 ]);
 
-                $locations = $snapshot['location'] ?? [];
+                $locations = $snapshot['location'] ?? $snapshot['locations'] ?? [];
                 $cityName = $locations[0]['city'] ?? null;
                 $countryId = null;
 
@@ -487,7 +489,7 @@ class UserProfileController extends Controller
                 $media = new \App\Models\Media();
                 $media->name = $originalName;
                 $media->alt_text = $originalName;
-                $media->url = Storage::disk('minio')->url($filePath);
+                $media->url = $filePath;
                 // $media->user_id = $user->id; // user ownership track karne ke liye
                 $media->save();
 
@@ -692,7 +694,7 @@ class UserProfileController extends Controller
                 $media = new \App\Models\Media();
                 $media->name = $originalName;
                 $media->alt_text = $originalName;
-                $media->url = Storage::disk('minio')->url($filePath);
+                $media->url = $filePath;
                 $media->save();
 
                 $updatedMediaIds[] = $media->id;
