@@ -18,14 +18,14 @@ class PublicActivityController extends Controller
     public function getActivities()
     {
         $activities = Activity::with([
-            'categories.category', 
-            'attributes.attribute', 
-            'locations.city',
-            'pricing', 
-            'seasonalPricing', 
-            'groupDiscounts', 
-            'earlyBirdDiscount', 
-            'lastMinuteDiscount', 
+            'categories.category',
+            'attributes.attribute',
+            'locations.city.state.country.regions',
+            'pricing',
+            'seasonalPricing',
+            'groupDiscounts',
+            'earlyBirdDiscount',
+            'lastMinuteDiscount',
             'promoCodes',
             'availability',
             'mediaGallery.media',
@@ -123,7 +123,7 @@ class PublicActivityController extends Controller
         $query = Activity::with([
             'categories.category',
             'attributes.attribute',
-            'locations.city',
+            'locations.city.state.country.regions',
             'pricing',
             'seasonalPricing',
             'groupDiscounts',
@@ -235,7 +235,7 @@ class PublicActivityController extends Controller
         $activity = Activity::with([
             'categories.category',
             'attributes.attribute',
-            'locations.city',
+            'locations.city.state.country.regions',
             'pricing',
             'seasonalPricing',
             'groupDiscounts',
