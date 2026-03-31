@@ -64,20 +64,37 @@ Route::get('/test', function () {
     return response()->json(['message' => 'Route Working!']);
 });
 
-Route::post('/register', [AuthController::class, 'register']);
+// Login - strict rate limit (5 attempts per minute)
+Route::middleware('throttle:5,1')->group(function () {
+    Route::post('/login', [AuthController::class, 'login']);
+});
+
+// Registration - moderate rate limit (10 per minute)
+Route::middleware('throttle:10,1')->group(function () {
+    Route::post('/register', [AuthController::class, 'register']);
+});
+
+// Password reset - strict rate limit (3 per minute)
+Route::middleware('throttle:3,1')->group(function () {
+    Route::post('/password/forgot', [AuthController::class, 'forgotPassword']);
+    Route::post('/password/reset', [AuthController::class, 'resetPassword']);
+});
+
+// OTP - moderate rate limit (5 per minute)
+Route::middleware('throttle:5,1')->group(function () {
+    Route::post('/send-otp', [OtpController::class, 'sendOtp']);
+    Route::post('/verify-otp', [OtpController::class, 'verifyOtp']);
+});
+
+// Token refresh - relaxed rate limit (10 per minute)
+Route::middleware('throttle:10,1')->group(function () {
+    Route::post('/refresh-token', [AuthController::class, 'refreshToken']);
+});
+
+// Non-sensitive auth routes - no throttle needed
 Route::get('/check-username', [AuthController::class, 'checkUsername']);
-
-Route::post('/send-otp', [OtpController::class, 'sendOtp']);
-Route::post('/verify-otp', [OtpController::class, 'verifyOtp']);
-
 Route::get('/verify-email', [AuthController::class, 'verifyEmail']);
-
 Route::post('/resend-verification', [AuthController::class, 'resendVerification']);
-
-Route::post('/login', [AuthController::class, 'login']);
-Route::post('/password/forgot', [AuthController::class, 'forgotPassword']);
-Route::post('/password/reset', [AuthController::class, 'resetPassword']);
-Route::post('/refresh-token', [AuthController::class, 'refreshToken']);
 
 // Route::middleware('auth:api')->group(function () {
 Route::middleware(['auth:api', 'customer'])->prefix('customer')->group(function () {
