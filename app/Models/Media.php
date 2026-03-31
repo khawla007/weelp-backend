@@ -4,12 +4,33 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class Media extends Model
 {
     protected $table = 'media';
 
     protected $fillable = ['name', 'alt_text', 'url', 'file_size', 'width', 'height'];
+
+    protected $appends = ['url'];
+
+    /**
+     * Get the full URL for the media file.
+     * Converts stored relative path to full URL using Storage facade.
+     */
+    public function getUrlAttribute($value)
+    {
+        if (!$value) {
+            return null;
+        }
+
+        // Legacy data: already a full URL (before migration cleanup)
+        if (str_starts_with($value, 'http')) {
+            return $value;
+        }
+
+        return Storage::disk('minio')->url($value);
+    }
 
     /**
      * Boot method to register model events
