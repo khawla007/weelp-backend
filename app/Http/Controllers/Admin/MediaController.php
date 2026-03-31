@@ -97,7 +97,7 @@ class MediaController extends Controller
                     $media = new Media();
                     $media->name = $originalName;
                     $media->alt_text = $originalName;
-                    $media->url = Storage::disk('minio')->url($filePath);
+                    $media->url = $filePath;
                     $media->file_size = $file->getSize();
                     $media->width = $width;
                     $media->height = $height;
@@ -172,15 +172,15 @@ class MediaController extends Controller
 
         // Delete file from MinIO first
         try {
-            // URL format: http://localhost:9000/weelp-media/media/abc123.jpg
-            $parsedUrl = parse_url($media->url);
-            $path = $parsedUrl['path'] ?? ''; // /weelp-media/media/abc123.jpg
+            $path = $media->getRawOriginal('url');
 
-            // Remove bucket prefix and get relative path
-            $path = ltrim($path, '/'); // weelp-media/media/abc123.jpg
-
-            // Remove bucket name if present
-            $path = str_replace('weelp-media/', '', $path); // media/abc123.jpg
+            // Legacy fallback: handle full URLs from before migration cleanup
+            if (str_starts_with($path, 'http')) {
+                $parsed = parse_url($path, PHP_URL_PATH);
+                $path = ltrim($parsed, '/');
+                $bucket = config('filesystems.disks.minio.bucket');
+                $path = preg_replace('#^' . preg_quote($bucket, '#') . '/#', '', $path);
+            }
 
             if ($path && Storage::disk('minio')->exists($path)) {
                 Storage::disk('minio')->delete($path);
@@ -214,15 +214,15 @@ class MediaController extends Controller
         $minioDeletions = 0;
         foreach ($mediaItems as $media) {
             try {
-                // URL format: http://localhost:9000/weelp-media/media/abc123.jpg
-                $parsedUrl = parse_url($media->url);
-                $path = $parsedUrl['path'] ?? ''; // /weelp-media/media/abc123.jpg
+                $path = $media->getRawOriginal('url');
 
-                // Remove bucket prefix and get relative path
-                $path = ltrim($path, '/'); // weelp-media/media/abc123.jpg
-
-                // Remove bucket name if present
-                $path = str_replace('weelp-media/', '', $path); // media/abc123.jpg
+                // Legacy fallback: handle full URLs from before migration cleanup
+                if (str_starts_with($path, 'http')) {
+                    $parsed = parse_url($path, PHP_URL_PATH);
+                    $path = ltrim($parsed, '/');
+                    $bucket = config('filesystems.disks.minio.bucket');
+                    $path = preg_replace('#^' . preg_quote($bucket, '#') . '/#', '', $path);
+                }
 
                 if ($path && Storage::disk('minio')->exists($path)) {
                     Storage::disk('minio')->delete($path);
