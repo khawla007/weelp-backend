@@ -153,4 +153,19 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->hasMany(Review::class, 'user_id');
     }
+
+    public function posts()
+    {
+        return $this->hasMany(Post::class, 'creator_id');
+    }
+
+    public function commissions()
+    {
+        return $this->hasMany(Commission::class, 'creator_id');
+    }
+
+    public function postLikes()
+    {
+        return $this->hasMany(PostLike::class);
+    }
 }

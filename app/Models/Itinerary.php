@@ -91,4 +91,9 @@ class Itinerary extends Model
     {
         return $this->hasMany(ItineraryAddon::class);
     }
+
+    public function postTags()
+    {
+        return $this->morphMany(PostItemTag::class, 'taggable');
+    }
 }

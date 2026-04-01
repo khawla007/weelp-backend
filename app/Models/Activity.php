@@ -112,4 +112,9 @@ class Activity extends Model {
     {
         return $this->hasMany(ActivityAddon::class);
     }
+
+    public function postTags()
+    {
+        return $this->morphMany(PostItemTag::class, 'taggable');
+    }
 }

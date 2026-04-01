@@ -106,4 +106,8 @@ class Package extends Model
         return $this->hasMany(PackageAddon::class);
     }
 
+    public function postTags()
+    {
+        return $this->morphMany(PostItemTag::class, 'taggable');
+    }
 }
