@@ -59,6 +59,9 @@ use App\Http\Controllers\Guest\PublicFilterController;
 use App\Http\Controllers\Guest\PublicBlogController;
 use App\Http\Controllers\Guest\PublicReviewController;
 use App\Http\Controllers\Guest\OtpController;
+use App\Http\Controllers\Guest\PublicPostController;
+use App\Http\Controllers\Creator\CreatorPostController;
+use App\Http\Controllers\Creator\CreatorDashboardController;
 
 Route::get('/test', function () {
     return response()->json(['message' => 'Route Working!']);
@@ -116,6 +119,21 @@ Route::middleware(['auth:api', 'customer'])->prefix('customer')->group(function 
         Route::post('{id}', [UserProfileController::class, 'reviewUpdate']);
         Route::delete('{id}', [UserProfileController::class, 'reviewDelete']);
     });
+
+    // Upgrade to creator
+    Route::post('/upgrade-to-creator', [AuthController::class, 'upgradeToCreator']);
+});
+
+// Creator routes
+Route::middleware(['auth:api', 'creator'])->prefix('creator')->group(function () {
+    Route::prefix('posts')->group(function () {
+        Route::get('/', [CreatorPostController::class, 'index']);
+        Route::post('/', [CreatorPostController::class, 'store']);
+        Route::put('/{id}', [CreatorPostController::class, 'update']);
+        Route::delete('/{id}', [CreatorPostController::class, 'destroy']);
+    });
+
+    Route::get('/dashboard/stats', [CreatorDashboardController::class, 'stats']);
 });
 
 // Stripe Payment api
@@ -414,7 +432,7 @@ Route::get('/cities/{city_slug}/all-items', [PublicCitiesController::class, 'get
 Route::prefix('activities')->group(function () {
     Route::get('/', [PublicActivityController::class, 'getActivities']);
     Route::get('/featured-activities', [PublicActivityController::class, 'getFeaturedActivities']);
-    Route::get('/{activity_slug}', [PublicActivityController::class, 'getActivityBySlug']);
+    Route::get('/{activity_slug}', [PublicActivityController::class, 'getActivityBySlug'])->middleware('affiliate');
 });
 
 // transfer api
@@ -427,7 +445,7 @@ Route::prefix('transfers')->group(function () {
 Route::prefix('itineraries')->group(function () {
     Route::get('/', [PublicItineraryController::class, 'index']);
     Route::get('/featured-itineraries', [PublicItineraryController::class, 'getFeaturedItineraries']);
-    Route::get('/{slug}', [PublicItineraryController::class, 'show']);
+    Route::get('/{slug}', [PublicItineraryController::class, 'show'])->middleware('affiliate');
     Route::get('/{slug}/addons', [PublicItineraryController::class, 'getAddons']);
 });
 
@@ -435,7 +453,7 @@ Route::prefix('itineraries')->group(function () {
 Route::prefix('packages')->group(function () {
     Route::get('/', [PublicPackageController::class, 'index']);
     Route::get('/featured-packages', [PublicPackageController::class, 'getFeaturedPackages']);
-    Route::get('/{slug}', [PublicPackageController::class, 'show']);
+    Route::get('/{slug}', [PublicPackageController::class, 'show'])->middleware('affiliate');
     Route::get('/{slug}/addons', [PublicPackageController::class, 'getAddons']);
 });
 
@@ -458,4 +476,16 @@ Route::prefix('reviews')->group(function () {
     Route::get('/featured-reviews', [PublicReviewController::class, 'getFeaturedReviews']);
     Route::get('/activity/{activity_slug}', [PublicReviewController::class, 'getActivityReviews']);
     Route::get('/activity/{activity_slug}/featured', [PublicReviewController::class, 'getActivityFeaturedReviews']);
+});
+
+// Public posts feed
+Route::prefix('posts')->group(function () {
+    Route::get('/', [PublicPostController::class, 'index']);
+    Route::get('/{id}', [PublicPostController::class, 'show']);
+});
+
+// Authenticated post interactions (any logged-in user)
+Route::middleware('auth:api')->group(function () {
+    Route::post('/posts/{id}/like', [PublicPostController::class, 'toggleLike']);
+    Route::post('/posts/{id}/share', [PublicPostController::class, 'incrementShare']);
 });

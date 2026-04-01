@@ -19,6 +19,7 @@ use App\Models\OrderPayment;
 use App\Models\OrderEmergencyContact;
 use Stripe\Stripe;
 use Stripe\Checkout\Session as StripeSession;
+use App\Models\Commission;
 
 
 class StripeController extends Controller
@@ -184,6 +185,24 @@ class StripeController extends Controller
                 Mail::to($order->user->email)->send(new CustomerProcessingOrderMail($order));
                 // Send admin mail
                 Mail::to(config('mail.admin_address', 'khawla@fanaticcoders.com'))->send(new AdminNewOrderMail($order));
+
+                // Create affiliate commission if cookie exists
+                $affiliateRef = $request->cookie('affiliate_ref');
+                if ($affiliateRef) {
+                    $creator = User::where('id', $affiliateRef)->where('is_creator', true)->first();
+                    if ($creator) {
+                        $commissionRate = config('services.creator.commission_rate', 10.00);
+                        $paymentAmount = $payment->total_amount ?? $payment->amount;
+
+                        Commission::create([
+                            'creator_id' => $creator->id,
+                            'order_id' => $order->id,
+                            'commission_rate' => $commissionRate,
+                            'commission_amount' => round($paymentAmount * ($commissionRate / 100), 2),
+                            'status' => 'pending',
+                        ]);
+                    }
+                }
             }
         }
         
