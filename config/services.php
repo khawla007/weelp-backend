@@ -39,4 +39,8 @@ return [
         'secret' => env('STRIPE_SECRET'),
     ],
 
+    'creator' => [
+        'commission_rate' => env('CREATOR_COMMISSION_RATE', 10.00),
+    ],
+
 ];

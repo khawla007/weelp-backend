@@ -219,7 +219,7 @@ class AuthController extends Controller
             'email' => $user->email,
             'name' => $user->name,
             'role' => $user->role,
-
+            'is_creator' => $user->is_creator,
         ]);
     }
 
@@ -237,6 +237,30 @@ class AuthController extends Controller
         } catch (JWTException $e) {
             return response()->json(['error' => 'Failed to logout'], 500);
         }
+    }
+
+    /**
+     * Upgrade current customer to creator.
+     */
+    public function upgradeToCreator(Request $request)
+    {
+        $user = auth()->user();
+
+        if ($user->is_creator) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You are already a creator.',
+            ], 422);
+        }
+
+        $user->is_creator = true;
+        $user->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'You are now a creator!',
+            'is_creator' => true,
+        ]);
     }
 
     /**
