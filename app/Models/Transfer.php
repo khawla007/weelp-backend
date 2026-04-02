@@ -4,6 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 /**
  * @property int $id
@@ -62,61 +66,61 @@ class Transfer extends Model
     ];
 
     // Relationship with TransferVendorRoute
-    public function vendorRoutes()
+    public function vendorRoutes(): HasOne
     {
         return $this->hasOne(TransferVendorRoute::class)->with('vendor', 'route');
     }
 
     // Relationship with TransferPricingAvailability
-    public function pricingAvailability()
+    public function pricingAvailability(): HasOne
     {
         return $this->hasOne(TransferPricingAvailability::class)->with('pricingTier', 'availability');
     }
 
     // Relationship with Media
-    public function mediaGallery()
+    public function mediaGallery(): HasMany
     {
         return $this->hasMany(TransferMediaGallery::class);
     }
 
     // Relationship with Schedule
-    public function schedule()
+    public function schedule(): HasOne
     {
         return $this->hasOne(TransferSchedule::class);
     }
 
     // Relationship with SEO
-    public function seo()
+    public function seo(): HasOne
     {
         return $this->hasOne(TransferSeo::class);
     }
 
-    public function itineraryTransfer()
+    public function itineraryTransfer(): HasMany
     {
         return $this->hasMany(ItineraryTransferMapping::class, 'transfer_id');
     }
 
-    public function itineraries()
+    public function itineraries(): HasManyThrough
     {
         return $this->hasManyThrough(Itinerary::class, ItineraryTransferMapping::class, 'transfer_id', 'id', 'id', 'itinerary_id');
     }
 
-    public function packageTransfer()
+    public function packageTransfer(): HasMany
     {
         return $this->hasMany(PackageTransferMapping::class, 'transfer_id');
     }
 
-    public function packages()
+    public function packages(): HasManyThrough
     {
         return $this->hasManyThrough(Package::class, PackageTransferMapping::class, 'transfer_id', 'id', 'id', 'package_id');
     }
 
-    public function reviews()
+    public function reviews(): MorphMany
     {
         return $this->morphMany(Review::class, 'item', 'item_type', 'item_id');
     }
 
-    public function addons()
+    public function addons(): HasMany
     {
         return $this->hasMany(TransferAddon::class);
     }

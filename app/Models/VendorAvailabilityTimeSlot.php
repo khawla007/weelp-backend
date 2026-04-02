@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property int $id
@@ -45,17 +47,17 @@ class VendorAvailabilityTimeSlot extends Model
 
     protected $fillable = ['vendor_id', 'vehicle_id', 'date', 'start_time', 'end_time', 'max_bookings', 'price_multiplier'];
 
-    public function vendor()
+    public function vendor(): BelongsTo
     {
         return $this->belongsTo(Vendor::class);
     }
 
-    public function vehicle()
+    public function vehicle(): BelongsTo
     {
         return $this->belongsTo(VendorVehicle::class);
     }
 
-    public function transferAvailability()
+    public function transferAvailability(): HasMany
     {
         return $this->hasMany(TransferPricingAvailability::class, 'availability_id');
     }

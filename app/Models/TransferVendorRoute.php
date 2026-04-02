@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -58,19 +59,19 @@ class TransferVendorRoute extends Model
     ];
 
     // Relationship with Transfer
-    public function transfer()
+    public function transfer(): BelongsTo
     {
         return $this->belongsTo(Transfer::class);
     }
 
     // Relationship with Vendor
-    public function vendor()
+    public function vendor(): BelongsTo
     {
         return $this->belongsTo(Vendor::class);
     }
 
     // Relationship with Vendor Route
-    public function route()
+    public function route(): BelongsTo
     {
         return $this->belongsTo(VendorRoute::class);
     }

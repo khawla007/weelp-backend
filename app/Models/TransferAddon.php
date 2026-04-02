@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -34,12 +35,12 @@ class TransferAddon extends Model
     ];
 
     // Relations
-    public function transfer()
+    public function transfer(): BelongsTo
     {
         return $this->belongsTo(Transfer::class, 'transfer_id');
     }
 
-    public function addon()
+    public function addon(): BelongsTo
     {
         return $this->belongsTo(Addon::class, 'addon_id');
     }

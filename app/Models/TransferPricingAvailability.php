@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -61,19 +62,19 @@ class TransferPricingAvailability extends Model
     ];
 
     // Relationship with Transfer
-    public function transfer()
+    public function transfer(): BelongsTo
     {
         return $this->belongsTo(Transfer::class);
     }
 
     // Relationship with VendorPricingTier
-    public function pricingTier()
+    public function pricingTier(): BelongsTo
     {
         return $this->belongsTo(VendorPricingTier::class);
     }
 
     // Relationship with VendorAvailabilityTimeSlot
-    public function availability()
+    public function availability(): BelongsTo
     {
         return $this->belongsTo(VendorAvailabilityTimeSlot::class);
     }

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -42,17 +43,17 @@ class VendorDriverSchedule extends Model
 
     protected $fillable = ['vendor_id', 'driver_id', 'vehicle_id', 'date', 'shift', 'time'];
 
-    public function vendor()
+    public function vendor(): BelongsTo
     {
         return $this->belongsTo(Vendor::class);
     }
 
-    public function driver()
+    public function driver(): BelongsTo
     {
         return $this->belongsTo(VendorDriver::class);
     }
 
-    public function vehicle()
+    public function vehicle(): BelongsTo
     {
         return $this->belongsTo(VendorVehicle::class);
     }

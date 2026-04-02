@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -52,7 +53,7 @@ class TransferSeo extends Model
         'schema_data' => 'array',
     ];
 
-    public function transfer()
+    public function transfer(): BelongsTo
     {
         return $this->belongsTo(Transfer::class);
     }

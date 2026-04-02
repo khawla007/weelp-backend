@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property int $id
@@ -46,12 +48,12 @@ class VendorRoute extends Model
 
     protected $fillable = ['vendor_id', 'name', 'description', 'start_point', 'end_point', 'base_price', 'price_per_km', 'status'];
 
-    public function vendor()
+    public function vendor(): BelongsTo
     {
         return $this->belongsTo(Vendor::class);
     }
 
-    public function transferRoutes()
+    public function transferRoutes(): HasMany
     {
         return $this->hasMany(TransferVendorRoute::class, 'route_id');
     }

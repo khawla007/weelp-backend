@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property int $id
@@ -51,32 +52,32 @@ class Vendor extends Model
 
     protected $fillable = ['name', 'description', 'email', 'phone', 'address', 'status'];
 
-    public function routes()
+    public function routes(): HasMany
     {
         return $this->hasMany(VendorRoute::class);
     }
 
-    public function pricingTiers()
+    public function pricingTiers(): HasMany
     {
         return $this->hasMany(VendorPricingTier::class);
     }
 
-    public function vehicles()
+    public function vehicles(): HasMany
     {
         return $this->hasMany(VendorVehicle::class);
     }
 
-    public function drivers()
+    public function drivers(): HasMany
     {
         return $this->hasMany(VendorDriver::class);
     }
 
-    public function transferVendor()
+    public function transferVendor(): HasMany
     {
         return $this->hasMany(TransferVendorRoute::class, 'vendor_id');
     }
 
-    public function availabilityTimeSlots()
+    public function availabilityTimeSlots(): HasMany
     {
         return $this->hasMany(VendorAvailabilityTimeSlot::class);
     }

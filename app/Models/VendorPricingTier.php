@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property int $id
@@ -50,12 +52,12 @@ class VendorPricingTier extends Model
 
     protected $fillable = ['vendor_id', 'name', 'description', 'base_price', 'price_per_km', 'min_distance', 'waiting_charge', 'night_charge_multiplier', 'peak_hour_multiplier', 'status'];
 
-    public function vendor()
+    public function vendor(): BelongsTo
     {
         return $this->belongsTo(Vendor::class);
     }
 
-    public function transferPricingAvailability()
+    public function transferPricingAvailability(): HasMany
     {
         return $this->hasMany(TransferPricingAvailability::class, 'pricing_tier_id');
     }
