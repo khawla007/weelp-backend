@@ -779,10 +779,10 @@ class ItineraryController extends Controller
             
                 // 🔁 update / create (same as before)
                 foreach ($data as $item) {
-            
+
                     $attributes = array_merge($item, $extra);
-            
-                    if (!empty($item['id'])) {
+
+                    if (!empty($item['id']) && $modelClass && is_string($modelClass)) {
                         $model = $modelClass::find($item['id']);
                         if ($model) {
                             $model->fill($attributes)->save();
@@ -792,9 +792,9 @@ class ItineraryController extends Controller
                         $relation->create($attributes);
                     }
                 }
-            };            
-            
-    
+            };
+
+
             // foreach (['information', 'locations', 'faqs', 'inclusionsExclusions', 'mediaGallery'] as $relation) {
             foreach (['information', 'faqs', 'inclusionsExclusions', 'mediaGallery'] as $relation) {
                 if ($request->has(Str::snake($relation))) {

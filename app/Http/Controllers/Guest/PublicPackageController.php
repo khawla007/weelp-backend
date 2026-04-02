@@ -286,7 +286,7 @@ class PublicPackageController extends Controller
                             'end_time' => $scheduleActivity->end_time,
                             'notes' => $scheduleActivity->notes,
                             'price' => $scheduleActivity->price,
-                            'include_in_package' => $scheduleActivity->include_in_package,
+                            'include_in_package' => $scheduleActivity->included,
                             'main_location' => $primaryLocation?->city?->name,
                             'duration_minutes' => $primaryLocation?->duration,
                             'featured_image' => $featuredMedia?->media?->url
@@ -303,7 +303,7 @@ class PublicPackageController extends Controller
                             'dropoff_location' => $transfer->dropoff_location,
                             'pax' => $transfer->pax,
                             'price' => $transfer->price,
-                            'include_in_package' => $transfer->include_in_package,
+                            'include_in_package' => $transfer->included,
                         ];
                     }),
                 ];

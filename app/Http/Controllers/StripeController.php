@@ -84,7 +84,7 @@ class StripeController extends Controller
                         'country' => $loc->city?->state?->country?->name,
                     ];
                 }),
-                'pricing' => $orderable->pricings,
+                'pricing' => $orderable->pricing,
                 'coupons_applied' => $order->applied_coupons ?? [],
                 'media' => $orderable->mediaGallery->map(function ($mg) {
                     return [
@@ -429,7 +429,7 @@ class StripeController extends Controller
                         'country' => $loc->city?->state?->country?->name,
                     ];
                 }),
-                'pricing' => $orderable->pricings,
+                'pricing' => $orderable->pricing,
                 'coupons_applied' => $order->applied_coupons ?? [],
                 'media' => $orderable->mediaGallery->map(function ($mg) {
                     return [
@@ -560,13 +560,13 @@ class StripeController extends Controller
                 case 'Package':
                     $package = \App\Models\Package::with('basePricing.variations')->where('id', $orderableId)->first();
                     $itemName = $package?->name;
-                    $itemPrice = $package?->basePricing?->priceVariations?->first()?->regular_price;
+                    $itemPrice = $package?->basePricing?->variations?->first()?->regular_price;
                     break;
             
                 case 'Itinerary':
                     $itinerary = \App\Models\Itinerary::with('basePricing.variations')->where('id', $orderableId)->first();
                     $itemName = $itinerary?->name;
-                    $itemPrice = $itinerary?->basePricing?->priceVariations?->first()?->regular_price;
+                    $itemPrice = $itinerary?->basePricing?->variations?->first()?->regular_price;
                     break;
             }
 

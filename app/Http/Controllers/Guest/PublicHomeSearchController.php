@@ -401,8 +401,8 @@ class PublicHomeSearchController extends Controller
                 'city_slug' => $itinerary->locations->first()?->city?->slug,
                 'categories' => $categories,
                 'tags' => $itinerary->tags->map(fn ($tag) => [
-                    'slug' => $tag->slug,
-                    'name' => $tag->name,
+                    'slug' => $tag->tag->slug,
+                    'name' => $tag->tag->name,
                 ])->toArray(),
                 'base_pricing' => $itinerary->basePricing ? [
                     'currency' => $itinerary->basePricing->currency,
@@ -533,8 +533,8 @@ class PublicHomeSearchController extends Controller
                 'city_slug' => $package->locations->first()?->city?->slug,
                 'categories' => $categories,
                 'tags' => $package->tags->map(fn ($tag) => [
-                    'slug' => $tag->slug,
-                    'name' => $tag->name,
+                    'slug' => $tag->tag->slug,
+                    'name' => $tag->tag->name,
                 ])->toArray(),
                 'base_pricing' => $package->basePricing ? [
                     'currency' => $package->basePricing->currency,

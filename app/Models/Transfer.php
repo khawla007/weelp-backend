@@ -14,6 +14,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $transfer_type
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property string|null $feature_image
+ * @property array $media_gallery
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\TransferAddon> $addons
  * @property-read int|null $addons_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Itinerary> $itineraries

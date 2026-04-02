@@ -281,7 +281,7 @@ class PublicItineraryController extends Controller
                             'end_time' => $activity->end_time,
                             'notes' => $activity->notes,
                             'price' => $activity->price,
-                            'include_in_package' => $activity->include_in_package,
+                            'include_in_package' => $activity->included,
                             'main_location' => $primaryLocation?->city?->name,
                             'duration_minutes' => $primaryLocation?->duration,
                             'featured_image' => $featuredMedia?->media?->url
@@ -298,7 +298,7 @@ class PublicItineraryController extends Controller
                             'dropoff_location' => $transfer->dropoff_location,
                             'pax' => $transfer->pax,
                             'price' => $transfer->price,
-                            'include_in_package' => $transfer->include_in_package,
+                            'include_in_package' => $transfer->included,
                         ];
                     }),
                 ];

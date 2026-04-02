@@ -854,8 +854,8 @@ class PublicRegionController extends Controller
                     'name' => $category->category->name,
                 ])->toArray(),
                 'tags' => $itinerary->tags->map(fn ($tag) => [
-                    'slug' => $tag->slug,
-                    'name' => $tag->name,
+                    'slug' => $tag->tag->slug,
+                    'name' => $tag->tag->name,
                 ])->toArray(),
                 'locations' => $itinerary->locations->map(function ($location) {
                     $city = $location->city;
@@ -885,8 +885,8 @@ class PublicRegionController extends Controller
                     'name' => $category->category->name,
                 ])->toArray(),
                 'tags' => $package->tags->map(fn ($tag) => [
-                    'slug' => $tag->slug,
-                    'name' => $tag->name,
+                    'slug' => $tag->tag->slug,
+                    'name' => $tag->tag->name,
                 ])->toArray(),
                 'locations' => $package->locations->map(function ($location) {
                     $city = $location->city;

@@ -16,6 +16,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property bool $featured_destination
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property string|null $feature_image
+ * @property array $media_gallery
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\StateAdditionalInfo> $additionalInfo
  * @property-read int|null $additional_info_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\City> $cities

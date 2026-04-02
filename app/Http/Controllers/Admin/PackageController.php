@@ -828,10 +828,10 @@ class PackageController extends Controller
             
                 // 🔁 update / create (same as before)
                 foreach ($data as $item) {
-            
+
                     $attributes = array_merge($item, $extra);
-            
-                    if (!empty($item['id'])) {
+
+                    if (!empty($item['id']) && $modelClass && is_string($modelClass)) {
                         $model = $modelClass::find($item['id']);
                         if ($model) {
                             $model->fill($attributes)->save();
@@ -841,8 +841,8 @@ class PackageController extends Controller
                         $relation->create($attributes);
                     }
                 }
-            }; 
-    
+            };
+
             foreach (['information', 'faqs', 'inclusionsExclusions'] as $relation) {
                 if ($request->has(Str::snake($relation))) {
                     $updateOrCreateRelation($relation, $request->{Str::snake($relation)});
