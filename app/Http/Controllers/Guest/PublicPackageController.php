@@ -34,8 +34,8 @@ class PublicPackageController extends Controller
                 'featured_package' => $package->featured_package,
                 'description' => $package->description,
                 'item_type' => $package->item_type,
-                'featured_image' => $package->mediaGallery->where('is_featured', true)->first()?->media?->url
-                    ?? $package->mediaGallery->first()?->media?->url,
+                'featured_image' => $package->mediaGallery->where('is_featured', true)->first()?->media->url
+                    ?? $package->mediaGallery->first()?->media->url,
                 'locations' => $package->locations->map(function ($location) {
                     $city = $location->city;
 
@@ -152,8 +152,8 @@ class PublicPackageController extends Controller
                 'item_type' => $package->item_type,
                 'featured_package' => $package->featured_package,
                 'city_slug' => $package->locations->first()?->city?->slug,
-                'featured_image' => $package->mediaGallery->where('is_featured', true)->first()?->media?->url
-                    ?? $package->mediaGallery->first()?->media?->url,
+                'featured_image' => $package->mediaGallery->where('is_featured', true)->first()?->media->url
+                    ?? $package->mediaGallery->first()?->media->url,
                 'locations' => $package->locations->map(function ($location) {
                     $city = $location->city;
 
@@ -195,8 +195,8 @@ class PublicPackageController extends Controller
         $formattedPackages = match ($sortBy) {
             'name_asc' => $formattedPackages->sortBy('name'),
             'name_desc' => $formattedPackages->sortByDesc('name'),
-            'price_asc' => $formattedPackages->sortBy(fn ($item) => $item['base_pricing']?->variations?->first()?->regular_price ?? 0),
-            'price_desc' => $formattedPackages->sortByDesc(fn ($item) => $item['base_pricing']?->variations?->first()?->regular_price ?? 0),
+            'price_asc' => $formattedPackages->sortBy(fn ($item) => $item['base_pricing']?->variations?->first()->regular_price ?? 0),
+            'price_desc' => $formattedPackages->sortByDesc(fn ($item) => $item['base_pricing']?->variations?->first()->regular_price ?? 0),
             default => $formattedPackages->sortByDesc('id'),
         };
 
@@ -251,8 +251,8 @@ class PublicPackageController extends Controller
             'featured_package' => $package->featured_package,
             'description' => $package->description,
             'item_type' => $package->item_type,
-            'featured_image' => $package->mediaGallery->where('is_featured', true)->first()?->media?->url
-                ?? $package->mediaGallery->first()?->media?->url,
+            'featured_image' => $package->mediaGallery->where('is_featured', true)->first()?->media->url
+                ?? $package->mediaGallery->first()?->media->url,
             'locations' => $package->locations->map(function ($location) {
                 $city = $location->city;
 
@@ -277,12 +277,12 @@ class PublicPackageController extends Controller
                     'day' => $schedule->day,
                     'activities' => $schedule->activities->map(function ($scheduleActivity) {
                         $activityModel = $scheduleActivity->activity;
-                        $primaryLocation = $activityModel?->locations->where('location_type', 'primary')->first();
-                        $featuredMedia = $activityModel?->mediaGallery->where('is_featured', true)->first();
+                        $primaryLocation = $activityModel->locations->where('location_type', 'primary')->first();
+                        $featuredMedia = $activityModel->mediaGallery->where('is_featured', true)->first();
 
                         return [
                             'id' => $scheduleActivity->id,
-                            'name' => $activityModel?->name,
+                            'name' => $activityModel->name,
                             'start_time' => $scheduleActivity->start_time,
                             'end_time' => $scheduleActivity->end_time,
                             'notes' => $scheduleActivity->notes,
@@ -290,8 +290,8 @@ class PublicPackageController extends Controller
                             'include_in_package' => $scheduleActivity->included,
                             'main_location' => $primaryLocation?->city?->name,
                             'duration_minutes' => $primaryLocation?->duration,
-                            'featured_image' => $featuredMedia?->media?->url
-                                ?? $activityModel?->mediaGallery->first()?->media?->url,
+                            'featured_image' => $featuredMedia?->media->url
+                                ?? $activityModel->mediaGallery->first()?->media->url,
                         ];
                     }),
                     'transfers' => $schedule->transfers->map(function ($transfer) {

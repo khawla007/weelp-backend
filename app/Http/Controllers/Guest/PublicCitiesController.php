@@ -298,8 +298,8 @@ class PublicCitiesController extends Controller
                 'item_type' => 'activity',
                 'city_slug' => $city_slug,
                 'featured' => $activity->featured_activity,
-                'featured_image' => $activity->mediaGallery->where('is_featured', true)->first()?->media?->url
-                    ?? $activity->mediaGallery->first()?->media?->url,
+                'featured_image' => $activity->mediaGallery->where('is_featured', true)->first()?->media->url
+                    ?? $activity->mediaGallery->first()?->media->url,
                 'pricing' => $activity->pricing,
                 'categories' => $activity->categories->map(fn ($category) => [
                     'slug' => $category->category->slug,
@@ -313,8 +313,8 @@ class PublicCitiesController extends Controller
                 'item_type' => 'itinerary',
                 'city_slug' => $city_slug,
                 'featured' => $itinerary->featured_itinerary,
-                'featured_image' => $itinerary->mediaGallery->where('is_featured', true)->first()?->media?->url
-                    ?? $itinerary->mediaGallery->first()?->media?->url,
+                'featured_image' => $itinerary->mediaGallery->where('is_featured', true)->first()?->media->url
+                    ?? $itinerary->mediaGallery->first()?->media->url,
                 'base_pricing' => $itinerary->basePricing,
                 'categories' => $itinerary->categories->map(fn ($category) => [
                     'slug' => $category->category->slug,
@@ -332,8 +332,8 @@ class PublicCitiesController extends Controller
                 'item_type' => 'package',
                 'city_slug' => $city_slug,
                 'featured' => $package->featured_package,
-                'featured_image' => $package->mediaGallery->where('is_featured', true)->first()?->media?->url
-                    ?? $package->mediaGallery->first()?->media?->url,
+                'featured_image' => $package->mediaGallery->where('is_featured', true)->first()?->media->url
+                    ?? $package->mediaGallery->first()?->media->url,
                 'base_pricing' => $package->basePricing,
                 'categories' => $package->categories->map(fn ($category) => [
                     'slug' => $category->category->slug,

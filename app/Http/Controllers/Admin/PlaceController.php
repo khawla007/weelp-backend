@@ -58,17 +58,17 @@ class PlaceController extends Controller
                     'name' => $place->city->name,
                     'slug' => $place->city->slug,
                 ] : null,
-                'state' => $place->city?->state ? [
+                'state' => $place->city->state ? [
                     'id' => $place->city->state->id,
                     'name' => $place->city->state->name,
                     'slug' => $place->city->state->slug,
                 ] : null,
-                'country' => $place->city?->state?->country ? [
+                'country' => $place->city->state->country ? [
                     'id' => $place->city->state->country->id,
                     'name' => $place->city->state->country->name,
                     'slug' => $place->city->state->country->slug,
                 ] : null,
-                'regions' => $place->city?->state?->country?->regions ?? [],
+                'regions' => $place->city->state->country->regions ?? [],
                 // Custom Media format
                 'media_gallery' => $place->mediaGallery->map(function ($gallery) {
                     return [

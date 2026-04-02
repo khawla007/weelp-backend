@@ -32,8 +32,8 @@ class PublicItineraryController extends Controller
                 'featured_itinerary' => $itinerary->featured_itinerary,
                 'description' => $itinerary->description,
                 'item_type' => $itinerary->item_type,
-                'featured_image' => $itinerary->mediaGallery->where('is_featured', true)->first()?->media?->url
-                    ?? $itinerary->mediaGallery->first()?->media?->url,
+                'featured_image' => $itinerary->mediaGallery->where('is_featured', true)->first()?->media->url
+                    ?? $itinerary->mediaGallery->first()?->media->url,
                 'locations' => $itinerary->locations->map(function ($location) {
                     $city = $location->city;
 
@@ -141,8 +141,8 @@ class PublicItineraryController extends Controller
                     'featured_itinerary' => $itinerary->featured_itinerary,
                     'description' => $itinerary->description,
                     'item_type' => $itinerary->item_type,
-                    'featured_image' => $itinerary->mediaGallery->where('is_featured', true)->first()?->media?->url
-                        ?? $itinerary->mediaGallery->first()?->media?->url,
+                    'featured_image' => $itinerary->mediaGallery->where('is_featured', true)->first()?->media->url
+                        ?? $itinerary->mediaGallery->first()?->media->url,
                     'city_slug' => $itinerary->locations->first()?->city?->slug,
                     'locations' => $itinerary->locations->map(function ($location) {
                         $city = $location->city;
@@ -244,8 +244,8 @@ class PublicItineraryController extends Controller
             'featured_itinerary' => $itinerary->featured_itinerary,
             'description' => $itinerary->description,
             'item_type' => $itinerary->item_type,
-            'featured_image' => $itinerary->mediaGallery->where('is_featured', true)->first()?->media?->url
-                ?? $itinerary->mediaGallery->first()?->media?->url,
+            'featured_image' => $itinerary->mediaGallery->where('is_featured', true)->first()?->media->url
+                ?? $itinerary->mediaGallery->first()?->media->url,
             'locations' => $itinerary->locations->map(function ($location) {
                 $city = $location->city;
 
@@ -270,12 +270,12 @@ class PublicItineraryController extends Controller
                     'day' => $schedule->day,
                     'activities' => $schedule->activities->map(function ($activity) {
                         $activityModel = $activity->activity;
-                        $primaryLocation = $activityModel?->locations->where('location_type', 'primary')->first();
-                        $featuredMedia = $activityModel?->mediaGallery->where('is_featured', true)->first();
+                        $primaryLocation = $activityModel->locations->where('location_type', 'primary')->first();
+                        $featuredMedia = $activityModel->mediaGallery->where('is_featured', true)->first();
 
                         return [
                             'id' => $activity->id,
-                            'name' => $activityModel?->name,
+                            'name' => $activityModel->name,
                             'start_time' => $activity->start_time,
                             'end_time' => $activity->end_time,
                             'notes' => $activity->notes,
@@ -283,8 +283,8 @@ class PublicItineraryController extends Controller
                             'include_in_package' => $activity->included,
                             'main_location' => $primaryLocation?->city?->name,
                             'duration_minutes' => $primaryLocation?->duration,
-                            'featured_image' => $featuredMedia?->media?->url
-                                ?? $activityModel?->mediaGallery->first()?->media?->url,
+                            'featured_image' => $featuredMedia?->media->url
+                                ?? $activityModel->mediaGallery->first()?->media->url,
                         ];
                     }),
                     'transfers' => $schedule->transfers->map(function ($transfer) {

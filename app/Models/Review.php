@@ -91,7 +91,7 @@ class Review extends Model
      */
     public function getDisplayName(): string
     {
-        return $this->item?->name ?? $this->item_name_snapshot ?? 'Archived Item';
+        return $this->item->name ?? $this->item_name_snapshot ?? 'Archived Item';
     }
 
     /**
@@ -99,7 +99,7 @@ class Review extends Model
      */
     public function getDisplaySlug(): ?string
     {
-        return $this->item?->slug ?? $this->item_slug_snapshot;
+        return $this->item->slug ?? $this->item_slug_snapshot;
     }
 
     /**

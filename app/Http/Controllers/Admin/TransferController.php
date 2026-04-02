@@ -180,7 +180,7 @@ class TransferController extends Controller
 
             // Add vendor_routes with is_vendor flag (required by frontend for Edit link routing)
             $data['vendor_routes'] = [
-                'is_vendor' => $transfer->vendorRoutes?->is_vendor ?? false,
+                'is_vendor' => $transfer->vendorRoutes->is_vendor ?? false,
             ];
 
             // Tags and attributes not yet implemented for Transfers - return empty arrays

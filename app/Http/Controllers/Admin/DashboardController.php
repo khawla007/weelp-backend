@@ -233,7 +233,7 @@ class DashboardController extends Controller
             $formattedOrders = $recentOrders->map(function ($order) {
                 $user = $order->user;
                 $payment = $order->payment;
-                $avatarMedia = $user?->avatarMedia;
+                $avatarMedia = $user->avatarMedia;
 
                 // Handle orders without users
                 if (! $user) {

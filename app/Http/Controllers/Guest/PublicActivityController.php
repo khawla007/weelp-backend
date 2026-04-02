@@ -33,8 +33,8 @@ class PublicActivityController extends Controller
                 'description' => $activity->description,
                 'item_type' => $activity->item_type,
                 'short_description' => $activity->short_description,
-                'featured_image' => $activity->mediaGallery->where('is_featured', true)->first()?->media?->url
-                    ?? $activity->mediaGallery->first()?->media?->url,
+                'featured_image' => $activity->mediaGallery->where('is_featured', true)->first()?->media->url
+                    ?? $activity->mediaGallery->first()?->media->url,
                 // 'categories' => $activity->categories->pluck('category.name')->join(', '),
                 'categories' => $activity->categories->map(function ($category) {
                     return [
@@ -149,8 +149,8 @@ class PublicActivityController extends Controller
                     'description' => $activity->description,
                     'item_type' => $activity->item_type,
                     'short_description' => $activity->short_description,
-                    'featured_image' => $activity->mediaGallery->where('is_featured', true)->first()?->media?->url
-                        ?? $activity->mediaGallery->first()?->media?->url,
+                    'featured_image' => $activity->mediaGallery->where('is_featured', true)->first()?->media->url
+                        ?? $activity->mediaGallery->first()?->media->url,
                     'city_slug' => $activity->locations->first()?->city?->slug,
                     'categories' => $activity->categories->map(function ($category) {
                         return [
@@ -255,8 +255,8 @@ class PublicActivityController extends Controller
             'description' => $activity->description,
             'item_type' => $activity->item_type,
             'short_description' => $activity->short_description,
-            'featured_image' => $activity->mediaGallery->where('is_featured', true)->first()?->media?->url
-                ?? $activity->mediaGallery->first()?->media?->url,
+            'featured_image' => $activity->mediaGallery->where('is_featured', true)->first()?->media->url
+                ?? $activity->mediaGallery->first()?->media->url,
             // 'categories' => $activity->categories->pluck('category.name')->join(', '),
             'categories' => $activity->categories->map(function ($category) {
                 return [

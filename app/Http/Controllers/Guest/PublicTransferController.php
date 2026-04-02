@@ -20,8 +20,8 @@ class PublicTransferController extends Controller
         ])->get()->map(function ($transfer) {
             $data = $transfer->toArray();
             $featuredImage = $transfer->mediaGallery->where('is_featured', true)->first();
-            $data['featured_image'] = $featuredImage?->media?->url
-                ?? $transfer->mediaGallery->first()?->media?->url;
+            $data['featured_image'] = $featuredImage?->media->url
+                ?? $transfer->mediaGallery->first()?->media->url;
             $data['media_gallery'] = $transfer->mediaGallery->map(function ($media) {
                 return [
                     'id' => $media->media->id,
@@ -80,8 +80,8 @@ class PublicTransferController extends Controller
 
         $data = $transfer->toArray();
         $featuredImage = $transfer->mediaGallery->where('is_featured', true)->first();
-        $data['featured_image'] = $featuredImage?->media?->url
-            ?? $transfer->mediaGallery->first()?->media?->url;
+        $data['featured_image'] = $featuredImage?->media->url
+            ?? $transfer->mediaGallery->first()?->media->url;
         $data['media_gallery'] = $transfer->mediaGallery->map(function ($media) {
             return [
                 'id' => $media->media->id,

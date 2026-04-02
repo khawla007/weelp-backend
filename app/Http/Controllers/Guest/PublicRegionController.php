@@ -131,8 +131,8 @@ class PublicRegionController extends Controller
                 'slug' => $activity->slug,
                 'item_type' => $activity->item_type,
                 'featured_activity' => $activity->featured_activity,
-                'featured_image' => $activity->mediaGallery->where('is_featured', true)->first()?->media?->url
-                    ?? $activity->mediaGallery->first()?->media?->url,
+                'featured_image' => $activity->mediaGallery->where('is_featured', true)->first()?->media->url
+                    ?? $activity->mediaGallery->first()?->media->url,
                 'pricing' => $activity->pricing,
                 'groupDiscounts' => $activity->groupDiscounts,
                 'categories' => $activity->categories->map(function ($category) {
@@ -211,8 +211,8 @@ class PublicRegionController extends Controller
                 'slug' => $itinerary->slug,
                 'item_type' => $itinerary->item_type,
                 'featured_itinerary' => $itinerary->featured_itinerary,
-                'featured_image' => $itinerary->mediaGallery->where('is_featured', true)->first()?->media?->url
-                    ?? $itinerary->mediaGallery->first()?->media?->url,
+                'featured_image' => $itinerary->mediaGallery->where('is_featured', true)->first()?->media->url
+                    ?? $itinerary->mediaGallery->first()?->media->url,
                 'locations' => $itinerary->locations->map(function ($location) {
                     $city = $location->city;
 
@@ -312,8 +312,8 @@ class PublicRegionController extends Controller
                 'slug' => $package->slug,
                 'item_type' => $package->item_type,
                 'featured_package' => $package->featured_package,
-                'featured_image' => $package->mediaGallery->where('is_featured', true)->first()?->media?->url
-                    ?? $package->mediaGallery->first()?->media?->url,
+                'featured_image' => $package->mediaGallery->where('is_featured', true)->first()?->media->url
+                    ?? $package->mediaGallery->first()?->media->url,
                 'locations' => $package->locations->map(function ($location) {
                     $city = $location->city;
 
@@ -359,10 +359,10 @@ class PublicRegionController extends Controller
                 $formattedPackages = $formattedPackages->sortByDesc('name');
                 break;
             case 'price_asc':
-                $formattedPackages = $formattedPackages->sortBy(fn ($item) => $item['base_pricing']?->variations?->first()?->regular_price ?? 0);
+                $formattedPackages = $formattedPackages->sortBy(fn ($item) => $item['base_pricing']?->variations?->first()->regular_price ?? 0);
                 break;
             case 'price_desc':
-                $formattedPackages = $formattedPackages->sortByDesc(fn ($item) => $item['base_pricing']?->variations?->first()?->regular_price ?? 0);
+                $formattedPackages = $formattedPackages->sortByDesc(fn ($item) => $item['base_pricing']?->variations?->first()->regular_price ?? 0);
                 break;
             default:
                 $formattedPackages = $formattedPackages->sortByDesc('id');
@@ -459,8 +459,8 @@ class PublicRegionController extends Controller
                 'slug' => $activity->slug,
                 'item_type' => 'activity',
                 'featured' => $activity->featured_activity,
-                'featured_image' => $activity->mediaGallery->where('is_featured', true)->first()?->media?->url
-                    ?? $activity->mediaGallery->first()?->media?->url,
+                'featured_image' => $activity->mediaGallery->where('is_featured', true)->first()?->media->url
+                    ?? $activity->mediaGallery->first()?->media->url,
                 'pricing' => $activity->pricing,
                 // 'rating' => $activity->rating,
                 'categories' => $activity->categories->map(fn ($category) => [
@@ -474,8 +474,8 @@ class PublicRegionController extends Controller
                 'slug' => $itinerary->slug,
                 'item_type' => 'itinerary',
                 'featured' => $itinerary->featured_itinerary,
-                'featured_image' => $itinerary->mediaGallery->where('is_featured', true)->first()?->media?->url
-                    ?? $itinerary->mediaGallery->first()?->media?->url,
+                'featured_image' => $itinerary->mediaGallery->where('is_featured', true)->first()?->media->url
+                    ?? $itinerary->mediaGallery->first()?->media->url,
                 'base_pricing' => $itinerary->basePricing,
                 // 'rating' => $itinerary->rating,
                 'categories' => $itinerary->categories->map(fn ($category) => [
@@ -493,8 +493,8 @@ class PublicRegionController extends Controller
                 'slug' => $package->slug,
                 'item_type' => 'package',
                 'featured' => $package->featured_package,
-                'featured_image' => $package->mediaGallery->where('is_featured', true)->first()?->media?->url
-                    ?? $package->mediaGallery->first()?->media?->url,
+                'featured_image' => $package->mediaGallery->where('is_featured', true)->first()?->media->url
+                    ?? $package->mediaGallery->first()?->media->url,
                 'base_pricing' => $package->basePricing,
                 // 'rating' => $package->rating,
                 'categories' => $package->categories->map(fn ($category) => [
@@ -835,12 +835,12 @@ class PublicRegionController extends Controller
                         'city_id' => $city->id,
                         'city' => $city->name,
                         'city_slug' => $city->slug,
-                        'state_id' => $city->state?->id,
-                        'state' => $city->state?->name,
-                        'country_id' => $city->state?->country?->id,
-                        'country' => $city->state?->country?->name,
-                        'region_id' => $city->state?->country?->regions->first()?->id,
-                        'region' => $city->state?->country?->regions->first()?->name,
+                        'state_id' => $city->state->id,
+                        'state' => $city->state->name,
+                        'country_id' => $city->state->country->id,
+                        'country' => $city->state->country->name,
+                        'region_id' => $city->state->country->regions->first()?->id,
+                        'region' => $city->state->country->regions->first()?->name,
                     ];
                 }),
             ]))
@@ -867,12 +867,12 @@ class PublicRegionController extends Controller
                         'city_id' => $city->id,
                         'city' => $city->name,
                         'city_slug' => $city->slug,
-                        'state_id' => $city->state?->id,
-                        'state' => $city->state?->name,
-                        'country_id' => $city->state?->country?->id,
-                        'country' => $city->state?->country?->name,
-                        'region_id' => $city->state?->country?->regions->first()?->id,
-                        'region' => $city->state?->country?->regions->first()?->name,
+                        'state_id' => $city->state->id,
+                        'state' => $city->state->name,
+                        'country_id' => $city->state->country->id,
+                        'country' => $city->state->country->name,
+                        'region_id' => $city->state->country->regions->first()?->id,
+                        'region' => $city->state->country->regions->first()?->name,
                     ];
                 }),
             ]))
@@ -899,12 +899,12 @@ class PublicRegionController extends Controller
                         'city_id' => $city->id,
                         'city' => $city->name,
                         'city_slug' => $city->slug,
-                        'state_id' => $city->state?->id,
-                        'state' => $city->state?->name,
-                        'country_id' => $city->state?->country?->id,
-                        'country' => $city->state?->country?->name,
-                        'region_id' => $city->state?->country?->regions->first()?->id,
-                        'region' => $city->state?->country?->regions->first()?->name,
+                        'state_id' => $city->state->id,
+                        'state' => $city->state->name,
+                        'country_id' => $city->state->country->id,
+                        'country' => $city->state->country->name,
+                        'region_id' => $city->state->country->regions->first()?->id,
+                        'region' => $city->state->country->regions->first()?->name,
                     ];
                 }),
             ]));

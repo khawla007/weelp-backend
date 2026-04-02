@@ -258,7 +258,7 @@ class BlogController extends Controller
                 'slug' => $blog->slug,
                 'excerpt' => $blog->excerpt,
                 'publish' => $blog->publish,
-                'feature_image' => $featuredImage?->url ?? null,
+                'feature_image' => $featuredImage->url ?? null,
 
                 'media_gallery' => $blog->media->map(function ($m) {
                     return [
@@ -319,7 +319,7 @@ class BlogController extends Controller
             'content' => $blog->content,
             'excerpt' => $blog->excerpt,
             'publish' => $blog->publish,
-            'feature_image' => $featuredImage?->url ?? null,
+            'feature_image' => $featuredImage->url ?? null,
 
             // multiple media (gallery)
             'media_gallery' => $blog->media->map(function ($m) {

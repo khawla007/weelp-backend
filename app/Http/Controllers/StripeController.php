@@ -74,19 +74,19 @@ class StripeController extends Controller
                 'location' => $orderable->locations->map(function ($loc) {
                     return [
                         'location_type' => $loc->location_type,
-                        'city' => $loc->city?->name,
-                        'state' => $loc->city?->state?->name,
-                        'country' => $loc->city?->state?->country?->name,
+                        'city' => $loc->city->name,
+                        'state' => $loc->city->state->name,
+                        'country' => $loc->city->state->country->name,
                     ];
                 }),
                 'pricing' => $orderable->pricing,
                 'coupons_applied' => $order->applied_coupons ?? [],
                 'media' => $orderable->mediaGallery->map(function ($mg) {
                     return [
-                        'id' => $mg->media?->id,
-                        'name' => $mg->media?->name,
-                        'url' => $mg->media?->url,
-                        'alt' => $mg->media?->alt_text,
+                        'id' => $mg->media->id,
+                        'name' => $mg->media->name,
+                        'url' => $mg->media->url,
+                        'alt' => $mg->media->alt_text,
                     ];
                 }),
             ];
@@ -96,9 +96,9 @@ class StripeController extends Controller
                 'slug' => $orderable->slug,
                 'locations' => $orderable->locations->map(function ($loc) {
                     return [
-                        'city' => $loc->city?->name,
-                        'state' => $loc->city?->state?->name,
-                        'country' => $loc->city?->state?->country?->name,
+                        'city' => $loc->city->name,
+                        'state' => $loc->city->state->name,
+                        'country' => $loc->city->state->country->name,
                     ];
                 }),
                 'schedules' => $orderable->schedules,
@@ -106,8 +106,8 @@ class StripeController extends Controller
                 'coupons_applied' => $order->applied_coupons ?? [],
                 'media' => $orderable->mediaGallery->map(function ($mg) {
                     return [
-                        'url' => $mg->media?->url,
-                        'alt' => $mg->media?->alt_text,
+                        'url' => $mg->media->url,
+                        'alt' => $mg->media->alt_text,
                     ];
                 }),
             ];
@@ -417,17 +417,17 @@ class StripeController extends Controller
                 'location' => $orderable->locations->map(function ($loc) {
                     return [
                         'location_type' => $loc->location_type,
-                        'city' => $loc->city?->name,
-                        'state' => $loc->city?->state?->name,
-                        'country' => $loc->city?->state?->country?->name,
+                        'city' => $loc->city->name,
+                        'state' => $loc->city->state->name,
+                        'country' => $loc->city->state->country->name,
                     ];
                 }),
                 'pricing' => $orderable->pricing,
                 'coupons_applied' => $order->applied_coupons ?? [],
                 'media' => $orderable->mediaGallery->map(function ($mg) {
                     return [
-                        'url' => $mg->media?->url,
-                        'alt' => $mg->media?->alt_text,
+                        'url' => $mg->media->url,
+                        'alt' => $mg->media->alt_text,
                     ];
                 }),
             ];
@@ -437,9 +437,9 @@ class StripeController extends Controller
                 'slug' => $orderable->slug,
                 'locations' => $orderable->locations->map(function ($loc) {
                     return [
-                        'city' => $loc->city?->name,
-                        'state' => $loc->city?->state?->name,
-                        'country' => $loc->city?->state?->country?->name,
+                        'city' => $loc->city->name,
+                        'state' => $loc->city->state->name,
+                        'country' => $loc->city->state->country->name,
                     ];
                 }),
                 'schedules' => $orderable->schedules,
@@ -447,8 +447,8 @@ class StripeController extends Controller
                 'coupons_applied' => $order->applied_coupons ?? [],
                 'media' => $orderable->mediaGallery->map(function ($mg) {
                     return [
-                        'url' => $mg->media?->url,
-                        'alt' => $mg->media?->alt_text,
+                        'url' => $mg->media->url,
+                        'alt' => $mg->media->alt_text,
                     ];
                 }),
             ];

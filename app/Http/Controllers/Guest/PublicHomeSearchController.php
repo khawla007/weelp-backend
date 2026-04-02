@@ -268,8 +268,8 @@ class PublicHomeSearchController extends Controller
                 'slug' => $activity->slug,
                 'item_type' => $activity->item_type,
                 'featured' => $activity->featured_activity,
-                'featured_image' => $activity->mediaGallery->where('is_featured', true)->first()?->media?->url
-                    ?? $activity->mediaGallery->first()?->media?->url,
+                'featured_image' => $activity->mediaGallery->where('is_featured', true)->first()?->media->url
+                    ?? $activity->mediaGallery->first()?->media->url,
                 'city_slug' => $activity->locations->first()?->city?->slug,
                 'categories' => $categories,
                 'pricing' => $activity->pricing ? [
@@ -392,8 +392,8 @@ class PublicHomeSearchController extends Controller
                 'slug' => $itinerary->slug,
                 'item_type' => $itinerary->item_type,
                 'featured' => $itinerary->featured_itinerary,
-                'featured_image' => $itinerary->mediaGallery->where('is_featured', true)->first()?->media?->url
-                    ?? $itinerary->mediaGallery->first()?->media?->url,
+                'featured_image' => $itinerary->mediaGallery->where('is_featured', true)->first()?->media->url
+                    ?? $itinerary->mediaGallery->first()?->media->url,
                 'city_slug' => $itinerary->locations->first()?->city?->slug,
                 'categories' => $categories,
                 'tags' => $itinerary->tags->map(fn ($tag) => [
@@ -523,8 +523,8 @@ class PublicHomeSearchController extends Controller
                 'slug' => $package->slug,
                 'item_type' => $package->item_type,
                 'featured' => $package->featured_package,
-                'featured_image' => $package->mediaGallery->where('is_featured', true)->first()?->media?->url
-                    ?? $package->mediaGallery->first()?->media?->url,
+                'featured_image' => $package->mediaGallery->where('is_featured', true)->first()?->media->url
+                    ?? $package->mediaGallery->first()?->media->url,
                 'city_slug' => $package->locations->first()?->city?->slug,
                 'categories' => $categories,
                 'tags' => $package->tags->map(fn ($tag) => [
