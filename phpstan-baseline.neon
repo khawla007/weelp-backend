@@ -103,27 +103,9 @@ parameters:
 			path: app/Http/Controllers/Admin/BlogController.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\City\:\:\$feature_image\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/Admin/CityController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\City\:\:\$media_gallery\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/Admin/CityController.php
-
-		-
 			message: '#^Anonymous function should return array\{id\: int, name\: string, code\: string\|null, slug\: string, type\: string, description\: string\|null, feature_image\: mixed, featured_destination\: bool, \.\.\.\} but returns array\{id\: int, name\: string, code\: string\|null, slug\: string, type\: string, description\: string\|null, feature_image\: mixed, featured_destination\: bool, \.\.\.\}\.$#'
 			identifier: return.type
 			count: 1
-			path: app/Http/Controllers/Admin/CityController.php
-
-		-
-			message: '#^Cannot call method create\(\) on array\|float\|int\|string\|false\.$#'
-			identifier: method.nonObject
-			count: 3
 			path: app/Http/Controllers/Admin/CityController.php
 
 		-
@@ -135,6 +117,12 @@ parameters:
 		-
 			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,App\\Models\\City\>\:\:map\(\) expects callable\(App\\Models\\City, int\)\: array\{id\: int, name\: string, code\: string\|null, slug\: string, type\: string, description\: string\|null, feature_image\: mixed, featured_destination\: bool, state\: array\{id\: int, name\: string, slug\: string\}, country\: array\{id\: int, name\: string, slug\: string\}, regions\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, slug\: string\|null\}\>, media_gallery\: Illuminate\\Support\\Collection\<int, array\{id\: int, city_id\: int, media_id\: int, is_featured\: bool\|int, name\: string\|null, alt_text\: string\|null, url\: mixed\}\>\}, Closure\(mixed\)\: array\{id\: int, name\: string, code\: string\|null, slug\: string, type\: string, description\: string\|null, feature_image\: mixed, featured_destination\: bool, state\: array\{id\: int, name\: string, slug\: string\}, country\: array\{id\: int, name\: string, slug\: string\}, regions\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, slug\: string\|null\}\>, media_gallery\: Illuminate\\Support\\Collection\<int, array\{id\: int, city_id\: int, media_id\: int, is_featured\: bool\|int, name\: string\|null, alt_text\: string\|null, url\: mixed\}\>\} given\.$#'
 			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Admin/CityController.php
+
+		-
+			message: '#^Property App\\Models\\City\:\:\$media_gallery \(array\) does not accept Illuminate\\Support\\Collection\<int, array\<string, mixed\>\>\.$#'
+			identifier: assign.propertyType
 			count: 1
 			path: app/Http/Controllers/Admin/CityController.php
 
@@ -157,27 +145,9 @@ parameters:
 			path: app/Http/Controllers/Admin/CityController.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Country\:\:\$feature_image\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/Admin/CountryController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Country\:\:\$media_gallery\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/Admin/CountryController.php
-
-		-
 			message: '#^Anonymous function should return array\{id\: int, name\: string, code\: string, slug\: string, type\: string, region\: string\|null, regions\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, slug\: string\|null\}\>, description\: string\|null, \.\.\.\} but returns array\{id\: int, name\: string, code\: string, slug\: string, type\: string, region\: string\|null, regions\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, slug\: string\|null\}\>, description\: string\|null, \.\.\.\}\.$#'
 			identifier: return.type
 			count: 1
-			path: app/Http/Controllers/Admin/CountryController.php
-
-		-
-			message: '#^Cannot call method create\(\) on array\|float\|int\|string\|false\.$#'
-			identifier: method.nonObject
-			count: 3
 			path: app/Http/Controllers/Admin/CountryController.php
 
 		-
@@ -189,6 +159,12 @@ parameters:
 		-
 			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,App\\Models\\Country\>\:\:map\(\) expects callable\(App\\Models\\Country, int\)\: array\{id\: int, name\: string, code\: string, slug\: string, type\: string, region\: string\|null, regions\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, slug\: string\|null\}\>, description\: string\|null, feature_image\: mixed, featured_destination\: bool, media_gallery\: Illuminate\\Support\\Collection\<int, array\{id\: int, country_id\: int, media_id\: int, is_featured\: bool\|int, name\: string\|null, alt_text\: string\|null, url\: mixed\}\>\}, Closure\(mixed\)\: array\{id\: int, name\: string, code\: string, slug\: string, type\: string, region\: string\|null, regions\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, slug\: string\|null\}\>, description\: string\|null, feature_image\: mixed, featured_destination\: bool, media_gallery\: Illuminate\\Support\\Collection\<int, array\{id\: int, country_id\: int, media_id\: int, is_featured\: bool\|int, name\: string\|null, alt_text\: string\|null, url\: mixed\}\>\} given\.$#'
 			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Admin/CountryController.php
+
+		-
+			message: '#^Property App\\Models\\Country\:\:\$media_gallery \(array\) does not accept Illuminate\\Support\\Collection\<int, array\<string, mixed\>\>\.$#'
+			identifier: assign.propertyType
 			count: 1
 			path: app/Http/Controllers/Admin/CountryController.php
 
@@ -265,8 +241,8 @@ parameters:
 			path: app/Http/Controllers/Admin/ItineraryController.php
 
 		-
-			message: '#^Cannot call static method find\(\) on class\-string\|false\.$#'
-			identifier: staticMethod.nonObject
+			message: '#^Call to function is_string\(\) with class\-string will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
 			count: 1
 			path: app/Http/Controllers/Admin/ItineraryController.php
 
@@ -391,8 +367,8 @@ parameters:
 			path: app/Http/Controllers/Admin/PackageController.php
 
 		-
-			message: '#^Cannot call static method find\(\) on class\-string\|false\.$#'
-			identifier: staticMethod.nonObject
+			message: '#^Call to function is_string\(\) with class\-string will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
 			count: 1
 			path: app/Http/Controllers/Admin/PackageController.php
 
@@ -463,27 +439,9 @@ parameters:
 			path: app/Http/Controllers/Admin/PackageController.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Place\:\:\$feature_image\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/Admin/PlaceController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Place\:\:\$media_gallery\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/Admin/PlaceController.php
-
-		-
 			message: '#^Anonymous function should return array\{id\: int, name\: string, code\: string, slug\: string, type\: string, description\: string\|null, feature_image\: mixed, featured_destination\: bool, \.\.\.\} but returns array\{id\: int, name\: string, code\: string, slug\: string, type\: string, description\: string\|null, feature_image\: mixed, featured_destination\: bool, \.\.\.\}\.$#'
 			identifier: return.type
 			count: 1
-			path: app/Http/Controllers/Admin/PlaceController.php
-
-		-
-			message: '#^Cannot call method create\(\) on array\|float\|int\|string\|false\.$#'
-			identifier: method.nonObject
-			count: 3
 			path: app/Http/Controllers/Admin/PlaceController.php
 
 		-
@@ -501,6 +459,12 @@ parameters:
 		-
 			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,App\\Models\\Place\>\:\:map\(\) expects callable\(App\\Models\\Place, int\)\: array\{id\: int, name\: string, code\: string, slug\: string, type\: string, description\: string\|null, feature_image\: mixed, featured_destination\: bool, city\: array\{id\: int, name\: string, slug\: string\}, state\: array\{id\: int, name\: string, slug\: string\}, country\: array\{id\: int, name\: string, slug\: string\}, regions\: Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Region\>, media_gallery\: Illuminate\\Support\\Collection\<int, array\{id\: int, place_id\: int, media_id\: int, is_featured\: bool\|int, name\: string\|null, alt_text\: string\|null, url\: mixed\}\>\}, Closure\(mixed\)\: array\{id\: int, name\: string, code\: string, slug\: string, type\: string, description\: string\|null, feature_image\: mixed, featured_destination\: bool, city\: array\{id\: int, name\: string, slug\: string\}, state\: array\{id\: int, name\: string, slug\: string\}, country\: array\{id\: int, name\: string, slug\: string\}, regions\: Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Region\>, media_gallery\: Illuminate\\Support\\Collection\<int, array\{id\: int, place_id\: int, media_id\: int, is_featured\: bool\|int, name\: string\|null, alt_text\: string\|null, url\: mixed\}\>\} given\.$#'
 			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Admin/PlaceController.php
+
+		-
+			message: '#^Property App\\Models\\Place\:\:\$media_gallery \(array\) does not accept Illuminate\\Support\\Collection\<int, array\<string, mixed\>\>\.$#'
+			identifier: assign.propertyType
 			count: 1
 			path: app/Http/Controllers/Admin/PlaceController.php
 
@@ -583,12 +547,6 @@ parameters:
 			path: app/Http/Controllers/Admin/ReviewController.php
 
 		-
-			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
-			identifier: larastan.noEnvCallsOutsideOfConfig
-			count: 2
-			path: app/Http/Controllers/Admin/ReviewController.php
-
-		-
 			message: '#^If condition is always true\.$#'
 			identifier: if.alwaysTrue
 			count: 1
@@ -631,27 +589,9 @@ parameters:
 			path: app/Http/Controllers/Admin/ReviewController.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\State\:\:\$feature_image\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/Admin/StateController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\State\:\:\$media_gallery\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/Admin/StateController.php
-
-		-
 			message: '#^Anonymous function should return array\{id\: int, name\: string, code\: string\|null, slug\: string, type\: string, description\: string\|null, feature_image\: mixed, featured_destination\: bool, \.\.\.\} but returns array\{id\: int, name\: string, code\: string\|null, slug\: string, type\: string, description\: string\|null, feature_image\: mixed, featured_destination\: bool, \.\.\.\}\.$#'
 			identifier: return.type
 			count: 1
-			path: app/Http/Controllers/Admin/StateController.php
-
-		-
-			message: '#^Cannot call method create\(\) on array\|float\|int\|string\|false\.$#'
-			identifier: method.nonObject
-			count: 3
 			path: app/Http/Controllers/Admin/StateController.php
 
 		-
@@ -663,6 +603,12 @@ parameters:
 		-
 			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,App\\Models\\State\>\:\:map\(\) expects callable\(App\\Models\\State, int\)\: array\{id\: int, name\: string, code\: string\|null, slug\: string, type\: string, description\: string\|null, feature_image\: mixed, featured_destination\: bool, country\: array\{id\: int, name\: string\}, regions\: array\<mixed\>, media_gallery\: Illuminate\\Support\\Collection\<int, array\{id\: int, state_id\: int, media_id\: int, is_featured\: bool\|int, name\: string\|null, alt_text\: string\|null, url\: mixed\}\>\}, Closure\(mixed\)\: array\{id\: int, name\: string, code\: string\|null, slug\: string, type\: string, description\: string\|null, feature_image\: mixed, featured_destination\: bool, country\: array\{id\: int, name\: string\}, regions\: array\<mixed\>, media_gallery\: Illuminate\\Support\\Collection\<int, array\{id\: int, state_id\: int, media_id\: int, is_featured\: bool\|int, name\: string\|null, alt_text\: string\|null, url\: mixed\}\>\} given\.$#'
 			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Admin/StateController.php
+
+		-
+			message: '#^Property App\\Models\\State\:\:\$media_gallery \(array\) does not accept Illuminate\\Support\\Collection\<int, array\<string, mixed\>\>\.$#'
+			identifier: assign.propertyType
 			count: 1
 			path: app/Http/Controllers/Admin/StateController.php
 
@@ -683,18 +629,6 @@ parameters:
 			identifier: ternary.alwaysTrue
 			count: 1
 			path: app/Http/Controllers/Admin/StateController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Transfer\:\:\$feature_image\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Admin/TransferController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Transfer\:\:\$media_gallery\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Admin/TransferController.php
 
 		-
 			message: '#^Anonymous function should return non\-empty\-array but returns non\-empty\-array\.$#'
@@ -727,8 +661,8 @@ parameters:
 			path: app/Http/Controllers/Admin/TransferController.php
 
 		-
-			message: '#^Property App\\Models\\Transfer\:\:\$addons is not writable\.$#'
-			identifier: assign.propertyReadOnly
+			message: '#^Property App\\Models\\Transfer\:\:\$media_gallery \(array\) does not accept Illuminate\\Support\\Collection\<int, array\<string, mixed\>\>\.$#'
+			identifier: assign.propertyType
 			count: 1
 			path: app/Http/Controllers/Admin/TransferController.php
 
@@ -785,18 +719,6 @@ parameters:
 			identifier: larastan.relationExistence
 			count: 1
 			path: app/Http/Controllers/Admin/UserController.php
-
-		-
-			message: '#^Method App\\Http\\Controllers\\Admin\\VendorController\:\:updateAvailabilityTimeSlot\(\) invoked with 1 parameter, 2 required\.$#'
-			identifier: arguments.count
-			count: 1
-			path: app/Http/Controllers/Admin/VendorController.php
-
-		-
-			message: '#^Method App\\Http\\Controllers\\Admin\\VendorController\:\:updatePricingTiers\(\) invoked with 1 parameter, 2 required\.$#'
-			identifier: arguments.count
-			count: 1
-			path: app/Http/Controllers/Admin/VendorController.php
 
 		-
 			message: '#^Relation ''assignedVehicle'' is not found in App\\Models\\VendorDriver model\.$#'
@@ -997,12 +919,6 @@ parameters:
 			path: app/Http/Controllers/Guest/PublicBlogController.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\City\:\:\$feature_image\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Guest/PublicCitiesController.php
-
-		-
 			message: '#^Left side of && is always true\.$#'
 			identifier: booleanAnd.leftAlwaysTrue
 			count: 1
@@ -1129,42 +1045,6 @@ parameters:
 			path: app/Http/Controllers/Guest/PublicFilterController.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\ItineraryTag\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Guest/PublicHomeSearchController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\ItineraryTag\:\:\$slug\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Guest/PublicHomeSearchController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\PackageTag\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Guest/PublicHomeSearchController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\PackageTag\:\:\$slug\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Guest/PublicHomeSearchController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\ItineraryTag\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Http/Controllers/Guest/PublicHomeSearchController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\PackageTag\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Http/Controllers/Guest/PublicHomeSearchController.php
-
-		-
 			message: '#^Relation ''availability'' is not found in App\\Models\\Activity model\.$#'
 			identifier: larastan.relationExistence
 			count: 2
@@ -1285,19 +1165,7 @@ parameters:
 			path: app/Http/Controllers/Guest/PublicHomeSearchController.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\ItineraryActivity\:\:\$include_in_package\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Guest/PublicItineraryController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\ItineraryTransfer\:\:\$include_in_package\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Guest/PublicItineraryController.php
-
-		-
-			message: '#^Anonymous function should return array\{day\: int, activities\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float\|int\|string\|null, include_in_package\: mixed, main_location\: string\|null, \.\.\.\}\>, transfers\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, pickup_location\: string\|null, dropoff_location\: string\|null, pax\: int\|null, price\: float\|int\|string\|null, \.\.\.\}\>\} but returns array\{day\: int, activities\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float\|int\|string\|null, include_in_package\: mixed, main_location\: string\|null, \.\.\.\}\>, transfers\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, pickup_location\: string\|null, dropoff_location\: string\|null, pax\: int\|null, price\: float\|int\|string\|null, \.\.\.\}\>\}\.$#'
+			message: '#^Anonymous function should return array\{day\: int, activities\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float\|int\|string\|null, include_in_package\: bool, main_location\: string\|null, \.\.\.\}\>, transfers\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, pickup_location\: string\|null, dropoff_location\: string\|null, pax\: int\|null, price\: float\|int\|string\|null, \.\.\.\}\>\} but returns array\{day\: int, activities\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float\|int\|string\|null, include_in_package\: bool, main_location\: string\|null, \.\.\.\}\>, transfers\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, pickup_location\: string\|null, dropoff_location\: string\|null, pax\: int\|null, price\: float\|int\|string\|null, \.\.\.\}\>\}\.$#'
 			identifier: return.type
 			count: 1
 			path: app/Http/Controllers/Guest/PublicItineraryController.php
@@ -1333,26 +1201,8 @@ parameters:
 			path: app/Http/Controllers/Guest/PublicItineraryController.php
 
 		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\ItineraryActivity\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Http/Controllers/Guest/PublicItineraryController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\ItinerarySchedule\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Http/Controllers/Guest/PublicItineraryController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\ItinerarySchedule\>\:\:map\(\) expects callable\(App\\Models\\ItinerarySchedule, int\)\: array\{day\: int, activities\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float\|int\|string\|null, include_in_package\: mixed, main_location\: string\|null, duration_minutes\: int\|null, featured_image\: mixed\}\>, transfers\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, pickup_location\: string\|null, dropoff_location\: string\|null, pax\: int\|null, price\: float\|int\|string\|null, include_in_package\: mixed\}\>\}, Closure\(mixed\)\: array\{day\: int, activities\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float\|int\|string\|null, include_in_package\: mixed, main_location\: string\|null, duration_minutes\: int\|null, featured_image\: mixed\}\>, transfers\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, pickup_location\: string\|null, dropoff_location\: string\|null, pax\: int\|null, price\: float\|int\|string\|null, include_in_package\: mixed\}\>\} given\.$#'
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\ItinerarySchedule\>\:\:map\(\) expects callable\(App\\Models\\ItinerarySchedule, int\)\: array\{day\: int, activities\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float\|int\|string\|null, include_in_package\: bool, main_location\: string\|null, duration_minutes\: int\|null, featured_image\: mixed\}\>, transfers\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, pickup_location\: string\|null, dropoff_location\: string\|null, pax\: int\|null, price\: float\|int\|string\|null, include_in_package\: bool\}\>\}, Closure\(mixed\)\: array\{day\: int, activities\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float\|int\|string\|null, include_in_package\: bool, main_location\: string\|null, duration_minutes\: int\|null, featured_image\: mixed\}\>, transfers\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, pickup_location\: string\|null, dropoff_location\: string\|null, pax\: int\|null, price\: float\|int\|string\|null, include_in_package\: bool\}\>\} given\.$#'
 			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/Guest/PublicItineraryController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\ItineraryTransfer\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
 			count: 1
 			path: app/Http/Controllers/Guest/PublicItineraryController.php
 
@@ -1405,19 +1255,7 @@ parameters:
 			path: app/Http/Controllers/Guest/PublicMenuController.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\PackageActivity\:\:\$include_in_package\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Guest/PublicPackageController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\PackageTransfer\:\:\$include_in_package\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Guest/PublicPackageController.php
-
-		-
-			message: '#^Anonymous function should return array\{day\: int, activities\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float\|int\|string\|null, include_in_package\: mixed, main_location\: string\|null, \.\.\.\}\>, transfers\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, pickup_location\: string, dropoff_location\: string, pax\: int\|null, price\: float\|int\|string\|null, \.\.\.\}\>\} but returns array\{day\: int, activities\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float\|int\|string\|null, include_in_package\: mixed, main_location\: string\|null, \.\.\.\}\>, transfers\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, pickup_location\: string, dropoff_location\: string, pax\: int\|null, price\: float\|int\|string\|null, \.\.\.\}\>\}\.$#'
+			message: '#^Anonymous function should return array\{day\: int, activities\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float\|int\|string\|null, include_in_package\: bool, main_location\: string\|null, \.\.\.\}\>, transfers\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, pickup_location\: string, dropoff_location\: string, pax\: int\|null, price\: float\|int\|string\|null, \.\.\.\}\>\} but returns array\{day\: int, activities\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float\|int\|string\|null, include_in_package\: bool, main_location\: string\|null, \.\.\.\}\>, transfers\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, pickup_location\: string, dropoff_location\: string, pax\: int\|null, price\: float\|int\|string\|null, \.\.\.\}\>\}\.$#'
 			identifier: return.type
 			count: 1
 			path: app/Http/Controllers/Guest/PublicPackageController.php
@@ -1441,26 +1279,8 @@ parameters:
 			path: app/Http/Controllers/Guest/PublicPackageController.php
 
 		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\PackageActivity\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Http/Controllers/Guest/PublicPackageController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\PackageSchedule\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Http/Controllers/Guest/PublicPackageController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\PackageSchedule\>\:\:map\(\) expects callable\(App\\Models\\PackageSchedule, int\)\: array\{day\: int, activities\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float\|int\|string\|null, include_in_package\: mixed, main_location\: string\|null, duration_minutes\: int\|null, featured_image\: mixed\}\>, transfers\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, pickup_location\: string, dropoff_location\: string, pax\: int\|null, price\: float\|int\|string\|null, include_in_package\: mixed\}\>\}, Closure\(mixed\)\: array\{day\: int, activities\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float\|int\|string\|null, include_in_package\: mixed, main_location\: string\|null, duration_minutes\: int\|null, featured_image\: mixed\}\>, transfers\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, pickup_location\: string, dropoff_location\: string, pax\: int\|null, price\: float\|int\|string\|null, include_in_package\: mixed\}\>\} given\.$#'
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\PackageSchedule\>\:\:map\(\) expects callable\(App\\Models\\PackageSchedule, int\)\: array\{day\: int, activities\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float\|int\|string\|null, include_in_package\: bool, main_location\: string\|null, duration_minutes\: int\|null, featured_image\: mixed\}\>, transfers\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, pickup_location\: string, dropoff_location\: string, pax\: int\|null, price\: float\|int\|string\|null, include_in_package\: bool\}\>\}, Closure\(mixed\)\: array\{day\: int, activities\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float\|int\|string\|null, include_in_package\: bool, main_location\: string\|null, duration_minutes\: int\|null, featured_image\: mixed\}\>, transfers\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, pickup_location\: string, dropoff_location\: string, pax\: int\|null, price\: float\|int\|string\|null, include_in_package\: bool\}\>\} given\.$#'
 			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/Guest/PublicPackageController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\PackageTransfer\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
 			count: 1
 			path: app/Http/Controllers/Guest/PublicPackageController.php
 
@@ -1525,12 +1345,6 @@ parameters:
 			path: app/Http/Controllers/Guest/PublicPackageController.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Place\:\:\$feature_image\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Guest/PublicPlaceController.php
-
-		-
 			message: '#^Relation ''mediaGallery'' is not found in App\\Models\\Place model\.$#'
 			identifier: larastan.relationExistence
 			count: 1
@@ -1541,30 +1355,6 @@ parameters:
 			identifier: larastan.relationExistence
 			count: 2
 			path: app/Http/Controllers/Guest/PublicPostController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\ItineraryTag\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Guest/PublicRegionController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\ItineraryTag\:\:\$slug\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Guest/PublicRegionController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\PackageTag\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Guest/PublicRegionController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\PackageTag\:\:\$slug\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Guest/PublicRegionController.php
 
 		-
 			message: '#^Anonymous function should return array\{id\: int, name\: string, slug\: string, item_type\: ''activity'', featured\: bool, city_slug\: string\|null, pricing\: App\\Models\\ActivityPricing\|null, categories\: array\<mixed\>, \.\.\.\} but returns array\{id\: int, name\: string, slug\: string, item_type\: ''activity'', featured\: bool, city_slug\: string\|null, pricing\: App\\Models\\ActivityPricing\|null, categories\: array\<mixed\>, \.\.\.\}\.$#'
@@ -1621,20 +1411,8 @@ parameters:
 			path: app/Http/Controllers/Guest/PublicRegionController.php
 
 		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\ItineraryTag\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Http/Controllers/Guest/PublicRegionController.php
-
-		-
 			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Package\>\:\:map\(\) expects callable\(App\\Models\\Package, int\)\: array\{id\: int, name\: string, slug\: string, item_type\: ''package'', featured\: bool, city_slug\: string\|null, pricing\: App\\Models\\PackageBasePricing\|null, categories\: array\<mixed\>, tags\: array\<mixed\>, locations\: Illuminate\\Support\\Collection\<int, array\{city_id\: int, city\: string, city_slug\: string, state_id\: int, state\: string, country_id\: int, country\: string, region_id\: int\|null, region\: string\|null\}\>\}, Closure\(mixed\)\: array\{id\: int, name\: string, slug\: string, item_type\: ''package'', featured\: bool, city_slug\: string\|null, pricing\: App\\Models\\PackageBasePricing\|null, categories\: array\<mixed\>, tags\: array\<mixed\>, locations\: Illuminate\\Support\\Collection\<int, array\{city_id\: int, city\: string, city_slug\: string, state_id\: int, state\: string, country_id\: int, country\: string, region_id\: int\|null, region\: string\|null\}\>\} given\.$#'
 			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/Guest/PublicRegionController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\PackageTag\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
 			count: 1
 			path: app/Http/Controllers/Guest/PublicRegionController.php
 
@@ -1695,7 +1473,7 @@ parameters:
 		-
 			message: '#^Relation ''countries'' is not found in App\\Models\\Region model\.$#'
 			identifier: larastan.relationExistence
-			count: 2
+			count: 4
 			path: app/Http/Controllers/Guest/PublicRegionController.php
 
 		-
@@ -1933,18 +1711,6 @@ parameters:
 			path: app/Http/Controllers/Guest/PublicShopController.php
 
 		-
-			message: '#^Variable \$featured might not be defined\.$#'
-			identifier: variable.undefined
-			count: 1
-			path: app/Http/Controllers/Guest/PublicShopController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\State\:\:\$feature_image\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Guest/PublicStateController.php
-
-		-
 			message: '#^Relation ''mediaGallery'' is not found in App\\Models\\State model\.$#'
 			identifier: larastan.relationExistence
 			count: 1
@@ -1963,33 +1729,9 @@ parameters:
 			path: app/Http/Controllers/Guest/PublicTransferController.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Activity\:\:\$pricings\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/StripeController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\ItineraryBasePricing\:\:\$priceVariations\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/StripeController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\PackageBasePricing\:\:\$priceVariations\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/StripeController.php
-
-		-
 			message: '#^Call to function is_array\(\) with string\|null will always evaluate to false\.$#'
 			identifier: function.impossibleType
 			count: 1
-			path: app/Http/Controllers/StripeController.php
-
-		-
-			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
-			identifier: larastan.noEnvCallsOutsideOfConfig
-			count: 5
 			path: app/Http/Controllers/StripeController.php
 
 		-
