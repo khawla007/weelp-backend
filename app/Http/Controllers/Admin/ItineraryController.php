@@ -124,7 +124,7 @@ class ItineraryController extends Controller
         $allItems = $query->get();
         $paginatedItems = $allItems->forPage($page, $perPage);
 
-        $transformed = $paginatedItems->map(function ($itinerary) {
+        $transformed = $paginatedItems->map(function (Itinerary $itinerary, int $key) {
             $data = $itinerary->toArray(); // keep all original fields
 
             // Replace transformed fields for addons
@@ -549,7 +549,7 @@ class ItineraryController extends Controller
         });
 
         // Flatten activities with day
-        $itineraryData['activities'] = collect($itinerary->schedules)->flatMap(function ($schedule) {
+        $itineraryData['activities'] = collect($itinerary->schedules)->flatMap(function (ItinerarySchedule $schedule, int $key) {
             return collect($schedule->activities)->map(function ($activity) use ($schedule) {
                 $mediaItems = collect($activity->activity->mediaGallery ?? [])->map(function ($media) {
                     return [
@@ -576,7 +576,7 @@ class ItineraryController extends Controller
         })->values();
 
         // Flatten transfers with day
-        $itineraryData['transfers'] = collect($itinerary->schedules)->flatMap(function ($schedule) {
+        $itineraryData['transfers'] = collect($itinerary->schedules)->flatMap(function (ItinerarySchedule $schedule, int $key) {
             return collect($schedule->transfers)->map(function ($transfer) use ($schedule) {
                 $mediaItems = collect($transfer->transfer->mediaGallery ?? [])->map(function ($media) {
                     return [

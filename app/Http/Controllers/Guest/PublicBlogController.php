@@ -98,7 +98,7 @@ class PublicBlogController extends Controller
         $paginatedItems = $allItems->forPage($page, $perPage);
 
         // ⭐ Transform response
-        $transformed = $paginatedItems->map(function ($blog) {
+        $transformed = $paginatedItems->map(function (Blog $blog, int $key) {
 
             return [
                 'id' => $blog->id,

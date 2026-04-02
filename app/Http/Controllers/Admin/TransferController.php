@@ -159,7 +159,7 @@ class TransferController extends Controller
 
         $paginated = $query->paginate($perPage, ['*'], 'page', $page);
 
-        $transformed = $paginated->getCollection()->map(function ($transfer) {
+        $transformed = $paginated->getCollection()->map(function (Transfer $transfer, int $key) {
             $data = $transfer->toArray();
 
             $data['media_gallery'] = collect($transfer->mediaGallery)->map(function ($media) {
@@ -418,20 +418,7 @@ class TransferController extends Controller
             return response()->json(['message' => 'Transfer not found'], 404);
         }
 
-        // अगर schedule मौजूद है तो उसकी fields को array में बदलना
-        if ($transfer->schedule) {
-            if (! empty($transfer->schedule->available_days)) {
-                $transfer->schedule->available_days = explode(',', $transfer->schedule->available_days);
-            }
-
-            if (! empty($transfer->schedule->time_slots)) {
-                $transfer->schedule->time_slots = json_decode($transfer->schedule->time_slots, true);
-            }
-
-            if (! empty($transfer->schedule->blackout_dates)) {
-                $transfer->schedule->blackout_dates = json_decode($transfer->schedule->blackout_dates, true);
-            }
-        }
+        // schedule fields are already cast to array by the model
 
         // media_gallery ko transform karna
         if ($transfer->mediaGallery->count()) {

@@ -42,7 +42,7 @@ class ReviewController extends Controller
             ->paginate(5)
             ->appends($request->query());
 
-        $reviews->getCollection()->transform(function ($review) use ($frontendBase) {
+        $reviews->getCollection()->transform(function (Review $review, int $key) use ($frontendBase) {
             $item = $review->item;
 
             $city = null;

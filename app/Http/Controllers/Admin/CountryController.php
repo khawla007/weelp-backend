@@ -38,7 +38,7 @@ class CountryController extends Controller
         $countries = $query->orderBy('id', 'desc')->paginate($perPage, ['*'], 'page', $request->input('page', 1));
 
         // 🎯 Transform response
-        $data = $countries->map(function ($country) {
+        $data = $countries->map(function (Country $country, int $key) {
             // Get featured image from media_gallery
             $featuredImage = $country->mediaGallery->firstWhere('is_featured', true);
 

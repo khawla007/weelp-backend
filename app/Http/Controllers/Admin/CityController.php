@@ -38,7 +38,7 @@ class CityController extends Controller
         $cities = $query->orderBy('id', 'desc')->paginate($perPage, ['*'], 'page', $request->input('page', 1));
 
         // Transform response
-        $data = $cities->map(function ($city) {
+        $data = $cities->map(function (City $city, int $key) {
             // Get featured image from media_gallery
             $featuredImage = $city->mediaGallery->firstWhere('is_featured', true);
 

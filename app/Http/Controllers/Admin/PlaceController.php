@@ -39,7 +39,7 @@ class PlaceController extends Controller
         $places = $query->orderBy('id', 'desc')->paginate($perPage, ['*'], 'page', $request->input('page', 1));
 
         // Transform response
-        $data = $places->map(function ($place) {
+        $data = $places->map(function (Place $place, int $key) {
             // Get featured image from media_gallery
             $featuredImage = $place->mediaGallery->firstWhere('is_featured', true);
 

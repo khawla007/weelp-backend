@@ -24,7 +24,7 @@ class PublicActivityController extends Controller
             'promoCodes',
             'availability',
             'mediaGallery.media',
-        ])->get()->map(function ($activity) {
+        ])->get()->map(function (Activity $activity, int $key) {
             return [
                 'id' => $activity->id,
                 'name' => $activity->name,
@@ -140,7 +140,7 @@ class PublicActivityController extends Controller
         }
 
         $activities = $query->get()
-            ->map(function ($activity) {
+            ->map(function (Activity $activity, int $key) {
                 return [
                     'id' => $activity->id,
                     'name' => $activity->name,

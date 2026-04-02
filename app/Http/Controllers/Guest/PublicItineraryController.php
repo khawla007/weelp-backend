@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Guest;
 use App\Http\Controllers\Controller;
 use App\Models\City;
 use App\Models\Itinerary;
+use App\Models\ItinerarySchedule;
 use Illuminate\Http\JsonResponse;
 
 class PublicItineraryController extends Controller
@@ -24,7 +25,7 @@ class PublicItineraryController extends Controller
             'categories.category',
             'attributes',
             'tags',
-        ])->get()->map(function ($itinerary) {
+        ])->get()->map(function (Itinerary $itinerary, int $key) {
             return [
                 'id' => $itinerary->id,
                 'name' => $itinerary->name,
@@ -133,7 +134,7 @@ class PublicItineraryController extends Controller
         }
 
         $itineraries = $query->get()
-            ->map(function ($itinerary) {
+            ->map(function (Itinerary $itinerary, int $key) {
                 return [
                     'id' => $itinerary->id,
                     'name' => $itinerary->name,
@@ -265,7 +266,7 @@ class PublicItineraryController extends Controller
 
                 ];
             }),
-            'schedules' => $itinerary->schedules->map(function ($schedule) {
+            'schedules' => $itinerary->schedules->map(function (ItinerarySchedule $schedule, int $key) {
                 return [
                     'day' => $schedule->day,
                     'activities' => $schedule->activities->map(function ($activity) {

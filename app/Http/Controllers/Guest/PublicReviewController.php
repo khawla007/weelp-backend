@@ -159,7 +159,7 @@ class PublicReviewController extends Controller
 
         $reviews = $query->paginate($perPage);
 
-        $reviews->getCollection()->transform(fn ($review) => [
+        $reviews->getCollection()->transform(fn (Review $review, int $key) => [
             'id' => $review->id,
             'rating' => $review->rating,
             'review_text' => $review->review_text,
@@ -212,7 +212,7 @@ class PublicReviewController extends Controller
             ->limit(20)
             ->get();
 
-        $data = $reviews->map(fn ($review) => [
+        $data = $reviews->map(fn (Review $review, int $key) => [
             'id' => $review->id,
             'rating' => $review->rating,
             'review_text' => $review->review_text,

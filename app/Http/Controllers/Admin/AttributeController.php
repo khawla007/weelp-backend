@@ -191,7 +191,7 @@ class AttributeController extends Controller
             ], 404);
         }
 
-        $values = explode(',', $attribute->values);
+        $values = $attribute->values ?? [];
 
         return response()->json([
             'success' => true,

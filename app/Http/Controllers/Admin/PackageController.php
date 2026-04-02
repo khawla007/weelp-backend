@@ -125,7 +125,7 @@ class PackageController extends Controller
         $allItems = $query->get();
         $paginatedItems = $allItems->forPage($page, $perPage);
 
-        $transformed = $paginatedItems->map(function ($package) {
+        $transformed = $paginatedItems->map(function (Package $package) {
 
             $data = $package->toArray(); // keep all original fields
 
@@ -577,7 +577,7 @@ class PackageController extends Controller
         });
 
         // Flatten activities with day
-        $packageData['activities'] = collect($package->schedules)->flatMap(function ($schedule) {
+        $packageData['activities'] = collect($package->schedules)->flatMap(function (PackageSchedule $schedule, int $key) {
             return collect($schedule->activities)->map(function ($activity) use ($schedule) {
                 $mediaItems = collect($activity->activity->mediaGallery ?? [])->map(function ($media) {
                     return [
@@ -604,7 +604,7 @@ class PackageController extends Controller
         })->values();
 
         // Flatten transfers with day
-        $packageData['transfers'] = collect($package->schedules)->flatMap(function ($schedule) {
+        $packageData['transfers'] = collect($package->schedules)->flatMap(function (PackageSchedule $schedule, int $key) {
             return collect($schedule->transfers)->map(function ($transfer) use ($schedule) {
                 $mediaItems = collect($transfer->transfer->mediaGallery ?? [])->map(function ($media) {
                     return [
@@ -634,7 +634,7 @@ class PackageController extends Controller
         })->values();
 
         // Flatten itineraries with day
-        $packageData['itineraries'] = collect($package->schedules)->flatMap(function ($schedule) {
+        $packageData['itineraries'] = collect($package->schedules)->flatMap(function (PackageSchedule $schedule, int $key) {
             return collect($schedule->itineraries)->map(function ($itinerary) use ($schedule) {
                 $mediaItems = collect($itinerary->itinerary->mediaGallery ?? [])->map(function ($media) {
                     return [

@@ -122,7 +122,7 @@ class PublicRegionController extends Controller
             return response()->json(['message' => 'No activities found for this city.'], 404);
         }
 
-        $formattedActivities = $activities->map(function ($activity) {
+        $formattedActivities = $activities->map(function (Activity $activity, int $key) {
             $primaryLocation = $activity->locations->where('location_type', 'primary')->first();
 
             return [
@@ -168,7 +168,7 @@ class PublicRegionController extends Controller
         });
 
         // return response()->json($formattedActivities);
-        if (collect($formattedActivities)->isEmpty()) {
+        if ($formattedActivities->isEmpty()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Activities not found',
@@ -453,7 +453,7 @@ class PublicRegionController extends Controller
         $packages = $packages?->get() ?? collect();
 
         $allItems = collect()
-            ->merge($activities->map(fn ($activity) => [
+            ->merge($activities->map(fn (Activity $activity, int $key) => [
                 'id' => $activity->id,
                 'name' => $activity->name,
                 'slug' => $activity->slug,
@@ -468,7 +468,7 @@ class PublicRegionController extends Controller
                     'name' => $category->category->name,
                 ])->toArray(),
             ]))
-            ->merge($itineraries->map(fn ($itinerary) => [
+            ->merge($itineraries->map(fn (Itinerary $itinerary, int $key) => [
                 'id' => $itinerary->id,
                 'name' => $itinerary->name,
                 'slug' => $itinerary->slug,
@@ -487,7 +487,7 @@ class PublicRegionController extends Controller
                     'name' => $tag->name,
                 ])->toArray(),
             ]))
-            ->merge($packages->map(fn ($package) => [
+            ->merge($packages->map(fn (Package $package, int $key) => [
                 'id' => $package->id,
                 'name' => $package->name,
                 'slug' => $package->slug,
@@ -816,7 +816,7 @@ class PublicRegionController extends Controller
 
         // Merge Results
         $allItems = collect()
-            ->merge($activities->map(fn ($activity) => [
+            ->merge($activities->map(fn (Activity $activity, int $key) => [
                 'id' => $activity->id,
                 'name' => $activity->name,
                 'slug' => $activity->slug,
@@ -844,7 +844,7 @@ class PublicRegionController extends Controller
                     ];
                 }),
             ]))
-            ->merge($itineraries->map(fn ($itinerary) => [
+            ->merge($itineraries->map(fn (Itinerary $itinerary, int $key) => [
                 'id' => $itinerary->id,
                 'name' => $itinerary->name,
                 'slug' => $itinerary->slug,
@@ -876,7 +876,7 @@ class PublicRegionController extends Controller
                     ];
                 }),
             ]))
-            ->merge($packages->map(fn ($package) => [
+            ->merge($packages->map(fn (Package $package, int $key) => [
                 'id' => $package->id,
                 'name' => $package->name,
                 'slug' => $package->slug,

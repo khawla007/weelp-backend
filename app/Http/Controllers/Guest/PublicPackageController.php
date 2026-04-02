@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Attribute;
 use App\Models\City;
 use App\Models\Package;
+use App\Models\PackageSchedule;
 use App\Models\Tag;
 use Illuminate\Http\JsonResponse;
 
@@ -26,7 +27,7 @@ class PublicPackageController extends Controller
             'categories.category',
             'attributes',
             'tags',
-        ])->get()->map(function ($package) {
+        ])->get()->map(function (Package $package, int $key) {
             return [
                 'id' => $package->id,
                 'name' => $package->name,
@@ -272,7 +273,7 @@ class PublicPackageController extends Controller
 
                 ];
             }),
-            'schedules' => $package->schedules->map(function ($schedule) {
+            'schedules' => $package->schedules->map(function (PackageSchedule $schedule, int $key) {
                 return [
                     'day' => $schedule->day,
                     'activities' => $schedule->activities->map(function ($scheduleActivity) {

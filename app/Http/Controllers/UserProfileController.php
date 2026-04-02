@@ -294,7 +294,7 @@ class UserProfileController extends Controller
 
         $userProfile = $user->profile;
 
-        $transformed = $orders->map(function ($order) use ($user, $userProfile) {
+        $transformed = $orders->map(function (Order $order, int $key) use ($user, $userProfile) {
             $orderable = $order->orderable;
 
             $cityName = null;
@@ -415,7 +415,7 @@ class UserProfileController extends Controller
 
         $paginatedReviews = $reviewsQuery->paginate($perPage, ['*'], 'page', $page);
 
-        $reviews = $paginatedReviews->getCollection()->map(function ($review) {
+        $reviews = $paginatedReviews->getCollection()->map(function (Review $review, int $key) {
             $media = $review->mediaGallery->map(fn ($rmg) => [
                 'id' => $rmg->media->id,
                 'name' => $rmg->media->name,

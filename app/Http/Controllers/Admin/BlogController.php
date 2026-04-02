@@ -247,7 +247,7 @@ class BlogController extends Controller
         $paginatedItems = $allItems->forPage($page, $perPage);
 
         // Transform response
-        $transformed = $paginatedItems->map(function ($blog) {
+        $transformed = $paginatedItems->map(function (Blog $blog, int $key) {
 
             // Get featured image from media_gallery
             $featuredImage = $blog->media->firstWhere('pivot.is_featured', true);

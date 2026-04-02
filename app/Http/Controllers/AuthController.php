@@ -228,7 +228,7 @@ class AuthController extends Controller
     {
         try {
             // Invalidate the current token
-            JWTAuth::invalidate(JWTAuth::getToken());
+            JWTAuth::invalidate();
 
             return response()->json(['message' => 'Successfully logged out']);
         } catch (JWTException $e) {
@@ -425,7 +425,7 @@ class AuthController extends Controller
     public function refreshToken(Request $request)
     {
         try {
-            $newAccessToken = JWTAuth::refresh(JWTAuth::getToken());
+            $newAccessToken = JWTAuth::refresh();
 
             return response()->json([
                 'success' => true,

@@ -113,7 +113,7 @@ class ActivityController extends Controller
 
         $paginatedItems = $allItems->forPage($page, $perPage);
 
-        $transformed = $paginatedItems->map(function ($activity) {
+        $transformed = $paginatedItems->map(function (Activity $activity, int $key) {
             $data = $activity->toArray(); // keep all original fields
 
             // Replace transformed fields for addons

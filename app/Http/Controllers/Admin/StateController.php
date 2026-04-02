@@ -38,7 +38,7 @@ class StateController extends Controller
         $states = $query->orderBy('id', 'desc')->paginate($perPage, ['*'], 'page', $request->input('page', 1));
 
         // Transform response
-        $data = $states->map(function ($state) {
+        $data = $states->map(function (State $state, int $key) {
             // Get featured image from media_gallery
             $featuredImage = $state->mediaGallery->firstWhere('is_featured', true);
 
