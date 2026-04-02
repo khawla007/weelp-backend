@@ -23,7 +23,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferAddon whereTransferId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferAddon whereUpdatedAt($value)
  *
- * @mixin \Eloquent
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class TransferAddon extends Model
 {

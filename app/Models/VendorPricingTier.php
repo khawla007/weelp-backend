@@ -42,7 +42,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|VendorPricingTier whereVendorId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|VendorPricingTier whereWaitingCharge($value)
  *
- * @mixin \Eloquent
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class VendorPricingTier extends Model
 {

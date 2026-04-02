@@ -31,7 +31,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageAvailability whereStartDate($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageAvailability whereUpdatedAt($value)
  *
- * @mixin \Eloquent
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class PackageAvailability extends Model
 {

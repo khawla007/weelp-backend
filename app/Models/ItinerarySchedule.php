@@ -27,7 +27,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItinerarySchedule whereItineraryId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItinerarySchedule whereUpdatedAt($value)
  *
- * @mixin \Eloquent
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class ItinerarySchedule extends Model
 {

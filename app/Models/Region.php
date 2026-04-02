@@ -31,7 +31,7 @@ use Illuminate\Support\Str;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Region whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Region whereUpdatedAt($value)
  *
- * @mixin \Eloquent
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class Region extends Model
 {

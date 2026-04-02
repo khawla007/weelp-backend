@@ -43,7 +43,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|VendorDriver whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|VendorDriver whereVendorId($value)
  *
- * @mixin \Eloquent
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class VendorDriver extends Model
 {

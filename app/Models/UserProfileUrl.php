@@ -25,7 +25,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|UserProfileUrl whereUrl($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|UserProfileUrl whereUserProfileId($value)
  *
- * @mixin \Eloquent
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class UserProfileUrl extends Model
 {

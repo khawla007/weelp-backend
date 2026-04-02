@@ -33,7 +33,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryBasePricing whereStartDate($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryBasePricing whereUpdatedAt($value)
  *
- * @mixin \Eloquent
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class ItineraryBasePricing extends Model
 {

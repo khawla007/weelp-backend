@@ -16,7 +16,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|RegionCountry whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|RegionCountry whereRegionId($value)
  *
- * @mixin \Eloquent
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class RegionCountry extends Model
 {

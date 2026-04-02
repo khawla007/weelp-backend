@@ -37,7 +37,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferVendorRoute whereVehicleType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferVendorRoute whereVendorId($value)
  *
- * @mixin \Eloquent
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class TransferVendorRoute extends Model
 {

@@ -37,7 +37,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StateLocationDetail whereTimezone($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StateLocationDetail whereUpdatedAt($value)
  *
- * @mixin \Eloquent
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class StateLocationDetail extends Model
 {

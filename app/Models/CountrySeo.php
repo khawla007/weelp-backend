@@ -35,7 +35,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CountrySeo whereSchemaType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CountrySeo whereUpdatedAt($value)
  *
- * @mixin \Eloquent
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class CountrySeo extends Model
 {

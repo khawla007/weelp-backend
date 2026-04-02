@@ -25,7 +25,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|UserMeta whereUserId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|UserMeta whereUsername($value)
  *
- * @mixin \Eloquent
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class UserMeta extends Model
 {

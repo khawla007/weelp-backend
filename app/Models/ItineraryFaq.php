@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryFaq newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryFaq query()
  *
- * @mixin \Eloquent
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class ItineraryFaq extends Model
 {

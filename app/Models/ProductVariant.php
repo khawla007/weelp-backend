@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ProductVariant newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ProductVariant query()
  *
- * @mixin \Eloquent
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class ProductVariant extends Model
 {

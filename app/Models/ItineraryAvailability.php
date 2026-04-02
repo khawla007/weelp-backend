@@ -31,7 +31,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryAvailability whereStartDate($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryAvailability whereUpdatedAt($value)
  *
- * @mixin \Eloquent
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class ItineraryAvailability extends Model
 {

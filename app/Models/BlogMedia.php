@@ -22,7 +22,7 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|BlogMedia whereIsFeatured($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|BlogMedia whereMediaId($value)
  *
- * @mixin \Eloquent
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class BlogMedia extends Pivot
 {

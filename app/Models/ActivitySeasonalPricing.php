@@ -31,7 +31,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivitySeasonalPricing whereSeasonStart($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivitySeasonalPricing whereUpdatedAt($value)
  *
- * @mixin \Eloquent
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class ActivitySeasonalPricing extends Model
 {

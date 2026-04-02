@@ -23,7 +23,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageTag whereTagId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageTag whereUpdatedAt($value)
  *
- * @mixin \Eloquent
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class PackageTag extends Model
 {

@@ -30,7 +30,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageSchedule wherePackageId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageSchedule whereUpdatedAt($value)
  *
- * @mixin \Eloquent
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class PackageSchedule extends Model
 {

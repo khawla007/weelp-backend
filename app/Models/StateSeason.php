@@ -29,7 +29,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StateSeason whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StateSeason whereWeather($value)
  *
- * @mixin \Eloquent
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class StateSeason extends Model
 {

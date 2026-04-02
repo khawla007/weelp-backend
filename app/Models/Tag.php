@@ -34,7 +34,7 @@ use Illuminate\Support\Str;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Tag whereTaxonomy($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Tag whereUpdatedAt($value)
  *
- * @mixin \Eloquent
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class Tag extends Model
 {

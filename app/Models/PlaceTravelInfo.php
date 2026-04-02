@@ -45,7 +45,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PlaceTravelInfo whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PlaceTravelInfo whereVisaRequirements($value)
  *
- * @mixin \Eloquent
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class PlaceTravelInfo extends Model
 {

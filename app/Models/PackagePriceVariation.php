@@ -30,7 +30,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackagePriceVariation whereSalePrice($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackagePriceVariation whereUpdatedAt($value)
  *
- * @mixin \Eloquent
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class PackagePriceVariation extends Model
 {

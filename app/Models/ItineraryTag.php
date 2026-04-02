@@ -23,7 +23,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryTag whereTagId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryTag whereUpdatedAt($value)
  *
- * @mixin \Eloquent
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class ItineraryTag extends Model
 {

@@ -45,7 +45,7 @@ use Illuminate\Support\Facades\Storage;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|UserProfile whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|UserProfile whereUserId($value)
  *
- * @mixin \Eloquent
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class UserProfile extends Model
 {

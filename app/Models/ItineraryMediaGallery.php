@@ -26,7 +26,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryMediaGallery whereMediaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryMediaGallery whereUpdatedAt($value)
  *
- * @mixin \Eloquent
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class ItineraryMediaGallery extends Model
 {

@@ -26,7 +26,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageMediaGallery wherePackageId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageMediaGallery whereUpdatedAt($value)
  *
- * @mixin \Eloquent
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class PackageMediaGallery extends Model
 {

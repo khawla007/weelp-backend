@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageTransferMapping newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageTransferMapping query()
  *
- * @mixin \Eloquent
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class PackageTransferMapping extends Model
 {

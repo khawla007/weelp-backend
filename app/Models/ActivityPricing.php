@@ -25,7 +25,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityPricing whereRegularPrice($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityPricing whereUpdatedAt($value)
  *
- * @mixin \Eloquent
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class ActivityPricing extends Model
 {

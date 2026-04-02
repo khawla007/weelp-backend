@@ -37,7 +37,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|VendorAvailabilityTimeSlot whereVehicleId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|VendorAvailabilityTimeSlot whereVendorId($value)
  *
- * @mixin \Eloquent
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class VendorAvailabilityTimeSlot extends Model
 {

@@ -27,7 +27,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CityMediaGallery whereMediaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CityMediaGallery whereUpdatedAt($value)
  *
- * @mixin \Eloquent
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class CityMediaGallery extends Model
 {

@@ -68,7 +68,7 @@ use Illuminate\Database\Eloquent\Relations\HasOneThrough;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|City whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|City whereUpdatedAt($value)
  *
- * @mixin \Eloquent
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class City extends Model
 {

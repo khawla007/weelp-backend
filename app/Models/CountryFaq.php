@@ -27,7 +27,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CountryFaq whereQuestionNumber($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CountryFaq whereUpdatedAt($value)
  *
- * @mixin \Eloquent
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class CountryFaq extends Model
 {

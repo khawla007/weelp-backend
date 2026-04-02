@@ -44,7 +44,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Review whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Review whereUserId($value)
  *
- * @mixin \Eloquent
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class Review extends Model
 {

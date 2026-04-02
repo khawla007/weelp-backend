@@ -34,7 +34,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageSeo whereSchemaType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageSeo whereUpdatedAt($value)
  *
- * @mixin \Eloquent
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class PackageSeo extends Model
 {

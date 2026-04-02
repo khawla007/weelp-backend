@@ -27,7 +27,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static Builder<static>|ActivityMediaGallery whereMediaId($value)
  * @method static Builder<static>|ActivityMediaGallery whereUpdatedAt($value)
  *
- * @mixin \Eloquent
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class ActivityMediaGallery extends Model
 {

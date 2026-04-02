@@ -53,7 +53,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Country whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Country whereUpdatedAt($value)
  *
- * @mixin \Eloquent
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class Country extends Model
 {

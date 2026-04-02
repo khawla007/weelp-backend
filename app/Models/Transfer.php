@@ -51,7 +51,7 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Transfer whereTransferType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Transfer whereUpdatedAt($value)
  *
- * @mixin \Eloquent
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class Transfer extends Model
 {

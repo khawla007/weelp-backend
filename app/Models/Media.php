@@ -53,7 +53,7 @@ use Illuminate\Support\Facades\Storage;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Media whereUrl($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Media whereWidth($value)
  *
- * @mixin \Eloquent
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class Media extends Model
 {

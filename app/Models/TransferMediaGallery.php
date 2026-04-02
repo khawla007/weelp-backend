@@ -27,7 +27,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferMediaGallery whereTransferId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferMediaGallery whereUpdatedAt($value)
  *
- * @mixin \Eloquent
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class TransferMediaGallery extends Model
 {

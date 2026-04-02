@@ -35,7 +35,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Blog whereSlug($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Blog whereUpdatedAt($value)
  *
- * @mixin \Eloquent
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class Blog extends Model
 {

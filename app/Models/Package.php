@@ -61,7 +61,7 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Package whereSlug($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Package whereUpdatedAt($value)
  *
- * @mixin \Eloquent
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class Package extends Model
 {

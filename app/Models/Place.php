@@ -50,7 +50,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Place whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Place whereUpdatedAt($value)
  *
- * @mixin \Eloquent
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class Place extends Model
 {

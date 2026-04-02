@@ -27,7 +27,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityGroupDiscount whereMinPeople($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityGroupDiscount whereUpdatedAt($value)
  *
- * @mixin \Eloquent
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class ActivityGroupDiscount extends Model
 {

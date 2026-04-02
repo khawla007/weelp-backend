@@ -40,7 +40,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageTransfer whereTransferId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageTransfer whereUpdatedAt($value)
  *
- * @mixin \Eloquent
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class PackageTransfer extends Model
 {

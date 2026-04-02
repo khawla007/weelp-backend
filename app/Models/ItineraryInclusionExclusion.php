@@ -28,7 +28,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryInclusionExclusion whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryInclusionExclusion whereUpdatedAt($value)
  *
- * @mixin \Eloquent
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class ItineraryInclusionExclusion extends Model
 {

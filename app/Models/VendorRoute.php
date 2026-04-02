@@ -38,7 +38,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|VendorRoute whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|VendorRoute whereVendorId($value)
  *
- * @mixin \Eloquent
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class VendorRoute extends Model
 {

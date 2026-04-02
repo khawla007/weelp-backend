@@ -29,7 +29,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityEarlyBirdDiscount whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityEarlyBirdDiscount whereUpdatedAt($value)
  *
- * @mixin \Eloquent
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class ActivityEarlyBirdDiscount extends Model
 {

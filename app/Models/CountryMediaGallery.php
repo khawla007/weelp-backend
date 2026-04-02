@@ -27,7 +27,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CountryMediaGallery whereMediaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CountryMediaGallery whereUpdatedAt($value)
  *
- * @mixin \Eloquent
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class CountryMediaGallery extends Model
 {

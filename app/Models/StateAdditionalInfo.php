@@ -25,7 +25,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StateAdditionalInfo whereTitle($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StateAdditionalInfo whereUpdatedAt($value)
  *
- * @mixin \Eloquent
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class StateAdditionalInfo extends Model
 {

@@ -33,7 +33,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|VendorDriverSchedule whereVehicleId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|VendorDriverSchedule whereVendorId($value)
  *
- * @mixin \Eloquent
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class VendorDriverSchedule extends Model
 {

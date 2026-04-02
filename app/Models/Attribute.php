@@ -46,7 +46,7 @@ use Illuminate\Support\Str;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Attribute whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Attribute whereValues($value)
  *
- * @mixin \Eloquent
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class Attribute extends Model
 {

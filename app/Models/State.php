@@ -52,7 +52,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|State whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|State whereUpdatedAt($value)
  *
- * @mixin \Eloquent
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class State extends Model
 {

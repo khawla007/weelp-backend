@@ -24,7 +24,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageBlackoutDate whereReason($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageBlackoutDate whereUpdatedAt($value)
  *
- * @mixin \Eloquent
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class PackageBlackoutDate extends Model
 {

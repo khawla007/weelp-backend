@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryTransferMapping newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryTransferMapping query()
  *
- * @mixin \Eloquent
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class ItineraryTransferMapping extends Model
 {

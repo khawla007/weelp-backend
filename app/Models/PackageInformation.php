@@ -25,7 +25,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageInformation whereSectionTitle($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageInformation whereUpdatedAt($value)
  *
- * @mixin \Eloquent
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class PackageInformation extends Model
 {

@@ -33,7 +33,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityPromoCode whereValidFrom($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityPromoCode whereValidTo($value)
  *
- * @mixin \Eloquent
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class ActivityPromoCode extends Model
 {
