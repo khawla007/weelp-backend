@@ -1,0 +1,2983 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Access to an undefined property App\\Models\\Activity\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Activity\>\:\:\$featured_images\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Admin/ActivityController.php
+
+		-
+			message: '#^Anonymous function should return non\-empty\-array but returns non\-empty\-array\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Http/Controllers/Admin/ActivityController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Activity\>\:\:map\(\) expects callable\(App\\Models\\Activity, int\)\: non\-empty\-array, Closure\(mixed\)\: non\-empty\-array given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Admin/ActivityController.php
+
+		-
+			message: '#^Relation ''attributes'' is not found in App\\Models\\Activity model\.$#'
+			identifier: larastan.relationExistence
+			count: 3
+			path: app/Http/Controllers/Admin/ActivityController.php
+
+		-
+			message: '#^Relation ''categories'' is not found in App\\Models\\Activity model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: app/Http/Controllers/Admin/ActivityController.php
+
+		-
+			message: '#^Relation ''locations'' is not found in App\\Models\\Activity model\.$#'
+			identifier: larastan.relationExistence
+			count: 3
+			path: app/Http/Controllers/Admin/ActivityController.php
+
+		-
+			message: '#^Relation ''pricing'' is not found in App\\Models\\Activity model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Admin/ActivityController.php
+
+		-
+			message: '#^Right side of && is always true\.$#'
+			identifier: booleanAnd.rightAlwaysTrue
+			count: 4
+			path: app/Http/Controllers/Admin/ActivityController.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: app/Http/Controllers/Admin/ActivityController.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between mixed and null will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: app/Http/Controllers/Admin/ActivityController.php
+
+		-
+			message: '#^Parameter \#2 \$string of function explode expects string, array\<mixed\>\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Admin/AttributeController.php
+
+		-
+			message: '#^Anonymous function should return array\{id\: int, name\: string, slug\: string, excerpt\: string, publish\: bool, feature_image\: mixed, media_gallery\: Illuminate\\Support\\Collection\<int, array\{media_id\: int, name\: string\|null, alt\: string\|null, url\: mixed, is_featured\: mixed\}\>, categories\: Illuminate\\Support\\Collection\<int, array\{category_id\: int, category_name\: string, slug\: string\|null\}\>, \.\.\.\} but returns array\{id\: int, name\: string, slug\: string, excerpt\: string, publish\: bool, feature_image\: mixed, media_gallery\: Illuminate\\Support\\Collection\<int, array\{media_id\: int, name\: string\|null, alt\: string\|null, url\: mixed, is_featured\: mixed\}\>, categories\: Illuminate\\Support\\Collection\<int, array\{category_id\: int, category_name\: string, slug\: string\|null\}\>, \.\.\.\}\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Http/Controllers/Admin/BlogController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Blog\>\:\:map\(\) expects callable\(App\\Models\\Blog, int\)\: array\{id\: int, name\: string, slug\: string, excerpt\: string, publish\: bool, feature_image\: mixed, media_gallery\: Illuminate\\Support\\Collection\<int, array\{media_id\: int, name\: string\|null, alt\: string\|null, url\: mixed, is_featured\: mixed\}\>, categories\: Illuminate\\Support\\Collection\<int, array\{category_id\: int, category_name\: string, slug\: string\|null\}\>, tags\: Illuminate\\Support\\Collection\<int, array\{tag_id\: int, tag_name\: string, slug\: string\|null\}\>, created_at\: Illuminate\\Support\\Carbon\|null, updated_at\: Illuminate\\Support\\Carbon\|null\}, Closure\(mixed\)\: array\{id\: int, name\: string, slug\: string, excerpt\: string, publish\: bool, feature_image\: mixed, media_gallery\: Illuminate\\Support\\Collection\<int, array\{media_id\: int, name\: string\|null, alt\: string\|null, url\: mixed, is_featured\: mixed\}\>, categories\: Illuminate\\Support\\Collection\<int, array\{category_id\: int, category_name\: string, slug\: string\|null\}\>, tags\: Illuminate\\Support\\Collection\<int, array\{tag_id\: int, tag_name\: string, slug\: string\|null\}\>, created_at\: Illuminate\\Support\\Carbon\|null, updated_at\: Illuminate\\Support\\Carbon\|null\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Admin/BlogController.php
+
+		-
+			message: '#^Relation ''categories'' is not found in App\\Models\\Blog model\.$#'
+			identifier: larastan.relationExistence
+			count: 3
+			path: app/Http/Controllers/Admin/BlogController.php
+
+		-
+			message: '#^Relation ''media'' is not found in App\\Models\\Blog model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: app/Http/Controllers/Admin/BlogController.php
+
+		-
+			message: '#^Relation ''tags'' is not found in App\\Models\\Blog model\.$#'
+			identifier: larastan.relationExistence
+			count: 3
+			path: app/Http/Controllers/Admin/BlogController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>url" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Http/Controllers/Admin/BlogController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\City\:\:\$feature_image\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Admin/CityController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\City\:\:\$media_gallery\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Admin/CityController.php
+
+		-
+			message: '#^Anonymous function should return array\{id\: int, name\: string, code\: string\|null, slug\: string, type\: string, description\: string\|null, feature_image\: mixed, featured_destination\: bool, \.\.\.\} but returns array\{id\: int, name\: string, code\: string\|null, slug\: string, type\: string, description\: string\|null, feature_image\: mixed, featured_destination\: bool, \.\.\.\}\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Http/Controllers/Admin/CityController.php
+
+		-
+			message: '#^Cannot call method create\(\) on array\|float\|int\|string\|false\.$#'
+			identifier: method.nonObject
+			count: 3
+			path: app/Http/Controllers/Admin/CityController.php
+
+		-
+			message: '#^Left side of && is always true\.$#'
+			identifier: booleanAnd.leftAlwaysTrue
+			count: 3
+			path: app/Http/Controllers/Admin/CityController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,App\\Models\\City\>\:\:map\(\) expects callable\(App\\Models\\City, int\)\: array\{id\: int, name\: string, code\: string\|null, slug\: string, type\: string, description\: string\|null, feature_image\: mixed, featured_destination\: bool, state\: array\{id\: int, name\: string, slug\: string\}, country\: array\{id\: int, name\: string, slug\: string\}, regions\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, slug\: string\|null\}\>, media_gallery\: Illuminate\\Support\\Collection\<int, array\{id\: int, city_id\: int, media_id\: int, is_featured\: bool\|int, name\: string\|null, alt_text\: string\|null, url\: mixed\}\>\}, Closure\(mixed\)\: array\{id\: int, name\: string, code\: string\|null, slug\: string, type\: string, description\: string\|null, feature_image\: mixed, featured_destination\: bool, state\: array\{id\: int, name\: string, slug\: string\}, country\: array\{id\: int, name\: string, slug\: string\}, regions\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, slug\: string\|null\}\>, media_gallery\: Illuminate\\Support\\Collection\<int, array\{id\: int, city_id\: int, media_id\: int, is_featured\: bool\|int, name\: string\|null, alt_text\: string\|null, url\: mixed\}\>\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Admin/CityController.php
+
+		-
+			message: '#^Relation ''mediaGallery'' is not found in App\\Models\\City model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: app/Http/Controllers/Admin/CityController.php
+
+		-
+			message: '#^Right side of && is always true\.$#'
+			identifier: booleanAnd.rightAlwaysTrue
+			count: 3
+			path: app/Http/Controllers/Admin/CityController.php
+
+		-
+			message: '#^Ternary operator condition is always true\.$#'
+			identifier: ternary.alwaysTrue
+			count: 1
+			path: app/Http/Controllers/Admin/CityController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Country\:\:\$feature_image\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Admin/CountryController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Country\:\:\$media_gallery\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Admin/CountryController.php
+
+		-
+			message: '#^Anonymous function should return array\{id\: int, name\: string, code\: string, slug\: string, type\: string, region\: string\|null, regions\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, slug\: string\|null\}\>, description\: string\|null, \.\.\.\} but returns array\{id\: int, name\: string, code\: string, slug\: string, type\: string, region\: string\|null, regions\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, slug\: string\|null\}\>, description\: string\|null, \.\.\.\}\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Http/Controllers/Admin/CountryController.php
+
+		-
+			message: '#^Cannot call method create\(\) on array\|float\|int\|string\|false\.$#'
+			identifier: method.nonObject
+			count: 3
+			path: app/Http/Controllers/Admin/CountryController.php
+
+		-
+			message: '#^Left side of && is always true\.$#'
+			identifier: booleanAnd.leftAlwaysTrue
+			count: 1
+			path: app/Http/Controllers/Admin/CountryController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,App\\Models\\Country\>\:\:map\(\) expects callable\(App\\Models\\Country, int\)\: array\{id\: int, name\: string, code\: string, slug\: string, type\: string, region\: string\|null, regions\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, slug\: string\|null\}\>, description\: string\|null, feature_image\: mixed, featured_destination\: bool, media_gallery\: Illuminate\\Support\\Collection\<int, array\{id\: int, country_id\: int, media_id\: int, is_featured\: bool\|int, name\: string\|null, alt_text\: string\|null, url\: mixed\}\>\}, Closure\(mixed\)\: array\{id\: int, name\: string, code\: string, slug\: string, type\: string, region\: string\|null, regions\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, slug\: string\|null\}\>, description\: string\|null, feature_image\: mixed, featured_destination\: bool, media_gallery\: Illuminate\\Support\\Collection\<int, array\{id\: int, country_id\: int, media_id\: int, is_featured\: bool\|int, name\: string\|null, alt_text\: string\|null, url\: mixed\}\>\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Admin/CountryController.php
+
+		-
+			message: '#^Relation ''mediaGallery'' is not found in App\\Models\\Country model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: app/Http/Controllers/Admin/CountryController.php
+
+		-
+			message: '#^Negated boolean expression is always false\.$#'
+			identifier: booleanNot.alwaysFalse
+			count: 1
+			path: app/Http/Controllers/Admin/DashboardController.php
+
+		-
+			message: '#^Relation ''payment'' is not found in App\\Models\\Order model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Admin/DashboardController.php
+
+		-
+			message: '#^Relation ''user'' is not found in App\\Models\\Order model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Admin/DashboardController.php
+
+		-
+			message: '#^Using nullsafe property access on non\-nullable type App\\Models\\User\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Admin/DashboardController.php
+
+		-
+			message: '#^Variable \$activeUsers on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.variable
+			count: 1
+			path: app/Http/Controllers/Admin/DashboardController.php
+
+		-
+			message: '#^Variable \$totalActivities on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.variable
+			count: 1
+			path: app/Http/Controllers/Admin/DashboardController.php
+
+		-
+			message: '#^Variable \$totalBookings on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.variable
+			count: 1
+			path: app/Http/Controllers/Admin/DashboardController.php
+
+		-
+			message: '#^Variable \$totalRevenue on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.variable
+			count: 1
+			path: app/Http/Controllers/Admin/DashboardController.php
+
+		-
+			message: '#^Anonymous function should return Illuminate\\Support\\Collection\<int, array\{id\: int, activity_id\: int, activity_name\: string\|null, media_url\: Illuminate\\Support\\Collection\<int, mixed\>, day\: int, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, \.\.\.\}\> but returns Illuminate\\Support\\Collection\<int, array\{id\: int, activity_id\: int, activity_name\: string\|null, media_url\: Illuminate\\Support\\Collection\<int, array\{name\: mixed, alt_text\: mixed, url\: mixed\}\>, day\: int, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, \.\.\.\}\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Http/Controllers/Admin/ItineraryController.php
+
+		-
+			message: '#^Anonymous function should return Illuminate\\Support\\Collection\<int, array\{id\: int, transfer_id\: int, transfer_name\: string\|null, media_url\: Illuminate\\Support\\Collection\<int, mixed\>, day\: int, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, \.\.\.\}\> but returns Illuminate\\Support\\Collection\<int, array\{id\: int, transfer_id\: int, transfer_name\: string\|null, media_url\: Illuminate\\Support\\Collection\<int, array\{name\: mixed, alt_text\: mixed, url\: mixed\}\>, day\: int, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, \.\.\.\}\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Http/Controllers/Admin/ItineraryController.php
+
+		-
+			message: '#^Anonymous function should return non\-empty\-array but returns non\-empty\-array\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Http/Controllers/Admin/ItineraryController.php
+
+		-
+			message: '#^Cannot call static method find\(\) on class\-string\|false\.$#'
+			identifier: staticMethod.nonObject
+			count: 1
+			path: app/Http/Controllers/Admin/ItineraryController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Itinerary\>\:\:map\(\) expects callable\(App\\Models\\Itinerary, int\)\: non\-empty\-array, Closure\(mixed\)\: non\-empty\-array given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Admin/ItineraryController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,App\\Models\\ItinerarySchedule\>\:\:flatMap\(\) expects callable\(App\\Models\\ItinerarySchedule, int\)\: \(array\<int, array\{id\: int, activity_id\: int, activity_name\: string\|null, media_url\: Illuminate\\Support\\Collection\<int, mixed\>, day\: int, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float, included\: bool\}\>\|Illuminate\\Support\\Collection\<int, array\{id\: int, activity_id\: int, activity_name\: string\|null, media_url\: Illuminate\\Support\\Collection\<int, mixed\>, day\: int, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float, included\: bool\}\>\), Closure\(mixed\)\: Illuminate\\Support\\Collection\<int, array\{id\: int, activity_id\: int, activity_name\: string\|null, media_url\: Illuminate\\Support\\Collection\<int, mixed\>, day\: int, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float, included\: bool\}\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Admin/ItineraryController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,App\\Models\\ItinerarySchedule\>\:\:flatMap\(\) expects callable\(App\\Models\\ItinerarySchedule, int\)\: \(array\<int, array\{id\: int, transfer_id\: int, transfer_name\: string\|null, media_url\: Illuminate\\Support\\Collection\<int, mixed\>, day\: int, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float, included\: bool, pickup_location\: string\|null, dropoff_location\: string\|null, pax\: int\|null\}\>\|Illuminate\\Support\\Collection\<int, array\{id\: int, transfer_id\: int, transfer_name\: string\|null, media_url\: Illuminate\\Support\\Collection\<int, mixed\>, day\: int, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float, included\: bool, pickup_location\: string\|null, dropoff_location\: string\|null, pax\: int\|null\}\>\), Closure\(mixed\)\: Illuminate\\Support\\Collection\<int, array\{id\: int, transfer_id\: int, transfer_name\: string\|null, media_url\: Illuminate\\Support\\Collection\<int, mixed\>, day\: int, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float, included\: bool, pickup_location\: string\|null, dropoff_location\: string\|null, pax\: int\|null\}\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Admin/ItineraryController.php
+
+		-
+			message: '#^Relation ''attributes'' is not found in App\\Models\\Itinerary model\.$#'
+			identifier: larastan.relationExistence
+			count: 3
+			path: app/Http/Controllers/Admin/ItineraryController.php
+
+		-
+			message: '#^Relation ''basePricing'' is not found in App\\Models\\Itinerary model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Admin/ItineraryController.php
+
+		-
+			message: '#^Relation ''categories'' is not found in App\\Models\\Itinerary model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: app/Http/Controllers/Admin/ItineraryController.php
+
+		-
+			message: '#^Relation ''locations'' is not found in App\\Models\\Itinerary model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: app/Http/Controllers/Admin/ItineraryController.php
+
+		-
+			message: '#^Relation ''schedules'' is not found in App\\Models\\Itinerary model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Admin/ItineraryController.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: app/Http/Controllers/Admin/ItineraryController.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between mixed and null will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: app/Http/Controllers/Admin/ItineraryController.php
+
+		-
+			message: '#^Negated boolean expression is always false\.$#'
+			identifier: booleanNot.alwaysFalse
+			count: 1
+			path: app/Http/Controllers/Admin/MediaController.php
+
+		-
+			message: '#^Ternary operator condition is always true\.$#'
+			identifier: ternary.alwaysTrue
+			count: 2
+			path: app/Http/Controllers/Admin/MediaController.php
+
+		-
+			message: '#^Relation ''emergencyContact'' is not found in App\\Models\\Order model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: app/Http/Controllers/Admin/OrderController.php
+
+		-
+			message: '#^Relation ''orderable'' is not found in App\\Models\\Order model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: app/Http/Controllers/Admin/OrderController.php
+
+		-
+			message: '#^Relation ''payment'' is not found in App\\Models\\Order model\.$#'
+			identifier: larastan.relationExistence
+			count: 6
+			path: app/Http/Controllers/Admin/OrderController.php
+
+		-
+			message: '#^Relation ''user'' is not found in App\\Models\\Order model\.$#'
+			identifier: larastan.relationExistence
+			count: 3
+			path: app/Http/Controllers/Admin/OrderController.php
+
+		-
+			message: '#^Anonymous function should return Illuminate\\Support\\Collection\<int, array\{id\: int, activity_id\: int, activity_name\: string\|null, media_url\: Illuminate\\Support\\Collection\<int, mixed\>, day\: int, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, \.\.\.\}\> but returns Illuminate\\Support\\Collection\<int, array\{id\: int, activity_id\: int, activity_name\: string\|null, media_url\: Illuminate\\Support\\Collection\<int, array\{name\: mixed, alt_text\: mixed, url\: mixed\}\>, day\: int, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, \.\.\.\}\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Http/Controllers/Admin/PackageController.php
+
+		-
+			message: '#^Anonymous function should return Illuminate\\Support\\Collection\<int, array\{id\: int, itinerary_id\: int, itinerary_name\: string\|null, media_url\: Illuminate\\Support\\Collection\<int, mixed\>, day\: int, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, \.\.\.\}\> but returns Illuminate\\Support\\Collection\<int, array\{id\: int, itinerary_id\: int, itinerary_name\: string\|null, media_url\: Illuminate\\Support\\Collection\<int, array\{name\: mixed, alt_text\: mixed, url\: mixed\}\>, day\: int, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, \.\.\.\}\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Http/Controllers/Admin/PackageController.php
+
+		-
+			message: '#^Anonymous function should return Illuminate\\Support\\Collection\<int, array\{id\: int, transfer_id\: int, transfer_name\: string\|null, media_url\: Illuminate\\Support\\Collection\<int, mixed\>, day\: int, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, \.\.\.\}\> but returns Illuminate\\Support\\Collection\<int, array\{id\: int, transfer_id\: int, transfer_name\: string\|null, media_url\: Illuminate\\Support\\Collection\<int, array\{name\: mixed, alt_text\: mixed, url\: mixed\}\>, day\: int, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, \.\.\.\}\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Http/Controllers/Admin/PackageController.php
+
+		-
+			message: '#^Anonymous function should return non\-empty\-array but returns non\-empty\-array\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Http/Controllers/Admin/PackageController.php
+
+		-
+			message: '#^Cannot call static method find\(\) on class\-string\|false\.$#'
+			identifier: staticMethod.nonObject
+			count: 1
+			path: app/Http/Controllers/Admin/PackageController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Package\>\:\:map\(\) expects callable\(App\\Models\\Package, int\)\: non\-empty\-array, Closure\(mixed\)\: non\-empty\-array given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Admin/PackageController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,App\\Models\\PackageSchedule\>\:\:flatMap\(\) expects callable\(App\\Models\\PackageSchedule, int\)\: \(array\<int, array\{id\: int, activity_id\: int, activity_name\: string\|null, media_url\: Illuminate\\Support\\Collection\<int, mixed\>, day\: int, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float, included\: bool\}\>\|Illuminate\\Support\\Collection\<int, array\{id\: int, activity_id\: int, activity_name\: string\|null, media_url\: Illuminate\\Support\\Collection\<int, mixed\>, day\: int, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float, included\: bool\}\>\), Closure\(mixed\)\: Illuminate\\Support\\Collection\<int, array\{id\: int, activity_id\: int, activity_name\: string\|null, media_url\: Illuminate\\Support\\Collection\<int, mixed\>, day\: int, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float, included\: bool\}\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Admin/PackageController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,App\\Models\\PackageSchedule\>\:\:flatMap\(\) expects callable\(App\\Models\\PackageSchedule, int\)\: \(array\<int, array\{id\: int, itinerary_id\: int, itinerary_name\: string\|null, media_url\: Illuminate\\Support\\Collection\<int, mixed\>, day\: int, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float, included\: bool\}\>\|Illuminate\\Support\\Collection\<int, array\{id\: int, itinerary_id\: int, itinerary_name\: string\|null, media_url\: Illuminate\\Support\\Collection\<int, mixed\>, day\: int, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float, included\: bool\}\>\), Closure\(mixed\)\: Illuminate\\Support\\Collection\<int, array\{id\: int, itinerary_id\: int, itinerary_name\: string\|null, media_url\: Illuminate\\Support\\Collection\<int, mixed\>, day\: int, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float, included\: bool\}\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Admin/PackageController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,App\\Models\\PackageSchedule\>\:\:flatMap\(\) expects callable\(App\\Models\\PackageSchedule, int\)\: \(array\<int, array\{id\: int, transfer_id\: int, transfer_name\: string\|null, media_url\: Illuminate\\Support\\Collection\<int, mixed\>, day\: int, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float, included\: bool, pickup_location\: string, dropoff_location\: string, pax\: int\|null\}\>\|Illuminate\\Support\\Collection\<int, array\{id\: int, transfer_id\: int, transfer_name\: string\|null, media_url\: Illuminate\\Support\\Collection\<int, mixed\>, day\: int, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float, included\: bool, pickup_location\: string, dropoff_location\: string, pax\: int\|null\}\>\), Closure\(mixed\)\: Illuminate\\Support\\Collection\<int, array\{id\: int, transfer_id\: int, transfer_name\: string\|null, media_url\: Illuminate\\Support\\Collection\<int, mixed\>, day\: int, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float, included\: bool, pickup_location\: string, dropoff_location\: string, pax\: int\|null\}\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Admin/PackageController.php
+
+		-
+			message: '#^Relation ''attributes'' is not found in App\\Models\\Package model\.$#'
+			identifier: larastan.relationExistence
+			count: 3
+			path: app/Http/Controllers/Admin/PackageController.php
+
+		-
+			message: '#^Relation ''basePricing'' is not found in App\\Models\\Package model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Admin/PackageController.php
+
+		-
+			message: '#^Relation ''categories'' is not found in App\\Models\\Package model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: app/Http/Controllers/Admin/PackageController.php
+
+		-
+			message: '#^Relation ''information'' is not found in App\\Models\\Package model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Admin/PackageController.php
+
+		-
+			message: '#^Relation ''locations'' is not found in App\\Models\\Package model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: app/Http/Controllers/Admin/PackageController.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: app/Http/Controllers/Admin/PackageController.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between mixed and null will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: app/Http/Controllers/Admin/PackageController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Place\:\:\$feature_image\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Admin/PlaceController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Place\:\:\$media_gallery\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Admin/PlaceController.php
+
+		-
+			message: '#^Anonymous function should return array\{id\: int, name\: string, code\: string, slug\: string, type\: string, description\: string\|null, feature_image\: mixed, featured_destination\: bool, \.\.\.\} but returns array\{id\: int, name\: string, code\: string, slug\: string, type\: string, description\: string\|null, feature_image\: mixed, featured_destination\: bool, \.\.\.\}\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Http/Controllers/Admin/PlaceController.php
+
+		-
+			message: '#^Cannot call method create\(\) on array\|float\|int\|string\|false\.$#'
+			identifier: method.nonObject
+			count: 3
+			path: app/Http/Controllers/Admin/PlaceController.php
+
+		-
+			message: '#^Expression on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.expr
+			count: 1
+			path: app/Http/Controllers/Admin/PlaceController.php
+
+		-
+			message: '#^Left side of && is always true\.$#'
+			identifier: booleanAnd.leftAlwaysTrue
+			count: 1
+			path: app/Http/Controllers/Admin/PlaceController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,App\\Models\\Place\>\:\:map\(\) expects callable\(App\\Models\\Place, int\)\: array\{id\: int, name\: string, code\: string, slug\: string, type\: string, description\: string\|null, feature_image\: mixed, featured_destination\: bool, city\: array\{id\: int, name\: string, slug\: string\}, state\: array\{id\: int, name\: string, slug\: string\}, country\: array\{id\: int, name\: string, slug\: string\}, regions\: Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Region\>, media_gallery\: Illuminate\\Support\\Collection\<int, array\{id\: int, place_id\: int, media_id\: int, is_featured\: bool\|int, name\: string\|null, alt_text\: string\|null, url\: mixed\}\>\}, Closure\(mixed\)\: array\{id\: int, name\: string, code\: string, slug\: string, type\: string, description\: string\|null, feature_image\: mixed, featured_destination\: bool, city\: array\{id\: int, name\: string, slug\: string\}, state\: array\{id\: int, name\: string, slug\: string\}, country\: array\{id\: int, name\: string, slug\: string\}, regions\: Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Region\>, media_gallery\: Illuminate\\Support\\Collection\<int, array\{id\: int, place_id\: int, media_id\: int, is_featured\: bool\|int, name\: string\|null, alt_text\: string\|null, url\: mixed\}\>\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Admin/PlaceController.php
+
+		-
+			message: '#^Relation ''city'' is not found in App\\Models\\Place model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Admin/PlaceController.php
+
+		-
+			message: '#^Relation ''mediaGallery'' is not found in App\\Models\\Place model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: app/Http/Controllers/Admin/PlaceController.php
+
+		-
+			message: '#^Ternary operator condition is always true\.$#'
+			identifier: ternary.alwaysTrue
+			count: 3
+			path: app/Http/Controllers/Admin/PlaceController.php
+
+		-
+			message: '#^Using nullsafe property access on non\-nullable type App\\Models\\City\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Http/Controllers/Admin/PlaceController.php
+
+		-
+			message: '#^Using nullsafe property access on non\-nullable type App\\Models\\State\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Admin/PlaceController.php
+
+		-
+			message: '#^Relation ''countries'' is not found in App\\Models\\Region model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: app/Http/Controllers/Admin/RegionController.php
+
+		-
+			message: '#^Access to property \$id on an unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 2
+			path: app/Http/Controllers/Admin/ReviewController.php
+
+		-
+			message: '#^Access to property \$item_type on an unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 2
+			path: app/Http/Controllers/Admin/ReviewController.php
+
+		-
+			message: '#^Access to property \$locations on an unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Controllers/Admin/ReviewController.php
+
+		-
+			message: '#^Access to property \$name on an unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Controllers/Admin/ReviewController.php
+
+		-
+			message: '#^Access to property \$slug on an unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 3
+			path: app/Http/Controllers/Admin/ReviewController.php
+
+		-
+			message: '#^Anonymous function should return array\{id\: int, rating\: int, review_text\: string\|null, status\: string, is_featured\: bool, order_id\: int\|null, item\: array\{id\: mixed, name\: string, type\: mixed, has_live_item\: bool, frontend_url\: non\-falsy\-string\|null\}, user\: array\{id\: int, name\: string\}, \.\.\.\} but returns array\{id\: int, rating\: int, review_text\: string\|null, status\: string, is_featured\: bool, order_id\: int\|null, item\: array\{id\: mixed, name\: string, type\: mixed, has_live_item\: bool, frontend_url\: non\-falsy\-string\|null\}, user\: array\{id\: int, name\: string\}, \.\.\.\}\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Http/Controllers/Admin/ReviewController.php
+
+		-
+			message: '#^Call to method locations\(\) on an unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Controllers/Admin/ReviewController.php
+
+		-
+			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
+			identifier: larastan.noEnvCallsOutsideOfConfig
+			count: 2
+			path: app/Http/Controllers/Admin/ReviewController.php
+
+		-
+			message: '#^If condition is always true\.$#'
+			identifier: if.alwaysTrue
+			count: 1
+			path: app/Http/Controllers/Admin/ReviewController.php
+
+		-
+			message: '#^Left side of && is always true\.$#'
+			identifier: booleanAnd.leftAlwaysTrue
+			count: 2
+			path: app/Http/Controllers/Admin/ReviewController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,App\\Models\\Review\>\:\:transform\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Admin/ReviewController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,App\\Models\\Review\>\:\:transform\(\) expects callable\(App\\Models\\Review, int\)\: array\{id\: int, rating\: int, review_text\: string\|null, status\: string, is_featured\: bool, order_id\: int\|null, item\: array\{id\: mixed, name\: string, type\: mixed, has_live_item\: bool, frontend_url\: non\-falsy\-string\|null\}, user\: array\{id\: int, name\: string\}, media_gallery\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, alt\: string\|null, url\: mixed\}\>, created_at\: non\-falsy\-string\|null, updated_at\: non\-falsy\-string\|null\}, Closure\(mixed\)\: array\{id\: int, rating\: int, review_text\: string\|null, status\: string, is_featured\: bool, order_id\: int\|null, item\: array\{id\: mixed, name\: string, type\: mixed, has_live_item\: bool, frontend_url\: non\-falsy\-string\|null\}, user\: array\{id\: int, name\: string\}, media_gallery\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, alt\: string\|null, url\: mixed\}\>, created_at\: non\-falsy\-string\|null, updated_at\: non\-falsy\-string\|null\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Admin/ReviewController.php
+
+		-
+			message: '#^Relation ''mediaGallery'' is not found in App\\Models\\Review model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: app/Http/Controllers/Admin/ReviewController.php
+
+		-
+			message: '#^Relation ''user'' is not found in App\\Models\\Review model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Admin/ReviewController.php
+
+		-
+			message: '#^Ternary operator condition is always true\.$#'
+			identifier: ternary.alwaysTrue
+			count: 4
+			path: app/Http/Controllers/Admin/ReviewController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\State\:\:\$feature_image\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Admin/StateController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\State\:\:\$media_gallery\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Admin/StateController.php
+
+		-
+			message: '#^Anonymous function should return array\{id\: int, name\: string, code\: string\|null, slug\: string, type\: string, description\: string\|null, feature_image\: mixed, featured_destination\: bool, \.\.\.\} but returns array\{id\: int, name\: string, code\: string\|null, slug\: string, type\: string, description\: string\|null, feature_image\: mixed, featured_destination\: bool, \.\.\.\}\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Http/Controllers/Admin/StateController.php
+
+		-
+			message: '#^Cannot call method create\(\) on array\|float\|int\|string\|false\.$#'
+			identifier: method.nonObject
+			count: 3
+			path: app/Http/Controllers/Admin/StateController.php
+
+		-
+			message: '#^Left side of && is always true\.$#'
+			identifier: booleanAnd.leftAlwaysTrue
+			count: 2
+			path: app/Http/Controllers/Admin/StateController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,App\\Models\\State\>\:\:map\(\) expects callable\(App\\Models\\State, int\)\: array\{id\: int, name\: string, code\: string\|null, slug\: string, type\: string, description\: string\|null, feature_image\: mixed, featured_destination\: bool, country\: array\{id\: int, name\: string\}, regions\: array\<mixed\>, media_gallery\: Illuminate\\Support\\Collection\<int, array\{id\: int, state_id\: int, media_id\: int, is_featured\: bool\|int, name\: string\|null, alt_text\: string\|null, url\: mixed\}\>\}, Closure\(mixed\)\: array\{id\: int, name\: string, code\: string\|null, slug\: string, type\: string, description\: string\|null, feature_image\: mixed, featured_destination\: bool, country\: array\{id\: int, name\: string\}, regions\: array\<mixed\>, media_gallery\: Illuminate\\Support\\Collection\<int, array\{id\: int, state_id\: int, media_id\: int, is_featured\: bool\|int, name\: string\|null, alt_text\: string\|null, url\: mixed\}\>\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Admin/StateController.php
+
+		-
+			message: '#^Relation ''mediaGallery'' is not found in App\\Models\\State model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: app/Http/Controllers/Admin/StateController.php
+
+		-
+			message: '#^Right side of && is always true\.$#'
+			identifier: booleanAnd.rightAlwaysTrue
+			count: 1
+			path: app/Http/Controllers/Admin/StateController.php
+
+		-
+			message: '#^Ternary operator condition is always true\.$#'
+			identifier: ternary.alwaysTrue
+			count: 1
+			path: app/Http/Controllers/Admin/StateController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Transfer\:\:\$feature_image\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Admin/TransferController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Transfer\:\:\$media_gallery\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Admin/TransferController.php
+
+		-
+			message: '#^Anonymous function should return non\-empty\-array but returns non\-empty\-array\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Http/Controllers/Admin/TransferController.php
+
+		-
+			message: '#^Left side of && is always true\.$#'
+			identifier: booleanAnd.leftAlwaysTrue
+			count: 2
+			path: app/Http/Controllers/Admin/TransferController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,App\\Models\\Transfer\>\:\:map\(\) expects callable\(App\\Models\\Transfer, int\)\: non\-empty\-array, Closure\(mixed\)\: non\-empty\-array given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Admin/TransferController.php
+
+		-
+			message: '#^Parameter \#1 \$json of function json_decode expects string, array\<mixed\> given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Http/Controllers/Admin/TransferController.php
+
+		-
+			message: '#^Parameter \#2 \$string of function explode expects string, array\<mixed\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Admin/TransferController.php
+
+		-
+			message: '#^Property App\\Models\\Transfer\:\:\$addons is not writable\.$#'
+			identifier: assign.propertyReadOnly
+			count: 1
+			path: app/Http/Controllers/Admin/TransferController.php
+
+		-
+			message: '#^Relation ''mediaGallery'' is not found in App\\Models\\Transfer model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Admin/TransferController.php
+
+		-
+			message: '#^Relation ''pricingAvailability'' is not found in App\\Models\\Transfer model\.$#'
+			identifier: larastan.relationExistence
+			count: 3
+			path: app/Http/Controllers/Admin/TransferController.php
+
+		-
+			message: '#^Relation ''schedule'' is not found in App\\Models\\Transfer model\.$#'
+			identifier: larastan.relationExistence
+			count: 4
+			path: app/Http/Controllers/Admin/TransferController.php
+
+		-
+			message: '#^Relation ''vendorRoutes'' is not found in App\\Models\\Transfer model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: app/Http/Controllers/Admin/TransferController.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: app/Http/Controllers/Admin/TransferController.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between mixed and null will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: app/Http/Controllers/Admin/TransferController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>is_vendor" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Admin/TransferController.php
+
+		-
+			message: '#^Relation ''meta'' is not found in App\\Models\\User model\.$#'
+			identifier: larastan.relationExistence
+			count: 5
+			path: app/Http/Controllers/Admin/UserController.php
+
+		-
+			message: '#^Relation ''profile'' is not found in App\\Models\\User model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Admin/UserController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Admin\\VendorController\:\:updateAvailabilityTimeSlot\(\) invoked with 1 parameter, 2 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: app/Http/Controllers/Admin/VendorController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Admin\\VendorController\:\:updatePricingTiers\(\) invoked with 1 parameter, 2 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: app/Http/Controllers/Admin/VendorController.php
+
+		-
+			message: '#^Relation ''assignedVehicle'' is not found in App\\Models\\VendorDriver model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Admin/VendorController.php
+
+		-
+			message: '#^Relation ''driver'' is not found in App\\Models\\VendorDriverSchedule model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Admin/VendorController.php
+
+		-
+			message: '#^Relation ''drivers'' is not found in App\\Models\\Vendor model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Admin/VendorController.php
+
+		-
+			message: '#^Relation ''routes'' is not found in App\\Models\\Vendor model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Admin/VendorController.php
+
+		-
+			message: '#^Relation ''vehicle'' is not found in App\\Models\\VendorAvailabilityTimeSlot model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: app/Http/Controllers/Admin/VendorController.php
+
+		-
+			message: '#^Relation ''vehicle'' is not found in App\\Models\\VendorDriverSchedule model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Admin/VendorController.php
+
+		-
+			message: '#^Relation ''vehicles'' is not found in App\\Models\\Vendor model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Admin/VendorController.php
+
+		-
+			message: '#^Caught class App\\Http\\Controllers\\JWTException not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Controllers/AuthController.php
+
+		-
+			message: '#^Parameter \#1 \$forceForever of static method Tymon\\JWTAuth\\JWT\:\:invalidate\(\) expects bool, Tymon\\JWTAuth\\Token\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/AuthController.php
+
+		-
+			message: '#^Parameter \#1 \$forceForever of static method Tymon\\JWTAuth\\JWT\:\:refresh\(\) expects bool, Tymon\\JWTAuth\\Token\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/AuthController.php
+
+		-
+			message: '#^Access to property \$mediaGallery on an unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Controllers/Creator/CreatorDashboardController.php
+
+		-
+			message: '#^Access to property \$name on an unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Controllers/Creator/CreatorDashboardController.php
+
+		-
+			message: '#^Access to property \$slug on an unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Controllers/Creator/CreatorDashboardController.php
+
+		-
+			message: '#^Offset ''App\\\\Models\\\\Activity''\|''App\\\\Models\\\\Itinerary''\|''App\\\\Models\\\\Package'' on array\{App\\Models\\Activity\: ''Activity'', App\\Models\\Package\: ''Package'', App\\Models\\Itinerary\: ''Itinerary''\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: app/Http/Controllers/Creator/CreatorDashboardController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Order\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Creator/CreatorDashboardController.php
+
+		-
+			message: '#^Relation ''orderable'' is not found in App\\Models\\Order model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Creator/CreatorDashboardController.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between Eloquent\|Illuminate\\Database\\Eloquent\\Model and null will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: app/Http/Controllers/Creator/CreatorDashboardController.php
+
+		-
+			message: '#^Relation ''taggedItems'' is not found in App\\Models\\Post model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Creator/CreatorPostController.php
+
+		-
+			message: '#^Anonymous function should return array\{id\: int, name\: string, slug\: string, featured_activity\: bool, description\: string\|null, item_type\: mixed, short_description\: string\|null, featured_image\: mixed, \.\.\.\} but returns array\{id\: int, name\: string, slug\: string, featured_activity\: bool, description\: string\|null, item_type\: mixed, short_description\: string\|null, featured_image\: mixed, \.\.\.\}\.$#'
+			identifier: return.type
+			count: 2
+			path: app/Http/Controllers/Guest/PublicActivityController.php
+
+		-
+			message: '#^Left side of && is always true\.$#'
+			identifier: booleanAnd.leftAlwaysTrue
+			count: 13
+			path: app/Http/Controllers/Guest/PublicActivityController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Activity\>\:\:map\(\) expects callable\(App\\Models\\Activity, int\)\: array\{id\: int, name\: string, slug\: string, featured_activity\: bool, description\: string\|null, item_type\: mixed, short_description\: string\|null, featured_image\: mixed, categories\: array\<mixed\>, attributes\: Illuminate\\Support\\Collection\<int, array\{name\: string, attribute_value\: string\}\>, locations\: Illuminate\\Support\\Collection\<int, array\{location_type\: string, location_label\: string\|null, duration\: int\|null, city_id\: int, city\: string, state_id\: int, state\: string, country_id\: int, country\: string, region_id\: int\|null, region\: string\|null\}\>, pricing\: App\\Models\\ActivityPricing\|null, seasonalPricing\: Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\ActivitySeasonalPricing\>, groupDiscounts\: Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\ActivityGroupDiscount\>, earlyBirdDiscount\: App\\Models\\ActivityEarlyBirdDiscount\|null, lastMinuteDiscount\: App\\Models\\ActivityLastMinuteDiscount\|null, promoCodes\: Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\ActivityPromoCode\>, availability\: array\{date_based_activity\: int, start_date\: string\|null, end_date\: string\|null, quantity_based_activity\: int, max_quantity\: int\|null\}\|null, media_gallery\: array\<mixed\>\}, Closure\(mixed\)\: array\{id\: int, name\: string, slug\: string, featured_activity\: bool, description\: string\|null, item_type\: mixed, short_description\: string\|null, featured_image\: mixed, categories\: array\<mixed\>, attributes\: Illuminate\\Support\\Collection\<int, array\{name\: string, attribute_value\: string\}\>, locations\: Illuminate\\Support\\Collection\<int, array\{location_type\: string, location_label\: string\|null, duration\: int\|null, city_id\: int, city\: string, state_id\: int, state\: string, country_id\: int, country\: string, region_id\: int\|null, region\: string\|null\}\>, pricing\: App\\Models\\ActivityPricing\|null, seasonalPricing\: Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\ActivitySeasonalPricing\>, groupDiscounts\: Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\ActivityGroupDiscount\>, earlyBirdDiscount\: App\\Models\\ActivityEarlyBirdDiscount\|null, lastMinuteDiscount\: App\\Models\\ActivityLastMinuteDiscount\|null, promoCodes\: Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\ActivityPromoCode\>, availability\: array\{date_based_activity\: int, start_date\: string\|null, end_date\: string\|null, quantity_based_activity\: int, max_quantity\: int\|null\}\|null, media_gallery\: array\<mixed\>\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Guest/PublicActivityController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Activity\>\:\:map\(\) expects callable\(App\\Models\\Activity, int\)\: array\{id\: int, name\: string, slug\: string, featured_activity\: bool, description\: string\|null, item_type\: mixed, short_description\: string\|null, featured_image\: mixed, city_slug\: string\|null, categories\: array\<mixed\>, attributes\: Illuminate\\Support\\Collection\<int, array\{name\: string, attribute_value\: string\}\>, locations\: Illuminate\\Support\\Collection\<int, array\{location_type\: string, location_label\: string\|null, duration\: int\|null, city_id\: int, city\: string, city_slug\: string, state_id\: int, state\: string, country_id\: int, country\: string, region_id\: int\|null, region\: string\|null\}\>, pricing\: App\\Models\\ActivityPricing\|null, seasonalPricing\: Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\ActivitySeasonalPricing\>, groupDiscounts\: Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\ActivityGroupDiscount\>, earlyBirdDiscount\: App\\Models\\ActivityEarlyBirdDiscount\|null, lastMinuteDiscount\: App\\Models\\ActivityLastMinuteDiscount\|null, promoCodes\: Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\ActivityPromoCode\>, availability\: array\{date_based_activity\: int, start_date\: string\|null, end_date\: string\|null, quantity_based_activity\: int, max_quantity\: int\|null\}\|null, media_gallery\: array\<mixed\>\}, Closure\(mixed\)\: array\{id\: int, name\: string, slug\: string, featured_activity\: bool, description\: string\|null, item_type\: mixed, short_description\: string\|null, featured_image\: mixed, city_slug\: string\|null, categories\: array\<mixed\>, attributes\: Illuminate\\Support\\Collection\<int, array\{name\: string, attribute_value\: string\}\>, locations\: Illuminate\\Support\\Collection\<int, array\{location_type\: string, location_label\: string\|null, duration\: int\|null, city_id\: int, city\: string, city_slug\: string, state_id\: int, state\: string, country_id\: int, country\: string, region_id\: int\|null, region\: string\|null\}\>, pricing\: App\\Models\\ActivityPricing\|null, seasonalPricing\: Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\ActivitySeasonalPricing\>, groupDiscounts\: Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\ActivityGroupDiscount\>, earlyBirdDiscount\: App\\Models\\ActivityEarlyBirdDiscount\|null, lastMinuteDiscount\: App\\Models\\ActivityLastMinuteDiscount\|null, promoCodes\: Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\ActivityPromoCode\>, availability\: array\{date_based_activity\: int, start_date\: string\|null, end_date\: string\|null, quantity_based_activity\: int, max_quantity\: int\|null\}\|null, media_gallery\: array\<mixed\>\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Guest/PublicActivityController.php
+
+		-
+			message: '#^Relation ''categories'' is not found in App\\Models\\Activity model\.$#'
+			identifier: larastan.relationExistence
+			count: 3
+			path: app/Http/Controllers/Guest/PublicActivityController.php
+
+		-
+			message: '#^Relation ''locations'' is not found in App\\Models\\Activity model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Guest/PublicActivityController.php
+
+		-
+			message: '#^Right side of && is always true\.$#'
+			identifier: booleanAnd.rightAlwaysTrue
+			count: 12
+			path: app/Http/Controllers/Guest/PublicActivityController.php
+
+		-
+			message: '#^Ternary operator condition is always true\.$#'
+			identifier: ternary.alwaysTrue
+			count: 6
+			path: app/Http/Controllers/Guest/PublicActivityController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>url" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 3
+			path: app/Http/Controllers/Guest/PublicActivityController.php
+
+		-
+			message: '#^Variable \$formattedActivity in empty\(\) always exists and is not falsy\.$#'
+			identifier: empty.variable
+			count: 1
+			path: app/Http/Controllers/Guest/PublicActivityController.php
+
+		-
+			message: '#^Anonymous function should return array\{id\: int, name\: string, slug\: string, excerpt\: string, publish\: bool, media_gallery\: Illuminate\\Support\\Collection\<int, array\{media_id\: int, name\: string\|null, alt\: string\|null, url\: mixed, is_featured\: int\}\>, categories\: Illuminate\\Support\\Collection\<int, array\{category_id\: int, category_name\: string, slug\: string\|null\}\>, tags\: Illuminate\\Support\\Collection\<int, array\{tag_id\: int, tag_name\: string, slug\: string\|null\}\>, \.\.\.\} but returns array\{id\: int, name\: string, slug\: string, excerpt\: string, publish\: bool, media_gallery\: Illuminate\\Support\\Collection\<int, array\{media_id\: int, name\: string\|null, alt\: string\|null, url\: mixed, is_featured\: int\}\>, categories\: Illuminate\\Support\\Collection\<int, array\{category_id\: int, category_name\: string, slug\: string\|null\}\>, tags\: Illuminate\\Support\\Collection\<int, array\{tag_id\: int, tag_name\: string, slug\: string\|null\}\>, \.\.\.\}\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Http/Controllers/Guest/PublicBlogController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Blog\>\:\:map\(\) expects callable\(App\\Models\\Blog, int\)\: array\{id\: int, name\: string, slug\: string, excerpt\: string, publish\: bool, media_gallery\: Illuminate\\Support\\Collection\<int, array\{media_id\: int, name\: string\|null, alt\: string\|null, url\: mixed, is_featured\: int\}\>, categories\: Illuminate\\Support\\Collection\<int, array\{category_id\: int, category_name\: string, slug\: string\|null\}\>, tags\: Illuminate\\Support\\Collection\<int, array\{tag_id\: int, tag_name\: string, slug\: string\|null\}\>, created_at\: Illuminate\\Support\\Carbon\|null, updated_at\: Illuminate\\Support\\Carbon\|null\}, Closure\(mixed\)\: array\{id\: int, name\: string, slug\: string, excerpt\: string, publish\: bool, media_gallery\: Illuminate\\Support\\Collection\<int, array\{media_id\: int, name\: string\|null, alt\: string\|null, url\: mixed, is_featured\: int\}\>, categories\: Illuminate\\Support\\Collection\<int, array\{category_id\: int, category_name\: string, slug\: string\|null\}\>, tags\: Illuminate\\Support\\Collection\<int, array\{tag_id\: int, tag_name\: string, slug\: string\|null\}\>, created_at\: Illuminate\\Support\\Carbon\|null, updated_at\: Illuminate\\Support\\Carbon\|null\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Guest/PublicBlogController.php
+
+		-
+			message: '#^Relation ''categories'' is not found in App\\Models\\Blog model\.$#'
+			identifier: larastan.relationExistence
+			count: 3
+			path: app/Http/Controllers/Guest/PublicBlogController.php
+
+		-
+			message: '#^Relation ''media'' is not found in App\\Models\\Blog model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: app/Http/Controllers/Guest/PublicBlogController.php
+
+		-
+			message: '#^Relation ''tags'' is not found in App\\Models\\Blog model\.$#'
+			identifier: larastan.relationExistence
+			count: 3
+			path: app/Http/Controllers/Guest/PublicBlogController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\City\:\:\$feature_image\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Guest/PublicCitiesController.php
+
+		-
+			message: '#^Left side of && is always true\.$#'
+			identifier: booleanAnd.leftAlwaysTrue
+			count: 1
+			path: app/Http/Controllers/Guest/PublicCitiesController.php
+
+		-
+			message: '#^Relation ''basePricing'' is not found in App\\Models\\Itinerary model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: app/Http/Controllers/Guest/PublicCitiesController.php
+
+		-
+			message: '#^Relation ''basePricing'' is not found in App\\Models\\Package model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: app/Http/Controllers/Guest/PublicCitiesController.php
+
+		-
+			message: '#^Relation ''categories'' is not found in App\\Models\\Activity model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: app/Http/Controllers/Guest/PublicCitiesController.php
+
+		-
+			message: '#^Relation ''categories'' is not found in App\\Models\\Itinerary model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Guest/PublicCitiesController.php
+
+		-
+			message: '#^Relation ''categories'' is not found in App\\Models\\Package model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Guest/PublicCitiesController.php
+
+		-
+			message: '#^Relation ''locations'' is not found in App\\Models\\Activity model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Guest/PublicCitiesController.php
+
+		-
+			message: '#^Relation ''locations'' is not found in App\\Models\\Itinerary model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Guest/PublicCitiesController.php
+
+		-
+			message: '#^Relation ''locations'' is not found in App\\Models\\Package model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Guest/PublicCitiesController.php
+
+		-
+			message: '#^Relation ''mediaGallery'' is not found in App\\Models\\City model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: app/Http/Controllers/Guest/PublicCitiesController.php
+
+		-
+			message: '#^Relation ''pricing'' is not found in App\\Models\\Activity model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Guest/PublicCitiesController.php
+
+		-
+			message: '#^Relation ''state'' is not found in App\\Models\\City model\.$#'
+			identifier: larastan.relationExistence
+			count: 3
+			path: app/Http/Controllers/Guest/PublicCitiesController.php
+
+		-
+			message: '#^Relation ''tags'' is not found in App\\Models\\Itinerary model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Guest/PublicCitiesController.php
+
+		-
+			message: '#^Relation ''tags'' is not found in App\\Models\\Package model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Guest/PublicCitiesController.php
+
+		-
+			message: '#^Ternary operator condition is always true\.$#'
+			identifier: ternary.alwaysTrue
+			count: 1
+			path: app/Http/Controllers/Guest/PublicCitiesController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>url" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 3
+			path: app/Http/Controllers/Guest/PublicCitiesController.php
+
+		-
+			message: '#^Variable \$cities in empty\(\) always exists and is not falsy\.$#'
+			identifier: empty.variable
+			count: 1
+			path: app/Http/Controllers/Guest/PublicCitiesController.php
+
+		-
+			message: '#^Relation ''mediaGallery'' is not found in App\\Models\\Country model\.$#'
+			identifier: larastan.relationExistence
+			count: 3
+			path: app/Http/Controllers/Guest/PublicCountryController.php
+
+		-
+			message: '#^Call to static method query\(\) on an unknown class App\\Http\\Controllers\\Guest\\YourModel\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Controllers/Guest/PublicFilterController.php
+
+		-
+			message: '#^Call to static method where\(\) on an unknown class App\\Http\\Controllers\\Guest\\City\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Controllers/Guest/PublicFilterController.php
+
+		-
+			message: '#^Call to static method where\(\) on an unknown class App\\Http\\Controllers\\Guest\\Region\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Controllers/Guest/PublicFilterController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ItineraryTag\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Guest/PublicHomeSearchController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ItineraryTag\:\:\$slug\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Guest/PublicHomeSearchController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\PackageTag\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Guest/PublicHomeSearchController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\PackageTag\:\:\$slug\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Guest/PublicHomeSearchController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\ItineraryTag\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Guest/PublicHomeSearchController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\PackageTag\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Guest/PublicHomeSearchController.php
+
+		-
+			message: '#^Relation ''availability'' is not found in App\\Models\\Activity model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: app/Http/Controllers/Guest/PublicHomeSearchController.php
+
+		-
+			message: '#^Relation ''availability'' is not found in App\\Models\\Itinerary model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: app/Http/Controllers/Guest/PublicHomeSearchController.php
+
+		-
+			message: '#^Relation ''availability'' is not found in App\\Models\\Package model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: app/Http/Controllers/Guest/PublicHomeSearchController.php
+
+		-
+			message: '#^Relation ''basePricing'' is not found in App\\Models\\Itinerary model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Guest/PublicHomeSearchController.php
+
+		-
+			message: '#^Relation ''basePricing'' is not found in App\\Models\\Package model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Guest/PublicHomeSearchController.php
+
+		-
+			message: '#^Relation ''categories'' is not found in App\\Models\\Activity model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Guest/PublicHomeSearchController.php
+
+		-
+			message: '#^Relation ''categories'' is not found in App\\Models\\Itinerary model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Guest/PublicHomeSearchController.php
+
+		-
+			message: '#^Relation ''categories'' is not found in App\\Models\\Package model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Guest/PublicHomeSearchController.php
+
+		-
+			message: '#^Relation ''locations'' is not found in App\\Models\\Activity model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: app/Http/Controllers/Guest/PublicHomeSearchController.php
+
+		-
+			message: '#^Relation ''locations'' is not found in App\\Models\\Itinerary model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: app/Http/Controllers/Guest/PublicHomeSearchController.php
+
+		-
+			message: '#^Relation ''locations'' is not found in App\\Models\\Package model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: app/Http/Controllers/Guest/PublicHomeSearchController.php
+
+		-
+			message: '#^Relation ''pricing'' is not found in App\\Models\\Activity model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Guest/PublicHomeSearchController.php
+
+		-
+			message: '#^Relation ''state'' is not found in App\\Models\\City model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Guest/PublicHomeSearchController.php
+
+		-
+			message: '#^Relation ''tags'' is not found in App\\Models\\Itinerary model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Guest/PublicHomeSearchController.php
+
+		-
+			message: '#^Relation ''tags'' is not found in App\\Models\\Package model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Guest/PublicHomeSearchController.php
+
+		-
+			message: '#^Result of && is always false\.$#'
+			identifier: booleanAnd.alwaysFalse
+			count: 5
+			path: app/Http/Controllers/Guest/PublicHomeSearchController.php
+
+		-
+			message: '#^Ternary operator condition is always true\.$#'
+			identifier: ternary.alwaysTrue
+			count: 3
+			path: app/Http/Controllers/Guest/PublicHomeSearchController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>url" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 3
+			path: app/Http/Controllers/Guest/PublicHomeSearchController.php
+
+		-
+			message: '#^Variable \$categorySlugs in empty\(\) is never defined\.$#'
+			identifier: empty.variable
+			count: 3
+			path: app/Http/Controllers/Guest/PublicHomeSearchController.php
+
+		-
+			message: '#^Variable \$tagSlugs in empty\(\) is never defined\.$#'
+			identifier: empty.variable
+			count: 2
+			path: app/Http/Controllers/Guest/PublicHomeSearchController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ItineraryActivity\:\:\$include_in_package\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Guest/PublicItineraryController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ItineraryTransfer\:\:\$include_in_package\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Guest/PublicItineraryController.php
+
+		-
+			message: '#^Anonymous function should return array\{day\: int, activities\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float\|int\|string\|null, include_in_package\: mixed, main_location\: string\|null, \.\.\.\}\>, transfers\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, pickup_location\: string\|null, dropoff_location\: string\|null, pax\: int\|null, price\: float\|int\|string\|null, \.\.\.\}\>\} but returns array\{day\: int, activities\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float\|int\|string\|null, include_in_package\: mixed, main_location\: string\|null, \.\.\.\}\>, transfers\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, pickup_location\: string\|null, dropoff_location\: string\|null, pax\: int\|null, price\: float\|int\|string\|null, \.\.\.\}\>\}\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Http/Controllers/Guest/PublicItineraryController.php
+
+		-
+			message: '#^Anonymous function should return array\{id\: int, name\: string, slug\: string, featured_itinerary\: bool, description\: string\|null, item_type\: mixed, featured_image\: mixed, city_slug\: string\|null, \.\.\.\} but returns array\{id\: int, name\: string, slug\: string, featured_itinerary\: bool, description\: string\|null, item_type\: mixed, featured_image\: mixed, city_slug\: string\|null, \.\.\.\}\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Http/Controllers/Guest/PublicItineraryController.php
+
+		-
+			message: '#^Anonymous function should return array\{id\: int, name\: string, slug\: string, featured_itinerary\: bool, description\: string\|null, item_type\: mixed, featured_image\: mixed, locations\: Illuminate\\Support\\Collection\<int, array\{city_id\: int, city\: string, state_id\: int, state\: string, country_id\: int, country\: string, region_id\: int\|null, region\: string\|null\}\>, \.\.\.\} but returns array\{id\: int, name\: string, slug\: string, featured_itinerary\: bool, description\: string\|null, item_type\: mixed, featured_image\: mixed, locations\: Illuminate\\Support\\Collection\<int, array\{city_id\: int, city\: string, state_id\: int, state\: string, country_id\: int, country\: string, region_id\: int\|null, region\: string\|null\}\>, \.\.\.\}\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Http/Controllers/Guest/PublicItineraryController.php
+
+		-
+			message: '#^Left side of && is always true\.$#'
+			identifier: booleanAnd.leftAlwaysTrue
+			count: 12
+			path: app/Http/Controllers/Guest/PublicItineraryController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Itinerary\>\:\:map\(\) expects callable\(App\\Models\\Itinerary, int\)\: array\{id\: int, name\: string, slug\: string, featured_itinerary\: bool, description\: string\|null, item_type\: mixed, featured_image\: mixed, city_slug\: string\|null, locations\: Illuminate\\Support\\Collection\<int, array\{city_id\: int, city\: string, state_id\: int, state\: string, country_id\: int, country\: string, region_id\: int\|null, region\: string\|null\}\>, categories\: array\<mixed\>, attributes\: Illuminate\\Support\\Collection\<int, array\{name\: string, value\: string\}\>, tags\: array\<mixed\>, media_gallery\: array\<mixed\>, seo\: array\{meta_title\: string, meta_description\: string\|null, keywords\: string\|null\}\|null\}, Closure\(mixed\)\: array\{id\: int, name\: string, slug\: string, featured_itinerary\: bool, description\: string\|null, item_type\: mixed, featured_image\: mixed, city_slug\: string\|null, locations\: Illuminate\\Support\\Collection\<int, array\{city_id\: int, city\: string, state_id\: int, state\: string, country_id\: int, country\: string, region_id\: int\|null, region\: string\|null\}\>, categories\: array\<mixed\>, attributes\: Illuminate\\Support\\Collection\<int, array\{name\: string, value\: string\}\>, tags\: array\<mixed\>, media_gallery\: array\<mixed\>, seo\: array\{meta_title\: string, meta_description\: string\|null, keywords\: string\|null\}\|null\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Guest/PublicItineraryController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Itinerary\>\:\:map\(\) expects callable\(App\\Models\\Itinerary, int\)\: array\{id\: int, name\: string, slug\: string, featured_itinerary\: bool, description\: string\|null, item_type\: mixed, featured_image\: mixed, locations\: Illuminate\\Support\\Collection\<int, array\{city_id\: int, city\: string, state_id\: int, state\: string, country_id\: int, country\: string, region_id\: int\|null, region\: string\|null\}\>, categories\: array\<mixed\>, attributes\: Illuminate\\Support\\Collection\<int, array\{name\: string, value\: string\}\>, tags\: array\<mixed\>, media_gallery\: array\<mixed\>, seo\: array\{meta_title\: string, meta_description\: string\|null, keywords\: string\|null\}\|null\}, Closure\(mixed\)\: array\{id\: int, name\: string, slug\: string, featured_itinerary\: bool, description\: string\|null, item_type\: mixed, featured_image\: mixed, locations\: Illuminate\\Support\\Collection\<int, array\{city_id\: int, city\: string, state_id\: int, state\: string, country_id\: int, country\: string, region_id\: int\|null, region\: string\|null\}\>, categories\: array\<mixed\>, attributes\: Illuminate\\Support\\Collection\<int, array\{name\: string, value\: string\}\>, tags\: array\<mixed\>, media_gallery\: array\<mixed\>, seo\: array\{meta_title\: string, meta_description\: string\|null, keywords\: string\|null\}\|null\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Guest/PublicItineraryController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\ItineraryActivity\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Guest/PublicItineraryController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\ItinerarySchedule\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Guest/PublicItineraryController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\ItinerarySchedule\>\:\:map\(\) expects callable\(App\\Models\\ItinerarySchedule, int\)\: array\{day\: int, activities\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float\|int\|string\|null, include_in_package\: mixed, main_location\: string\|null, duration_minutes\: int\|null, featured_image\: mixed\}\>, transfers\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, pickup_location\: string\|null, dropoff_location\: string\|null, pax\: int\|null, price\: float\|int\|string\|null, include_in_package\: mixed\}\>\}, Closure\(mixed\)\: array\{day\: int, activities\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float\|int\|string\|null, include_in_package\: mixed, main_location\: string\|null, duration_minutes\: int\|null, featured_image\: mixed\}\>, transfers\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, pickup_location\: string\|null, dropoff_location\: string\|null, pax\: int\|null, price\: float\|int\|string\|null, include_in_package\: mixed\}\>\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Guest/PublicItineraryController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\ItineraryTransfer\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Guest/PublicItineraryController.php
+
+		-
+			message: '#^Relation ''itinerariesAddon'' is not found in App\\Models\\Addon model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Guest/PublicItineraryController.php
+
+		-
+			message: '#^Relation ''locations'' is not found in App\\Models\\Itinerary model\.$#'
+			identifier: larastan.relationExistence
+			count: 4
+			path: app/Http/Controllers/Guest/PublicItineraryController.php
+
+		-
+			message: '#^Right side of && is always true\.$#'
+			identifier: booleanAnd.rightAlwaysTrue
+			count: 12
+			path: app/Http/Controllers/Guest/PublicItineraryController.php
+
+		-
+			message: '#^Ternary operator condition is always true\.$#'
+			identifier: ternary.alwaysTrue
+			count: 7
+			path: app/Http/Controllers/Guest/PublicItineraryController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>url" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 4
+			path: app/Http/Controllers/Guest/PublicItineraryController.php
+
+		-
+			message: '#^Using nullsafe property access on non\-nullable type App\\Models\\Activity\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 4
+			path: app/Http/Controllers/Guest/PublicItineraryController.php
+
+		-
+			message: '#^Variable \$formattedItinerary in empty\(\) always exists and is not falsy\.$#'
+			identifier: empty.variable
+			count: 1
+			path: app/Http/Controllers/Guest/PublicItineraryController.php
+
+		-
+			message: '#^Relation ''countries'' is not found in App\\Models\\Region model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Guest/PublicMenuController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\PackageActivity\:\:\$include_in_package\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Guest/PublicPackageController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\PackageTransfer\:\:\$include_in_package\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Guest/PublicPackageController.php
+
+		-
+			message: '#^Anonymous function should return array\{day\: int, activities\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float\|int\|string\|null, include_in_package\: mixed, main_location\: string\|null, \.\.\.\}\>, transfers\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, pickup_location\: string, dropoff_location\: string, pax\: int\|null, price\: float\|int\|string\|null, \.\.\.\}\>\} but returns array\{day\: int, activities\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float\|int\|string\|null, include_in_package\: mixed, main_location\: string\|null, \.\.\.\}\>, transfers\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, pickup_location\: string, dropoff_location\: string, pax\: int\|null, price\: float\|int\|string\|null, \.\.\.\}\>\}\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Http/Controllers/Guest/PublicPackageController.php
+
+		-
+			message: '#^Anonymous function should return array\{id\: int, name\: string, slug\: string, featured_package\: bool, description\: string, item_type\: mixed, featured_image\: mixed, locations\: Illuminate\\Support\\Collection\<int, array\{city_id\: int, city\: string, state_id\: int, state\: string, country_id\: int, country\: string, region_id\: int\|null, region\: string\|null\}\>, \.\.\.\} but returns array\{id\: int, name\: string, slug\: string, featured_package\: bool, description\: string, item_type\: mixed, featured_image\: mixed, locations\: Illuminate\\Support\\Collection\<int, array\{city_id\: int, city\: string, state_id\: int, state\: string, country_id\: int, country\: string, region_id\: int\|null, region\: string\|null\}\>, \.\.\.\}\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Http/Controllers/Guest/PublicPackageController.php
+
+		-
+			message: '#^Left side of && is always true\.$#'
+			identifier: booleanAnd.leftAlwaysTrue
+			count: 8
+			path: app/Http/Controllers/Guest/PublicPackageController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Package\>\:\:map\(\) expects callable\(App\\Models\\Package, int\)\: array\{id\: int, name\: string, slug\: string, featured_package\: bool, description\: string, item_type\: mixed, featured_image\: mixed, locations\: Illuminate\\Support\\Collection\<int, array\{city_id\: int, city\: string, state_id\: int, state\: string, country_id\: int, country\: string, region_id\: int\|null, region\: string\|null\}\>, categories\: array\<mixed\>, attributes\: Illuminate\\Support\\Collection\<int, array\{name\: string, attribute_value\: string\}\>, tags\: array\<mixed\>, media_gallery\: array\<mixed\>\}, Closure\(mixed\)\: array\{id\: int, name\: string, slug\: string, featured_package\: bool, description\: string, item_type\: mixed, featured_image\: mixed, locations\: Illuminate\\Support\\Collection\<int, array\{city_id\: int, city\: string, state_id\: int, state\: string, country_id\: int, country\: string, region_id\: int\|null, region\: string\|null\}\>, categories\: array\<mixed\>, attributes\: Illuminate\\Support\\Collection\<int, array\{name\: string, attribute_value\: string\}\>, tags\: array\<mixed\>, media_gallery\: array\<mixed\>\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Guest/PublicPackageController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\PackageActivity\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Guest/PublicPackageController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\PackageSchedule\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Guest/PublicPackageController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\PackageSchedule\>\:\:map\(\) expects callable\(App\\Models\\PackageSchedule, int\)\: array\{day\: int, activities\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float\|int\|string\|null, include_in_package\: mixed, main_location\: string\|null, duration_minutes\: int\|null, featured_image\: mixed\}\>, transfers\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, pickup_location\: string, dropoff_location\: string, pax\: int\|null, price\: float\|int\|string\|null, include_in_package\: mixed\}\>\}, Closure\(mixed\)\: array\{day\: int, activities\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float\|int\|string\|null, include_in_package\: mixed, main_location\: string\|null, duration_minutes\: int\|null, featured_image\: mixed\}\>, transfers\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, pickup_location\: string, dropoff_location\: string, pax\: int\|null, price\: float\|int\|string\|null, include_in_package\: mixed\}\>\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Guest/PublicPackageController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\PackageTransfer\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Guest/PublicPackageController.php
+
+		-
+			message: '#^Relation ''locations'' is not found in App\\Models\\Package model\.$#'
+			identifier: larastan.relationExistence
+			count: 4
+			path: app/Http/Controllers/Guest/PublicPackageController.php
+
+		-
+			message: '#^Relation ''packagesAddon'' is not found in App\\Models\\Addon model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Guest/PublicPackageController.php
+
+		-
+			message: '#^Relation ''tags'' is not found in App\\Models\\Package model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Guest/PublicPackageController.php
+
+		-
+			message: '#^Right side of && is always true\.$#'
+			identifier: booleanAnd.rightAlwaysTrue
+			count: 8
+			path: app/Http/Controllers/Guest/PublicPackageController.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between App\\Models\\Tag and null will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: app/Http/Controllers/Guest/PublicPackageController.php
+
+		-
+			message: '#^Ternary operator condition is always true\.$#'
+			identifier: ternary.alwaysTrue
+			count: 5
+			path: app/Http/Controllers/Guest/PublicPackageController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>regular_price" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Http/Controllers/Guest/PublicPackageController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>url" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 4
+			path: app/Http/Controllers/Guest/PublicPackageController.php
+
+		-
+			message: '#^Using nullsafe property access on non\-nullable type App\\Models\\Activity\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 4
+			path: app/Http/Controllers/Guest/PublicPackageController.php
+
+		-
+			message: '#^Variable \$formattedPackage in empty\(\) always exists and is not falsy\.$#'
+			identifier: empty.variable
+			count: 1
+			path: app/Http/Controllers/Guest/PublicPackageController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Place\:\:\$feature_image\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Guest/PublicPlaceController.php
+
+		-
+			message: '#^Relation ''mediaGallery'' is not found in App\\Models\\Place model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Guest/PublicPlaceController.php
+
+		-
+			message: '#^Relation ''creator'' is not found in App\\Models\\Post model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: app/Http/Controllers/Guest/PublicPostController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ItineraryTag\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Guest/PublicRegionController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ItineraryTag\:\:\$slug\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Guest/PublicRegionController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\PackageTag\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Guest/PublicRegionController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\PackageTag\:\:\$slug\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Guest/PublicRegionController.php
+
+		-
+			message: '#^Anonymous function should return array\{id\: int, name\: string, slug\: string, item_type\: ''activity'', featured\: bool, city_slug\: string\|null, pricing\: App\\Models\\ActivityPricing\|null, categories\: array\<mixed\>, \.\.\.\} but returns array\{id\: int, name\: string, slug\: string, item_type\: ''activity'', featured\: bool, city_slug\: string\|null, pricing\: App\\Models\\ActivityPricing\|null, categories\: array\<mixed\>, \.\.\.\}\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Http/Controllers/Guest/PublicRegionController.php
+
+		-
+			message: '#^Anonymous function should return array\{id\: int, name\: string, slug\: string, item_type\: ''itinerary'', featured\: bool, city_slug\: string\|null, pricing\: App\\Models\\ItineraryBasePricing\|null, categories\: array\<mixed\>, \.\.\.\} but returns array\{id\: int, name\: string, slug\: string, item_type\: ''itinerary'', featured\: bool, city_slug\: string\|null, pricing\: App\\Models\\ItineraryBasePricing\|null, categories\: array\<mixed\>, \.\.\.\}\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Http/Controllers/Guest/PublicRegionController.php
+
+		-
+			message: '#^Anonymous function should return array\{id\: int, name\: string, slug\: string, item_type\: ''package'', featured\: bool, city_slug\: string\|null, pricing\: App\\Models\\PackageBasePricing\|null, categories\: array\<mixed\>, \.\.\.\} but returns array\{id\: int, name\: string, slug\: string, item_type\: ''package'', featured\: bool, city_slug\: string\|null, pricing\: App\\Models\\PackageBasePricing\|null, categories\: array\<mixed\>, \.\.\.\}\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Http/Controllers/Guest/PublicRegionController.php
+
+		-
+			message: '#^Anonymous function should return array\{id\: int, name\: string, slug\: string, item_type\: mixed, featured_activity\: bool, featured_image\: mixed, pricing\: App\\Models\\ActivityPricing\|null, groupDiscounts\: Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\ActivityGroupDiscount\>, \.\.\.\} but returns array\{id\: int, name\: string, slug\: string, item_type\: mixed, featured_activity\: bool, featured_image\: mixed, pricing\: App\\Models\\ActivityPricing\|null, groupDiscounts\: Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\ActivityGroupDiscount\>, \.\.\.\}\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Http/Controllers/Guest/PublicRegionController.php
+
+		-
+			message: '#^Left side of && is always true\.$#'
+			identifier: booleanAnd.leftAlwaysTrue
+			count: 4
+			path: app/Http/Controllers/Guest/PublicRegionController.php
+
+		-
+			message: '#^Negated boolean expression is always false\.$#'
+			identifier: booleanNot.alwaysFalse
+			count: 1
+			path: app/Http/Controllers/Guest/PublicRegionController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Activity\>\:\:map\(\) expects callable\(App\\Models\\Activity, int\)\: array\{id\: int, name\: string, slug\: string, item_type\: ''activity'', featured\: bool, city_slug\: string\|null, pricing\: App\\Models\\ActivityPricing\|null, categories\: array\<mixed\>, locations\: Illuminate\\Support\\Collection\<int, array\{city_id\: int, city\: string, city_slug\: string, state_id\: int, state\: string, country_id\: int, country\: string, region_id\: int\|null, region\: string\|null\}\>\}, Closure\(mixed\)\: array\{id\: int, name\: string, slug\: string, item_type\: ''activity'', featured\: bool, city_slug\: string\|null, pricing\: App\\Models\\ActivityPricing\|null, categories\: array\<mixed\>, locations\: Illuminate\\Support\\Collection\<int, array\{city_id\: int, city\: string, city_slug\: string, state_id\: int, state\: string, country_id\: int, country\: string, region_id\: int\|null, region\: string\|null\}\>\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Guest/PublicRegionController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Activity\>\:\:map\(\) expects callable\(App\\Models\\Activity, int\)\: array\{id\: int, name\: string, slug\: string, item_type\: mixed, featured_activity\: bool, featured_image\: mixed, pricing\: App\\Models\\ActivityPricing\|null, groupDiscounts\: Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\ActivityGroupDiscount\>, categories\: array\<mixed\>, locations\: Illuminate\\Support\\Collection\<int, array\{location_type\: string, location_label\: string\|null, duration\: int\|null, city_id\: int, city\: string, state_id\: int, state\: string, country_id\: int, country\: string, region_id\: int\|null, region\: string\|null\}\>\}, Closure\(mixed\)\: array\{id\: int, name\: string, slug\: string, item_type\: mixed, featured_activity\: bool, featured_image\: mixed, pricing\: App\\Models\\ActivityPricing\|null, groupDiscounts\: Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\ActivityGroupDiscount\>, categories\: array\<mixed\>, locations\: Illuminate\\Support\\Collection\<int, array\{location_type\: string, location_label\: string\|null, duration\: int\|null, city_id\: int, city\: string, state_id\: int, state\: string, country_id\: int, country\: string, region_id\: int\|null, region\: string\|null\}\>\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Guest/PublicRegionController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Itinerary\>\:\:map\(\) expects callable\(App\\Models\\Itinerary, int\)\: array\{id\: int, name\: string, slug\: string, item_type\: ''itinerary'', featured\: bool, city_slug\: string\|null, pricing\: App\\Models\\ItineraryBasePricing\|null, categories\: array\<mixed\>, tags\: array\<mixed\>, locations\: Illuminate\\Support\\Collection\<int, array\{city_id\: int, city\: string, city_slug\: string, state_id\: int, state\: string, country_id\: int, country\: string, region_id\: int\|null, region\: string\|null\}\>\}, Closure\(mixed\)\: array\{id\: int, name\: string, slug\: string, item_type\: ''itinerary'', featured\: bool, city_slug\: string\|null, pricing\: App\\Models\\ItineraryBasePricing\|null, categories\: array\<mixed\>, tags\: array\<mixed\>, locations\: Illuminate\\Support\\Collection\<int, array\{city_id\: int, city\: string, city_slug\: string, state_id\: int, state\: string, country_id\: int, country\: string, region_id\: int\|null, region\: string\|null\}\>\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Guest/PublicRegionController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\ItineraryTag\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Guest/PublicRegionController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Package\>\:\:map\(\) expects callable\(App\\Models\\Package, int\)\: array\{id\: int, name\: string, slug\: string, item_type\: ''package'', featured\: bool, city_slug\: string\|null, pricing\: App\\Models\\PackageBasePricing\|null, categories\: array\<mixed\>, tags\: array\<mixed\>, locations\: Illuminate\\Support\\Collection\<int, array\{city_id\: int, city\: string, city_slug\: string, state_id\: int, state\: string, country_id\: int, country\: string, region_id\: int\|null, region\: string\|null\}\>\}, Closure\(mixed\)\: array\{id\: int, name\: string, slug\: string, item_type\: ''package'', featured\: bool, city_slug\: string\|null, pricing\: App\\Models\\PackageBasePricing\|null, categories\: array\<mixed\>, tags\: array\<mixed\>, locations\: Illuminate\\Support\\Collection\<int, array\{city_id\: int, city\: string, city_slug\: string, state_id\: int, state\: string, country_id\: int, country\: string, region_id\: int\|null, region\: string\|null\}\>\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Guest/PublicRegionController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\PackageTag\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Guest/PublicRegionController.php
+
+		-
+			message: '#^Parameter \#1 \$items of method Illuminate\\Support\\Collection\<\(int\|string\),mixed\>\:\:merge\(\) expects Illuminate\\Contracts\\Support\\Arrayable\<\(int\|string\), array\{id\: int, name\: string, slug\: string, item_type\: string, featured\: bool, city_slug\: string\|null, pricing\: App\\Models\\ActivityPricing\|null, categories\: array\<mixed\>, \.\.\.\}\>\|iterable\<\(int\|string\), array\{id\: int, name\: string, slug\: string, item_type\: string, featured\: bool, city_slug\: string\|null, pricing\: App\\Models\\ActivityPricing\|null, categories\: array\<mixed\>, \.\.\.\}\>, Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, slug\: string, item_type\: string, featured\: bool, city_slug\: string\|null, pricing\: App\\Models\\ActivityPricing\|null, categories\: array\<mixed\>, \.\.\.\}\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Guest/PublicRegionController.php
+
+		-
+			message: '#^Parameter \#1 \$items of method Illuminate\\Support\\Collection\<\(int\|string\),mixed\>\:\:merge\(\) expects Illuminate\\Contracts\\Support\\Arrayable\<\(int\|string\), array\{id\: int, name\: string, slug\: string, item_type\: string, featured\: bool, city_slug\: string\|null, pricing\: App\\Models\\ItineraryBasePricing\|null, categories\: array\<mixed\>, \.\.\.\}\>\|iterable\<\(int\|string\), array\{id\: int, name\: string, slug\: string, item_type\: string, featured\: bool, city_slug\: string\|null, pricing\: App\\Models\\ItineraryBasePricing\|null, categories\: array\<mixed\>, \.\.\.\}\>, Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, slug\: string, item_type\: string, featured\: bool, city_slug\: string\|null, pricing\: App\\Models\\ItineraryBasePricing\|null, categories\: array\<mixed\>, \.\.\.\}\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Guest/PublicRegionController.php
+
+		-
+			message: '#^Parameter \#1 \$items of method Illuminate\\Support\\Collection\<\(int\|string\),mixed\>\:\:merge\(\) expects Illuminate\\Contracts\\Support\\Arrayable\<\(int\|string\), array\{id\: int, name\: string, slug\: string, item_type\: string, featured\: bool, city_slug\: string\|null, pricing\: App\\Models\\PackageBasePricing\|null, categories\: array\<mixed\>, \.\.\.\}\>\|iterable\<\(int\|string\), array\{id\: int, name\: string, slug\: string, item_type\: string, featured\: bool, city_slug\: string\|null, pricing\: App\\Models\\PackageBasePricing\|null, categories\: array\<mixed\>, \.\.\.\}\>, Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, slug\: string, item_type\: string, featured\: bool, city_slug\: string\|null, pricing\: App\\Models\\PackageBasePricing\|null, categories\: array\<mixed\>, \.\.\.\}\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Guest/PublicRegionController.php
+
+		-
+			message: '#^Parameter \#1 \$value of function collect expects Illuminate\\Contracts\\Support\\Arrayable\<int, array\{id\: int, name\: string, slug\: string, item_type\: mixed, featured_activity\: bool, featured_image\: mixed, pricing\: App\\Models\\ActivityPricing\|null, groupDiscounts\: Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\ActivityGroupDiscount\>, \.\.\.\}\>\|iterable\<int, array\{id\: int, name\: string, slug\: string, item_type\: mixed, featured_activity\: bool, featured_image\: mixed, pricing\: App\\Models\\ActivityPricing\|null, groupDiscounts\: Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\ActivityGroupDiscount\>, \.\.\.\}\>\|null, Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, slug\: string, item_type\: mixed, featured_activity\: bool, featured_image\: mixed, pricing\: App\\Models\\ActivityPricing\|null, groupDiscounts\: Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\ActivityGroupDiscount\>, \.\.\.\}\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Guest/PublicRegionController.php
+
+		-
+			message: '#^Relation ''basePricing'' is not found in App\\Models\\Itinerary model\.$#'
+			identifier: larastan.relationExistence
+			count: 4
+			path: app/Http/Controllers/Guest/PublicRegionController.php
+
+		-
+			message: '#^Relation ''basePricing'' is not found in App\\Models\\Package model\.$#'
+			identifier: larastan.relationExistence
+			count: 5
+			path: app/Http/Controllers/Guest/PublicRegionController.php
+
+		-
+			message: '#^Relation ''categories'' is not found in App\\Models\\Activity model\.$#'
+			identifier: larastan.relationExistence
+			count: 5
+			path: app/Http/Controllers/Guest/PublicRegionController.php
+
+		-
+			message: '#^Relation ''categories'' is not found in App\\Models\\Itinerary model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: app/Http/Controllers/Guest/PublicRegionController.php
+
+		-
+			message: '#^Relation ''categories'' is not found in App\\Models\\Package model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: app/Http/Controllers/Guest/PublicRegionController.php
+
+		-
+			message: '#^Relation ''countries'' is not found in App\\Models\\Region model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: app/Http/Controllers/Guest/PublicRegionController.php
+
+		-
+			message: '#^Relation ''locations'' is not found in App\\Models\\Activity model\.$#'
+			identifier: larastan.relationExistence
+			count: 3
+			path: app/Http/Controllers/Guest/PublicRegionController.php
+
+		-
+			message: '#^Relation ''locations'' is not found in App\\Models\\Itinerary model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: app/Http/Controllers/Guest/PublicRegionController.php
+
+		-
+			message: '#^Relation ''locations'' is not found in App\\Models\\Package model\.$#'
+			identifier: larastan.relationExistence
+			count: 3
+			path: app/Http/Controllers/Guest/PublicRegionController.php
+
+		-
+			message: '#^Relation ''pricing'' is not found in App\\Models\\Activity model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: app/Http/Controllers/Guest/PublicRegionController.php
+
+		-
+			message: '#^Relation ''state'' is not found in App\\Models\\City model\.$#'
+			identifier: larastan.relationExistence
+			count: 3
+			path: app/Http/Controllers/Guest/PublicRegionController.php
+
+		-
+			message: '#^Relation ''tags'' is not found in App\\Models\\Itinerary model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: app/Http/Controllers/Guest/PublicRegionController.php
+
+		-
+			message: '#^Relation ''tags'' is not found in App\\Models\\Package model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: app/Http/Controllers/Guest/PublicRegionController.php
+
+		-
+			message: '#^Right side of && is always true\.$#'
+			identifier: booleanAnd.rightAlwaysTrue
+			count: 4
+			path: app/Http/Controllers/Guest/PublicRegionController.php
+
+		-
+			message: '#^Ternary operator condition is always true\.$#'
+			identifier: ternary.alwaysTrue
+			count: 2
+			path: app/Http/Controllers/Guest/PublicRegionController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>regular_price" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Http/Controllers/Guest/PublicRegionController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>url" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 6
+			path: app/Http/Controllers/Guest/PublicRegionController.php
+
+		-
+			message: '#^Using nullsafe property access on non\-nullable type App\\Models\\Country\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 12
+			path: app/Http/Controllers/Guest/PublicRegionController.php
+
+		-
+			message: '#^Using nullsafe property access on non\-nullable type App\\Models\\State\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 18
+			path: app/Http/Controllers/Guest/PublicRegionController.php
+
+		-
+			message: '#^Access to property \$id on an unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Controllers/Guest/PublicReviewController.php
+
+		-
+			message: '#^Access to property \$item_type on an unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Controllers/Guest/PublicReviewController.php
+
+		-
+			message: '#^Access to property \$name on an unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Controllers/Guest/PublicReviewController.php
+
+		-
+			message: '#^Access to property \$slug on an unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Controllers/Guest/PublicReviewController.php
+
+		-
+			message: '#^Anonymous function should return array\{id\: int, rating\: int, review_text\: string\|null, is_featured\: bool, user\: array\{id\: int, name\: string\}, media_gallery\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, alt\: string\|null, url\: mixed\}\>, created_at\: non\-falsy\-string\|null\} but returns array\{id\: int, rating\: int, review_text\: string\|null, is_featured\: bool, user\: array\{id\: int, name\: string\}, media_gallery\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, alt\: string\|null, url\: mixed\}\>, created_at\: non\-falsy\-string\|null\}\.$#'
+			identifier: return.type
+			count: 2
+			path: app/Http/Controllers/Guest/PublicReviewController.php
+
+		-
+			message: '#^Call to method locations\(\) on an unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Controllers/Guest/PublicReviewController.php
+
+		-
+			message: '#^Left side of && is always true\.$#'
+			identifier: booleanAnd.leftAlwaysTrue
+			count: 1
+			path: app/Http/Controllers/Guest/PublicReviewController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Review\>\:\:map\(\) expects callable\(App\\Models\\Review, int\)\: array\{id\: int, rating\: int, review_text\: string\|null, is_featured\: bool, user\: array\{id\: int, name\: string\}, media_gallery\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, alt\: string\|null, url\: mixed\}\>, created_at\: non\-falsy\-string\|null\}, Closure\(mixed\)\: array\{id\: int, rating\: int, review_text\: string\|null, is_featured\: bool, user\: array\{id\: int, name\: string\}, media_gallery\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, alt\: string\|null, url\: mixed\}\>, created_at\: non\-falsy\-string\|null\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Guest/PublicReviewController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,App\\Models\\Review\>\:\:transform\(\) expects callable\(App\\Models\\Review, int\)\: array\{id\: int, rating\: int, review_text\: string\|null, is_featured\: bool, user\: array\{id\: int, name\: string\}, media_gallery\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, alt\: string\|null, url\: mixed\}\>, created_at\: non\-falsy\-string\|null\}, Closure\(mixed\)\: array\{id\: int, rating\: int, review_text\: string\|null, is_featured\: bool, user\: array\{id\: int, name\: string\}, media_gallery\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, alt\: string\|null, url\: mixed\}\>, created_at\: non\-falsy\-string\|null\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Guest/PublicReviewController.php
+
+		-
+			message: '#^Relation ''locations'' is not found in App\\Models\\Activity model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Guest/PublicReviewController.php
+
+		-
+			message: '#^Relation ''locations'' is not found in App\\Models\\Itinerary model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Guest/PublicReviewController.php
+
+		-
+			message: '#^Relation ''locations'' is not found in App\\Models\\Package model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Guest/PublicReviewController.php
+
+		-
+			message: '#^Relation ''mediaGallery'' is not found in App\\Models\\Review model\.$#'
+			identifier: larastan.relationExistence
+			count: 5
+			path: app/Http/Controllers/Guest/PublicReviewController.php
+
+		-
+			message: '#^Ternary operator condition is always true\.$#'
+			identifier: ternary.alwaysTrue
+			count: 4
+			path: app/Http/Controllers/Guest/PublicReviewController.php
+
+		-
+			message: '#^Relation ''basePricing'' is not found in App\\Models\\Itinerary model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: app/Http/Controllers/Guest/PublicShopController.php
+
+		-
+			message: '#^Relation ''basePricing'' is not found in App\\Models\\Package model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: app/Http/Controllers/Guest/PublicShopController.php
+
+		-
+			message: '#^Relation ''categories'' is not found in App\\Models\\Activity model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: app/Http/Controllers/Guest/PublicShopController.php
+
+		-
+			message: '#^Relation ''categories'' is not found in App\\Models\\Itinerary model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Guest/PublicShopController.php
+
+		-
+			message: '#^Relation ''categories'' is not found in App\\Models\\Package model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Guest/PublicShopController.php
+
+		-
+			message: '#^Relation ''countries'' is not found in App\\Models\\Region model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Guest/PublicShopController.php
+
+		-
+			message: '#^Relation ''locations'' is not found in App\\Models\\Activity model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Guest/PublicShopController.php
+
+		-
+			message: '#^Relation ''locations'' is not found in App\\Models\\Itinerary model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Guest/PublicShopController.php
+
+		-
+			message: '#^Relation ''locations'' is not found in App\\Models\\Package model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Guest/PublicShopController.php
+
+		-
+			message: '#^Relation ''pricing'' is not found in App\\Models\\Activity model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Guest/PublicShopController.php
+
+		-
+			message: '#^Relation ''tags'' is not found in App\\Models\\Itinerary model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Guest/PublicShopController.php
+
+		-
+			message: '#^Relation ''tags'' is not found in App\\Models\\Package model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Guest/PublicShopController.php
+
+		-
+			message: '#^Variable \$featured might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: app/Http/Controllers/Guest/PublicShopController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\State\:\:\$feature_image\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Guest/PublicStateController.php
+
+		-
+			message: '#^Relation ''mediaGallery'' is not found in App\\Models\\State model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Guest/PublicStateController.php
+
+		-
+			message: '#^Relation ''vendorRoutes'' is not found in App\\Models\\Transfer model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: app/Http/Controllers/Guest/PublicTransferController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>url" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Http/Controllers/Guest/PublicTransferController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Activity\:\:\$pricings\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/StripeController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ItineraryBasePricing\:\:\$priceVariations\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/StripeController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\PackageBasePricing\:\:\$priceVariations\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/StripeController.php
+
+		-
+			message: '#^Call to function is_array\(\) with string\|null will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 1
+			path: app/Http/Controllers/StripeController.php
+
+		-
+			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
+			identifier: larastan.noEnvCallsOutsideOfConfig
+			count: 5
+			path: app/Http/Controllers/StripeController.php
+
+		-
+			message: '#^Relation ''basePricing'' is not found in App\\Models\\Itinerary model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/StripeController.php
+
+		-
+			message: '#^Relation ''basePricing'' is not found in App\\Models\\Package model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/StripeController.php
+
+		-
+			message: '#^Relation ''countries'' is not found in App\\Models\\Region model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/StripeController.php
+
+		-
+			message: '#^Relation ''emergencyContact'' is not found in App\\Models\\Order model\.$#'
+			identifier: larastan.relationExistence
+			count: 3
+			path: app/Http/Controllers/StripeController.php
+
+		-
+			message: '#^Relation ''payment'' is not found in App\\Models\\Order model\.$#'
+			identifier: larastan.relationExistence
+			count: 4
+			path: app/Http/Controllers/StripeController.php
+
+		-
+			message: '#^Relation ''pricing'' is not found in App\\Models\\Activity model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/StripeController.php
+
+		-
+			message: '#^Relation ''user'' is not found in App\\Models\\Order model\.$#'
+			identifier: larastan.relationExistence
+			count: 4
+			path: app/Http/Controllers/StripeController.php
+
+		-
+			message: '#^Using nullsafe property access on non\-nullable type App\\Models\\City\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 12
+			path: app/Http/Controllers/StripeController.php
+
+		-
+			message: '#^Using nullsafe property access on non\-nullable type App\\Models\\Country\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 4
+			path: app/Http/Controllers/StripeController.php
+
+		-
+			message: '#^Using nullsafe property access on non\-nullable type App\\Models\\Media\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 10
+			path: app/Http/Controllers/StripeController.php
+
+		-
+			message: '#^Using nullsafe property access on non\-nullable type App\\Models\\State\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 8
+			path: app/Http/Controllers/StripeController.php
+
+		-
+			message: '#^Access to property \$name on an unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Controllers/UserProfileController.php
+
+		-
+			message: '#^Access to property \$slug on an unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Controllers/UserProfileController.php
+
+		-
+			message: '#^Anonymous function should return array\{id\: int, item_id\: int, status\: string, travel_date\: string, preferred_time\: string\|null, number_of_adults\: int\|null, number_of_children\: int\|null, special_requirements\: string\|null, \.\.\.\} but returns array\{id\: int, item_id\: int, status\: string, travel_date\: string, preferred_time\: string\|null, number_of_adults\: int\|null, number_of_children\: int\|null, special_requirements\: string\|null, \.\.\.\}\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Http/Controllers/UserProfileController.php
+
+		-
+			message: '#^Anonymous function should return array\{id\: int, order_id\: int\|null, item_type\: string, item_id\: int, item_name\: string, item_slug\: string\|null, has_live_item\: bool, rating\: int, \.\.\.\} but returns array\{id\: int, order_id\: int\|null, item_type\: string, item_id\: int, item_name\: string, item_slug\: string\|null, has_live_item\: bool, rating\: int, \.\.\.\}\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Http/Controllers/UserProfileController.php
+
+		-
+			message: '#^Call to function is_array\(\) with string\|null will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 1
+			path: app/Http/Controllers/UserProfileController.php
+
+		-
+			message: '#^Call to static method error\(\) on an unknown class Log\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Controllers/UserProfileController.php
+
+		-
+			message: '#^If condition is always true\.$#'
+			identifier: if.alwaysTrue
+			count: 1
+			path: app/Http/Controllers/UserProfileController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,App\\Models\\Order\>\:\:map\(\) expects callable\(App\\Models\\Order, int\)\: array\{id\: int, item_id\: int, status\: string, travel_date\: string, preferred_time\: string\|null, number_of_adults\: int\|null, number_of_children\: int\|null, special_requirements\: string\|null, payment\: App\\Models\\OrderPayment\|null, emergency_contact\: App\\Models\\OrderEmergencyContact\|null, item\: array\{name\: mixed, slug\: mixed, item_type\: mixed, city\: mixed, region\: string\|null, locations\: mixed, media\: Illuminate\\Support\\Collection\<int\|string, array\{id\: mixed, name\: mixed, alt_text\: mixed, url\: mixed\}\>\}, review\: array\{id\: int, user_id\: int, item_type\: string, item_id\: int, rating\: int, review_text\: string\|null, status\: string, media_gallery\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, alt_text\: string\|null, url\: mixed\}\>, created_at\: Illuminate\\Support\\Carbon\|null, updated_at\: Illuminate\\Support\\Carbon\|null\}\|null, user\: array\{name\: string, email\: string, phone\: string\|null\}\}, Closure\(mixed\)\: array\{id\: int, item_id\: int, status\: string, travel_date\: string, preferred_time\: string\|null, number_of_adults\: int\|null, number_of_children\: int\|null, special_requirements\: string\|null, payment\: App\\Models\\OrderPayment\|null, emergency_contact\: App\\Models\\OrderEmergencyContact\|null, item\: array\{name\: mixed, slug\: mixed, item_type\: mixed, city\: mixed, region\: string\|null, locations\: mixed, media\: Illuminate\\Support\\Collection\<int\|string, array\{id\: mixed, name\: mixed, alt_text\: mixed, url\: mixed\}\>\}, review\: array\{id\: int, user_id\: int, item_type\: string, item_id\: int, rating\: int, review_text\: string\|null, status\: string, media_gallery\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, alt_text\: string\|null, url\: mixed\}\>, created_at\: Illuminate\\Support\\Carbon\|null, updated_at\: Illuminate\\Support\\Carbon\|null\}\|null, user\: array\{name\: string, email\: string, phone\: string\|null\}\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/UserProfileController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,App\\Models\\Review\>\:\:map\(\) expects callable\(App\\Models\\Review, int\)\: array\{id\: int, order_id\: int\|null, item_type\: string, item_id\: int, item_name\: string, item_slug\: string\|null, has_live_item\: bool, rating\: int, review_text\: string\|null, status\: string, media_gallery\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, alt_text\: string\|null, url\: mixed\}\>, created_at\: Illuminate\\Support\\Carbon\|null, updated_at\: Illuminate\\Support\\Carbon\|null\}, Closure\(mixed\)\: array\{id\: int, order_id\: int\|null, item_type\: string, item_id\: int, item_name\: string, item_slug\: string\|null, has_live_item\: bool, rating\: int, review_text\: string\|null, status\: string, media_gallery\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, alt_text\: string\|null, url\: mixed\}\>, created_at\: Illuminate\\Support\\Carbon\|null, updated_at\: Illuminate\\Support\\Carbon\|null\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/UserProfileController.php
+
+		-
+			message: '#^Relation ''countries'' is not found in App\\Models\\Region model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/UserProfileController.php
+
+		-
+			message: '#^Relation ''emergencyContact'' is not found in App\\Models\\Order model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/UserProfileController.php
+
+		-
+			message: '#^Relation ''mediaGallery'' is not found in App\\Models\\Review model\.$#'
+			identifier: larastan.relationExistence
+			count: 4
+			path: app/Http/Controllers/UserProfileController.php
+
+		-
+			message: '#^Relation ''orderable'' is not found in App\\Models\\Order model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/UserProfileController.php
+
+		-
+			message: '#^Relation ''payment'' is not found in App\\Models\\Order model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/UserProfileController.php
+
+		-
+			message: '#^Relation ''profile'' is not found in App\\Models\\User model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/UserProfileController.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/Activity.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/ActivityAddon.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/ActivityAttribute.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/ActivityAvailability.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/ActivityCategory.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/ActivityEarlyBirdDiscount.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/ActivityGroupDiscount.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/ActivityLastMinuteDiscount.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/ActivityLocation.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/ActivityMediaGallery.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/ActivityPricing.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/ActivityPromoCode.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/ActivitySeasonalPricing.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/ActivityTag.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/Addon.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/Attribute.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/Blog.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/BlogMedia.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/Category.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/City.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/CityAdditionalInfo.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/CityEvent.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/CityFaq.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/CityLocationDetail.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/CityMediaGallery.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/CitySeason.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/CitySeo.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/CityTravelInfo.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/Commission.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/Country.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/CountryAdditionalInfo.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/CountryEvent.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/CountryFaq.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/CountryLocationDetail.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/CountryMediaGallery.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/CountrySeason.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/CountrySeo.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/CountryTravelInfo.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/Itinerary.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/ItineraryActivity.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/ItineraryAddon.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/ItineraryAttribute.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/ItineraryAvailability.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/ItineraryBasePricing.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/ItineraryBlackoutDate.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/ItineraryCategory.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/ItineraryFaq.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/ItineraryInclusionExclusion.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/ItineraryInformation.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/ItineraryLocation.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/ItineraryMediaGallery.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/ItineraryPriceVariation.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/ItinerarySchedule.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/ItinerarySeo.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/ItineraryTag.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/ItineraryTransfer.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/ItineraryTransferMapping.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/Media.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/Order.php
+
+		-
+			message: '#^PHPDoc tag @property\-read for property App\\Models\\Order\:\:\$orderable contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/Order.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/OrderEmergencyContact.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/OrderPayment.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/Package.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/PackageActivity.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/PackageAddon.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/PackageAttribute.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/PackageAvailability.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/PackageBasePricing.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/PackageBlackoutDate.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/PackageCategory.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/PackageFaq.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/PackageInclusionExclusion.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/PackageInformation.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/PackageItinerary.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/PackageLocation.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/PackageMediaGallery.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/PackagePriceVariation.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/PackageSchedule.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/PackageSeo.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/PackageTag.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/PackageTransfer.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/PackageTransferMapping.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/Place.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/PlaceAdditionalInfo.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/PlaceEvent.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/PlaceFaq.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/PlaceLocationDetail.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/PlaceMediaGallery.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/PlaceSeason.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/PlaceSeo.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/PlaceTravelInfo.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/Post.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/PostItemTag.php
+
+		-
+			message: '#^PHPDoc tag @property\-read for property App\\Models\\PostItemTag\:\:\$taggable contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/PostItemTag.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/PostLike.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/Product.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/ProductImage.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/ProductPrice.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/ProductVariant.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/Region.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/RegionCountry.php
+
+		-
+			message: '#^Access to property \$name on an unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/Review.php
+
+		-
+			message: '#^Access to property \$slug on an unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/Review.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/Review.php
+
+		-
+			message: '#^PHPDoc tag @property\-read for property App\\Models\\Review\:\:\$item contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/Review.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between Eloquent\|Illuminate\\Database\\Eloquent\\Model and null will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: app/Models/Review.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Models/Review.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>slug" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Models/Review.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/ReviewMediaGallery.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/State.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/StateAdditionalInfo.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/StateEvent.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/StateFaq.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/StateLocationDetail.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/StateMediaGallery.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/StateSeason.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/StateSeo.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/StateTravelInfo.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/Tag.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/Transfer.php
+
+		-
+			message: '#^Relation ''pricingTier'' is not found in App\\Models\\TransferPricingAvailability model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Models/Transfer.php
+
+		-
+			message: '#^Relation ''vendor'' is not found in App\\Models\\TransferVendorRoute model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Models/Transfer.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/TransferAddon.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/TransferMediaGallery.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/TransferPricingAvailability.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/TransferSchedule.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/TransferSeo.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/TransferVendorRoute.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/User.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/UserMeta.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/UserProfile.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/UserProfileUrl.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/Vendor.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/VendorAvailabilityTimeSlot.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/VendorDriver.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/VendorDriverSchedule.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/VendorPricingTier.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/VendorRoute.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/VendorVehicle.php
