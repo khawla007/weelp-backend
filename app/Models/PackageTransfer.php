@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -62,12 +63,12 @@ class PackageTransfer extends Model
         'included' => 'boolean',
     ];
 
-    public function schedule()
+    public function schedule(): BelongsTo
     {
         return $this->belongsTo(PackageSchedule::class, 'schedule_id');
     }
 
-    public function transfer()
+    public function transfer(): BelongsTo
     {
         return $this->belongsTo(Transfer::class);
     }

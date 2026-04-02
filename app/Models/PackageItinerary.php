@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -53,12 +54,12 @@ class PackageItinerary extends Model
         'included' => 'boolean',
     ];
 
-    public function schedule()
+    public function schedule(): BelongsTo
     {
         return $this->belongsTo(PackageSchedule::class);
     }
 
-    public function itinerary()
+    public function itinerary(): BelongsTo
     {
         return $this->belongsTo(Itinerary::class);
     }

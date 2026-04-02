@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property int $id
@@ -39,22 +41,22 @@ class PackageSchedule extends Model
         'day',
     ];
 
-    public function package()
+    public function package(): BelongsTo
     {
         return $this->belongsTo(Package::class);
     }
 
-    public function activities()
+    public function activities(): HasMany
     {
         return $this->hasMany(PackageActivity::class, 'schedule_id');
     }
 
-    public function transfers()
+    public function transfers(): HasMany
     {
         return $this->hasMany(PackageTransfer::class, 'schedule_id');
     }
 
-    public function itineraries()
+    public function itineraries(): HasMany
     {
         return $this->hasMany(PackageItinerary::class, 'schedule_id');
     }
