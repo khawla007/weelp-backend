@@ -42,8 +42,8 @@ class PublicPackageController extends Controller
                     return [
                         'city_id' => $city->id,
                         'city' => $city->name,
-                        'state_id' => $city->state ? $city->state->id : null,
-                        'state' => $city->state ? $city->state->name : null,
+                        'state_id' => $city->state->id,
+                        'state' => $city->state->name,
                         'country_id' => $city->state->country->id,
                         'country' => $city->state->country->name,
                         'region_id' => $city->state->country->regions->isNotEmpty()
@@ -259,8 +259,8 @@ class PublicPackageController extends Controller
                 return [
                     'city_id' => $city->id,
                     'city' => $city->name,
-                    'state_id' => $city->state ? $city->state->id : null,
-                    'state' => $city->state ? $city->state->name : null,
+                    'state_id' => $city->state->id,
+                    'state' => $city->state->name,
                     'country_id' => $city->state->country->id,
                     'country' => $city->state->country->name,
                     'region_id' => $city->state->country->regions->isNotEmpty()
@@ -297,7 +297,7 @@ class PublicPackageController extends Controller
                     'transfers' => $schedule->transfers->map(function ($transfer) {
                         return [
                             'id' => $transfer->id,
-                            'name' => $transfer->transfer ? $transfer->transfer->name : null,
+                            'name' => $transfer->transfer->name,
                             'start_time' => $transfer->start_time,
                             'end_time' => $transfer->end_time,
                             'pickup_location' => $transfer->pickup_location,

@@ -164,10 +164,10 @@ class PublicReviewController extends Controller
             'rating' => $review->rating,
             'review_text' => $review->review_text,
             'is_featured' => $review->is_featured,
-            'user' => $review->user ? [
+            'user' => [
                 'id' => $review->user->id,
                 'name' => $review->user->name,
-            ] : null,
+            ],
             'media_gallery' => $review->mediaGallery->map(fn ($rmg) => [
                 'id' => $rmg->media->id,
                 'name' => $rmg->media->name,
@@ -217,10 +217,10 @@ class PublicReviewController extends Controller
             'rating' => $review->rating,
             'review_text' => $review->review_text,
             'is_featured' => $review->is_featured,
-            'user' => $review->user ? [
+            'user' => [
                 'id' => $review->user->id,
                 'name' => $review->user->name,
-            ] : null,
+            ],
             'media_gallery' => $review->mediaGallery->map(fn ($rmg) => [
                 'id' => $rmg->media->id,
                 'name' => $rmg->media->name,
@@ -275,17 +275,17 @@ class PublicReviewController extends Controller
             'rating' => $review->rating,
             'review_text' => $review->review_text,
             'is_featured' => $review->is_featured,
-            'item' => $item ? [
+            'item' => [
                 'id' => $item->id,
                 'name' => $item->name,
                 'type' => $item->item_type ?? $review->item_type,
                 'slug' => $item->slug ?? null,
                 'city_slug' => $citySlug,
-            ] : null,
-            'user' => $review->user ? [
+            ],
+            'user' => [
                 'id' => $review->user->id,
                 'name' => $review->user->name,
-            ] : null,
+            ],
             'media_gallery' => $review->mediaGallery->map(fn ($rmg) => [
                 'id' => $rmg->media->id,
                 'name' => $rmg->media->name,

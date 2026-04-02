@@ -68,7 +68,7 @@ class ReviewController extends Controller
                 'status' => $review->status,
                 'is_featured' => $review->is_featured,
                 'order_id' => $review->order_id,          // NEW
-                'item' => $item ? [
+                'item' => [
                     'id' => $item->id,
                     'name' => $displayName,            // Changed: use helper
                     'type' => $item->item_type,
@@ -78,11 +78,11 @@ class ReviewController extends Controller
                         : (($city && $region)
                             ? "{$frontendBase}/{$region->slug}/{$city->slug}/{$item->slug}"
                             : null),
-                ] : null,
-                'user' => $review->user ? [
+                ],
+                'user' => [
                     'id' => $review->user->id,
                     'name' => $review->user->name,
-                ] : null,
+                ],
                 'media_gallery' => $review->mediaGallery->map(fn ($rmg) => [
                     'id' => $rmg->media->id,
                     'name' => $rmg->media->name,
@@ -307,7 +307,7 @@ class ReviewController extends Controller
             'status' => $review->status,
             'is_featured' => $review->is_featured,
             'order_id' => $review->order_id,          // NEW
-            'item' => $item ? [
+            'item' => [
                 'id' => $item->id,
                 'name' => $review->getDisplayName(),  // Changed: use helper
                 'type' => $item->item_type,
@@ -317,11 +317,11 @@ class ReviewController extends Controller
                     : (($city && $region)
                         ? "{$frontendBase}/{$region->slug}/{$city->slug}/{$item->slug}"
                         : null),
-            ] : null,
-            'user' => $review->user ? [
+            ],
+            'user' => [
                 'id' => $review->user->id,
                 'name' => $review->user->name,
-            ] : null,
+            ],
             'media_gallery' => $review->mediaGallery->map(fn ($rmg) => [
                 'id' => $rmg->media->id,
                 'name' => $rmg->media->name,

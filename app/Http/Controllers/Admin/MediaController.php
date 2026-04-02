@@ -24,11 +24,11 @@ class MediaController extends Controller
             // Get files and normalize to array FIRST (handle both single file and multiple files)
             $files = $request->file('file');
             if (! is_array($files)) {
-                $files = $files ? [$files] : []; // Convert single file to array, or empty array if null
+                $files = [$files]; // Convert single file to array
             }
 
             // Debug: Log incoming request with file sizes
-            $fileSizes = array_map(fn ($f) => $f ? $f->getSize() : 0, $files);
+            $fileSizes = array_map(fn ($f) => $f->getSize(), $files);
             info('[Media Upload] Files received:', [
                 'count' => count($files),
                 'sizes' => $fileSizes,
@@ -59,7 +59,7 @@ class MediaController extends Controller
                 foreach ($files as $file) {
                     // Check if file is valid
                     if (! $file || ! $file->isValid()) {
-                        $errorMsg = $file ? $file->getErrorMessage() : 'No file provided';
+                        $errorMsg = $file->getErrorMessage();
                         info('[Media Upload] Invalid file:', ['error' => $errorMsg]);
 
                         return response()->json([

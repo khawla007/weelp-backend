@@ -53,21 +53,21 @@ class PlaceController extends Controller
                 'feature_image' => $featuredImage?->media->url ?? null,
                 'featured_destination' => $place->featured_destination,
                 // Location data for badges
-                'city' => $place->city ? [
+                'city' => [
                     'id' => $place->city->id,
                     'name' => $place->city->name,
                     'slug' => $place->city->slug,
-                ] : null,
-                'state' => $place->city->state ? [
+                ],
+                'state' => [
                     'id' => $place->city->state->id,
                     'name' => $place->city->state->name,
                     'slug' => $place->city->state->slug,
-                ] : null,
-                'country' => $place->city->state->country ? [
+                ],
+                'country' => [
                     'id' => $place->city->state->country->id,
                     'name' => $place->city->state->country->name,
                     'slug' => $place->city->state->country->slug,
-                ] : null,
+                ],
                 'regions' => $place->city->state->country->regions ?? [],
                 // Custom Media format
                 'media_gallery' => $place->mediaGallery->map(function ($gallery) {

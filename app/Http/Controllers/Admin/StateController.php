@@ -51,10 +51,10 @@ class StateController extends Controller
                 'description' => $state->description,
                 'feature_image' => $featuredImage?->media->url ?? null, // Featured from media_gallery
                 'featured_destination' => $state->featured_destination,
-                'country' => $state->country ? [
+                'country' => [
                     'id' => $state->country->id,
                     'name' => $state->country->name,
-                ] : null,
+                ],
                 'regions' => $state->country->regions->map(function ($region) {
                     return [
                         'id' => $region->id,

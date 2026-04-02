@@ -58,8 +58,8 @@ class PublicActivityController extends Controller
                         'duration' => $location->duration,
                         'city_id' => $city->id,
                         'city' => $city->name,
-                        'state_id' => $city->state ? $city->state->id : null,
-                        'state' => $city->state ? $city->state->name : null,
+                        'state_id' => $city->state->id,
+                        'state' => $city->state->name,
                         'country_id' => $city->state->country->id,
                         'country' => $city->state->country->name,
                         'region_id' => $city->state->country->regions->isNotEmpty()
@@ -174,8 +174,8 @@ class PublicActivityController extends Controller
                             'city_id' => $city->id,
                             'city' => $city->name,
                             'city_slug' => $city->slug,
-                            'state_id' => $city->state ? $city->state->id : null,
-                            'state' => $city->state ? $city->state->name : null,
+                            'state_id' => $city->state->id,
+                            'state' => $city->state->name,
                             'country_id' => $city->state->country->id,
                             'country' => $city->state->country->name,
                             'region_id' => $city->state->country->regions->isNotEmpty()
@@ -280,8 +280,8 @@ class PublicActivityController extends Controller
                     'duration' => $location->duration,
                     'city_id' => $city->id,
                     'city' => $city->name,
-                    'state_id' => $city->state ? $city->state->id : null,
-                    'state' => $city->state ? $city->state->name : null,
+                    'state_id' => $city->state->id,
+                    'state' => $city->state->name,
                     'country_id' => $city->state->country->id,
                     'country' => $city->state->country->name,
                     'region_id' => $city->state->country->regions->isNotEmpty()

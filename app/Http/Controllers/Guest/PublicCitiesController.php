@@ -203,10 +203,10 @@ class PublicCitiesController extends Controller
                 'feature_image' => $featureImageUrl,
                 'media_gallery' => $mediaGallery,
                 'featured_destination' => $city->featured_destination,
-                'state' => $city->state ? [
+                'state' => [
                     'id' => $city->state->id,
                     'name' => $city->state->name,
-                ] : null,
+                ],
                 'country' => $city->country ? [
                     'id' => $city->country->id,
                     'name' => $city->country->name,

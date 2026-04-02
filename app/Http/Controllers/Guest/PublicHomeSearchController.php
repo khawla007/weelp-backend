@@ -276,13 +276,13 @@ class PublicHomeSearchController extends Controller
                     'regular_price' => $activity->pricing->regular_price,
                     'currency' => $activity->pricing->currency,
                 ] : null,
-                'group_discount' => $activity->groupDiscounts ? $activity->groupDiscounts->map(function ($discount) {
+                'group_discount' => $activity->groupDiscounts->map(function ($discount) {
                     return [
                         'min_people' => $discount->min_people,
                         'discount_amount' => $discount->discount_amount,
                         'discount_type' => $discount->discount_type,
                     ];
-                }) : [],
+                }),
                 'early_bird_discount' => $activity->earlyBirdDiscount ? [
                     'days_before_start' => $activity->earlyBirdDiscount->first()?->days_before_start,
                     'discount_amount' => $activity->earlyBirdDiscount->first()?->discount_amount,
@@ -380,11 +380,11 @@ class PublicHomeSearchController extends Controller
         $itineraries->transform(function ($itinerary) {
 
             $categories = $itinerary->categories->map(function ($itineraryCategory) {
-                return $itineraryCategory->category ? [
+                return [
                     'id' => $itineraryCategory->category->id,
                     'name' => $itineraryCategory->category->name,
-                ] : null;
-            })->filter()->unique()->values(); // Remove null values
+                ];
+            })->unique()->values();
 
             return [
                 'id' => $itinerary->id,
@@ -511,11 +511,11 @@ class PublicHomeSearchController extends Controller
         $packages->transform(function ($package) {
 
             $categories = $package->categories->map(function ($packageCategory) {
-                return $packageCategory->category ? [
+                return [
                     'id' => $packageCategory->category->id,
                     'name' => $packageCategory->category->name,
-                ] : null;
-            })->filter()->unique()->values(); // Remove null values
+                ];
+            })->unique()->values();
 
             return [
                 'id' => $package->id,

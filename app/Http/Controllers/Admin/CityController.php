@@ -52,11 +52,11 @@ class CityController extends Controller
                 'feature_image' => $featuredImage?->media->url ?? null, // Featured from media_gallery
                 'featured_destination' => $city->featured_destination,
                 // State for city cards
-                'state' => $city->state ? [
+                'state' => [
                     'id' => $city->state->id,
                     'name' => $city->state->name,
                     'slug' => $city->state->slug,
-                ] : null,
+                ],
                 // Country (for reference)
                 'country' => [
                     'id' => $city->state->country->id,
