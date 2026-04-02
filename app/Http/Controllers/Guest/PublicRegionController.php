@@ -19,7 +19,7 @@ class PublicRegionController extends Controller
     // -----------------------Get all Regions--------------------------
     public function getRegions()
     {
-        $regions = Region::all();
+        $regions = Region::with('countries')->get();
     
         if ($regions->isEmpty()) {
             return response()->json([
@@ -76,19 +76,17 @@ class PublicRegionController extends Controller
     // ------------------Getting Cities behalf of Region-------------------
     public function getCitiesByRegion($region_slug)
     {
-        $region = Region::where('name', $region_slug)->firstOrFail();
+        $region = Region::with('countries.states.cities')->where('name', $region_slug)->firstOrFail();
 
         if (!$region) {
             return response()->json(['success' => false, 'message' => 'Region not found'], 404);
         }
 
-        $cities = [];
-    
-        foreach ($region->countries as $country) {
-            foreach ($country->states as $state) {
-                $cities = array_merge($cities, $state->cities()->get()->toArray());
-            }
-        }
+        $cities = $region->countries->flatMap(function ($country) {
+            return $country->states->flatMap(function ($state) {
+                return $state->cities;
+            });
+        })->toArray();
         
         if (collect($cities)->isEmpty()) {
             return response()->json([
