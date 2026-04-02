@@ -16,7 +16,7 @@ class ReviewController extends Controller
 
     public function index(Request $request)
     {
-        $frontendBase = env('FRONTEND_URL', 'http://192.168.29.202:3000');
+        $frontendBase = config('app.frontend_url');
     
         // Force current page
         Paginator::currentPageResolver(function () use ($request) {
@@ -285,7 +285,7 @@ class ReviewController extends Controller
     // 3. Show single review
     public function show($id)
     {
-        $frontendBase = env('FRONTEND_URL', 'http://localhost:3000');
+        $frontendBase = config('app.frontend_url');
     
         // Review fetch karo, item aur user ke saath
         $review = Review::with(['user', 'item', 'mediaGallery.media', 'order'])->findOrFail($id);

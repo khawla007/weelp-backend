@@ -145,7 +145,7 @@ class StripeController extends Controller
     {
         $payload = $request->getContent();
         $sigHeader = $request->header('Stripe-Signature');
-        $webhookSecret = env('STRIPE_WEBHOOK_SECRET');
+        $webhookSecret = config('services.stripe.webhook_secret');
 
         if ($webhookSecret && $sigHeader) {
             try {
@@ -467,8 +467,7 @@ class StripeController extends Controller
         }
         
         // ✅ Setup Stripe
-        Stripe::setApiKey(env('STRIPE_SECRET'));
-        // \Stripe\Stripe::setApiKey(config('services.stripe.secret'));
+        Stripe::setApiKey(config('services.stripe.secret'));
 
         $checkoutSession = StripeSession::create([
             'payment_method_types' => ['card'],
@@ -484,8 +483,8 @@ class StripeController extends Controller
             ]],
             'mode'           => 'payment',
             'customer_email' => $data['customer_email'],
-            'success_url'    => env('FRONTEND_URL') . '/checkout/success?session_id={CHECKOUT_SESSION_ID}',
-            'cancel_url'     => env('FRONTEND_URL') . '/checkout',
+            'success_url'    => config('app.frontend_url') . '/checkout/success?session_id={CHECKOUT_SESSION_ID}',
+            'cancel_url'     => config('app.frontend_url') . '/checkout',
         ]);
 
         // ✅ Save payment record
@@ -509,8 +508,7 @@ class StripeController extends Controller
 
     public function confirmPayment(Request $request)
     {
-        Stripe::setApiKey(env('STRIPE_SECRET'));
-        // \Stripe\Stripe::setApiKey(config('services.stripe.secret'));
+        Stripe::setApiKey(config('services.stripe.secret'));
 
         $sessionId = $request->input('session_id');
 
