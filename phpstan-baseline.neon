@@ -7,6 +7,12 @@ parameters:
 			path: app/Http/Controllers/Admin/ActivityController.php
 
 		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Admin/ActivityController.php
+
+		-
 			message: '#^Anonymous function should return non\-empty\-array but returns non\-empty\-array\.$#'
 			identifier: return.type
 			count: 1
@@ -15,30 +21,6 @@ parameters:
 		-
 			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Activity\>\:\:map\(\) expects callable\(App\\Models\\Activity, int\)\: non\-empty\-array, Closure\(mixed\)\: non\-empty\-array given\.$#'
 			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/Admin/ActivityController.php
-
-		-
-			message: '#^Relation ''attributes'' is not found in App\\Models\\Activity model\.$#'
-			identifier: larastan.relationExistence
-			count: 3
-			path: app/Http/Controllers/Admin/ActivityController.php
-
-		-
-			message: '#^Relation ''categories'' is not found in App\\Models\\Activity model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Http/Controllers/Admin/ActivityController.php
-
-		-
-			message: '#^Relation ''locations'' is not found in App\\Models\\Activity model\.$#'
-			identifier: larastan.relationExistence
-			count: 3
-			path: app/Http/Controllers/Admin/ActivityController.php
-
-		-
-			message: '#^Relation ''pricing'' is not found in App\\Models\\Activity model\.$#'
-			identifier: larastan.relationExistence
 			count: 1
 			path: app/Http/Controllers/Admin/ActivityController.php
 
@@ -79,24 +61,6 @@ parameters:
 			path: app/Http/Controllers/Admin/BlogController.php
 
 		-
-			message: '#^Relation ''categories'' is not found in App\\Models\\Blog model\.$#'
-			identifier: larastan.relationExistence
-			count: 3
-			path: app/Http/Controllers/Admin/BlogController.php
-
-		-
-			message: '#^Relation ''media'' is not found in App\\Models\\Blog model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Http/Controllers/Admin/BlogController.php
-
-		-
-			message: '#^Relation ''tags'' is not found in App\\Models\\Blog model\.$#'
-			identifier: larastan.relationExistence
-			count: 3
-			path: app/Http/Controllers/Admin/BlogController.php
-
-		-
 			message: '#^Using nullsafe property access "\?\-\>url" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 2
@@ -124,12 +88,6 @@ parameters:
 			message: '#^Property App\\Models\\City\:\:\$media_gallery \(array\) does not accept Illuminate\\Support\\Collection\<int, array\<string, mixed\>\>\.$#'
 			identifier: assign.propertyType
 			count: 1
-			path: app/Http/Controllers/Admin/CityController.php
-
-		-
-			message: '#^Relation ''mediaGallery'' is not found in App\\Models\\City model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
 			path: app/Http/Controllers/Admin/CityController.php
 
 		-
@@ -169,26 +127,8 @@ parameters:
 			path: app/Http/Controllers/Admin/CountryController.php
 
 		-
-			message: '#^Relation ''mediaGallery'' is not found in App\\Models\\Country model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Http/Controllers/Admin/CountryController.php
-
-		-
 			message: '#^Negated boolean expression is always false\.$#'
 			identifier: booleanNot.alwaysFalse
-			count: 1
-			path: app/Http/Controllers/Admin/DashboardController.php
-
-		-
-			message: '#^Relation ''payment'' is not found in App\\Models\\Order model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Admin/DashboardController.php
-
-		-
-			message: '#^Relation ''user'' is not found in App\\Models\\Order model\.$#'
-			identifier: larastan.relationExistence
 			count: 1
 			path: app/Http/Controllers/Admin/DashboardController.php
 
@@ -221,6 +161,12 @@ parameters:
 			identifier: nullCoalesce.variable
 			count: 1
 			path: app/Http/Controllers/Admin/DashboardController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Admin/ItineraryController.php
 
 		-
 			message: '#^Anonymous function should return Illuminate\\Support\\Collection\<int, array\{id\: int, activity_id\: int, activity_name\: string\|null, media_url\: Illuminate\\Support\\Collection\<int, mixed\>, day\: int, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, \.\.\.\}\> but returns Illuminate\\Support\\Collection\<int, array\{id\: int, activity_id\: int, activity_name\: string\|null, media_url\: Illuminate\\Support\\Collection\<int, array\{name\: mixed, alt_text\: mixed, url\: mixed\}\>, day\: int, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, \.\.\.\}\>\.$#'
@@ -265,36 +211,6 @@ parameters:
 			path: app/Http/Controllers/Admin/ItineraryController.php
 
 		-
-			message: '#^Relation ''attributes'' is not found in App\\Models\\Itinerary model\.$#'
-			identifier: larastan.relationExistence
-			count: 3
-			path: app/Http/Controllers/Admin/ItineraryController.php
-
-		-
-			message: '#^Relation ''basePricing'' is not found in App\\Models\\Itinerary model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Admin/ItineraryController.php
-
-		-
-			message: '#^Relation ''categories'' is not found in App\\Models\\Itinerary model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Http/Controllers/Admin/ItineraryController.php
-
-		-
-			message: '#^Relation ''locations'' is not found in App\\Models\\Itinerary model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Http/Controllers/Admin/ItineraryController.php
-
-		-
-			message: '#^Relation ''schedules'' is not found in App\\Models\\Itinerary model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Admin/ItineraryController.php
-
-		-
 			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
 			identifier: notIdentical.alwaysTrue
 			count: 1
@@ -319,28 +235,10 @@ parameters:
 			path: app/Http/Controllers/Admin/MediaController.php
 
 		-
-			message: '#^Relation ''emergencyContact'' is not found in App\\Models\\Order model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Http/Controllers/Admin/OrderController.php
-
-		-
-			message: '#^Relation ''orderable'' is not found in App\\Models\\Order model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Http/Controllers/Admin/OrderController.php
-
-		-
-			message: '#^Relation ''payment'' is not found in App\\Models\\Order model\.$#'
-			identifier: larastan.relationExistence
-			count: 6
-			path: app/Http/Controllers/Admin/OrderController.php
-
-		-
-			message: '#^Relation ''user'' is not found in App\\Models\\Order model\.$#'
-			identifier: larastan.relationExistence
-			count: 3
-			path: app/Http/Controllers/Admin/OrderController.php
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Admin/PackageController.php
 
 		-
 			message: '#^Anonymous function should return Illuminate\\Support\\Collection\<int, array\{id\: int, activity_id\: int, activity_name\: string\|null, media_url\: Illuminate\\Support\\Collection\<int, mixed\>, day\: int, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, \.\.\.\}\> but returns Illuminate\\Support\\Collection\<int, array\{id\: int, activity_id\: int, activity_name\: string\|null, media_url\: Illuminate\\Support\\Collection\<int, array\{name\: mixed, alt_text\: mixed, url\: mixed\}\>, day\: int, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, \.\.\.\}\>\.$#'
@@ -397,36 +295,6 @@ parameters:
 			path: app/Http/Controllers/Admin/PackageController.php
 
 		-
-			message: '#^Relation ''attributes'' is not found in App\\Models\\Package model\.$#'
-			identifier: larastan.relationExistence
-			count: 3
-			path: app/Http/Controllers/Admin/PackageController.php
-
-		-
-			message: '#^Relation ''basePricing'' is not found in App\\Models\\Package model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Admin/PackageController.php
-
-		-
-			message: '#^Relation ''categories'' is not found in App\\Models\\Package model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Http/Controllers/Admin/PackageController.php
-
-		-
-			message: '#^Relation ''information'' is not found in App\\Models\\Package model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Admin/PackageController.php
-
-		-
-			message: '#^Relation ''locations'' is not found in App\\Models\\Package model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Http/Controllers/Admin/PackageController.php
-
-		-
 			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
 			identifier: notIdentical.alwaysTrue
 			count: 1
@@ -469,18 +337,6 @@ parameters:
 			path: app/Http/Controllers/Admin/PlaceController.php
 
 		-
-			message: '#^Relation ''city'' is not found in App\\Models\\Place model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Admin/PlaceController.php
-
-		-
-			message: '#^Relation ''mediaGallery'' is not found in App\\Models\\Place model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Http/Controllers/Admin/PlaceController.php
-
-		-
 			message: '#^Ternary operator condition is always true\.$#'
 			identifier: ternary.alwaysTrue
 			count: 3
@@ -497,12 +353,6 @@ parameters:
 			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Http/Controllers/Admin/PlaceController.php
-
-		-
-			message: '#^Relation ''countries'' is not found in App\\Models\\Region model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Http/Controllers/Admin/RegionController.php
 
 		-
 			message: '#^Access to property \$id on an unknown class Eloquent\.$#'
@@ -571,18 +421,6 @@ parameters:
 			path: app/Http/Controllers/Admin/ReviewController.php
 
 		-
-			message: '#^Relation ''mediaGallery'' is not found in App\\Models\\Review model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Http/Controllers/Admin/ReviewController.php
-
-		-
-			message: '#^Relation ''user'' is not found in App\\Models\\Review model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Admin/ReviewController.php
-
-		-
 			message: '#^Ternary operator condition is always true\.$#'
 			identifier: ternary.alwaysTrue
 			count: 4
@@ -610,12 +448,6 @@ parameters:
 			message: '#^Property App\\Models\\State\:\:\$media_gallery \(array\) does not accept Illuminate\\Support\\Collection\<int, array\<string, mixed\>\>\.$#'
 			identifier: assign.propertyType
 			count: 1
-			path: app/Http/Controllers/Admin/StateController.php
-
-		-
-			message: '#^Relation ''mediaGallery'' is not found in App\\Models\\State model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
 			path: app/Http/Controllers/Admin/StateController.php
 
 		-
@@ -667,30 +499,6 @@ parameters:
 			path: app/Http/Controllers/Admin/TransferController.php
 
 		-
-			message: '#^Relation ''mediaGallery'' is not found in App\\Models\\Transfer model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Admin/TransferController.php
-
-		-
-			message: '#^Relation ''pricingAvailability'' is not found in App\\Models\\Transfer model\.$#'
-			identifier: larastan.relationExistence
-			count: 3
-			path: app/Http/Controllers/Admin/TransferController.php
-
-		-
-			message: '#^Relation ''schedule'' is not found in App\\Models\\Transfer model\.$#'
-			identifier: larastan.relationExistence
-			count: 4
-			path: app/Http/Controllers/Admin/TransferController.php
-
-		-
-			message: '#^Relation ''vendorRoutes'' is not found in App\\Models\\Transfer model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Http/Controllers/Admin/TransferController.php
-
-		-
 			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
 			identifier: notIdentical.alwaysTrue
 			count: 1
@@ -707,60 +515,6 @@ parameters:
 			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Http/Controllers/Admin/TransferController.php
-
-		-
-			message: '#^Relation ''meta'' is not found in App\\Models\\User model\.$#'
-			identifier: larastan.relationExistence
-			count: 5
-			path: app/Http/Controllers/Admin/UserController.php
-
-		-
-			message: '#^Relation ''profile'' is not found in App\\Models\\User model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Admin/UserController.php
-
-		-
-			message: '#^Relation ''assignedVehicle'' is not found in App\\Models\\VendorDriver model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Admin/VendorController.php
-
-		-
-			message: '#^Relation ''driver'' is not found in App\\Models\\VendorDriverSchedule model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Admin/VendorController.php
-
-		-
-			message: '#^Relation ''drivers'' is not found in App\\Models\\Vendor model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Admin/VendorController.php
-
-		-
-			message: '#^Relation ''routes'' is not found in App\\Models\\Vendor model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Admin/VendorController.php
-
-		-
-			message: '#^Relation ''vehicle'' is not found in App\\Models\\VendorAvailabilityTimeSlot model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Http/Controllers/Admin/VendorController.php
-
-		-
-			message: '#^Relation ''vehicle'' is not found in App\\Models\\VendorDriverSchedule model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Admin/VendorController.php
-
-		-
-			message: '#^Relation ''vehicles'' is not found in App\\Models\\Vendor model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Admin/VendorController.php
 
 		-
 			message: '#^Caught class App\\Http\\Controllers\\JWTException not found\.$#'
@@ -811,22 +565,10 @@ parameters:
 			path: app/Http/Controllers/Creator/CreatorDashboardController.php
 
 		-
-			message: '#^Relation ''orderable'' is not found in App\\Models\\Order model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Creator/CreatorDashboardController.php
-
-		-
 			message: '#^Strict comparison using \!\=\= between Eloquent\|Illuminate\\Database\\Eloquent\\Model and null will always evaluate to true\.$#'
 			identifier: notIdentical.alwaysTrue
 			count: 1
 			path: app/Http/Controllers/Creator/CreatorDashboardController.php
-
-		-
-			message: '#^Relation ''taggedItems'' is not found in App\\Models\\Post model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Creator/CreatorPostController.php
 
 		-
 			message: '#^Anonymous function should return array\{id\: int, name\: string, slug\: string, featured_activity\: bool, description\: string\|null, item_type\: mixed, short_description\: string\|null, featured_image\: mixed, \.\.\.\} but returns array\{id\: int, name\: string, slug\: string, featured_activity\: bool, description\: string\|null, item_type\: mixed, short_description\: string\|null, featured_image\: mixed, \.\.\.\}\.$#'
@@ -849,18 +591,6 @@ parameters:
 		-
 			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Activity\>\:\:map\(\) expects callable\(App\\Models\\Activity, int\)\: array\{id\: int, name\: string, slug\: string, featured_activity\: bool, description\: string\|null, item_type\: mixed, short_description\: string\|null, featured_image\: mixed, city_slug\: string\|null, categories\: array\<mixed\>, attributes\: Illuminate\\Support\\Collection\<int, array\{name\: string, attribute_value\: string\}\>, locations\: Illuminate\\Support\\Collection\<int, array\{location_type\: string, location_label\: string\|null, duration\: int\|null, city_id\: int, city\: string, city_slug\: string, state_id\: int, state\: string, country_id\: int, country\: string, region_id\: int\|null, region\: string\|null\}\>, pricing\: App\\Models\\ActivityPricing\|null, seasonalPricing\: Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\ActivitySeasonalPricing\>, groupDiscounts\: Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\ActivityGroupDiscount\>, earlyBirdDiscount\: App\\Models\\ActivityEarlyBirdDiscount\|null, lastMinuteDiscount\: App\\Models\\ActivityLastMinuteDiscount\|null, promoCodes\: Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\ActivityPromoCode\>, availability\: array\{date_based_activity\: int, start_date\: string\|null, end_date\: string\|null, quantity_based_activity\: int, max_quantity\: int\|null\}\|null, media_gallery\: array\<mixed\>\}, Closure\(mixed\)\: array\{id\: int, name\: string, slug\: string, featured_activity\: bool, description\: string\|null, item_type\: mixed, short_description\: string\|null, featured_image\: mixed, city_slug\: string\|null, categories\: array\<mixed\>, attributes\: Illuminate\\Support\\Collection\<int, array\{name\: string, attribute_value\: string\}\>, locations\: Illuminate\\Support\\Collection\<int, array\{location_type\: string, location_label\: string\|null, duration\: int\|null, city_id\: int, city\: string, city_slug\: string, state_id\: int, state\: string, country_id\: int, country\: string, region_id\: int\|null, region\: string\|null\}\>, pricing\: App\\Models\\ActivityPricing\|null, seasonalPricing\: Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\ActivitySeasonalPricing\>, groupDiscounts\: Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\ActivityGroupDiscount\>, earlyBirdDiscount\: App\\Models\\ActivityEarlyBirdDiscount\|null, lastMinuteDiscount\: App\\Models\\ActivityLastMinuteDiscount\|null, promoCodes\: Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\ActivityPromoCode\>, availability\: array\{date_based_activity\: int, start_date\: string\|null, end_date\: string\|null, quantity_based_activity\: int, max_quantity\: int\|null\}\|null, media_gallery\: array\<mixed\>\} given\.$#'
 			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/Guest/PublicActivityController.php
-
-		-
-			message: '#^Relation ''categories'' is not found in App\\Models\\Activity model\.$#'
-			identifier: larastan.relationExistence
-			count: 3
-			path: app/Http/Controllers/Guest/PublicActivityController.php
-
-		-
-			message: '#^Relation ''locations'' is not found in App\\Models\\Activity model\.$#'
-			identifier: larastan.relationExistence
 			count: 1
 			path: app/Http/Controllers/Guest/PublicActivityController.php
 
@@ -901,104 +631,8 @@ parameters:
 			path: app/Http/Controllers/Guest/PublicBlogController.php
 
 		-
-			message: '#^Relation ''categories'' is not found in App\\Models\\Blog model\.$#'
-			identifier: larastan.relationExistence
-			count: 3
-			path: app/Http/Controllers/Guest/PublicBlogController.php
-
-		-
-			message: '#^Relation ''media'' is not found in App\\Models\\Blog model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Http/Controllers/Guest/PublicBlogController.php
-
-		-
-			message: '#^Relation ''tags'' is not found in App\\Models\\Blog model\.$#'
-			identifier: larastan.relationExistence
-			count: 3
-			path: app/Http/Controllers/Guest/PublicBlogController.php
-
-		-
 			message: '#^Left side of && is always true\.$#'
 			identifier: booleanAnd.leftAlwaysTrue
-			count: 1
-			path: app/Http/Controllers/Guest/PublicCitiesController.php
-
-		-
-			message: '#^Relation ''basePricing'' is not found in App\\Models\\Itinerary model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Http/Controllers/Guest/PublicCitiesController.php
-
-		-
-			message: '#^Relation ''basePricing'' is not found in App\\Models\\Package model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Http/Controllers/Guest/PublicCitiesController.php
-
-		-
-			message: '#^Relation ''categories'' is not found in App\\Models\\Activity model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Http/Controllers/Guest/PublicCitiesController.php
-
-		-
-			message: '#^Relation ''categories'' is not found in App\\Models\\Itinerary model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Guest/PublicCitiesController.php
-
-		-
-			message: '#^Relation ''categories'' is not found in App\\Models\\Package model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Guest/PublicCitiesController.php
-
-		-
-			message: '#^Relation ''locations'' is not found in App\\Models\\Activity model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Guest/PublicCitiesController.php
-
-		-
-			message: '#^Relation ''locations'' is not found in App\\Models\\Itinerary model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Guest/PublicCitiesController.php
-
-		-
-			message: '#^Relation ''locations'' is not found in App\\Models\\Package model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Guest/PublicCitiesController.php
-
-		-
-			message: '#^Relation ''mediaGallery'' is not found in App\\Models\\City model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Http/Controllers/Guest/PublicCitiesController.php
-
-		-
-			message: '#^Relation ''pricing'' is not found in App\\Models\\Activity model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Guest/PublicCitiesController.php
-
-		-
-			message: '#^Relation ''state'' is not found in App\\Models\\City model\.$#'
-			identifier: larastan.relationExistence
-			count: 3
-			path: app/Http/Controllers/Guest/PublicCitiesController.php
-
-		-
-			message: '#^Relation ''tags'' is not found in App\\Models\\Itinerary model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Guest/PublicCitiesController.php
-
-		-
-			message: '#^Relation ''tags'' is not found in App\\Models\\Package model\.$#'
-			identifier: larastan.relationExistence
 			count: 1
 			path: app/Http/Controllers/Guest/PublicCitiesController.php
 
@@ -1021,12 +655,6 @@ parameters:
 			path: app/Http/Controllers/Guest/PublicCitiesController.php
 
 		-
-			message: '#^Relation ''mediaGallery'' is not found in App\\Models\\Country model\.$#'
-			identifier: larastan.relationExistence
-			count: 3
-			path: app/Http/Controllers/Guest/PublicCountryController.php
-
-		-
 			message: '#^Call to static method query\(\) on an unknown class App\\Http\\Controllers\\Guest\\YourModel\.$#'
 			identifier: class.notFound
 			count: 1
@@ -1043,96 +671,6 @@ parameters:
 			identifier: class.notFound
 			count: 1
 			path: app/Http/Controllers/Guest/PublicFilterController.php
-
-		-
-			message: '#^Relation ''availability'' is not found in App\\Models\\Activity model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Http/Controllers/Guest/PublicHomeSearchController.php
-
-		-
-			message: '#^Relation ''availability'' is not found in App\\Models\\Itinerary model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Http/Controllers/Guest/PublicHomeSearchController.php
-
-		-
-			message: '#^Relation ''availability'' is not found in App\\Models\\Package model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Http/Controllers/Guest/PublicHomeSearchController.php
-
-		-
-			message: '#^Relation ''basePricing'' is not found in App\\Models\\Itinerary model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Guest/PublicHomeSearchController.php
-
-		-
-			message: '#^Relation ''basePricing'' is not found in App\\Models\\Package model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Guest/PublicHomeSearchController.php
-
-		-
-			message: '#^Relation ''categories'' is not found in App\\Models\\Activity model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Guest/PublicHomeSearchController.php
-
-		-
-			message: '#^Relation ''categories'' is not found in App\\Models\\Itinerary model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Guest/PublicHomeSearchController.php
-
-		-
-			message: '#^Relation ''categories'' is not found in App\\Models\\Package model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Guest/PublicHomeSearchController.php
-
-		-
-			message: '#^Relation ''locations'' is not found in App\\Models\\Activity model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Http/Controllers/Guest/PublicHomeSearchController.php
-
-		-
-			message: '#^Relation ''locations'' is not found in App\\Models\\Itinerary model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Http/Controllers/Guest/PublicHomeSearchController.php
-
-		-
-			message: '#^Relation ''locations'' is not found in App\\Models\\Package model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Http/Controllers/Guest/PublicHomeSearchController.php
-
-		-
-			message: '#^Relation ''pricing'' is not found in App\\Models\\Activity model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Guest/PublicHomeSearchController.php
-
-		-
-			message: '#^Relation ''state'' is not found in App\\Models\\City model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Guest/PublicHomeSearchController.php
-
-		-
-			message: '#^Relation ''tags'' is not found in App\\Models\\Itinerary model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Guest/PublicHomeSearchController.php
-
-		-
-			message: '#^Relation ''tags'' is not found in App\\Models\\Package model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Guest/PublicHomeSearchController.php
 
 		-
 			message: '#^Result of && is always false\.$#'
@@ -1207,18 +745,6 @@ parameters:
 			path: app/Http/Controllers/Guest/PublicItineraryController.php
 
 		-
-			message: '#^Relation ''itinerariesAddon'' is not found in App\\Models\\Addon model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Guest/PublicItineraryController.php
-
-		-
-			message: '#^Relation ''locations'' is not found in App\\Models\\Itinerary model\.$#'
-			identifier: larastan.relationExistence
-			count: 4
-			path: app/Http/Controllers/Guest/PublicItineraryController.php
-
-		-
 			message: '#^Right side of && is always true\.$#'
 			identifier: booleanAnd.rightAlwaysTrue
 			count: 12
@@ -1249,12 +775,6 @@ parameters:
 			path: app/Http/Controllers/Guest/PublicItineraryController.php
 
 		-
-			message: '#^Relation ''countries'' is not found in App\\Models\\Region model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Guest/PublicMenuController.php
-
-		-
 			message: '#^Anonymous function should return array\{day\: int, activities\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float\|int\|string\|null, include_in_package\: bool, main_location\: string\|null, \.\.\.\}\>, transfers\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, pickup_location\: string, dropoff_location\: string, pax\: int\|null, price\: float\|int\|string\|null, \.\.\.\}\>\} but returns array\{day\: int, activities\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float\|int\|string\|null, include_in_package\: bool, main_location\: string\|null, \.\.\.\}\>, transfers\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, pickup_location\: string, dropoff_location\: string, pax\: int\|null, price\: float\|int\|string\|null, \.\.\.\}\>\}\.$#'
 			identifier: return.type
 			count: 1
@@ -1281,24 +801,6 @@ parameters:
 		-
 			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\PackageSchedule\>\:\:map\(\) expects callable\(App\\Models\\PackageSchedule, int\)\: array\{day\: int, activities\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float\|int\|string\|null, include_in_package\: bool, main_location\: string\|null, duration_minutes\: int\|null, featured_image\: mixed\}\>, transfers\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, pickup_location\: string, dropoff_location\: string, pax\: int\|null, price\: float\|int\|string\|null, include_in_package\: bool\}\>\}, Closure\(mixed\)\: array\{day\: int, activities\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float\|int\|string\|null, include_in_package\: bool, main_location\: string\|null, duration_minutes\: int\|null, featured_image\: mixed\}\>, transfers\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, pickup_location\: string, dropoff_location\: string, pax\: int\|null, price\: float\|int\|string\|null, include_in_package\: bool\}\>\} given\.$#'
 			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/Guest/PublicPackageController.php
-
-		-
-			message: '#^Relation ''locations'' is not found in App\\Models\\Package model\.$#'
-			identifier: larastan.relationExistence
-			count: 4
-			path: app/Http/Controllers/Guest/PublicPackageController.php
-
-		-
-			message: '#^Relation ''packagesAddon'' is not found in App\\Models\\Addon model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Guest/PublicPackageController.php
-
-		-
-			message: '#^Relation ''tags'' is not found in App\\Models\\Package model\.$#'
-			identifier: larastan.relationExistence
 			count: 1
 			path: app/Http/Controllers/Guest/PublicPackageController.php
 
@@ -1345,16 +847,70 @@ parameters:
 			path: app/Http/Controllers/Guest/PublicPackageController.php
 
 		-
-			message: '#^Relation ''mediaGallery'' is not found in App\\Models\\Place model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Guest/PublicPlaceController.php
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$basePricing\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Guest/PublicRegionController.php
 
 		-
-			message: '#^Relation ''creator'' is not found in App\\Models\\Post model\.$#'
-			identifier: larastan.relationExistence
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$categories\.$#'
+			identifier: property.notFound
 			count: 2
-			path: app/Http/Controllers/Guest/PublicPostController.php
+			path: app/Http/Controllers/Guest/PublicRegionController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$featured_itinerary\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Guest/PublicRegionController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$featured_package\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Guest/PublicRegionController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Guest/PublicRegionController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$item_type\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Guest/PublicRegionController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$locations\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Guest/PublicRegionController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$mediaGallery\.$#'
+			identifier: property.notFound
+			count: 6
+			path: app/Http/Controllers/Guest/PublicRegionController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Guest/PublicRegionController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$slug\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Guest/PublicRegionController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$tags\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Guest/PublicRegionController.php
 
 		-
 			message: '#^Anonymous function should return array\{id\: int, name\: string, slug\: string, item_type\: ''activity'', featured\: bool, city_slug\: string\|null, pricing\: App\\Models\\ActivityPricing\|null, categories\: array\<mixed\>, \.\.\.\} but returns array\{id\: int, name\: string, slug\: string, item_type\: ''activity'', featured\: bool, city_slug\: string\|null, pricing\: App\\Models\\ActivityPricing\|null, categories\: array\<mixed\>, \.\.\.\}\.$#'
@@ -1377,6 +933,12 @@ parameters:
 		-
 			message: '#^Anonymous function should return array\{id\: int, name\: string, slug\: string, item_type\: mixed, featured_activity\: bool, featured_image\: mixed, pricing\: App\\Models\\ActivityPricing\|null, groupDiscounts\: Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\ActivityGroupDiscount\>, \.\.\.\} but returns array\{id\: int, name\: string, slug\: string, item_type\: mixed, featured_activity\: bool, featured_image\: mixed, pricing\: App\\Models\\ActivityPricing\|null, groupDiscounts\: Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\ActivityGroupDiscount\>, \.\.\.\}\.$#'
 			identifier: return.type
+			count: 1
+			path: app/Http/Controllers/Guest/PublicRegionController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:places\(\)\.$#'
+			identifier: method.notFound
 			count: 1
 			path: app/Http/Controllers/Guest/PublicRegionController.php
 
@@ -1417,6 +979,24 @@ parameters:
 			path: app/Http/Controllers/Guest/PublicRegionController.php
 
 		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 2
+			path: app/Http/Controllers/Guest/PublicRegionController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,array\<string, mixed\>\>\:\:sortBy\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 2
+			path: app/Http/Controllers/Guest/PublicRegionController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,array\<string, mixed\>\>\:\:sortByDesc\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 3
+			path: app/Http/Controllers/Guest/PublicRegionController.php
+
+		-
 			message: '#^Parameter \#1 \$items of method Illuminate\\Support\\Collection\<\(int\|string\),mixed\>\:\:merge\(\) expects Illuminate\\Contracts\\Support\\Arrayable\<\(int\|string\), array\{id\: int, name\: string, slug\: string, item_type\: string, featured\: bool, city_slug\: string\|null, pricing\: App\\Models\\ActivityPricing\|null, categories\: array\<mixed\>, \.\.\.\}\>\|iterable\<\(int\|string\), array\{id\: int, name\: string, slug\: string, item_type\: string, featured\: bool, city_slug\: string\|null, pricing\: App\\Models\\ActivityPricing\|null, categories\: array\<mixed\>, \.\.\.\}\>, Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, slug\: string, item_type\: string, featured\: bool, city_slug\: string\|null, pricing\: App\\Models\\ActivityPricing\|null, categories\: array\<mixed\>, \.\.\.\}\> given\.$#'
 			identifier: argument.type
 			count: 1
@@ -1435,87 +1015,15 @@ parameters:
 			path: app/Http/Controllers/Guest/PublicRegionController.php
 
 		-
-			message: '#^Parameter \#1 \$value of function collect expects Illuminate\\Contracts\\Support\\Arrayable\<int, array\{id\: int, name\: string, slug\: string, item_type\: mixed, featured_activity\: bool, featured_image\: mixed, pricing\: App\\Models\\ActivityPricing\|null, groupDiscounts\: Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\ActivityGroupDiscount\>, \.\.\.\}\>\|iterable\<int, array\{id\: int, name\: string, slug\: string, item_type\: mixed, featured_activity\: bool, featured_image\: mixed, pricing\: App\\Models\\ActivityPricing\|null, groupDiscounts\: Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\ActivityGroupDiscount\>, \.\.\.\}\>\|null, Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, slug\: string, item_type\: mixed, featured_activity\: bool, featured_image\: mixed, pricing\: App\\Models\\ActivityPricing\|null, groupDiscounts\: Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\ActivityGroupDiscount\>, \.\.\.\}\> given\.$#'
-			identifier: argument.type
+			message: '#^Parameter \#1 \$value of function collect contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
 			count: 1
 			path: app/Http/Controllers/Guest/PublicRegionController.php
 
 		-
-			message: '#^Relation ''basePricing'' is not found in App\\Models\\Itinerary model\.$#'
-			identifier: larastan.relationExistence
-			count: 4
-			path: app/Http/Controllers/Guest/PublicRegionController.php
-
-		-
-			message: '#^Relation ''basePricing'' is not found in App\\Models\\Package model\.$#'
-			identifier: larastan.relationExistence
-			count: 5
-			path: app/Http/Controllers/Guest/PublicRegionController.php
-
-		-
-			message: '#^Relation ''categories'' is not found in App\\Models\\Activity model\.$#'
-			identifier: larastan.relationExistence
-			count: 5
-			path: app/Http/Controllers/Guest/PublicRegionController.php
-
-		-
-			message: '#^Relation ''categories'' is not found in App\\Models\\Itinerary model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Http/Controllers/Guest/PublicRegionController.php
-
-		-
-			message: '#^Relation ''categories'' is not found in App\\Models\\Package model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Http/Controllers/Guest/PublicRegionController.php
-
-		-
-			message: '#^Relation ''countries'' is not found in App\\Models\\Region model\.$#'
-			identifier: larastan.relationExistence
-			count: 4
-			path: app/Http/Controllers/Guest/PublicRegionController.php
-
-		-
-			message: '#^Relation ''locations'' is not found in App\\Models\\Activity model\.$#'
-			identifier: larastan.relationExistence
-			count: 3
-			path: app/Http/Controllers/Guest/PublicRegionController.php
-
-		-
-			message: '#^Relation ''locations'' is not found in App\\Models\\Itinerary model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Http/Controllers/Guest/PublicRegionController.php
-
-		-
-			message: '#^Relation ''locations'' is not found in App\\Models\\Package model\.$#'
-			identifier: larastan.relationExistence
-			count: 3
-			path: app/Http/Controllers/Guest/PublicRegionController.php
-
-		-
-			message: '#^Relation ''pricing'' is not found in App\\Models\\Activity model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Http/Controllers/Guest/PublicRegionController.php
-
-		-
-			message: '#^Relation ''state'' is not found in App\\Models\\City model\.$#'
-			identifier: larastan.relationExistence
-			count: 3
-			path: app/Http/Controllers/Guest/PublicRegionController.php
-
-		-
-			message: '#^Relation ''tags'' is not found in App\\Models\\Itinerary model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Http/Controllers/Guest/PublicRegionController.php
-
-		-
-			message: '#^Relation ''tags'' is not found in App\\Models\\Package model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
+			message: '#^Parameter \#1 \$value of function collect expects Illuminate\\Contracts\\Support\\Arrayable\<int, array\{id\: int, name\: string, slug\: string, item_type\: mixed, featured_activity\: bool, featured_image\: mixed, pricing\: App\\Models\\ActivityPricing\|null, groupDiscounts\: Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\ActivityGroupDiscount\>, \.\.\.\}\>\|iterable\<int, array\{id\: int, name\: string, slug\: string, item_type\: mixed, featured_activity\: bool, featured_image\: mixed, pricing\: App\\Models\\ActivityPricing\|null, groupDiscounts\: Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\ActivityGroupDiscount\>, \.\.\.\}\>\|null, Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, slug\: string, item_type\: mixed, featured_activity\: bool, featured_image\: mixed, pricing\: App\\Models\\ActivityPricing\|null, groupDiscounts\: Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\ActivityGroupDiscount\>, \.\.\.\}\> given\.$#'
+			identifier: argument.type
+			count: 1
 			path: app/Http/Controllers/Guest/PublicRegionController.php
 
 		-
@@ -1609,118 +1117,10 @@ parameters:
 			path: app/Http/Controllers/Guest/PublicReviewController.php
 
 		-
-			message: '#^Relation ''locations'' is not found in App\\Models\\Activity model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Guest/PublicReviewController.php
-
-		-
-			message: '#^Relation ''locations'' is not found in App\\Models\\Itinerary model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Guest/PublicReviewController.php
-
-		-
-			message: '#^Relation ''locations'' is not found in App\\Models\\Package model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Guest/PublicReviewController.php
-
-		-
-			message: '#^Relation ''mediaGallery'' is not found in App\\Models\\Review model\.$#'
-			identifier: larastan.relationExistence
-			count: 5
-			path: app/Http/Controllers/Guest/PublicReviewController.php
-
-		-
 			message: '#^Ternary operator condition is always true\.$#'
 			identifier: ternary.alwaysTrue
 			count: 4
 			path: app/Http/Controllers/Guest/PublicReviewController.php
-
-		-
-			message: '#^Relation ''basePricing'' is not found in App\\Models\\Itinerary model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Http/Controllers/Guest/PublicShopController.php
-
-		-
-			message: '#^Relation ''basePricing'' is not found in App\\Models\\Package model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Http/Controllers/Guest/PublicShopController.php
-
-		-
-			message: '#^Relation ''categories'' is not found in App\\Models\\Activity model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Http/Controllers/Guest/PublicShopController.php
-
-		-
-			message: '#^Relation ''categories'' is not found in App\\Models\\Itinerary model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Guest/PublicShopController.php
-
-		-
-			message: '#^Relation ''categories'' is not found in App\\Models\\Package model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Guest/PublicShopController.php
-
-		-
-			message: '#^Relation ''countries'' is not found in App\\Models\\Region model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Guest/PublicShopController.php
-
-		-
-			message: '#^Relation ''locations'' is not found in App\\Models\\Activity model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Guest/PublicShopController.php
-
-		-
-			message: '#^Relation ''locations'' is not found in App\\Models\\Itinerary model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Guest/PublicShopController.php
-
-		-
-			message: '#^Relation ''locations'' is not found in App\\Models\\Package model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Guest/PublicShopController.php
-
-		-
-			message: '#^Relation ''pricing'' is not found in App\\Models\\Activity model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Guest/PublicShopController.php
-
-		-
-			message: '#^Relation ''tags'' is not found in App\\Models\\Itinerary model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Guest/PublicShopController.php
-
-		-
-			message: '#^Relation ''tags'' is not found in App\\Models\\Package model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Guest/PublicShopController.php
-
-		-
-			message: '#^Relation ''mediaGallery'' is not found in App\\Models\\State model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Guest/PublicStateController.php
-
-		-
-			message: '#^Relation ''vendorRoutes'' is not found in App\\Models\\Transfer model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Http/Controllers/Guest/PublicTransferController.php
 
 		-
 			message: '#^Using nullsafe property access "\?\-\>url" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
@@ -1732,48 +1132,6 @@ parameters:
 			message: '#^Call to function is_array\(\) with string\|null will always evaluate to false\.$#'
 			identifier: function.impossibleType
 			count: 1
-			path: app/Http/Controllers/StripeController.php
-
-		-
-			message: '#^Relation ''basePricing'' is not found in App\\Models\\Itinerary model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/StripeController.php
-
-		-
-			message: '#^Relation ''basePricing'' is not found in App\\Models\\Package model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/StripeController.php
-
-		-
-			message: '#^Relation ''countries'' is not found in App\\Models\\Region model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/StripeController.php
-
-		-
-			message: '#^Relation ''emergencyContact'' is not found in App\\Models\\Order model\.$#'
-			identifier: larastan.relationExistence
-			count: 3
-			path: app/Http/Controllers/StripeController.php
-
-		-
-			message: '#^Relation ''payment'' is not found in App\\Models\\Order model\.$#'
-			identifier: larastan.relationExistence
-			count: 4
-			path: app/Http/Controllers/StripeController.php
-
-		-
-			message: '#^Relation ''pricing'' is not found in App\\Models\\Activity model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/StripeController.php
-
-		-
-			message: '#^Relation ''user'' is not found in App\\Models\\Order model\.$#'
-			identifier: larastan.relationExistence
-			count: 4
 			path: app/Http/Controllers/StripeController.php
 
 		-
@@ -1799,6 +1157,18 @@ parameters:
 			identifier: nullsafe.neverNull
 			count: 8
 			path: app/Http/Controllers/StripeController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$label\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/UserProfileController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$url\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/UserProfileController.php
 
 		-
 			message: '#^Access to property \$name on an unknown class Eloquent\.$#'
@@ -1851,42 +1221,6 @@ parameters:
 		-
 			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,App\\Models\\Review\>\:\:map\(\) expects callable\(App\\Models\\Review, int\)\: array\{id\: int, order_id\: int\|null, item_type\: string, item_id\: int, item_name\: string, item_slug\: string\|null, has_live_item\: bool, rating\: int, review_text\: string\|null, status\: string, media_gallery\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, alt_text\: string\|null, url\: mixed\}\>, created_at\: Illuminate\\Support\\Carbon\|null, updated_at\: Illuminate\\Support\\Carbon\|null\}, Closure\(mixed\)\: array\{id\: int, order_id\: int\|null, item_type\: string, item_id\: int, item_name\: string, item_slug\: string\|null, has_live_item\: bool, rating\: int, review_text\: string\|null, status\: string, media_gallery\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, alt_text\: string\|null, url\: mixed\}\>, created_at\: Illuminate\\Support\\Carbon\|null, updated_at\: Illuminate\\Support\\Carbon\|null\} given\.$#'
 			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/UserProfileController.php
-
-		-
-			message: '#^Relation ''countries'' is not found in App\\Models\\Region model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/UserProfileController.php
-
-		-
-			message: '#^Relation ''emergencyContact'' is not found in App\\Models\\Order model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/UserProfileController.php
-
-		-
-			message: '#^Relation ''mediaGallery'' is not found in App\\Models\\Review model\.$#'
-			identifier: larastan.relationExistence
-			count: 4
-			path: app/Http/Controllers/UserProfileController.php
-
-		-
-			message: '#^Relation ''orderable'' is not found in App\\Models\\Order model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/UserProfileController.php
-
-		-
-			message: '#^Relation ''payment'' is not found in App\\Models\\Order model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/UserProfileController.php
-
-		-
-			message: '#^Relation ''profile'' is not found in App\\Models\\User model\.$#'
-			identifier: larastan.relationExistence
 			count: 1
 			path: app/Http/Controllers/UserProfileController.php
 
@@ -2607,18 +1941,6 @@ parameters:
 		-
 			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
 			identifier: class.notFound
-			count: 1
-			path: app/Models/Transfer.php
-
-		-
-			message: '#^Relation ''pricingTier'' is not found in App\\Models\\TransferPricingAvailability model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Models/Transfer.php
-
-		-
-			message: '#^Relation ''vendor'' is not found in App\\Models\\TransferVendorRoute model\.$#'
-			identifier: larastan.relationExistence
 			count: 1
 			path: app/Models/Transfer.php
 
