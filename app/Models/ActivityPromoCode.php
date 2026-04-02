@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -40,7 +41,7 @@ class ActivityPromoCode extends Model
 
     protected $fillable = ['activity_id', 'promo_code', 'max_uses', 'discount_amount', 'discount_type', 'valid_from', 'valid_to'];
 
-    public function activity()
+    public function activity(): BelongsTo
     {
         return $this->belongsTo(Activity::class);
     }

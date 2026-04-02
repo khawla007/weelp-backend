@@ -4,6 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 /**
  * @property int $id
@@ -80,82 +84,82 @@ class Activity extends Model
         'featured_activity' => 'boolean',
     ];
 
-    public function categories()
+    public function categories(): HasMany
     {
         return $this->hasMany(ActivityCategory::class);
     }
 
-    public function locations()
+    public function locations(): HasMany
     {
         return $this->hasMany(ActivityLocation::class);
     }
 
-    public function attributes()
+    public function attributes(): HasMany
     {
         return $this->hasMany(ActivityAttribute::class);
     }
 
-    public function tags()
+    public function tags(): HasMany
     {
         return $this->hasMany(ActivityTag::class);
     }
 
-    public function pricing()
+    public function pricing(): HasOne
     {
         return $this->hasOne(ActivityPricing::class);
     }
 
-    public function seasonalPricing()
+    public function seasonalPricing(): HasMany
     {
         return $this->hasMany(ActivitySeasonalPricing::class, 'activity_id');
     }
 
-    public function groupDiscounts()
+    public function groupDiscounts(): HasMany
     {
         return $this->hasMany(ActivityGroupDiscount::class, 'activity_id');
     }
 
-    public function earlyBirdDiscount()
+    public function earlyBirdDiscount(): HasOne
     {
         return $this->hasOne(ActivityEarlyBirdDiscount::class, 'activity_id');
     }
 
-    public function lastMinuteDiscount()
+    public function lastMinuteDiscount(): HasOne
     {
         return $this->hasOne(ActivityLastMinuteDiscount::class, 'activity_id');
     }
 
-    public function promoCodes()
+    public function promoCodes(): HasMany
     {
         return $this->hasMany(ActivityPromoCode::class, 'activity_id');
     }
 
-    public function availability()
+    public function availability(): HasOne
     {
         return $this->hasOne(ActivityAvailability::class);
     }
 
-    public function mediaGallery()
+    public function mediaGallery(): HasMany
     {
         return $this->hasMany(ActivityMediaGallery::class);
     }
 
-    public function itineraryActivity()
+    public function itineraryActivity(): HasMany
     {
         return $this->hasMany(ItineraryActivity::class, 'activity_id');
     }
 
-    public function itineraries()
+    public function itineraries(): HasManyThrough
     {
         return $this->hasManyThrough(Itinerary::class, ItineraryActivity::class, 'activity_id', 'id', 'id', 'itinerary_id');
     }
 
-    public function packageActivity()
+    public function packageActivity(): HasMany
     {
         return $this->hasMany(PackageActivity::class, 'activity_id');
     }
 
-    public function packages()
+    public function packages(): HasManyThrough
     {
         return $this->hasManyThrough(Package::class, PackageActivity::class, 'activity_id', 'id', 'id', 'package_id');
     }
@@ -165,12 +169,12 @@ class Activity extends Model
     //     return $this->hasMany(Blog::class);
     // }
 
-    public function orders()
+    public function orders(): MorphMany
     {
         return $this->morphMany(Order::class, 'orderable');
     }
 
-    public function reviews()
+    public function reviews(): MorphMany
     {
         return $this->morphMany(Review::class, 'item', 'item_type', 'item_id');
     }
@@ -184,12 +188,12 @@ class Activity extends Model
     // {
     //     return $this->belongsToMany(Addon::class, 'activity_addons', 'activity_id', 'addon_id')->withTimestamps();
     // }
-    public function addons()
+    public function addons(): HasMany
     {
         return $this->hasMany(ActivityAddon::class);
     }
 
-    public function postTags()
+    public function postTags(): MorphMany
     {
         return $this->morphMany(PostItemTag::class, 'taggable');
     }
