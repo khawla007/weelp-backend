@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property int $id
@@ -33,17 +35,17 @@ class ItinerarySchedule extends Model
         'itinerary_id', 'day',
     ];
 
-    public function itinerary()
+    public function itinerary(): BelongsTo
     {
         return $this->belongsTo(Itinerary::class);
     }
 
-    public function activities()
+    public function activities(): HasMany
     {
         return $this->hasMany(ItineraryActivity::class, 'schedule_id');
     }
 
-    public function transfers()
+    public function transfers(): HasMany
     {
         return $this->hasMany(ItineraryTransfer::class, 'schedule_id');
     }

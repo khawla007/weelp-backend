@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property int $id
@@ -42,17 +44,17 @@ class ItineraryBasePricing extends Model
         'start_date', 'end_date',
     ];
 
-    public function itinerary()
+    public function itinerary(): BelongsTo
     {
         return $this->belongsTo(Itinerary::class);
     }
 
-    public function variations()
+    public function variations(): HasMany
     {
         return $this->hasMany(ItineraryPriceVariation::class, 'base_pricing_id');
     }
 
-    public function blackoutDates()
+    public function blackoutDates(): HasMany
     {
         return $this->hasMany(ItineraryBlackoutDate::class, 'base_pricing_id');
     }
