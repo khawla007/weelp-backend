@@ -270,7 +270,7 @@ class VendorController extends Controller
             case 'route':
                 return $this->updateRoute($request, $id);
             case 'pricing_tier':
-                return $this->updatePricingTiers($request);
+                return $this->updatePricingTiers($request, $id);
             case 'vehicle':
                 return $this->updateVehicle($request, $id);
             case 'driver':
@@ -278,7 +278,7 @@ class VendorController extends Controller
             case 'schedule':
                 return $this->updateSchedule($request, $id);
             case 'availability_time_slot':
-                return $this->updateAvailabilityTimeSlot($request);
+                return $this->updateAvailabilityTimeSlot($request, $id);
             default:
                 return response()->json(['error' => 'Invalid type'], 400);
         }

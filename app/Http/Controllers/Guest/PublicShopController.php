@@ -385,6 +385,10 @@ class PublicShopController extends Controller
                     })->toArray(),
                 ] : null;
                 $featured = ($type === 'itinerary') ? $item->featured_itinerary : $item->featured_package;
+                break;
+            default:
+                $featured = false;
+                break;
         }
 
         return [

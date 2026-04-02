@@ -468,16 +468,20 @@ class StateController extends Controller
     
         // === Location Details (hasOne) ===
         if (!empty($validated['location_details'])) {
-            $state->locationDetails()
-                ? $state->locationDetails->update($validated['location_details'])
-                : $state->locationDetails()->create($validated['location_details']);
+            if ($state->locationDetails) {
+                $state->locationDetails->update($validated['location_details']);
+            } else {
+                $state->locationDetails()->create($validated['location_details']);
+            }
         }
-    
+
         // === Travel Info (hasOne) ===
         if (!empty($validated['travel_info'])) {
-            $state->travelInfo()
-                ? $state->travelInfo->update($validated['travel_info'])
-                : $state->travelInfo()->create($validated['travel_info']);
+            if ($state->travelInfo) {
+                $state->travelInfo->update($validated['travel_info']);
+            } else {
+                $state->travelInfo()->create($validated['travel_info']);
+            }
         }
     
         // === Seasons (hasMany) ===
@@ -566,9 +570,11 @@ class StateController extends Controller
     
         // === SEO (hasOne) ===
         if (!empty($validated['seo'])) {
-            $state->seo()
-                ? $state->seo->update($validated['seo'])
-                : $state->seo()->create($validated['seo']);
+            if ($state->seo) {
+                $state->seo->update($validated['seo']);
+            } else {
+                $state->seo()->create($validated['seo']);
+            }
         }
     
         return response()->json([
