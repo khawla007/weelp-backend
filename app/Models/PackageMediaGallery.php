@@ -4,6 +4,27 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property int $id
+ * @property int $package_id
+ * @property int $media_id
+ * @property int $is_featured
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\Media $media
+ * @property-read \App\Models\Package $package
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageMediaGallery featured()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageMediaGallery newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageMediaGallery newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageMediaGallery query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageMediaGallery whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageMediaGallery whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageMediaGallery whereIsFeatured($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageMediaGallery whereMediaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageMediaGallery wherePackageId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageMediaGallery whereUpdatedAt($value)
+ * @mixin \Eloquent
+ */
 class PackageMediaGallery extends Model
 {
 

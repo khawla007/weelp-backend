@@ -5,6 +5,62 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property int $id
+ * @property string $name
+ * @property string|null $code
+ * @property string $slug
+ * @property string $type
+ * @property int $state_id
+ * @property string|null $description
+ * @property bool $featured_destination
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Activity> $activities
+ * @property-read int|null $activities_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ActivityLocation> $activityLocations
+ * @property-read int|null $activity_locations_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\CityAdditionalInfo> $additionalInfo
+ * @property-read int|null $additional_info_count
+ * @property-read \App\Models\Country|null $country
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\CityEvent> $events
+ * @property-read int|null $events_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\CityFaq> $faqs
+ * @property-read int|null $faqs_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Itinerary> $itineraries
+ * @property-read int|null $itineraries_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ItineraryLocation> $itineraryLocations
+ * @property-read int|null $itinerary_locations_count
+ * @property-read \App\Models\CityLocationDetail|null $locationDetails
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\CityMediaGallery> $mediaGallery
+ * @property-read int|null $media_gallery_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\PackageLocation> $packageLocations
+ * @property-read int|null $package_locations_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Package> $packages
+ * @property-read int|null $packages_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Place> $places
+ * @property-read int|null $places_count
+ * @property-read \App\Models\Region|null $region
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\CitySeason> $seasons
+ * @property-read int|null $seasons_count
+ * @property-read \App\Models\CitySeo|null $seo
+ * @property-read \App\Models\State $state
+ * @property-read \App\Models\CityTravelInfo|null $travelInfo
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|City newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|City newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|City query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|City whereCode($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|City whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|City whereDescription($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|City whereFeaturedDestination($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|City whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|City whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|City whereSlug($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|City whereStateId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|City whereType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|City whereUpdatedAt($value)
+ * @mixin \Eloquent
+ */
 class City extends Model
 {
     use HasFactory;

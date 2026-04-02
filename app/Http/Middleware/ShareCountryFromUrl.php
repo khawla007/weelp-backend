@@ -33,9 +33,6 @@ class ShareCountryFromUrl
         // Share country with all views
         view()->share('country', $country);
 
-        // Also share with Inertia
-        inertia()->share('country', $country);
-
         return $next($request);
     }
 }

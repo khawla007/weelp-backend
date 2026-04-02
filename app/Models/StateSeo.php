@@ -5,6 +5,35 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property int $id
+ * @property int $state_id
+ * @property string|null $meta_title
+ * @property string|null $meta_description
+ * @property string|null $keywords
+ * @property string|null $og_image_url
+ * @property string|null $canonical_url
+ * @property string|null $schema_type
+ * @property string|null $schema_data
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\State $state
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|StateSeo newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|StateSeo newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|StateSeo query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|StateSeo whereCanonicalUrl($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|StateSeo whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|StateSeo whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|StateSeo whereKeywords($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|StateSeo whereMetaDescription($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|StateSeo whereMetaTitle($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|StateSeo whereOgImageUrl($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|StateSeo whereSchemaData($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|StateSeo whereSchemaType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|StateSeo whereStateId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|StateSeo whereUpdatedAt($value)
+ * @mixin \Eloquent
+ */
 class StateSeo extends Model
 {
     use HasFactory;

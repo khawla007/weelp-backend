@@ -5,6 +5,27 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property int $id
+ * @property int $activity_id
+ * @property int $min_people
+ * @property numeric $discount_amount
+ * @property string $discount_type
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\Activity $activity
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityGroupDiscount newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityGroupDiscount newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityGroupDiscount query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityGroupDiscount whereActivityId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityGroupDiscount whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityGroupDiscount whereDiscountAmount($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityGroupDiscount whereDiscountType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityGroupDiscount whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityGroupDiscount whereMinPeople($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityGroupDiscount whereUpdatedAt($value)
+ * @mixin \Eloquent
+ */
 class ActivityGroupDiscount extends Model {
     use HasFactory;
 

@@ -5,6 +5,27 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property int $id
+ * @property int $transfer_id
+ * @property int $media_id
+ * @property int $is_featured
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\Media $media
+ * @property-read \App\Models\Transfer $transfer
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferMediaGallery featured()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferMediaGallery newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferMediaGallery newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferMediaGallery query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferMediaGallery whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferMediaGallery whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferMediaGallery whereIsFeatured($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferMediaGallery whereMediaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferMediaGallery whereTransferId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferMediaGallery whereUpdatedAt($value)
+ * @mixin \Eloquent
+ */
 class TransferMediaGallery extends Model
 {
     use HasFactory;

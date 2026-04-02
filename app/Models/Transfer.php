@@ -5,6 +5,46 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property int $id
+ * @property string $name
+ * @property string $slug
+ * @property string $description
+ * @property string $item_type
+ * @property string $transfer_type
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\TransferAddon> $addons
+ * @property-read int|null $addons_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Itinerary> $itineraries
+ * @property-read int|null $itineraries_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ItineraryTransferMapping> $itineraryTransfer
+ * @property-read int|null $itinerary_transfer_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\TransferMediaGallery> $mediaGallery
+ * @property-read int|null $media_gallery_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\PackageTransferMapping> $packageTransfer
+ * @property-read int|null $package_transfer_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Package> $packages
+ * @property-read int|null $packages_count
+ * @property-read \App\Models\TransferPricingAvailability|null $pricingAvailability
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Review> $reviews
+ * @property-read int|null $reviews_count
+ * @property-read \App\Models\TransferSchedule|null $schedule
+ * @property-read \App\Models\TransferSeo|null $seo
+ * @property-read \App\Models\TransferVendorRoute|null $vendorRoutes
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Transfer newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Transfer newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Transfer query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Transfer whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Transfer whereDescription($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Transfer whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Transfer whereItemType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Transfer whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Transfer whereSlug($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Transfer whereTransferType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Transfer whereUpdatedAt($value)
+ * @mixin \Eloquent
+ */
 class Transfer extends Model
 {
     use HasFactory;

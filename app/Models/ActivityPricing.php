@@ -5,6 +5,25 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property int $id
+ * @property int $activity_id
+ * @property numeric $regular_price
+ * @property string $currency
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\Activity $activity
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityPricing newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityPricing newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityPricing query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityPricing whereActivityId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityPricing whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityPricing whereCurrency($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityPricing whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityPricing whereRegularPrice($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityPricing whereUpdatedAt($value)
+ * @mixin \Eloquent
+ */
 class ActivityPricing extends Model {
     use HasFactory;
 

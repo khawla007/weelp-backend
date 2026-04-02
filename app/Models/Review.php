@@ -4,6 +4,43 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property int $id
+ * @property int $user_id
+ * @property int|null $order_id
+ * @property string $item_type
+ * @property int $item_id
+ * @property string|null $item_name_snapshot
+ * @property string|null $item_slug_snapshot
+ * @property int $rating
+ * @property string|null $review_text
+ * @property string $status
+ * @property bool $is_featured
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read Model|\Eloquent $item
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ReviewMediaGallery> $mediaGallery
+ * @property-read int|null $media_gallery_count
+ * @property-read \App\Models\Order|null $order
+ * @property-read \App\Models\User $user
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Review newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Review newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Review query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Review whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Review whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Review whereIsFeatured($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Review whereItemId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Review whereItemNameSnapshot($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Review whereItemSlugSnapshot($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Review whereItemType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Review whereOrderId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Review whereRating($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Review whereReviewText($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Review whereStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Review whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Review whereUserId($value)
+ * @mixin \Eloquent
+ */
 class Review extends Model
 {
     protected $fillable = [

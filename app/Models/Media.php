@@ -6,6 +6,51 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
+/**
+ * @property int $id
+ * @property string $name
+ * @property string|null $alt_text
+ * @property string $url
+ * @property int|null $file_size
+ * @property int|null $width
+ * @property int|null $height
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ActivityMediaGallery> $activityMedia
+ * @property-read int|null $activity_media_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Blog> $blogs
+ * @property-read int|null $blogs_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\CityMediaGallery> $cityMedia
+ * @property-read int|null $city_media_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\CountryMediaGallery> $countryMedia
+ * @property-read int|null $country_media_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ItineraryMediaGallery> $itineraryMedia
+ * @property-read int|null $itinerary_media_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\PackageMediaGallery> $packageMedia
+ * @property-read int|null $package_media_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\PlaceMediaGallery> $placeMedia
+ * @property-read int|null $place_media_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Review> $reviews
+ * @property-read int|null $reviews_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\StateMediaGallery> $stateMedia
+ * @property-read int|null $state_media_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\TransferMediaGallery> $transferMedia
+ * @property-read int|null $transfer_media_count
+ * @property-read \App\Models\User|null $userAvatar
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Media newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Media newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Media query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Media whereAltText($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Media whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Media whereFileSize($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Media whereHeight($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Media whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Media whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Media whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Media whereUrl($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Media whereWidth($value)
+ * @mixin \Eloquent
+ */
 class Media extends Model
 {
     protected $table = 'media';

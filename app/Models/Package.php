@@ -5,6 +5,59 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property int $id
+ * @property string $name
+ * @property string $slug
+ * @property string $description
+ * @property string $item_type
+ * @property bool $featured_package
+ * @property bool $private_package
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\PackageAddon> $addons
+ * @property-read int|null $addons_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\PackageAttribute> $attributes
+ * @property-read int|null $attributes_count
+ * @property-read \App\Models\PackageAvailability|null $availability
+ * @property-read \App\Models\PackageBasePricing|null $basePricing
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\PackageCategory> $categories
+ * @property-read int|null $categories_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\PackageFaq> $faqs
+ * @property-read int|null $faqs_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\PackageInclusionExclusion> $inclusionsExclusions
+ * @property-read int|null $inclusions_exclusions_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\PackageInformation> $information
+ * @property-read int|null $information_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\PackageLocation> $locations
+ * @property-read int|null $locations_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\PackageMediaGallery> $mediaGallery
+ * @property-read int|null $media_gallery_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Order> $orders
+ * @property-read int|null $orders_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\PostItemTag> $postTags
+ * @property-read int|null $post_tags_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Review> $reviews
+ * @property-read int|null $reviews_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\PackageSchedule> $schedules
+ * @property-read int|null $schedules_count
+ * @property-read \App\Models\PackageSeo|null $seo
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\PackageTag> $tags
+ * @property-read int|null $tags_count
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Package newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Package newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Package query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Package whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Package whereDescription($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Package whereFeaturedPackage($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Package whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Package whereItemType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Package whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Package wherePrivatePackage($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Package whereSlug($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Package whereUpdatedAt($value)
+ * @mixin \Eloquent
+ */
 class Package extends Model
 {
     use HasFactory;

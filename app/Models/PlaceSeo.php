@@ -5,6 +5,35 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property int $id
+ * @property int $place_id
+ * @property string|null $meta_title
+ * @property string|null $meta_description
+ * @property string|null $keywords
+ * @property string|null $og_image_url
+ * @property string|null $canonical_url
+ * @property string|null $schema_type
+ * @property string|null $schema_data
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\Place $place
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PlaceSeo newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PlaceSeo newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PlaceSeo query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PlaceSeo whereCanonicalUrl($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PlaceSeo whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PlaceSeo whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PlaceSeo whereKeywords($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PlaceSeo whereMetaDescription($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PlaceSeo whereMetaTitle($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PlaceSeo whereOgImageUrl($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PlaceSeo wherePlaceId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PlaceSeo whereSchemaData($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PlaceSeo whereSchemaType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PlaceSeo whereUpdatedAt($value)
+ * @mixin \Eloquent
+ */
 class PlaceSeo extends Model {
     use HasFactory;
 

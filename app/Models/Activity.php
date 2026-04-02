@@ -5,6 +5,66 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property int $id
+ * @property string $name
+ * @property string $slug
+ * @property string|null $description
+ * @property string $item_type
+ * @property string|null $short_description
+ * @property bool $featured_activity
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ActivityAddon> $addons
+ * @property-read int|null $addons_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ActivityAttribute> $attributes
+ * @property-read int|null $attributes_count
+ * @property-read \App\Models\ActivityAvailability|null $availability
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ActivityCategory> $categories
+ * @property-read int|null $categories_count
+ * @property-read \App\Models\ActivityEarlyBirdDiscount|null $earlyBirdDiscount
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ActivityGroupDiscount> $groupDiscounts
+ * @property-read int|null $group_discounts_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Itinerary> $itineraries
+ * @property-read int|null $itineraries_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ItineraryActivity> $itineraryActivity
+ * @property-read int|null $itinerary_activity_count
+ * @property-read \App\Models\ActivityLastMinuteDiscount|null $lastMinuteDiscount
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ActivityLocation> $locations
+ * @property-read int|null $locations_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ActivityMediaGallery> $mediaGallery
+ * @property-read int|null $media_gallery_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Order> $orders
+ * @property-read int|null $orders_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\PackageActivity> $packageActivity
+ * @property-read int|null $package_activity_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Package> $packages
+ * @property-read int|null $packages_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\PostItemTag> $postTags
+ * @property-read int|null $post_tags_count
+ * @property-read \App\Models\ActivityPricing|null $pricing
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ActivityPromoCode> $promoCodes
+ * @property-read int|null $promo_codes_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Review> $reviews
+ * @property-read int|null $reviews_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ActivitySeasonalPricing> $seasonalPricing
+ * @property-read int|null $seasonal_pricing_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ActivityTag> $tags
+ * @property-read int|null $tags_count
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Activity newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Activity newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Activity query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Activity whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Activity whereDescription($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Activity whereFeaturedActivity($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Activity whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Activity whereItemType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Activity whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Activity whereShortDescription($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Activity whereSlug($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Activity whereUpdatedAt($value)
+ * @mixin \Eloquent
+ */
 class Activity extends Model {
     use HasFactory;
 

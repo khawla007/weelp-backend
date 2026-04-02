@@ -4,6 +4,24 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property int $id
+ * @property int $transfer_id
+ * @property int $addon_id
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\Addon $addon
+ * @property-read \App\Models\Transfer $transfer
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferAddon newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferAddon newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferAddon query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferAddon whereAddonId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferAddon whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferAddon whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferAddon whereTransferId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferAddon whereUpdatedAt($value)
+ * @mixin \Eloquent
+ */
 class TransferAddon extends Model
 {
     protected $table = 'transfer_addons';
