@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 /**
  * @property int $id
@@ -33,12 +35,12 @@ class PostItemTag extends Model
 
     protected $fillable = ['post_id', 'taggable_id', 'taggable_type'];
 
-    public function post()
+    public function post(): BelongsTo
     {
         return $this->belongsTo(Post::class);
     }
 
-    public function taggable()
+    public function taggable(): MorphTo
     {
         return $this->morphTo();
     }

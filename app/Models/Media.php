@@ -3,6 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Facades\Storage;
 
 /**
@@ -132,27 +135,27 @@ class Media extends Model
         return self::where('name', $name)->exists();
     }
 
-    public function userAvatar()
+    public function userAvatar(): HasOne
     {
         return $this->hasOne(User::class, 'avatar');
     }
 
-    public function countryMedia()
+    public function countryMedia(): HasMany
     {
         return $this->hasMany(CountryMediaGallery::class, 'media_id');
     }
 
-    public function stateMedia()
+    public function stateMedia(): HasMany
     {
         return $this->hasMany(StateMediaGallery::class, 'media_id');
     }
 
-    public function cityMedia()
+    public function cityMedia(): HasMany
     {
         return $this->hasMany(CityMediaGallery::class, 'media_id');
     }
 
-    public function placeMedia()
+    public function placeMedia(): HasMany
     {
         return $this->hasMany(PlaceMediaGallery::class, 'media_id');
     }
@@ -161,32 +164,32 @@ class Media extends Model
     // {
     //     return $this->hasMany(Blog::class, 'featured_image');
     // }
-    public function blogs()
+    public function blogs(): BelongsToMany
     {
         return $this->belongsToMany(Blog::class, 'blog_media_gallery');
     }
 
-    public function itineraryMedia()
+    public function itineraryMedia(): HasMany
     {
         return $this->hasMany(ItineraryMediaGallery::class, 'media_id');
     }
 
-    public function packageMedia()
+    public function packageMedia(): HasMany
     {
         return $this->hasMany(PackageMediaGallery::class, 'media_id');
     }
 
-    public function activityMedia()
+    public function activityMedia(): HasMany
     {
         return $this->hasMany(ActivityMediaGallery::class, 'media_id');
     }
 
-    public function transferMedia()
+    public function transferMedia(): HasMany
     {
         return $this->hasMany(TransferMediaGallery::class, 'media_id');
     }
 
-    public function reviews()
+    public function reviews(): BelongsToMany
     {
         return $this->belongsToMany(Review::class, 'review_media', 'media_id', 'review_id');
     }

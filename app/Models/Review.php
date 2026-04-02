@@ -3,6 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 /**
  * @property int $id
@@ -62,23 +65,23 @@ class Review extends Model
         'is_featured' => 'boolean',
     ];
 
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public function order()
+    public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
     }
 
     // Polymorphic relation
-    public function item()
+    public function item(): MorphTo
     {
         return $this->morphTo(__FUNCTION__, 'item_type', 'item_id');
     }
 
-    public function mediaGallery()
+    public function mediaGallery(): HasMany
     {
         return $this->hasMany(ReviewMediaGallery::class)->orderBy('sort_order');
     }

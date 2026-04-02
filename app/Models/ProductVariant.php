@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * @property-read \App\Models\ProductPrice|null $prices
@@ -21,12 +23,12 @@ class ProductVariant extends Model
 
     protected $fillable = ['product_id', 'variant_name', 'sku'];
 
-    public function product()
+    public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
     }
 
-    public function prices()
+    public function prices(): HasOne
     {
         return $this->hasOne(ProductPrice::class, 'variant_id');
     }

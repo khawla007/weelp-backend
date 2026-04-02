@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ProductImage> $images
@@ -25,17 +26,17 @@ class Product extends Model
 
     protected $fillable = ['name', 'slug', 'overview', 'whats_included', 'is_variable'];
 
-    public function variants()
+    public function variants(): HasMany
     {
         return $this->hasMany(ProductVariant::class);
     }
 
-    public function prices()
+    public function prices(): HasMany
     {
         return $this->hasMany(ProductPrice::class);
     }
 
-    public function images()
+    public function images(): HasMany
     {
         return $this->hasMany(ProductImage::class);
     }

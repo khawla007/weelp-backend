@@ -3,6 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Support\Str;
 
 /**
@@ -65,32 +68,32 @@ class Category extends Model
         // });
     }
 
-    public function activityCategories()
+    public function activityCategories(): HasMany
     {
         return $this->hasMany(ActivityCategory::class, 'category_id');
     }
 
-    public function activities()
+    public function activities(): HasManyThrough
     {
         return $this->hasManyThrough(Activity::class, ActivityCategory::class, 'category_id', 'id', 'id', 'activity_id');
     }
 
-    public function itineraryCategories()
+    public function itineraryCategories(): HasMany
     {
         return $this->hasMany(ItineraryCategory::class, 'category_id');
     }
 
-    public function itineraries()
+    public function itineraries(): HasManyThrough
     {
         return $this->hasManyThrough(Itinerary::class, ItineraryCategory::class, 'category_id', 'id', 'id', 'itinerary_id');
     }
 
-    public function packageCategories()
+    public function packageCategories(): HasMany
     {
         return $this->hasMany(PackageCategory::class, 'category_id');
     }
 
-    public function packages()
+    public function packages(): HasManyThrough
     {
         return $this->hasManyThrough(Package::class, PackageCategory::class, 'category_id', 'id', 'id', 'package_id');
     }
@@ -99,7 +102,7 @@ class Category extends Model
     // {
     //     return $this->hasMany(Blog::class);
     // }
-    public function blogs()
+    public function blogs(): BelongsToMany
     {
         return $this->belongsToMany(Blog::class, 'blog_category');
     }

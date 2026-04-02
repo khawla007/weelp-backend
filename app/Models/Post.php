@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property int $id
@@ -44,22 +46,22 @@ class Post extends Model
         'creator_id', 'media_id', 'caption', 'likes_count', 'shares_count', 'status',
     ];
 
-    public function creator()
+    public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'creator_id');
     }
 
-    public function media()
+    public function media(): BelongsTo
     {
         return $this->belongsTo(Media::class, 'media_id');
     }
 
-    public function taggedItems()
+    public function taggedItems(): HasMany
     {
         return $this->hasMany(PostItemTag::class);
     }
 
-    public function likes()
+    public function likes(): HasMany
     {
         return $this->hasMany(PostLike::class);
     }

@@ -4,6 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 /**
  * @property int $id
@@ -54,27 +57,27 @@ class Order extends Model
         'number_of_children', 'status', 'special_requirements',
     ];
 
-    public function orderable()
+    public function orderable(): MorphTo
     {
         return $this->morphTo();
     }
 
-    public function payment()
+    public function payment(): HasOne
     {
         return $this->hasOne(OrderPayment::class);
     }
 
-    public function emergencyContact()
+    public function emergencyContact(): HasOne
     {
         return $this->hasOne(OrderEmergencyContact::class);
     }
 
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public function review()
+    public function review(): HasOne
     {
         return $this->hasOne(\App\Models\Review::class, 'item_id', 'orderable_id')
             ->where('user_id', $this->user_id)

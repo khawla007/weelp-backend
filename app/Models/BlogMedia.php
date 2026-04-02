@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
 /**
@@ -47,12 +48,12 @@ class BlogMedia extends Pivot
         return $query->where('is_featured', true);
     }
 
-    public function media()
+    public function media(): BelongsTo
     {
         return $this->belongsTo(Media::class);
     }
 
-    public function blog()
+    public function blog(): BelongsTo
     {
         return $this->belongsTo(Blog::class);
     }

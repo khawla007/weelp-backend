@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property int $id
@@ -58,17 +59,17 @@ class Addon extends Model
     // {
     //     return $this->belongsToMany(ActivityAddon::class, 'activity_addons', 'addon_id', 'activity_id')->withTimestamps();
     // }
-    public function activitiesAddon()
+    public function activitiesAddon(): HasMany
     {
         return $this->hasMany(ActivityAddon::class, 'addon_id');
     }
 
-    public function itinerariesAddon()
+    public function itinerariesAddon(): HasMany
     {
         return $this->hasMany(ItineraryAddon::class, 'addon_id');
     }
 
-    public function packagesAddon()
+    public function packagesAddon(): HasMany
     {
         return $this->hasMany(PackageAddon::class, 'addon_id');
     }

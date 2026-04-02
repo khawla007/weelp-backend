@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
  * @property int $id
@@ -48,19 +49,19 @@ class Blog extends Model
         'publish' => 'boolean',
     ];
 
-    public function media()
+    public function media(): BelongsToMany
     {
         return $this->belongsToMany(Media::class, 'blog_media_gallery')
             ->using(BlogMedia::class)
             ->withPivot('is_featured');
     }
 
-    public function categories()
+    public function categories(): BelongsToMany
     {
         return $this->belongsToMany(Category::class, 'blog_category');
     }
 
-    public function tags()
+    public function tags(): BelongsToMany
     {
         return $this->belongsToMany(Tag::class, 'blog_tag');
     }

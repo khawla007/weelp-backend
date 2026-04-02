@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Str;
 
 /**
@@ -53,7 +54,7 @@ class Tag extends Model
         // });
     }
 
-    public function itineraries()
+    public function itineraries(): BelongsToMany
     {
         return $this->belongsToMany(Itinerary::class, 'itinerary_tags');
     }
@@ -62,7 +63,7 @@ class Tag extends Model
     // {
     //     return $this->hasMany(Blog::class);
     // }
-    public function blogs()
+    public function blogs(): BelongsToMany
     {
         return $this->belongsToMany(Blog::class, 'blog_tag');
     }

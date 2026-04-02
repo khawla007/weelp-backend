@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -32,12 +33,12 @@ class ReviewMediaGallery extends Model
 
     protected $fillable = ['review_id', 'media_id', 'sort_order'];
 
-    public function review()
+    public function review(): BelongsTo
     {
         return $this->belongsTo(Review::class);
     }
 
-    public function media()
+    public function media(): BelongsTo
     {
         return $this->belongsTo(Media::class);
     }

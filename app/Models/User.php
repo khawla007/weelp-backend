@@ -4,6 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
@@ -176,37 +179,37 @@ class User extends Authenticatable implements JWTSubject
         return $this->getKey(); // This will return the user id for JWT identification
     }
 
-    public function profile()
+    public function profile(): HasOne
     {
         return $this->hasOne(UserProfile::class, 'user_id', 'id');
     }
 
-    public function meta()
+    public function meta(): HasOne
     {
         return $this->hasOne(UserMeta::class, 'user_id', 'id');
     }
 
-    public function avatarMedia()
+    public function avatarMedia(): BelongsTo
     {
         return $this->belongsTo(Media::class, 'avatar');
     }
 
-    public function reviews()
+    public function reviews(): HasMany
     {
         return $this->hasMany(Review::class, 'user_id');
     }
 
-    public function posts()
+    public function posts(): HasMany
     {
         return $this->hasMany(Post::class, 'creator_id');
     }
 
-    public function commissions()
+    public function commissions(): HasMany
     {
         return $this->hasMany(Commission::class, 'creator_id');
     }
 
-    public function postLikes()
+    public function postLikes(): HasMany
     {
         return $this->hasMany(PostLike::class);
     }
