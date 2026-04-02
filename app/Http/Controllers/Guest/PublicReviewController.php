@@ -265,7 +265,7 @@ class PublicReviewController extends Controller
         $item = $review->item;
         $citySlug = null;
 
-        if ($item && ! ($item instanceof \App\Models\Transfer)) {
+        if (! ($item instanceof \App\Models\Transfer)) {
             $location = $item->locations()->with('city')->first();
             $citySlug = $location?->city?->slug;
         }

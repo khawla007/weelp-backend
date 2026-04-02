@@ -55,13 +55,13 @@ class StateController extends Controller
                     'id' => $state->country->id,
                     'name' => $state->country->name,
                 ] : null,
-                'regions' => $state->country && $state->country->regions ? $state->country->regions->map(function ($region) {
+                'regions' => $state->country->regions->map(function ($region) {
                     return [
                         'id' => $region->id,
                         'name' => $region->name,
                         'slug' => $region->slug,
                     ];
-                })->toArray() : [],
+                })->toArray(),
                 // Custom Media format
                 'media_gallery' => $state->mediaGallery->map(function ($gallery) {
                     return [
@@ -332,7 +332,7 @@ class StateController extends Controller
         }
 
         // media_gallery ko transform karna
-        if ($state->mediaGallery && $state->mediaGallery->count()) {
+        if ($state->mediaGallery->count()) {
             $state->media_gallery = $state->mediaGallery->map(function ($gallery) {
                 return [
                     'id' => $gallery->id,

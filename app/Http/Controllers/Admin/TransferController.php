@@ -434,7 +434,7 @@ class TransferController extends Controller
         }
 
         // media_gallery ko transform karna
-        if ($transfer->mediaGallery && $transfer->mediaGallery->count()) {
+        if ($transfer->mediaGallery->count()) {
             $transfer->media_gallery = $transfer->mediaGallery->map(function ($gallery) {
                 return [
                     'id' => $gallery->id,
@@ -455,7 +455,7 @@ class TransferController extends Controller
         }
 
         // Transform addons
-        if ($transfer->addons && $transfer->addons->count()) {
+        if ($transfer->addons->count()) {
             $transfer->setRelation('addons', $transfer->addons->map(function ($addon) {
                 return [
                     'id' => $addon->addon->id ?? null,

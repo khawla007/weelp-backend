@@ -746,28 +746,28 @@ class ActivityController extends Controller
         }
 
         // Delete selected locations directly
-        if ($request->has('deleted_location_ids') && $activity->locations) {
+        if ($request->has('deleted_location_ids')) {
             $activity->locations()
                 ->whereIn('id', $request->deleted_location_ids)
                 ->delete();
         }
 
         // Delete selected Seasonal Pricing directly
-        if ($request->has('deleted_seasonal_pricing_ids') && $activity->seasonalPricing) {
+        if ($request->has('deleted_seasonal_pricing_ids')) {
             $activity->seasonalPricing()
                 ->whereIn('id', $request->deleted_seasonal_pricing_ids)
                 ->delete();
         }
 
         // Delete selected Group Discounts directly
-        if ($request->has('deleted_group_discounts_ids') && $activity->groupDiscounts) {
+        if ($request->has('deleted_group_discounts_ids')) {
             $activity->groupDiscounts()
                 ->whereIn('id', $request->deleted_group_discounts_ids)
                 ->delete();
         }
 
         // Delete selected Promo Codes directly
-        if ($request->has('deleted_promo_codes_ids') && $activity->promoCodes) {
+        if ($request->has('deleted_promo_codes_ids')) {
             $activity->promoCodes()
                 ->whereIn('id', $request->deleted_promo_codes_ids)
                 ->delete();

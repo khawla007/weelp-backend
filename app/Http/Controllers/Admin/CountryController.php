@@ -327,7 +327,7 @@ class CountryController extends Controller
         }
 
         // media_gallery ko transform karna
-        if ($country->mediaGallery && $country->mediaGallery->count()) {
+        if ($country->mediaGallery->count()) {
             $country->media_gallery = $country->mediaGallery->map(function ($gallery) {
                 return [
                     'id' => $gallery->id,

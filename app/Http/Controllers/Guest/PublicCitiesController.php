@@ -179,7 +179,7 @@ class PublicCitiesController extends Controller
         // Get featured image and full gallery from media_gallery
         $featureImageUrl = null;
         $mediaGallery = [];
-        if ($city->mediaGallery && $city->mediaGallery->count()) {
+        if ($city->mediaGallery->count()) {
             $featuredImage = $city->mediaGallery->firstWhere('is_featured', true);
             $featureImageUrl = $featuredImage?->media->url ?? null;
 

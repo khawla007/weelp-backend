@@ -60,12 +60,12 @@ class PublicActivityController extends Controller
                         'city' => $city->name,
                         'state_id' => $city->state ? $city->state->id : null,
                         'state' => $city->state ? $city->state->name : null,
-                        'country_id' => $city->state && $city->state->country ? $city->state->country->id : null,
-                        'country' => $city->state && $city->state->country ? $city->state->country->name : null,
-                        'region_id' => $city->state && $city->state->country && $city->state->country->regions->isNotEmpty()
+                        'country_id' => $city->state->country->id,
+                        'country' => $city->state->country->name,
+                        'region_id' => $city->state->country->regions->isNotEmpty()
                             ? $city->state->country->regions->first()->id
                             : null,
-                        'region' => $city->state && $city->state->country && $city->state->country->regions->isNotEmpty()
+                        'region' => $city->state->country->regions->isNotEmpty()
                             ? $city->state->country->regions->first()->name
                             : null,
 
@@ -176,12 +176,12 @@ class PublicActivityController extends Controller
                             'city_slug' => $city->slug,
                             'state_id' => $city->state ? $city->state->id : null,
                             'state' => $city->state ? $city->state->name : null,
-                            'country_id' => $city->state && $city->state->country ? $city->state->country->id : null,
-                            'country' => $city->state && $city->state->country ? $city->state->country->name : null,
-                            'region_id' => $city->state && $city->state->country && $city->state->country->regions->isNotEmpty()
+                            'country_id' => $city->state->country->id,
+                            'country' => $city->state->country->name,
+                            'region_id' => $city->state->country->regions->isNotEmpty()
                                 ? $city->state->country->regions->first()->id
                                 : null,
-                            'region' => $city->state && $city->state->country && $city->state->country->regions->isNotEmpty()
+                            'region' => $city->state->country->regions->isNotEmpty()
                                 ? $city->state->country->regions->first()->name
                                 : null,
                         ];
@@ -282,12 +282,12 @@ class PublicActivityController extends Controller
                     'city' => $city->name,
                     'state_id' => $city->state ? $city->state->id : null,
                     'state' => $city->state ? $city->state->name : null,
-                    'country_id' => $city->state && $city->state->country ? $city->state->country->id : null,
-                    'country' => $city->state && $city->state->country ? $city->state->country->name : null,
-                    'region_id' => $city->state && $city->state->country && $city->state->country->regions->isNotEmpty()
+                    'country_id' => $city->state->country->id,
+                    'country' => $city->state->country->name,
+                    'region_id' => $city->state->country->regions->isNotEmpty()
                         ? $city->state->country->regions->first()->id
                         : null,
-                    'region' => $city->state && $city->state->country && $city->state->country->regions->isNotEmpty()
+                    'region' => $city->state->country->regions->isNotEmpty()
                         ? $city->state->country->regions->first()->name
                         : null,
 
@@ -312,7 +312,7 @@ class PublicActivityController extends Controller
             })->toArray(),
 
             'addons' => $activity->addons
-                ->filter(fn ($a) => $a->addon && $a->addon->active_status)
+                ->filter(fn ($a) => $a->addon->active_status)
                 ->map(fn ($a) => [
                     'id' => $a->id,
                     'addon_id' => $a->addon_id,

@@ -319,7 +319,7 @@ class PlaceController extends Controller
         }
 
         // media_gallery ko transform karna
-        if ($place->mediaGallery && $place->mediaGallery->count()) {
+        if ($place->mediaGallery->count()) {
             $place->media_gallery = $place->mediaGallery->map(function ($gallery) {
                 return [
                     'id' => $gallery->id,

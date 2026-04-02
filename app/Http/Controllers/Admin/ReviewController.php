@@ -49,7 +49,7 @@ class ReviewController extends Controller
             $region = null;
 
             // Agar item Transfer nahi hai tabhi locations load karo
-            if ($item && ! ($item instanceof \App\Models\Transfer)) {
+            if (! ($item instanceof \App\Models\Transfer)) {
                 $location = $item->locations()->with('city.state.country.regions')->first();
                 $city = $location?->city;
                 $state = $city?->state;
@@ -292,7 +292,7 @@ class ReviewController extends Controller
         $region = null;
 
         // Agar item Transfer nahi hai tabhi locations load karo
-        if ($item && ! ($item instanceof \App\Models\Transfer)) {
+        if (! ($item instanceof \App\Models\Transfer)) {
             $location = $item->locations->first();
             $city = $location?->city;
             $state = $city?->state;

@@ -58,21 +58,19 @@ class CityController extends Controller
                     'slug' => $city->state->slug,
                 ] : null,
                 // Country (for reference)
-                'country' => $city->state && $city->state->country ? [
+                'country' => [
                     'id' => $city->state->country->id,
                     'name' => $city->state->country->name,
                     'slug' => $city->state->country->slug,
-                ] : null,
+                ],
                 // Regions from state.country.regions
-                'regions' => $city->state && $city->state->country && $city->state->country->regions
-                    ? $city->state->country->regions->map(function ($region) {
-                        return [
-                            'id' => $region->id,
-                            'name' => $region->name,
-                            'slug' => $region->slug,
-                        ];
-                    })->values()
-                    : [],
+                'regions' => $city->state->country->regions->map(function ($region) {
+                    return [
+                        'id' => $region->id,
+                        'name' => $region->name,
+                        'slug' => $region->slug,
+                    ];
+                })->values(),
                 // Custom Media format
                 'media_gallery' => $city->mediaGallery->map(function ($gallery) {
                     return [
@@ -331,7 +329,7 @@ class CityController extends Controller
         }
 
         // media_gallery ko transform karna
-        if ($city->mediaGallery && $city->mediaGallery->count()) {
+        if ($city->mediaGallery->count()) {
             $city->media_gallery = $city->mediaGallery->map(function ($gallery) {
                 return [
                     'id' => $gallery->id,
