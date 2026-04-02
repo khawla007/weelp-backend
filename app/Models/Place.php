@@ -4,6 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * @property int $id
@@ -67,47 +70,47 @@ class Place extends Model
         'featured_destination' => 'boolean',
     ];
 
-    public function mediaGallery()
+    public function mediaGallery(): HasMany
     {
         return $this->hasMany(PlaceMediaGallery::class, 'place_id');
     }
 
-    public function city()
+    public function city(): BelongsTo
     {
         return $this->belongsTo(City::class, 'city_id');
     }
 
-    public function locationDetails()
+    public function locationDetails(): HasOne
     {
         return $this->hasOne(PlaceLocationDetail::class);
     }
 
-    public function travelInfo()
+    public function travelInfo(): HasOne
     {
         return $this->hasOne(PlaceTravelInfo::class);
     }
 
-    public function seasons()
+    public function seasons(): HasMany
     {
         return $this->hasMany(PlaceSeason::class);
     }
 
-    public function events()
+    public function events(): HasMany
     {
         return $this->hasMany(PlaceEvent::class);
     }
 
-    public function additionalInfo()
+    public function additionalInfo(): HasMany
     {
         return $this->hasMany(PlaceAdditionalInfo::class);
     }
 
-    public function faqs()
+    public function faqs(): HasMany
     {
         return $this->hasMany(PlaceFaq::class);
     }
 
-    public function seo()
+    public function seo(): HasOne
     {
         return $this->hasOne(PlaceSeo::class);
     }

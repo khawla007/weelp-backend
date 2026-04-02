@@ -4,6 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * @property int $id
@@ -63,52 +66,52 @@ class State extends Model
         'featured_destination' => 'boolean',
     ];
 
-    public function country()
+    public function country(): BelongsTo
     {
         return $this->belongsTo(Country::class);
     }
 
-    public function mediaGallery()
+    public function mediaGallery(): HasMany
     {
         return $this->hasMany(StateMediaGallery::class, 'state_id');
     }
 
-    public function locationDetails()
+    public function locationDetails(): HasOne
     {
         return $this->hasOne(StateLocationDetail::class);
     }
 
-    public function travelInfo()
+    public function travelInfo(): HasOne
     {
         return $this->hasOne(StateTravelInfo::class);
     }
 
-    public function seasons()
+    public function seasons(): HasMany
     {
         return $this->hasMany(StateSeason::class);
     }
 
-    public function events()
+    public function events(): HasMany
     {
         return $this->hasMany(StateEvent::class);
     }
 
-    public function additionalInfo()
+    public function additionalInfo(): HasMany
     {
         return $this->hasMany(StateAdditionalInfo::class);
     }
 
-    public function faqs()
+    public function faqs(): HasMany
     {
         return $this->hasMany(StateFaq::class);
     }
 
-    public function seo()
+    public function seo(): HasOne
     {
         return $this->hasOne(StateSeo::class);
     }
 
-    public function cities()
+    public function cities(): HasMany
     {
         return $this->hasMany(City::class);
     }

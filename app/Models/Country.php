@@ -4,6 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * @property int $id
@@ -69,7 +72,7 @@ class Country extends Model
         'featured_destination' => 'boolean',
     ];
 
-    public function regions()
+    public function regions(): BelongsToMany
     {
         // return $this->belongsToMany(Region::class, 'region_country');
         return $this->belongsToMany(Region::class, 'region_country', 'country_id', 'region_id');
@@ -80,47 +83,47 @@ class Country extends Model
     //     return $this->hasMany(City::class);
     // }
 
-    public function mediaGallery()
+    public function mediaGallery(): HasMany
     {
         return $this->hasMany(CountryMediaGallery::class, 'country_id');
     }
 
-    public function locationDetails()
+    public function locationDetails(): HasOne
     {
         return $this->hasOne(CountryLocationDetail::class);
     }
 
-    public function travelInfo()
+    public function travelInfo(): HasOne
     {
         return $this->hasOne(CountryTravelInfo::class);
     }
 
-    public function seasons()
+    public function seasons(): HasMany
     {
         return $this->hasMany(CountrySeason::class, 'country_id', 'id');
     }
 
-    public function events()
+    public function events(): HasMany
     {
         return $this->hasMany(CountryEvent::class, 'country_id', 'id');
     }
 
-    public function additionalInfo()
+    public function additionalInfo(): HasMany
     {
         return $this->hasMany(CountryAdditionalInfo::class);
     }
 
-    public function faqs()
+    public function faqs(): HasMany
     {
         return $this->hasMany(CountryFaq::class);
     }
 
-    public function seo()
+    public function seo(): HasOne
     {
         return $this->hasOne(CountrySeo::class);
     }
 
-    public function states()
+    public function states(): HasMany
     {
         return $this->hasMany(State::class);
     }
