@@ -22,6 +22,12 @@ class PublicReviewController extends Controller
      */
     public function index()
     {
+        request()->validate([
+            'city' => 'nullable|string|max:255',
+            'per_page' => 'nullable|integer|min:1|max:100',
+            'page' => 'nullable|integer|min:1',
+        ]);
+
         $citySlug = request()->query('city');
         $perPage = (int) request()->query('per_page', 10);
 
@@ -59,6 +65,10 @@ class PublicReviewController extends Controller
      */
     public function getFeaturedReviews()
     {
+        request()->validate([
+            'city' => 'nullable|string|max:255',
+        ]);
+
         $citySlug = request()->query('city');
 
         $query = Review::with(['user', 'item', 'mediaGallery.media'])
@@ -105,6 +115,12 @@ class PublicReviewController extends Controller
         if (!$activity) {
             return response()->json(['success' => false, 'message' => 'Activity not found'], 404);
         }
+
+        request()->validate([
+            'per_page' => 'nullable|integer|min:1|max:50',
+            'sort' => 'nullable|in:recent,top',
+            'photos_only' => 'nullable|string|in:true,false,0,1',
+        ]);
 
         $perPage = min((int) request()->query('per_page', 10), 50);
         $sort = request()->query('sort', 'recent');

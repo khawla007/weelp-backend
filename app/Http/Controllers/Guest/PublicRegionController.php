@@ -271,6 +271,10 @@ class PublicRegionController extends Controller
     // public function getPackagesByCity($region_slug, $city_slug)
     public function getFeaturedPackagesByCity($city_slug)
     {
+        request()->validate([
+            'tags' => 'nullable|string',
+        ]);
+
         $city = City::where('slug', $city_slug)->first();
 
         if (!$city) {
@@ -386,6 +390,15 @@ class PublicRegionController extends Controller
 
     public function getAllItemsByCity($city_slug)
     {
+        request()->validate([
+            'categories' => 'nullable|string',
+            'tags' => 'nullable|string',
+            'min_price' => 'nullable|numeric|min:0',
+            'max_price' => 'nullable|numeric|min:0',
+            'sort_by' => 'nullable|in:name_asc,name_desc,price_asc,price_desc,id_asc,id_desc',
+            'item_type' => 'nullable|in:activity,itinerary,package',
+        ]);
+
         // dd(request()->all());
         $city = City::with('state.country.regions')->where('slug', $city_slug)->first();
 

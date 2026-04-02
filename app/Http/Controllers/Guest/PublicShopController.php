@@ -168,6 +168,20 @@ class PublicShopController extends Controller
 
     public function index()
     {
+        request()->validate([
+            'region' => 'nullable|string|max:255',
+            'city' => 'nullable|string|max:255',
+            'item_type' => 'nullable|in:activity,itinerary,package',
+            'categories' => 'nullable|string',
+            'tags' => 'nullable|string',
+            'min_price' => 'nullable|numeric|min:0',
+            'max_price' => 'nullable|numeric|min:0',
+            'sort_by' => 'nullable|in:name_asc,name_desc,price_asc,price_desc,id_asc,id_desc',
+            'featured' => 'nullable|string|in:true,false',
+            'per_page' => 'nullable|integer|min:1|max:100',
+            'page' => 'nullable|integer|min:1',
+        ]);
+
         $perPage = 10;
         $page = request()->get('page', 1);
     

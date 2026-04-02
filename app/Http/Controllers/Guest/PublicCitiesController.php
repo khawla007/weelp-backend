@@ -225,6 +225,15 @@ class PublicCitiesController extends Controller
     // ----------------------------getting all items (activity, itinerary, package) by city---------------------------------
     public function getAllItemsByCity($city_slug)
     {
+        request()->validate([
+            'categories' => 'nullable|string',
+            'tags' => 'nullable|string',
+            'min_price' => 'nullable|numeric|min:0',
+            'max_price' => 'nullable|numeric|min:0',
+            'sort_by' => 'nullable|in:name_asc,name_desc,price_asc,price_desc,id_asc,id_desc',
+            'item_type' => 'nullable|in:activity,itinerary,package',
+        ]);
+
         $city = City::with('state.country.regions')->where('slug', $city_slug)->first();
 
         if (!$city) {

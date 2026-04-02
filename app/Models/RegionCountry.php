@@ -20,4 +20,5 @@ class RegionCountry extends Model
 {
     protected $table = 'region_country';
     public $timestamps = false;
+    protected $fillable = ['region_id', 'country_id'];
 }
