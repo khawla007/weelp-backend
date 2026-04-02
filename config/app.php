@@ -127,7 +127,6 @@ return [
 
     'providers' => [
         Illuminate\Foundation\Providers\FoundationServiceProvider::class,
-        App\Providers\RouteServiceProvider::class,
         Illuminate\Auth\AuthServiceProvider::class,
         Illuminate\Filesystem\FilesystemServiceProvider::class,
         Illuminate\Cache\CacheServiceProvider::class,

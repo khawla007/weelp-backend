@@ -13,7 +13,7 @@ class ShareCountryFromUrl
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle($request, Closure $next)
+    public function handle(Request $request, Closure $next): Response
     {
         // Get country from URL parameter first
         $country = $request->route('country');

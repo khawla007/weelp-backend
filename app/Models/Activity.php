@@ -69,19 +69,19 @@ class Activity extends Model {
     }
 
     public function itineraryActivity() {
-        return $this->hasMany(ItenraryActivityMapping::class, 'activity_id');
+        return $this->hasMany(ItineraryActivity::class, 'activity_id');
     }
     
     public function itineraries() {
-        return $this->hasManyThrough(Itinerary::class, ItenraryActivityMapping::class, 'activity_id', 'id', 'id', 'itinerary_id');
+        return $this->hasManyThrough(Itinerary::class, ItineraryActivity::class, 'activity_id', 'id', 'id', 'itinerary_id');
     }
 
     public function packageActivity() {
-        return $this->hasMany(PackageActivityMapping::class, 'activity_id');
+        return $this->hasMany(PackageActivity::class, 'activity_id');
     }
     
     public function packages() {
-        return $this->hasManyThrough(Package::class, PackageActivityMapping::class, 'activity_id', 'id', 'id', 'package_id');
+        return $this->hasManyThrough(Package::class, PackageActivity::class, 'activity_id', 'id', 'id', 'package_id');
     }
 
     // public function blogs()

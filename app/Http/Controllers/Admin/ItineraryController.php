@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Itinerary;
-use App\Models\ItineraryInfomation;
+use App\Models\ItineraryInformation;
 use App\Models\ItineraryLocation;
 use App\Models\ItinerarySchedule;
 use App\Models\ItineraryActivity;
@@ -28,7 +28,7 @@ use App\Models\City;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use Validator;
+use Illuminate\Support\Facades\Validator;
 
 
 class ItineraryController extends Controller

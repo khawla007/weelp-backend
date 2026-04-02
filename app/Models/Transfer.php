@@ -47,11 +47,11 @@ class Transfer extends Model
     }
 
     public function itineraryTransfer() {
-        return $this->hasMany(ItenraryTransferMapping::class, 'transfer_id');
+        return $this->hasMany(ItineraryTransferMapping::class, 'transfer_id');
     }
     
     public function itineraries() {
-        return $this->hasManyThrough(Itinerary::class, ItenraryTransferMapping::class, 'transfer_id', 'id', 'id', 'itinerary_id');
+        return $this->hasManyThrough(Itinerary::class, ItineraryTransferMapping::class, 'transfer_id', 'id', 'id', 'itinerary_id');
     }
 
     public function packageTransfer() {

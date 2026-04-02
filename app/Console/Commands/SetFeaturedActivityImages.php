@@ -5,7 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Models\Activity;
 use App\Models\ActivityMediaGallery;
-use DB;
+use Illuminate\Support\Facades\DB;
 
 class SetFeaturedActivityImages extends Command
 {

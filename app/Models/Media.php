@@ -143,7 +143,7 @@ class Media extends Model
 
     public function transferMedia()
     {
-        return $this->hasMany(TransferyMediaGallery::class, 'media_id');
+        return $this->hasMany(TransferMediaGallery::class, 'media_id');
     }
 
     public function reviews()

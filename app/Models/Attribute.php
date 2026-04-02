@@ -49,19 +49,19 @@ class Attribute extends Model
     }
 
     public function activityAttributes() {
-        return $this->hasMany(ActivityAttributeValue::class, 'attribute_id');
+        return $this->hasMany(ActivityAttribute::class, 'attribute_id');
     }
     
     public function activities() {
-        return $this->hasManyThrough(Activity::class, ActivityAttributeValue::class, 'attribute_id', 'id', 'id', 'activity_id');
+        return $this->hasManyThrough(Activity::class, ActivityAttribute::class, 'attribute_id', 'id', 'id', 'activity_id');
     }
 
     public function itinerariesAttributes() {
-        return $this->hasMany(ItineraryAttributeValue::class, 'attribute_id');
+        return $this->hasMany(ItineraryAttribute::class, 'attribute_id');
     }
 
     public function itineraries()
     {
-        return $this->hasManyThrough(Itinerary::class, ItineraryAttributeValue::class, 'attribute_id', 'id', 'id', 'activity_id');
+        return $this->hasManyThrough(Itinerary::class, ItineraryAttribute::class, 'attribute_id', 'id', 'id', 'activity_id');
     }
 }
