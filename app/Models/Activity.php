@@ -51,6 +51,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read int|null $seasonal_pricing_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ActivityTag> $tags
  * @property-read int|null $tags_count
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Activity newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Activity newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Activity query()
@@ -63,29 +64,34 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Activity whereShortDescription($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Activity whereSlug($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Activity whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
-class Activity extends Model {
+class Activity extends Model
+{
     use HasFactory;
 
     protected $fillable = [
-        'name', 'slug', 'description', 'item_type', 'short_description', 'featured_activity'
+        'name', 'slug', 'description', 'item_type', 'short_description', 'featured_activity',
     ];
 
     protected $casts = [
         'featured_images' => 'array',
-        'featured_activity' => 'boolean'
+        'featured_activity' => 'boolean',
     ];
 
-    public function categories() {
+    public function categories()
+    {
         return $this->hasMany(ActivityCategory::class);
     }
 
-    public function locations() {
+    public function locations()
+    {
         return $this->hasMany(ActivityLocation::class);
     }
 
-    public function attributes() {
+    public function attributes()
+    {
         return $this->hasMany(ActivityAttribute::class);
     }
 
@@ -94,30 +100,36 @@ class Activity extends Model {
         return $this->hasMany(ActivityTag::class);
     }
 
-    public function pricing() {
+    public function pricing()
+    {
         return $this->hasOne(ActivityPricing::class);
     }
 
-    public function seasonalPricing() {
+    public function seasonalPricing()
+    {
         return $this->hasMany(ActivitySeasonalPricing::class, 'activity_id');
     }
 
-    public function groupDiscounts() {
+    public function groupDiscounts()
+    {
         return $this->hasMany(ActivityGroupDiscount::class, 'activity_id');
     }
 
-    public function earlyBirdDiscount() {
+    public function earlyBirdDiscount()
+    {
         return $this->hasOne(ActivityEarlyBirdDiscount::class, 'activity_id');
     }
 
-    public function lastMinuteDiscount() {
+    public function lastMinuteDiscount()
+    {
         return $this->hasOne(ActivityLastMinuteDiscount::class, 'activity_id');
     }
 
-    public function promoCodes() {
+    public function promoCodes()
+    {
         return $this->hasMany(ActivityPromoCode::class, 'activity_id');
     }
-    
+
     public function availability()
     {
         return $this->hasOne(ActivityAvailability::class);
@@ -128,19 +140,23 @@ class Activity extends Model {
         return $this->hasMany(ActivityMediaGallery::class);
     }
 
-    public function itineraryActivity() {
+    public function itineraryActivity()
+    {
         return $this->hasMany(ItineraryActivity::class, 'activity_id');
     }
-    
-    public function itineraries() {
+
+    public function itineraries()
+    {
         return $this->hasManyThrough(Itinerary::class, ItineraryActivity::class, 'activity_id', 'id', 'id', 'itinerary_id');
     }
 
-    public function packageActivity() {
+    public function packageActivity()
+    {
         return $this->hasMany(PackageActivity::class, 'activity_id');
     }
-    
-    public function packages() {
+
+    public function packages()
+    {
         return $this->hasManyThrough(Package::class, PackageActivity::class, 'activity_id', 'id', 'id', 'package_id');
     }
 

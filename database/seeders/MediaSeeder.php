@@ -2,9 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
 use App\Models\Media;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
 class MediaSeeder extends Seeder
@@ -25,9 +24,9 @@ class MediaSeeder extends Seeder
 
         foreach (array_slice($urls, 0, 5) as $url) {
             Media::create([
-                'name'     => 'Media ' . Str::random(5),
-                'alt_text' => 'Alt ' . Str::random(5),
-                'url'      => $url,
+                'name' => 'Media '.Str::random(5),
+                'alt_text' => 'Alt '.Str::random(5),
+                'url' => $url,
             ]);
         }
     }

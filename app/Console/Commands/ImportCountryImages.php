@@ -3,8 +3,8 @@
 namespace App\Console\Commands;
 
 use App\Models\Country;
-use App\Models\Media;
 use App\Models\CountryMediaGallery;
+use App\Models\Media;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
@@ -33,22 +33,16 @@ class ImportCountryImages extends Command
 
     /**
      * Image sources configuration.
-     *
-     * @var array
      */
     protected array $sources;
 
     /**
      * Search query templates.
-     *
-     * @var array
      */
     protected array $searchQueries;
 
     /**
      * Statistics for the import.
-     *
-     * @var array
      */
     protected array $stats = [
         'countries_processed' => 0,
@@ -85,9 +79,10 @@ class ImportCountryImages extends Command
         $dryRun = $this->option('dry-run') ?: false;
 
         // Validate source
-        if (!$this->isValidSource($source)) {
+        if (! $this->isValidSource($source)) {
             $this->error("Invalid source: {$source}");
-            $this->error("Available sources: " . implode(', ', array_keys($this->sources)));
+            $this->error('Available sources: '.implode(', ', array_keys($this->sources)));
+
             return 1;
         }
 
@@ -101,6 +96,7 @@ class ImportCountryImages extends Command
 
         if ($countries->isEmpty()) {
             $this->warn('No countries found to process.');
+
             return 0;
         }
 
@@ -195,16 +191,18 @@ class ImportCountryImages extends Command
     protected function processCountry(Country $country, string $source, int $count, bool $force, bool $dryRun): void
     {
         // Check if country already has images (unless force)
-        if (!$force && !$dryRun) {
+        if (! $force && ! $dryRun) {
             $existingCount = $country->mediaGallery()->count();
             if ($existingCount >= $count) {
                 $this->line("  Skipping {$country->name} (already has {$existingCount} images)");
+
                 return;
             }
         }
 
         if ($dryRun) {
             $this->line("  Would import {$count} images for {$country->name}");
+
             return;
         }
 
@@ -216,6 +214,7 @@ class ImportCountryImages extends Command
 
         if (empty($images)) {
             $this->line("  No images found for {$country->name}");
+
             return;
         }
 
@@ -236,7 +235,7 @@ class ImportCountryImages extends Command
         $capital = $details?->capital_city ?? $country->name;
         $famousDish = null;
 
-        if ($details && !empty($details->local_cuisine)) {
+        if ($details && ! empty($details->local_cuisine)) {
             if (is_array($details->local_cuisine)) {
                 $famousDish = $details->local_cuisine[0] ?? null;
             } else {
@@ -252,7 +251,9 @@ class ImportCountryImages extends Command
 
         // Generate queries from templates
         foreach ($this->searchQueries as $type => $template) {
-            if (count($queries) >= $count) break;
+            if (count($queries) >= $count) {
+                break;
+            }
 
             $query = str_replace(
                 array_keys($replacements),
@@ -264,7 +265,7 @@ class ImportCountryImages extends Command
 
         // Fill remaining with variations
         while (count($queries) < $count) {
-            $queries[] = $country->name . ' beautiful landscape';
+            $queries[] = $country->name.' beautiful landscape';
         }
 
         return array_slice($queries, 0, $count);
@@ -279,7 +280,9 @@ class ImportCountryImages extends Command
         $sourceConfig = $this->sources[$source];
 
         foreach ($queries as $query) {
-            if (count($images) >= count($queries)) break;
+            if (count($images) >= count($queries)) {
+                break;
+            }
 
             try {
                 $response = $this->callApi($source, $sourceConfig, $query);
@@ -339,7 +342,9 @@ class ImportCountryImages extends Command
      */
     protected function extractImageUrls(string $source, ?array $data): array
     {
-        if (empty($data)) return [];
+        if (empty($data)) {
+            return [];
+        }
 
         return match ($source) {
             'pexels' => [
@@ -363,7 +368,7 @@ class ImportCountryImages extends Command
         try {
             // Download image
             $imageData = $this->downloadImage($imageUrl);
-            if (!$imageData) {
+            if (! $imageData) {
                 return;
             }
 
@@ -432,7 +437,7 @@ class ImportCountryImages extends Command
      */
     protected function generateFilename(Country $country): string
     {
-        return Str::slug($country->name) . '-' . Str::random(8) . '.jpg';
+        return Str::slug($country->name).'-'.Str::random(8).'.jpg';
     }
 
     /**

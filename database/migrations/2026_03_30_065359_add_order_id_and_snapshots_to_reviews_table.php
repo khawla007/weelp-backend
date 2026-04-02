@@ -12,9 +12,9 @@ return new class extends Migration
             // Add order_id column (nullable, with foreign key)
             $table->unsignedBigInteger('order_id')->nullable()->after('user_id');
             $table->foreign('order_id', 'reviews_order_id_foreign')
-                  ->references('id')
-                  ->on('orders')
-                  ->onDelete('set null');
+                ->references('id')
+                ->on('orders')
+                ->onDelete('set null');
 
             // Add index for query performance
             $table->index('order_id', 'reviews_order_id_index');

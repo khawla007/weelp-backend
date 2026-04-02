@@ -3,8 +3,8 @@
 namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
 use App\Models\Tag;
+use Illuminate\Database\Seeder;
 
 class TagSeeder extends Seeder
 {
@@ -19,7 +19,7 @@ class TagSeeder extends Seeder
             ['name' => 'Indoor', 'slug' => 'indoor', 'description' => 'Activities conducted indoors'],
             ['name' => 'Beginner', 'slug' => 'beginner', 'description' => 'Beginner-friendly activities'],
             ['name' => 'Advanced', 'slug' => 'advanced', 'description' => 'Activities for advanced users'],
-        
+
             ['name' => 'Adventure', 'slug' => 'adventure', 'description' => 'Thrilling and exciting experiences'],
             ['name' => 'Cultural', 'slug' => 'cultural', 'description' => 'Experience different cultures and traditions'],
             ['name' => 'Romantic', 'slug' => 'romantic', 'description' => 'Perfect for couples and romantic getaways'],
@@ -52,7 +52,6 @@ class TagSeeder extends Seeder
             ['name' => 'Fitness', 'slug' => 'fitness', 'description' => 'Health and exercise activities'],
             ['name' => 'Tech', 'slug' => 'tech', 'description' => 'Technology-related experiences'],
         ];
-        
 
         foreach ($tags as $tag) {
             Tag::create($tag);

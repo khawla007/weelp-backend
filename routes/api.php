@@ -1,67 +1,55 @@
 <?php
 
 // Admin
-use Illuminate\Support\Facades\Route;
-use Stevebauman\Location\Facades\Location;
-
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\UserProfileController;
-use App\Http\Controllers\StripePaymentController;
-use App\Http\Controllers\StripeController;
-
-use App\Http\Controllers\Admin\UserController;
-// use App\Http\Controllers\Admin\UserProfileController;
-use App\Http\Controllers\Admin\CategoryController;
-use App\Http\Controllers\Admin\TagController;
+use App\Http\Controllers\Admin\ActivityController;
+use App\Http\Controllers\Admin\AddonController;
 use App\Http\Controllers\Admin\AttributeController;
-
+use App\Http\Controllers\Admin\BlogController;
+use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\CityController;
+// use App\Http\Controllers\Admin\UserProfileController;
+use App\Http\Controllers\Admin\CityImportController;
 use App\Http\Controllers\Admin\CountryController;
 use App\Http\Controllers\Admin\CountryImportController;
-
-use App\Http\Controllers\Admin\StateController;
-use App\Http\Controllers\Admin\StateImportController;
-
-use App\Http\Controllers\Admin\CityImportController;
-
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\ItineraryController;
+use App\Http\Controllers\Admin\MediaController;
+use App\Http\Controllers\Admin\OrderController;
+use App\Http\Controllers\Admin\PackageController;
 use App\Http\Controllers\Admin\PlaceController;
 use App\Http\Controllers\Admin\PlaceImportController;
 use App\Http\Controllers\Admin\RegionController;
-
-use App\Http\Controllers\Admin\CityController;
-use App\Http\Controllers\Admin\VendorController;
-use App\Http\Controllers\Admin\TransferController;
-use App\Http\Controllers\Admin\ActivityController;
-use App\Http\Controllers\Admin\ItineraryController;
-use App\Http\Controllers\Admin\PackageController;
-use App\Http\Controllers\Admin\OrderController;
-use App\Http\Controllers\Admin\MediaController;
-use App\Http\Controllers\Admin\BlogController;
 use App\Http\Controllers\Admin\ReviewController;
-use App\Http\Controllers\Admin\AddonController;
-use App\Http\Controllers\Admin\DashboardController;
-
-// Public
-use App\Http\Controllers\Guest\PublicMenuController;
-use App\Http\Controllers\Guest\PublicRegionController;
-use App\Http\Controllers\Guest\PublicCountryController;
-use App\Http\Controllers\Guest\PublicStateController;
-use App\Http\Controllers\Guest\PublicCitiesController;
-use App\Http\Controllers\Guest\PublicPlaceController;
-use App\Http\Controllers\Guest\PublicActivityController;
-use App\Http\Controllers\Guest\PublicItineraryController;
-use App\Http\Controllers\Guest\PublicPackageController;
-use App\Http\Controllers\Guest\PublicTransferController;
-use App\Http\Controllers\Guest\PublicHomeSearchController;
-use App\Http\Controllers\Guest\PublicShopController;
-use App\Http\Controllers\Guest\PublicCategoryController;
-use App\Http\Controllers\Guest\PublicTagController;
-use App\Http\Controllers\Guest\PublicFilterController;
-use App\Http\Controllers\Guest\PublicBlogController;
-use App\Http\Controllers\Guest\PublicReviewController;
-use App\Http\Controllers\Guest\OtpController;
-use App\Http\Controllers\Guest\PublicPostController;
-use App\Http\Controllers\Creator\CreatorPostController;
+use App\Http\Controllers\Admin\StateController;
+use App\Http\Controllers\Admin\StateImportController;
+use App\Http\Controllers\Admin\TagController;
+use App\Http\Controllers\Admin\TransferController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\VendorController;
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Creator\CreatorDashboardController;
+use App\Http\Controllers\Creator\CreatorPostController;
+use App\Http\Controllers\Guest\OtpController;
+use App\Http\Controllers\Guest\PublicActivityController;
+// Public
+use App\Http\Controllers\Guest\PublicBlogController;
+use App\Http\Controllers\Guest\PublicCategoryController;
+use App\Http\Controllers\Guest\PublicCitiesController;
+use App\Http\Controllers\Guest\PublicFilterController;
+use App\Http\Controllers\Guest\PublicHomeSearchController;
+use App\Http\Controllers\Guest\PublicItineraryController;
+use App\Http\Controllers\Guest\PublicMenuController;
+use App\Http\Controllers\Guest\PublicPackageController;
+use App\Http\Controllers\Guest\PublicPostController;
+use App\Http\Controllers\Guest\PublicRegionController;
+use App\Http\Controllers\Guest\PublicReviewController;
+use App\Http\Controllers\Guest\PublicShopController;
+use App\Http\Controllers\Guest\PublicTagController;
+use App\Http\Controllers\Guest\PublicTransferController;
+use App\Http\Controllers\StripeController;
+use App\Http\Controllers\StripePaymentController;
+use App\Http\Controllers\UserProfileController;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/test', function () {
     return response()->json(['message' => 'Route Working!']);
@@ -152,8 +140,6 @@ Route::post('/stripe/create-order', [StripeController::class, 'createOrder']);
 Route::post('/stripe/webhook', [StripeController::class, 'handleWebhook']);
 Route::get('/order/thankyou', [StripeController::class, 'getOrderByPaymentIntent']);
 
-
-
 Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
 
     // Dashboard Routes
@@ -194,11 +180,8 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
         Route::post('/bulk-delete', [AttributeController::class, 'bulkDelete']);
     });
 
-
     // Admin Side Destination Countries Routes
     // Route::apiResource('/countries', CountryController::class);
-
-
 
     Route::post('/import-countries', [CountryImportController::class, 'import']);
     Route::post('/import-states', [StateImportController::class, 'import']);
@@ -228,7 +211,7 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
         Route::delete('{id}', [StateController::class, 'destroy']);
         Route::post('/bulk-delete', [StateController::class, 'bulkDelete']);
     });
-    
+
     Route::prefix('/cities')->group(function () {
         Route::get('/', [CityController::class, 'index']);
         Route::get('/list', [CityController::class, 'cityList']);
@@ -280,13 +263,11 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
         Route::get('{vendor}/pricing-tiers', [VendorController::class, 'getPricingTiers']);
         Route::get('{vendor}/pricing-tiers-select', [VendorController::class, 'getPricingTiersForSelect']);
 
-
         Route::get('{vendor}/vehicles', [VendorController::class, 'getVehicles']);
         Route::get('{vendor}/vehiclesdropdown', [VendorController::class, 'getVehiclesfordropdown']);
         Route::get('{vendor}/drivers', [VendorController::class, 'getDrivers']);
         Route::get('{vendor}/driversforselect', [VendorController::class, 'getDriversForSchedule']);
         Route::get('{vendor}/schedules', [VendorController::class, 'getSchedules']);
-
 
         Route::get('{vendor}/availability-time-slots', [VendorController::class, 'getAvailabilityTimeSlots']);
         Route::get('{vendor}/availability-time-slots-select', [VendorController::class, 'getAvailabilityTimeSlotsForSelect']);
@@ -319,7 +300,7 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
         Route::get('/', [ActivityController::class, 'index']); // Get all
         Route::get('{id}', [ActivityController::class, 'show']); // Get single
         Route::delete('{id}', [ActivityController::class, 'destroy']); // Delete
-        Route::delete('{id}/partial-delete', [ActivityController::class, 'partialDelete']); //partialDelete
+        Route::delete('{id}/partial-delete', [ActivityController::class, 'partialDelete']); // partialDelete
         Route::post('/bulk-delete', [ActivityController::class, 'bulkDestroy']);
     });
 
@@ -332,7 +313,7 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
         Route::get('/', [ItineraryController::class, 'index']); // Get all
         Route::get('{id}', [ItineraryController::class, 'show']); // Get single
         Route::delete('{id}', [ItineraryController::class, 'destroy']); // Delete
-        Route::delete('{id}/partial-delete', [ItineraryController::class, 'partialDelete']); //partialDelete
+        Route::delete('{id}/partial-delete', [ItineraryController::class, 'partialDelete']); // partialDelete
         Route::post('/bulk-delete', [ItineraryController::class, 'bulkDestroy']);
     });
 
@@ -345,11 +326,9 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
         Route::get('/', [PackageController::class, 'index']); // Get all
         Route::get('{id}', [PackageController::class, 'show']); // Get single
         Route::delete('{id}', [PackageController::class, 'destroy']); // Delete
-        Route::delete('{id}/partial-delete', [PackageController::class, 'partialDelete']); //partialDelete
+        Route::delete('{id}/partial-delete', [PackageController::class, 'partialDelete']); // partialDelete
         Route::post('/bulk-delete', [PackageController::class, 'bulkDestroy']);
     });
-
-
 
     // Admin Side Order Create Update Delete route
     Route::prefix('orders')->group(function () {

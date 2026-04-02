@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\City $city
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CitySeo newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CitySeo newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CitySeo query()
@@ -32,6 +33,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CitySeo whereSchemaData($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CitySeo whereSchemaType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CitySeo whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class CitySeo extends Model
@@ -39,9 +41,10 @@ class CitySeo extends Model
     use HasFactory;
 
     protected $table = 'city_seo';
+
     protected $fillable = [
-        'city_id', 'meta_title', 'meta_description', 'keywords', 
-        'og_image_url', 'canonical_url', 'schema_type', 'schema_data'
+        'city_id', 'meta_title', 'meta_description', 'keywords',
+        'og_image_url', 'canonical_url', 'schema_type', 'schema_data',
     ];
 
     // protected $casts = [

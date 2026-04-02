@@ -34,6 +34,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read \App\Models\TransferSchedule|null $schedule
  * @property-read \App\Models\TransferSeo|null $seo
  * @property-read \App\Models\TransferVendorRoute|null $vendorRoutes
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Transfer newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Transfer newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Transfer query()
@@ -45,11 +46,13 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Transfer whereSlug($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Transfer whereTransferType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Transfer whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class Transfer extends Model
 {
     use HasFactory;
+
     protected $fillable = [
         'name',
         'slug',
@@ -88,19 +91,23 @@ class Transfer extends Model
         return $this->hasOne(TransferSeo::class);
     }
 
-    public function itineraryTransfer() {
+    public function itineraryTransfer()
+    {
         return $this->hasMany(ItineraryTransferMapping::class, 'transfer_id');
     }
-    
-    public function itineraries() {
+
+    public function itineraries()
+    {
         return $this->hasManyThrough(Itinerary::class, ItineraryTransferMapping::class, 'transfer_id', 'id', 'id', 'itinerary_id');
     }
 
-    public function packageTransfer() {
+    public function packageTransfer()
+    {
         return $this->hasMany(PackageTransferMapping::class, 'transfer_id');
     }
-    
-    public function packages() {
+
+    public function packages()
+    {
         return $this->hasManyThrough(Package::class, PackageTransferMapping::class, 'transfer_id', 'id', 'id', 'package_id');
     }
 

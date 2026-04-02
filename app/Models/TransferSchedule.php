@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Transfer $transfer
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferSchedule newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferSchedule newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferSchedule query()
@@ -32,6 +33,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferSchedule whereTimeSlots($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferSchedule whereTransferId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferSchedule whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class TransferSchedule extends Model

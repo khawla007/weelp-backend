@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Activity $activity
  * @property-read \App\Models\ItinerarySchedule $schedule
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryActivity newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryActivity newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryActivity query()
@@ -30,19 +31,20 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryActivity whereScheduleId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryActivity whereStartTime($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryActivity whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class ItineraryActivity extends Model
 {
     protected $fillable = [
-        'schedule_id', 'activity_id', 'start_time', 'end_time', 
-        'notes', 'price', 'included'
+        'schedule_id', 'activity_id', 'start_time', 'end_time',
+        'notes', 'price', 'included',
     ];
 
     protected $casts = [
-        'included' => 'boolean'
+        'included' => 'boolean',
     ];
-    
+
     public function schedule()
     {
         return $this->belongsTo(ItinerarySchedule::class, 'schedule_id');

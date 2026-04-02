@@ -2,18 +2,18 @@
 
 namespace Database\Seeders;
 
+use App\Models\Country;
+use App\Models\CountryAdditionalInfo;
+use App\Models\CountryEvent;
+use App\Models\CountryFaq;
+use App\Models\CountryLocationDetail;
+use App\Models\CountryMediaGallery;
+use App\Models\CountrySeason;
+use App\Models\CountrySeo;
+use App\Models\CountryTravelInfo;
+use App\Models\Region;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use App\Models\Country;
-use App\Models\CountryLocationDetail;
-use App\Models\CountryTravelInfo;
-use App\Models\CountrySeason;
-use App\Models\CountryEvent;
-use App\Models\CountryAdditionalInfo;
-use App\Models\CountryFaq;
-use App\Models\CountrySeo;
-use App\Models\CountryMediaGallery;
-use App\Models\Region;
 
 class CountrySeeder extends Seeder
 {
@@ -373,18 +373,18 @@ class CountrySeeder extends Seeder
             // SEO
             CountrySeo::create([
                 'country_id' => $country->id,
-                'meta_title' => 'Visit ' . $country->name . ' - Travel Guide & Tourism',
-                'meta_description' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Explore ' . $country->name . ' with our comprehensive travel guide.',
-                'keywords' => $country->name . ', Travel, Tourism, Vacation, Holiday, Trip',
-                'og_image_url' => 'https://example.com/' . $country->slug . '.jpg',
-                'canonical_url' => 'https://example.com/' . $country->slug,
+                'meta_title' => 'Visit '.$country->name.' - Travel Guide & Tourism',
+                'meta_description' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Explore '.$country->name.' with our comprehensive travel guide.',
+                'keywords' => $country->name.', Travel, Tourism, Vacation, Holiday, Trip',
+                'og_image_url' => 'https://example.com/'.$country->slug.'.jpg',
+                'canonical_url' => 'https://example.com/'.$country->slug,
                 'schema_type' => 'TravelDestination',
                 'schema_data' => [
                     '@context' => 'https://schema.org',
                     '@type' => 'TravelDestination',
                     'name' => $country->name,
                     'description' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-                    'image' => 'https://example.com/' . $country->slug . '.jpg',
+                    'image' => 'https://example.com/'.$country->slug.'.jpg',
                 ],
             ]);
 
@@ -408,6 +408,7 @@ class CountrySeeder extends Seeder
         $start = strtotime('2027-01-01 00:00:00');
         $end = strtotime('2027-12-31 23:59:59');
         $random = mt_rand($start, $end);
+
         return date('Y-m-d H:i:s', $random);
     }
 
@@ -419,6 +420,7 @@ class CountrySeeder extends Seeder
         $start = strtotime('2027-01-01');
         $end = strtotime('2027-12-31');
         $random = mt_rand($start, $end);
+
         return date('Y-m-d', $random);
     }
 }

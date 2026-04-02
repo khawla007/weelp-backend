@@ -25,25 +25,26 @@ class AttributeController extends Controller
     {
         if ($request->get('all')) {
             $attributes = Attribute::orderBy('id', 'desc')->get();
+
             return response()->json([
                 'success' => true,
-                'data'    => $attributes,
+                'data' => $attributes,
             ]);
         }
 
         $perPage = 6;
-        $page    = $request->get('page', 1);
+        $page = $request->get('page', 1);
 
         $attributes = Attribute::orderBy('id', 'desc')->paginate($perPage, ['*'], 'page', $page);
 
         return response()->json([
-            'success'      => true,
-            'data'         => $attributes->items(),
+            'success' => true,
+            'data' => $attributes->items(),
             'current_page' => $attributes->currentPage(),
-            'per_page'     => $attributes->perPage(),
-            'total'        => $attributes->total(),
+            'per_page' => $attributes->perPage(),
+            'total' => $attributes->total(),
         ]);
-    }  
+    }
 
     /**
      * Store a newly created resource in storage.
@@ -63,7 +64,7 @@ class AttributeController extends Controller
         ]);
 
         $slug = Str::slug($request->name, '-');
-        $taxonomy = 'act_' . $slug;
+        $taxonomy = 'act_'.$slug;
 
         $attribute = Attribute::create([
             'name' => $request->name,
@@ -101,8 +102,8 @@ class AttributeController extends Controller
         $attribute = Attribute::findOrFail($id);
 
         $request->validate([
-            'name' => 'required|unique:attributes,name,' . $id,
-            'slug' => 'sometimes|required|string|max:255|unique:attributes,slug,' . $id,
+            'name' => 'required|unique:attributes,name,'.$id,
+            'slug' => 'sometimes|required|string|max:255|unique:attributes,slug,'.$id,
             // 'type' => 'required|in:single_select,multi_select,text,number,yes_no',
             'type' => 'nullable|string',
             'description' => 'nullable|string',
@@ -113,7 +114,7 @@ class AttributeController extends Controller
         ]);
 
         $slug = Str::slug($request->name, '-');
-        $taxonomy = 'act_' . $slug;
+        $taxonomy = 'act_'.$slug;
 
         $attribute->update([
             'name' => $request->name,
@@ -134,7 +135,6 @@ class AttributeController extends Controller
 
         return response()->json($attribute);
     }
-
 
     // public function getDurationValues()
     // {
@@ -184,20 +184,20 @@ class AttributeController extends Controller
     {
         $attribute = Attribute::where('slug', $slug)->first();
 
-        if (!$attribute) {
+        if (! $attribute) {
             return response()->json([
                 'success' => false,
-                'message' => 'Attribute not found'
+                'message' => 'Attribute not found',
             ], 404);
         }
 
         $values = explode(',', $attribute->values);
 
         return response()->json([
-            'success'      => true,
-            'data'         => $values,
-            'name'         => $attribute->name,
-            'default'      => $attribute->default_value
+            'success' => true,
+            'data' => $values,
+            'name' => $attribute->name,
+            'default' => $attribute->default_value,
         ], 200);
     }
 
@@ -207,6 +207,7 @@ class AttributeController extends Controller
     public function destroy(string $id)
     {
         Attribute::findOrFail($id)->delete();
+
         return response()->json(['message' => 'Attribute deleted successfully']);
     }
 

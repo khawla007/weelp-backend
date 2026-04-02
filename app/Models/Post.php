@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -19,6 +20,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read \App\Models\Media|null $media
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\PostItemTag> $taggedItems
  * @property-read int|null $tagged_items_count
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Post newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Post newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Post query()
@@ -31,6 +33,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Post whereSharesCount($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Post whereStatus($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Post whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class Post extends Model

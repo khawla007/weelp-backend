@@ -3,14 +3,14 @@
 namespace App\Http\Controllers\Guest;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Activity;
+use App\Models\Category;
+use App\Models\City;
 use App\Models\Itinerary;
 use App\Models\Package;
-use App\Models\City;
 use App\Models\Region;
-use App\Models\Category;
 use App\Models\Tag;
+use Illuminate\Http\Request;
 
 class PublicHomeSearchController extends Controller
 {
@@ -22,10 +22,10 @@ class PublicHomeSearchController extends Controller
             ->get()
             ->map(function ($region) {
                 return [
-                    'id' => 'region_' . $region->id,
+                    'id' => 'region_'.$region->id,
                     'name' => $region->name,
                     'slug' => $region->slug,
-                    'type' => 'region'
+                    'type' => 'region',
                 ];
             });
 
@@ -34,10 +34,10 @@ class PublicHomeSearchController extends Controller
             ->get()
             ->map(function ($city) {
                 return [
-                    'id' => 'city_' . $city->id,
+                    'id' => 'city_'.$city->id,
                     'name' => $city->name,
                     'slug' => $city->slug,
-                    'type' => 'city'
+                    'type' => 'city',
                 ];
             });
 
@@ -47,13 +47,13 @@ class PublicHomeSearchController extends Controller
         if ($list->isEmpty()) {
             return response()->json([
                 'success' => 'false',
-                'message' => 'Locations not found'
+                'message' => 'Locations not found',
             ]);
         }
 
         return response()->json([
             'success' => 'true',
-            'data' => $list
+            'data' => $list,
         ]);
     }
 
@@ -61,20 +61,19 @@ class PublicHomeSearchController extends Controller
     public function homeSearch(Request $request)
     {
 
-
         $request->validate([
-            'location'   => 'required|string',
+            'location' => 'required|string',
             'start_date' => 'nullable|date',
-            'end_date'   => 'nullable|date|after_or_equal:start_date',
-            'quantity'   => 'nullable|integer|min:1',
-            'categories' => 'nullable|string', 
-            'tags'       => 'nullable|string', 
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+            'quantity' => 'nullable|integer|min:1',
+            'categories' => 'nullable|string',
+            'tags' => 'nullable|string',
             'featured' => 'nullable|string|in:true,false',
             'min_price' => 'nullable|numeric|min:0',
             'max_price' => 'nullable|numeric|min:0',
-            'sort_by'     => 'nullable|string|in:price_asc,price_desc,name_asc,name_desc,id_asc,id_desc',
-            'page'       => 'nullable|integer|min:1',
-            'item_type'  => 'nullable|string', // New filter added
+            'sort_by' => 'nullable|string|in:price_asc,price_desc,name_asc,name_desc,id_asc,id_desc',
+            'page' => 'nullable|integer|min:1',
+            'item_type' => 'nullable|string', // New filter added
         ]);
 
         $location = $request->location;
@@ -82,7 +81,7 @@ class PublicHomeSearchController extends Controller
         $endDate = $request->end_date;
         $quantity = $request->quantity;
         $categorySlugs = $request->categories ? explode(',', $request->categories) : [];
-        $tagSlugs      = $request->tags ? explode(',', $request->tags) : [];
+        $tagSlugs = $request->tags ? explode(',', $request->tags) : [];
         $featured = $request->featured;
         $minPrice = $request->min_price;
         $maxPrice = $request->max_price;
@@ -96,15 +95,14 @@ class PublicHomeSearchController extends Controller
         $categoryIds = Category::whereIn('slug', $categorySlugs)->pluck('id')->toArray();
         $tagIds = Tag::whereIn('slug', $tagSlugs)->pluck('id')->toArray();
 
-        $activities  = $this->searchActivities($cityIds, $startDate, $endDate, $quantity, $categoryIds, $tagIds, $sortBy, $minPrice, $maxPrice, $featured, $itemType);
+        $activities = $this->searchActivities($cityIds, $startDate, $endDate, $quantity, $categoryIds, $tagIds, $sortBy, $minPrice, $maxPrice, $featured, $itemType);
         $itineraries = $this->searchItineraries($cityIds, $startDate, $endDate, $quantity, $categoryIds, $tagIds, $sortBy, $minPrice, $maxPrice, $featured, $itemType);
-        $packages    = $this->searchPackages($cityIds, $startDate, $endDate, $quantity, $categoryIds, $tagIds, $sortBy, $minPrice, $maxPrice, $featured, $itemType);
+        $packages = $this->searchPackages($cityIds, $startDate, $endDate, $quantity, $categoryIds, $tagIds, $sortBy, $minPrice, $maxPrice, $featured, $itemType);
 
         // Merge all items into a single list
         $allItems = $activities
             ->concat($itineraries)
             ->concat($packages);
-
 
         // Sorting
         switch ($sortBy) {
@@ -148,14 +146,14 @@ class PublicHomeSearchController extends Controller
                 'current_page' => $page,
                 'per_page' => $perPage,
                 'total_items' => $totalItems,
-                'total_pages' => $totalPages
-            ]
+                'total_pages' => $totalPages,
+            ],
         ];
 
         if ($totalItems === 0) {
             return response()->json([
                 'success' => 'false',
-                'message' => 'No items found'
+                'message' => 'No items found',
             ]);
         }
 
@@ -166,21 +164,21 @@ class PublicHomeSearchController extends Controller
     private function getCityIdsFromLocationSlug($slug)
     {
         $cityIds = [];
-    
+
         $city = City::where('slug', $slug)->first();
         if ($city) {
             $cityIds[] = $city->id;
         }
-    
+
         $region = Region::where('slug', $slug)->first();
         if ($region) {
             $regionCities = City::whereHas('state.country.regions', function ($query) use ($region) {
-                $query->where('regions.id', $region->id); 
+                $query->where('regions.id', $region->id);
             })->pluck('id')->toArray();
-    
+
             $cityIds = array_merge($cityIds, $regionCities);
         }
-    
+
         return $cityIds;
     }
 
@@ -242,13 +240,13 @@ class PublicHomeSearchController extends Controller
         }
 
         // **Handle Category & Tag Filtering Correctly**
-        if (!empty($categoryIds)) {
+        if (! empty($categoryIds)) {
             $query->whereHas('categories', function ($q) use ($categoryIds) {
                 $q->whereIn('activity_categories.category_id', $categoryIds);
             });
         }
 
-        if (!empty($categorySlugs) && empty($categoryIds)) {
+        if (! empty($categorySlugs) && empty($categoryIds)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Category not found',
@@ -263,13 +261,13 @@ class PublicHomeSearchController extends Controller
                     'name' => $activityCategory->category->name,
                 ];
             })->unique()->values();
-        
+
             return [
                 'id' => $activity->id,
                 'name' => $activity->name,
                 'slug' => $activity->slug,
                 'item_type' => $activity->item_type,
-                'featured'  => $activity->featured_activity,
+                'featured' => $activity->featured_activity,
                 'featured_image' => $activity->mediaGallery->where('is_featured', true)->first()?->media?->url
                     ?? $activity->mediaGallery->first()?->media?->url,
                 'city_slug' => $activity->locations->first()?->city?->slug,
@@ -294,7 +292,6 @@ class PublicHomeSearchController extends Controller
         });
     }
 
-
     // Itinerary Search Function
 
     // private function searchItineraries($cityIds, $startDate, $endDate, $quantity)
@@ -311,7 +308,7 @@ class PublicHomeSearchController extends Controller
         ])->whereHas('locations', function ($q) use ($cityIds) {
             $q->whereIn('city_id', $cityIds);
         });
-    
+
         if ($startDate && $endDate) {
             $query->whereHas('availability', function ($q) use ($startDate, $endDate) {
                 $q->where('date_based_itinerary', true)
@@ -319,7 +316,7 @@ class PublicHomeSearchController extends Controller
                     ->where('end_date', '>=', $endDate);
             });
         }
-    
+
         if ($quantity) {
             $query->whereHas('availability', function ($q) use ($quantity) {
                 $q->where(function ($q) use ($quantity) {
@@ -331,7 +328,6 @@ class PublicHomeSearchController extends Controller
                 });
             });
         }
-        
 
         // **Min Price & Max Price Filtering**
         if ($minPrice !== null || $maxPrice !== null) {
@@ -355,24 +351,24 @@ class PublicHomeSearchController extends Controller
         }
 
         // **Handle Category & Tag Filtering Correctly**
-        if (!empty($categoryIds)) {
+        if (! empty($categoryIds)) {
             $query->whereHas('categories', function ($q) use ($categoryIds) {
                 $q->whereIn('itinerary_categories.category_id', $categoryIds);
             });
         }
 
-        if (!empty($categorySlugs) && empty($categoryIds)) {
+        if (! empty($categorySlugs) && empty($categoryIds)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Category not found',
             ], 200);
         }
 
-        if (!empty($tagIds)) {
+        if (! empty($tagIds)) {
             $query->whereHas('tags', fn ($q) => $q->whereIn('tag_id', $tagIds));
         }
 
-        if (!empty($tagSlugs) && empty($tagIds)) {
+        if (! empty($tagSlugs) && empty($tagIds)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Tag not found',
@@ -380,7 +376,7 @@ class PublicHomeSearchController extends Controller
         }
 
         $itineraries = $query->get();
-    
+
         $itineraries->transform(function ($itinerary) {
 
             $categories = $itinerary->categories->map(function ($itineraryCategory) {
@@ -389,13 +385,13 @@ class PublicHomeSearchController extends Controller
                     'name' => $itineraryCategory->category->name,
                 ] : null;
             })->filter()->unique()->values(); // Remove null values
-            
+
             return [
                 'id' => $itinerary->id,
                 'name' => $itinerary->name,
                 'slug' => $itinerary->slug,
                 'item_type' => $itinerary->item_type,
-                'featured'  => $itinerary->featured_itinerary,
+                'featured' => $itinerary->featured_itinerary,
                 'featured_image' => $itinerary->mediaGallery->where('is_featured', true)->first()?->media?->url
                     ?? $itinerary->mediaGallery->first()?->media?->url,
                 'city_slug' => $itinerary->locations->first()?->city?->slug,
@@ -422,10 +418,9 @@ class PublicHomeSearchController extends Controller
                 ] : null,
             ];
         });
-    
+
         return $itineraries;
     }
-    
 
     // Package Search function
 
@@ -486,24 +481,24 @@ class PublicHomeSearchController extends Controller
         }
 
         // **Handle Category & Tag Filtering Correctly**
-        if (!empty($categoryIds)) {
+        if (! empty($categoryIds)) {
             $query->whereHas('categories', function ($q) use ($categoryIds) {
                 $q->whereIn('package_categories.category_id', $categoryIds);
             });
         }
 
-        if (!empty($categorySlugs) && empty($categoryIds)) {
+        if (! empty($categorySlugs) && empty($categoryIds)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Category not found',
             ], 200);
         }
 
-        if (!empty($tagIds)) {
+        if (! empty($tagIds)) {
             $query->whereHas('tags', fn ($q) => $q->whereIn('tag_id', $tagIds));
         }
 
-        if (!empty($tagSlugs) && empty($tagIds)) {
+        if (! empty($tagSlugs) && empty($tagIds)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Tag not found',
@@ -512,7 +507,7 @@ class PublicHomeSearchController extends Controller
 
         // return $query->get();
         $packages = $query->get();
-    
+
         $packages->transform(function ($package) {
 
             $categories = $package->categories->map(function ($packageCategory) {
@@ -527,7 +522,7 @@ class PublicHomeSearchController extends Controller
                 'name' => $package->name,
                 'slug' => $package->slug,
                 'item_type' => $package->item_type,
-                'featured'  => $package->featured_package,
+                'featured' => $package->featured_package,
                 'featured_image' => $package->mediaGallery->where('is_featured', true)->first()?->media?->url
                     ?? $package->mediaGallery->first()?->media?->url,
                 'city_slug' => $package->locations->first()?->city?->slug,
@@ -554,8 +549,7 @@ class PublicHomeSearchController extends Controller
                 ] : null,
             ];
         });
-    
+
         return $packages;
     }
-
 }

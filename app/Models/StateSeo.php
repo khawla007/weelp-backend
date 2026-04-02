@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\State $state
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StateSeo newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StateSeo newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StateSeo query()
@@ -32,6 +33,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StateSeo whereSchemaType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StateSeo whereStateId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StateSeo whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class StateSeo extends Model
@@ -39,6 +41,7 @@ class StateSeo extends Model
     use HasFactory;
 
     protected $table = 'state_seo';
+
     protected $fillable = [
         'state_id',
         'meta_title',
@@ -53,7 +56,6 @@ class StateSeo extends Model
     // protected $casts = [
     //     'schema_data' => 'array',
     // ];
-
 
     // Store JSON as raw JSON (Not as escaped string)
     public function setSchemaDataAttribute($value)

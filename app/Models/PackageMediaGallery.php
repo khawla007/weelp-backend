@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Media $media
  * @property-read \App\Models\Package $package
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageMediaGallery featured()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageMediaGallery newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageMediaGallery newQuery()
@@ -23,15 +24,15 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageMediaGallery whereMediaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageMediaGallery wherePackageId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageMediaGallery whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class PackageMediaGallery extends Model
 {
-
     protected $table = 'package_media_gallery';
 
     protected $fillable = [
-        'package_id', 'media_id', 'is_featured'
+        'package_id', 'media_id', 'is_featured',
     ];
 
     public function scopeFeatured($query)

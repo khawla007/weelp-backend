@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Order $order
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderPayment newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderPayment newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderPayment query()
@@ -36,6 +37,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderPayment whereStripeSessionId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderPayment whereTotalAmount($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderPayment whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class OrderPayment extends Model
@@ -44,11 +46,11 @@ class OrderPayment extends Model
 
     protected $fillable = [
         'order_id', 'payment_status', 'stripe_session_id', 'payment_intent_id', 'payment_method',
-        'amount', 'is_custom_amount', 'custom_amount', 'total_amount', 'currency'
+        'amount', 'is_custom_amount', 'custom_amount', 'total_amount', 'currency',
     ];
 
     protected $casts = [
-        'is_custom_amount' => 'boolean'
+        'is_custom_amount' => 'boolean',
     ];
 
     public function order()

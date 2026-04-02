@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Creator;
 
 use App\Http\Controllers\Controller;
@@ -35,7 +36,7 @@ class CreatorPostController extends Controller
             'caption' => $validated['caption'],
         ]);
 
-        if (!empty($validated['tagged_items'])) {
+        if (! empty($validated['tagged_items'])) {
             foreach ($validated['tagged_items'] as $item) {
                 PostItemTag::create([
                     'post_id' => $post->id,
@@ -72,7 +73,7 @@ class CreatorPostController extends Controller
         if (array_key_exists('tagged_items', $validated)) {
             $post->taggedItems()->delete();
 
-            if (!empty($validated['tagged_items'])) {
+            if (! empty($validated['tagged_items'])) {
                 foreach ($validated['tagged_items'] as $item) {
                     PostItemTag::create([
                         'post_id' => $post->id,

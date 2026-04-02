@@ -23,6 +23,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\VendorDriverSchedule> $schedules
  * @property-read int|null $schedules_count
  * @property-read \App\Models\Vendor $vendor
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|VendorDriver newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|VendorDriver newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|VendorDriver query()
@@ -39,9 +40,11 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|VendorDriver whereStatus($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|VendorDriver whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|VendorDriver whereVendorId($value)
+ *
  * @mixin \Eloquent
  */
-class VendorDriver extends Model {
+class VendorDriver extends Model
+{
     use HasFactory;
 
     protected $table = 'vendor_drivers';
@@ -52,15 +55,18 @@ class VendorDriver extends Model {
         'languages' => 'array', // JSON array
     ];
 
-    public function vendor() {
+    public function vendor()
+    {
         return $this->belongsTo(Vendor::class);
     }
 
-    public function assignedVehicle() {
+    public function assignedVehicle()
+    {
         return $this->belongsTo(VendorVehicle::class, 'assigned_vehicle_id');
     }
 
-    public function schedules() {
+    public function schedules()
+    {
         return $this->hasMany(VendorDriverSchedule::class, 'driver_id');
     }
 }

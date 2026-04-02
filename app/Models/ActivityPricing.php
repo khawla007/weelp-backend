@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Activity $activity
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityPricing newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityPricing newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityPricing query()
@@ -22,14 +23,17 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityPricing whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityPricing whereRegularPrice($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityPricing whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
-class ActivityPricing extends Model {
+class ActivityPricing extends Model
+{
     use HasFactory;
 
     protected $table = 'activity_pricing';
+
     protected $fillable = [
-        'activity_id', 'regular_price', 'currency'
+        'activity_id', 'regular_price', 'currency',
     ];
 
     // protected $casts = [
@@ -38,7 +42,8 @@ class ActivityPricing extends Model {
     //     'enable_last_minute_discount' => 'boolean'
     // ];
 
-    public function activity() {
+    public function activity()
+    {
         return $this->belongsTo(Activity::class);
     }
 }

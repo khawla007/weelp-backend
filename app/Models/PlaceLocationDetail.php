@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Place $place
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PlaceLocationDetail newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PlaceLocationDetail newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PlaceLocationDetail query()
@@ -32,14 +33,16 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PlaceLocationDetail wherePopulation($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PlaceLocationDetail whereTimezone($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PlaceLocationDetail whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
-class PlaceLocationDetail extends Model {
+class PlaceLocationDetail extends Model
+{
     use HasFactory;
 
     protected $fillable = [
-        'place_id', 'latitude', 'longitude', 'population', 'currency', 
-        'timezone', 'language', 'local_cuisine'
+        'place_id', 'latitude', 'longitude', 'population', 'currency',
+        'timezone', 'language', 'local_cuisine',
     ];
 
     protected $casts = [
@@ -47,7 +50,8 @@ class PlaceLocationDetail extends Model {
         'local_cuisine' => 'array',
     ];
 
-    public function place() {
+    public function place()
+    {
         return $this->belongsTo(Place::class);
     }
 }

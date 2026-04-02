@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\State $state
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StateSeason newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StateSeason newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StateSeason query()
@@ -26,6 +27,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StateSeason whereStateId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StateSeason whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StateSeason whereWeather($value)
+ *
  * @mixin \Eloquent
  */
 class StateSeason extends Model
@@ -41,10 +43,10 @@ class StateSeason extends Model
     ];
 
     protected $casts = [
-        'months' => 'array',     
-        'activities' => 'array', 
+        'months' => 'array',
+        'activities' => 'array',
     ];
-    
+
     public function state()
     {
         return $this->belongsTo(State::class);

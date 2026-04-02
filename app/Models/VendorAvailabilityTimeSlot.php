@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read int|null $transfer_availability_count
  * @property-read \App\Models\VendorVehicle $vehicle
  * @property-read \App\Models\Vendor $vendor
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|VendorAvailabilityTimeSlot newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|VendorAvailabilityTimeSlot newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|VendorAvailabilityTimeSlot query()
@@ -33,20 +34,24 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|VendorAvailabilityTimeSlot whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|VendorAvailabilityTimeSlot whereVehicleId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|VendorAvailabilityTimeSlot whereVendorId($value)
+ *
  * @mixin \Eloquent
  */
-class VendorAvailabilityTimeSlot extends Model {
+class VendorAvailabilityTimeSlot extends Model
+{
     use HasFactory;
 
     protected $table = 'vendor_availability_time_slots';
 
     protected $fillable = ['vendor_id', 'vehicle_id', 'date', 'start_time', 'end_time', 'max_bookings', 'price_multiplier'];
 
-    public function vendor() {
+    public function vendor()
+    {
         return $this->belongsTo(Vendor::class);
     }
 
-    public function vehicle() {
+    public function vehicle()
+    {
         return $this->belongsTo(VendorVehicle::class);
     }
 
@@ -54,5 +59,4 @@ class VendorAvailabilityTimeSlot extends Model {
     {
         return $this->hasMany(TransferPricingAvailability::class, 'availability_id');
     }
-    
 }

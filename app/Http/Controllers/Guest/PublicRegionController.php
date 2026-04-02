@@ -3,31 +3,30 @@
 namespace App\Http\Controllers\Guest;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\DB;
-use App\Models\Region;
 use App\Models\Activity;
+use App\Models\Category;
+use App\Models\City;
 use App\Models\Itinerary;
 use App\Models\Package;
-use App\Models\City;
-use App\Models\Category;
+use App\Models\Region;
 use App\Models\Tag;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class PublicRegionController extends Controller
 {
-
     // -----------------------Get all Regions--------------------------
     public function getRegions()
     {
         $regions = Region::with('countries')->get();
-    
+
         if ($regions->isEmpty()) {
             return response()->json([
                 'success' => false,
-                'message' => 'No regions found'
+                'message' => 'No regions found',
             ], 404);
         }
-    
+
         return response()->json([
             'success' => true,
             'data' => $regions->map(function ($region) {
@@ -38,7 +37,7 @@ class PublicRegionController extends Controller
                     // 'description' => $region->description,
                     // 'image_url' => $region->image_url,
                 ];
-            })
+            }),
         ], 200);
     }
 
@@ -47,10 +46,10 @@ class PublicRegionController extends Controller
     {
         $region = Region::with('countries')->where('slug', $slug)->first();
 
-        if (!$region) {
+        if (! $region) {
             return response()->json([
                 'success' => false,
-                'message' => 'Region not found'
+                'message' => 'Region not found',
             ], 404);
         }
 
@@ -66,10 +65,10 @@ class PublicRegionController extends Controller
                     return [
                         'id' => $country->id,
                         'name' => $country->name,
-                        'slug' => $country->slug
+                        'slug' => $country->slug,
                     ];
-                })
-            ]
+                }),
+            ],
         ], 200);
     }
 
@@ -78,7 +77,7 @@ class PublicRegionController extends Controller
     {
         $region = Region::with('countries.states.cities')->where('name', $region_slug)->firstOrFail();
 
-        if (!$region) {
+        if (! $region) {
             return response()->json(['success' => false, 'message' => 'Region not found'], 404);
         }
 
@@ -87,17 +86,17 @@ class PublicRegionController extends Controller
                 return $state->cities;
             });
         })->toArray();
-        
+
         if (collect($cities)->isEmpty()) {
             return response()->json([
                 'success' => false,
-                'message' => 'No cities found in this region'
+                'message' => 'No cities found in this region',
             ], 404);
         }
-        
+
         return response()->json([
             'success' => true,
-            'data' => $cities
+            'data' => $cities,
         ], 200);
     }
 
@@ -107,7 +106,7 @@ class PublicRegionController extends Controller
     {
         $city = City::with(['state.country.regions'])->where('slug', $city_slug)->first();
 
-        if (!$city) {
+        if (! $city) {
             return response()->json(['message' => 'City not found.'], 404);
         }
 
@@ -115,9 +114,9 @@ class PublicRegionController extends Controller
             $query->where('city_id', $city->id)
                 ->where('location_type', 'primary');
         })
-        ->with(['pricing', 'groupDiscounts', 'categories.category', 'locations.city.state.country.regions', 'mediaGallery.media'])
-        ->where('featured_activity', true)
-        ->get();
+            ->with(['pricing', 'groupDiscounts', 'categories.category', 'locations.city.state.country.regions', 'mediaGallery.media'])
+            ->where('featured_activity', true)
+            ->get();
 
         if ($activities->isEmpty()) {
             return response()->json(['message' => 'No activities found for this city.'], 404);
@@ -172,13 +171,13 @@ class PublicRegionController extends Controller
         if (collect($formattedActivities)->isEmpty()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Activities not found'
+                'message' => 'Activities not found',
             ], 404);
         }
-        
+
         return response()->json([
             'success' => true,
-            'data' => $formattedActivities
+            'data' => $formattedActivities,
         ], 200);
     }
 
@@ -189,7 +188,7 @@ class PublicRegionController extends Controller
 
         $city = City::with(['state.country.regions'])->where('slug', $city_slug)->first();
 
-        if (!$city) {
+        if (! $city) {
             return response()->json(['message' => 'City not found.'], 404);
         }
 
@@ -198,7 +197,7 @@ class PublicRegionController extends Controller
             'basePricing.variations',
             'mediaGallery.media',
             'categories.category',
-            'tags'
+            'tags',
         ])->where('featured_itinerary', true)->get();
 
         if ($itineraries->isEmpty()) {
@@ -216,6 +215,7 @@ class PublicRegionController extends Controller
                     ?? $itinerary->mediaGallery->first()?->media?->url,
                 'locations' => $itinerary->locations->map(function ($location) {
                     $city = $location->city;
+
                     return [
                         'city_id' => $city->id,
                         'city' => $city->name,
@@ -254,13 +254,13 @@ class PublicRegionController extends Controller
         if (collect($formattedItineraries)->isEmpty()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Itineraries not found'
+                'message' => 'Itineraries not found',
             ], 404);
         }
-        
+
         return response()->json([
             'success' => true,
-            'data' => $formattedItineraries
+            'data' => $formattedItineraries,
         ], 200);
     }
 
@@ -275,7 +275,7 @@ class PublicRegionController extends Controller
 
         $city = City::where('slug', $city_slug)->first();
 
-        if (!$city) {
+        if (! $city) {
             return response()->json(['message' => 'City not found.'], 404);
         }
 
@@ -294,12 +294,12 @@ class PublicRegionController extends Controller
             'basePricing.variations',
             'mediaGallery.media',
             'categories.category',
-            'tags.tag'
+            'tags.tag',
         ]);
 
         // Tag filter — filter via the tag relationship through PackageTag
         $tagNames = request()->has('tags') ? array_filter(explode(',', request()->get('tags'))) : [];
-        if (!empty($tagNames)) {
+        if (! empty($tagNames)) {
             $query->whereHas('tags.tag', fn ($q) => $q->whereIn('name', $tagNames));
         }
 
@@ -316,6 +316,7 @@ class PublicRegionController extends Controller
                     ?? $package->mediaGallery->first()?->media?->url,
                 'locations' => $package->locations->map(function ($location) {
                     $city = $location->city;
+
                     return [
                         'city_id' => $city->id,
                         'city' => $city->name,
@@ -400,7 +401,7 @@ class PublicRegionController extends Controller
         // dd(request()->all());
         $city = City::with('state.country.regions')->where('slug', $city_slug)->first();
 
-        if (!$city) {
+        if (! $city) {
             return response()->json(['success' => 'false', 'message' => 'City not found.'], 404);
         }
 
@@ -415,32 +416,28 @@ class PublicRegionController extends Controller
         $categoryIds = Category::whereIn('slug', $categorySlugs)->pluck('id')->toArray();
         $tagIds = Tag::whereIn('slug', $tagSlugs)->pluck('id')->toArray();
 
-        $activities = (!$itemType || $itemType === 'activity')
-            ? Activity::whereHas('locations', fn ($query) =>
-                $query->where('city_id', $city->id)
+        $activities = (! $itemType || $itemType === 'activity')
+            ? Activity::whereHas('locations', fn ($query) => $query->where('city_id', $city->id)
             )->with(['pricing', 'groupDiscounts', 'categories.category', 'locations.city.state.country.regions', 'mediaGallery.media'])
             : null;
 
-        $itineraries = (!$itemType || $itemType === 'itinerary')
-            ? Itinerary::whereHas('locations', fn ($query) =>
-                $query->where('city_id', $city->id)
+        $itineraries = (! $itemType || $itemType === 'itinerary')
+            ? Itinerary::whereHas('locations', fn ($query) => $query->where('city_id', $city->id)
             )->with(['basePricing.variations', 'mediaGallery.media', 'categories.category', 'tags'])
             : null;
 
-        $packages = (!$itemType || $itemType === 'package')
-            ? Package::whereHas('locations', fn ($query) =>
-                $query->where('city_id', $city->id)
+        $packages = (! $itemType || $itemType === 'package')
+            ? Package::whereHas('locations', fn ($query) => $query->where('city_id', $city->id)
             )->with(['basePricing.variations', 'mediaGallery.media', 'categories.category', 'tags'])
             : null;
 
-        
-        if (!empty($categoryIds)) {
+        if (! empty($categoryIds)) {
             $activities?->whereHas('categories', fn ($q) => $q->whereIn('category_id', $categoryIds));
             $itineraries?->whereHas('categories', fn ($q) => $q->whereIn('category_id', $categoryIds));
             $packages?->whereHas('categories', fn ($q) => $q->whereIn('category_id', $categoryIds));
         }
 
-        if (!empty($tagIds)) {
+        if (! empty($tagIds)) {
             $itineraries?->whereHas('tags', fn ($q) => $q->whereIn('tags.id', $tagIds));
             $packages?->whereHas('tags', fn ($q) => $q->whereIn('tags.id', $tagIds));
         }
@@ -539,22 +536,21 @@ class PublicRegionController extends Controller
         $paginatedItems = $allItems->forPage($page, $perPage);
 
         // Categories List
-        $categoriesList = $allItems->flatMap(fn ($item) => 
-            match ($item['item_type']) {
-                'activity' => Activity::find($item['id'])->categories->map(fn ($category) => [
-                    'id' => $category->category->id,
-                    'name' => $category->category->name,
-                ]),
-                'itinerary' => Itinerary::find($item['id'])->categories->map(fn ($category) => [
-                    'id' => $category->category->id,
-                    'name' => $category->category->name,
-                ]),
-                'package' => Package::find($item['id'])->categories->map(fn ($category) => [
-                    'id' => $category->category->id,
-                    'name' => $category->category->name,
-                ]),
-                default => [],
-            }
+        $categoriesList = $allItems->flatMap(fn ($item) => match ($item['item_type']) {
+            'activity' => Activity::find($item['id'])->categories->map(fn ($category) => [
+                'id' => $category->category->id,
+                'name' => $category->category->name,
+            ]),
+            'itinerary' => Itinerary::find($item['id'])->categories->map(fn ($category) => [
+                'id' => $category->category->id,
+                'name' => $category->category->name,
+            ]),
+            'package' => Package::find($item['id'])->categories->map(fn ($category) => [
+                'id' => $category->category->id,
+                'name' => $category->category->name,
+            ]),
+            default => [],
+        }
         )->unique('id')->values();
 
         // Response
@@ -569,18 +565,16 @@ class PublicRegionController extends Controller
         ], 200);
     }
 
-    
-
     // -----------------------Code to get All Packages based on region with location details--------------------------
     public function getPackagesByRegion($region_slug)
     {
         // Find Region
         $region = Region::where('slug', $region_slug)->first();
 
-        if (!$region) {
+        if (! $region) {
             return response()->json([
                 'success' => false,
-                'message' => 'Region not found'
+                'message' => 'Region not found',
             ], 404);
         }
 
@@ -605,7 +599,7 @@ class PublicRegionController extends Controller
         if ($cityIds->isEmpty()) {
             return response()->json([
                 'success' => false,
-                'message' => 'No cities and Packages found in this region'
+                'message' => 'No cities and Packages found in this region',
             ], 404);
         }
 
@@ -618,7 +612,7 @@ class PublicRegionController extends Controller
                 'mediaGallery',
                 'categories.category',
                 'tags.tag',
-                'locations.city.state.country.regions'
+                'locations.city.state.country.regions',
             ])
             ->where('featured_package', true)
             ->get();
@@ -626,7 +620,7 @@ class PublicRegionController extends Controller
         if ($packages->isEmpty()) {
             return response()->json([
                 'success' => false,
-                'message' => 'No packages found for this region.'
+                'message' => 'No packages found for this region.',
             ], 404);
         }
 
@@ -641,6 +635,7 @@ class PublicRegionController extends Controller
                 'city_slug' => $package->locations->first()?->city?->slug,
                 'locations' => $package->locations->map(function ($location) {
                     $city = $location->city;
+
                     return [
                         'city_id' => $city->id,
                         'city' => $city->name,
@@ -669,42 +664,41 @@ class PublicRegionController extends Controller
                 'media_gallery' => $package->mediaGallery,
             ];
         });
-        
+
         // tag list
         $tagList = $formattedPackages->flatMap(fn ($item) => $item['tags'])
-        ->unique('id')
-        ->values();
+            ->unique('id')
+            ->values();
 
         if (collect($formattedPackages)->isEmpty()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Packages not found'
+                'message' => 'Packages not found',
             ], 404);
         }
 
         return response()->json([
             'success' => true,
             'data' => $formattedPackages,
-            'tag_list' => $tagList
+            'tag_list' => $tagList,
         ], 200);
     }
-    
+
     public function getAllItemsByRegion($region_slug)
     {
         $region = Region::with('countries.states.cities')->where('slug', $region_slug)->first();
 
-        if (!$region) {
+        if (! $region) {
             return response()->json(['success' => 'false', 'message' => 'Region not found.'], 404);
         }
 
-        $cities = $region->countries->flatMap(fn ($country) =>  
-            $country->states->flatMap(fn ($state) => $state->cities)
+        $cities = $region->countries->flatMap(fn ($country) => $country->states->flatMap(fn ($state) => $state->cities)
         );
 
         if ($cities->isEmpty()) {
             return response()->json([
                 'success' => 'false',
-                'message' => 'No cities found under this region.'
+                'message' => 'No cities found under this region.',
             ], 404);
         }
 
@@ -716,14 +710,14 @@ class PublicRegionController extends Controller
         $selectedCityIds = $selectedCities->pluck('id')->toArray();
 
         // Ensure all requested cities exist
-        if (!empty($citySlugs) && count($selectedCities) !== count($citySlugs)) {
+        if (! empty($citySlugs) && count($selectedCities) !== count($citySlugs)) {
             return response()->json(['success' => false, 'message' => 'One or more cities not found.'], 404);
         }
 
         // Ensure all requested cities belong to the region
         $validCityIds = $cities->pluck('id')->intersect($selectedCityIds);
 
-        if (!empty($citySlugs) && $validCityIds->isEmpty()) {
+        if (! empty($citySlugs) && $validCityIds->isEmpty()) {
             return response()->json(['success' => false, 'message' => 'Selected city does not belong to this region.'], 404);
         }
 
@@ -740,31 +734,28 @@ class PublicRegionController extends Controller
         $tagIds = Tag::whereIn('slug', $tagSlugs)->pluck('id')->toArray();
 
         // check if category is not in backend
-        if (!empty($categorySlugs) && empty($categoryIds)) {
+        if (! empty($categorySlugs) && empty($categoryIds)) {
             return response()->json(['success' => false, 'message' => 'Category not found.'], 404);
         }
         // check if tag is not in backend
-        if (!empty($tagSlugs) && empty($tagIds)) {
+        if (! empty($tagSlugs) && empty($tagIds)) {
             return response()->json(['success' => false, 'message' => 'Tag not found.'], 404);
         }
         // Fetch Activities, Itineraries, and Packages
-        $activities = Activity::whereHas('locations', fn ($query) =>  
-            $query->whereIn('city_id', $validCityIds->isEmpty() ? $cities->pluck('id') : $validCityIds)
+        $activities = Activity::whereHas('locations', fn ($query) => $query->whereIn('city_id', $validCityIds->isEmpty() ? $cities->pluck('id') : $validCityIds)
             ->when($itemTypes, fn ($query) => $query->where('item_type', $itemTypes))
         )->with(['pricing', 'groupDiscounts', 'categories.category', 'locations.city.state.country.regions']);
 
-        $itineraries = Itinerary::whereHas('locations', fn ($query) =>  
-            $query->whereIn('city_id', $validCityIds->isEmpty() ? $cities->pluck('id') : $validCityIds)
+        $itineraries = Itinerary::whereHas('locations', fn ($query) => $query->whereIn('city_id', $validCityIds->isEmpty() ? $cities->pluck('id') : $validCityIds)
             ->when($itemTypes, fn ($query) => $query->where('item_type', $itemTypes))
         )->with(['basePricing.variations', 'mediaGallery', 'categories.category', 'tags']);
 
-        $packages = Package::whereHas('locations', fn ($query) =>  
-            $query->whereIn('city_id', $validCityIds->isEmpty() ? $cities->pluck('id') : $validCityIds)
+        $packages = Package::whereHas('locations', fn ($query) => $query->whereIn('city_id', $validCityIds->isEmpty() ? $cities->pluck('id') : $validCityIds)
             ->when($itemTypes, fn ($query) => $query->where('item_type', $itemTypes))
         )->with(['basePricing.variations', 'mediaGallery', 'categories.category', 'tags']);
-        
+
         $validItemTypes = ['activity', 'itinerary', 'package'];
-        if (!empty($itemTypes) && array_diff($itemTypes, $validItemTypes)) {
+        if (! empty($itemTypes) && array_diff($itemTypes, $validItemTypes)) {
             return response()->json(['success' => false, 'message' => 'Invalid item type.'], 404);
         }
 
@@ -775,7 +766,7 @@ class PublicRegionController extends Controller
         //     $packages->whereHas('categories', fn ($q) => $q->whereIn('category_id', $categoryIds));
         // }
 
-        if (!empty($categoryIds)) {
+        if (! empty($categoryIds)) {
             $activities = $activities->whereHas('categories', fn ($q) => $q->whereIn('category_id', $categoryIds));
             $itineraries = $itineraries->whereHas('categories', fn ($q) => $q->whereIn('category_id', $categoryIds));
             $packages = $packages->whereHas('categories', fn ($q) => $q->whereIn('category_id', $categoryIds));
@@ -787,7 +778,7 @@ class PublicRegionController extends Controller
         //     $packages->whereHas('tags', fn ($q) => $q->whereIn('tags.id', $tagIds));
         // }
 
-        if (!empty($tagIds)) {
+        if (! empty($tagIds)) {
             $itineraries = $itineraries->whereHas('tags', fn ($q) => $q->whereIn('tags.id', $tagIds));
             $packages = $packages->whereHas('tags', fn ($q) => $q->whereIn('tags.id', $tagIds));
         }
@@ -811,15 +802,15 @@ class PublicRegionController extends Controller
         $packages = $packages->get();
 
         // **Check for Empty Data**
-        if (!empty($citySlugs) && count($selectedCities) && $activities->isEmpty() && $itineraries->isEmpty() && $packages->isEmpty()) {
+        if (! empty($citySlugs) && count($selectedCities) && $activities->isEmpty() && $itineraries->isEmpty() && $packages->isEmpty()) {
             return response()->json(['success' => false, 'message' => 'No items found .'], 404);
         }
 
-        if (!empty($categorySlugs) && ($activities->isEmpty() && $itineraries->isEmpty() && $packages->isEmpty())) {
+        if (! empty($categorySlugs) && ($activities->isEmpty() && $itineraries->isEmpty() && $packages->isEmpty())) {
             return response()->json(['success' => false, 'message' => 'Category has no items.'], 404);
         }
 
-        if (!empty($tagSlugs) && ($itineraries->isEmpty() && $packages->isEmpty())) {
+        if (! empty($tagSlugs) && ($itineraries->isEmpty() && $packages->isEmpty())) {
             return response()->json(['success' => false, 'message' => 'Tag has no items.'], 404);
         }
 
@@ -839,6 +830,7 @@ class PublicRegionController extends Controller
                 ])->toArray(),
                 'locations' => $activity->locations->map(function ($location) {
                     $city = $location->city;
+
                     return [
                         'city_id' => $city->id,
                         'city' => $city->name,
@@ -870,6 +862,7 @@ class PublicRegionController extends Controller
                 ])->toArray(),
                 'locations' => $itinerary->locations->map(function ($location) {
                     $city = $location->city;
+
                     return [
                         'city_id' => $city->id,
                         'city' => $city->name,
@@ -901,6 +894,7 @@ class PublicRegionController extends Controller
                 ])->toArray(),
                 'locations' => $package->locations->map(function ($location) {
                     $city = $location->city;
+
                     return [
                         'city_id' => $city->id,
                         'city' => $city->name,
@@ -952,13 +946,12 @@ class PublicRegionController extends Controller
         ], 200);
     }
 
-
     // -------------------------Getting places by city------------------------
     public function getPlacesByCity($region_slug, $city_slug)
     {
         $region = Region::where('name', $region_slug)->firstOrFail();
         $places = [];
-    
+
         foreach ($region->countries as $country) {
             foreach ($country->states as $state) {
                 $city = $state->cities()->where('slug', $city_slug)->first();
@@ -968,22 +961,22 @@ class PublicRegionController extends Controller
                 }
             }
         }
-    
+
         if (empty($places)) {
             return response()->json(['error' => 'City not found'], 404);
         }
-    
+
         // return response()->json($places);
         if (collect($places)->isEmpty()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Places not found'
+                'message' => 'Places not found',
             ], 404);
         }
-        
+
         return response()->json([
             'success' => true,
-            'data' => $places
+            'data' => $places,
         ], 200);
     }
 
@@ -991,7 +984,7 @@ class PublicRegionController extends Controller
     // {
     //     $region = Region::where('name', $region_slug)->firstOrFail();
     //     $country = $region->countries()->where('slug', $country_slug)->firstOrFail();
-    
+
     //     // Fetching states from the country
     //     return response()->json($country->states()->get());
     // }
@@ -1001,7 +994,7 @@ class PublicRegionController extends Controller
     //     $region = Region::where('name', $region_slug)->firstOrFail();
     //     $country = $region->countries()->where('slug', $country_slug)->firstOrFail();
     //     $state = $country->states()->where('slug', $state_slug)->firstOrFail();
-    
+
     //     // Fetching cities from the state
     //     return response()->json($state->cities()->get());
     // }
@@ -1012,8 +1005,8 @@ class PublicRegionController extends Controller
     //     $country = $region->countries()->where('slug', $country_slug)->firstOrFail();
     //     $state = $country->states()->where('slug', $state_slug)->firstOrFail();
     //     $city = $state->cities()->where('slug', $city_slug)->firstOrFail();
-    
+
     //     // Fetching places from the city
     //     return response()->json($city->places()->get());
-    // }    
+    // }
 }

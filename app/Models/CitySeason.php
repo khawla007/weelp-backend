@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\City $city
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CitySeason newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CitySeason newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CitySeason query()
@@ -26,6 +27,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CitySeason whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CitySeason whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CitySeason whereWeather($value)
+ *
  * @mixin \Eloquent
  */
 class CitySeason extends Model
@@ -33,12 +35,12 @@ class CitySeason extends Model
     use HasFactory;
 
     protected $fillable = [
-        'city_id', 'name', 'months', 'weather', 'activities'
+        'city_id', 'name', 'months', 'weather', 'activities',
     ];
 
     protected $casts = [
-        'months' => 'array',     
-        'activities' => 'array', 
+        'months' => 'array',
+        'activities' => 'array',
     ];
 
     public function city()

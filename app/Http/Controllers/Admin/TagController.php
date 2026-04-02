@@ -15,25 +15,26 @@ class TagController extends Controller
     {
         if ($request->get('all')) {
             $tags = Tag::orderBy('id', 'desc')->get();
+
             return response()->json([
                 'success' => true,
-                'data'    => $tags,
+                'data' => $tags,
             ]);
         }
 
         $perPage = 6;
-        $page    = $request->get('page', 1);
+        $page = $request->get('page', 1);
 
         $tags = Tag::orderBy('id', 'desc')->paginate($perPage, ['*'], 'page', $page);
 
         return response()->json([
-            'success'      => true,
-            'data'         => $tags->items(),
+            'success' => true,
+            'data' => $tags->items(),
             'current_page' => $tags->currentPage(),
-            'per_page'     => $tags->perPage(),
-            'total'        => $tags->total(),
+            'per_page' => $tags->perPage(),
+            'total' => $tags->total(),
         ]);
-    }    
+    }
 
     public function getTagList()
     {
@@ -41,7 +42,7 @@ class TagController extends Controller
 
         return response()->json([
             'success' => true,
-            'data'    => $tags,
+            'data' => $tags,
         ]);
     }
 
@@ -52,9 +53,9 @@ class TagController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'slug'        => 'sometimes|required|string|max:255|unique:tags,slug',
+            'slug' => 'sometimes|required|string|max:255|unique:tags,slug',
             'description' => 'nullable|string',
-            'status'      => 'required|in:active,draft',
+            'status' => 'required|in:active,draft',
             'is_featured' => 'nullable|boolean',
         ]);
 
@@ -73,6 +74,7 @@ class TagController extends Controller
     public function show(string $id)
     {
         $tag = Tag::findOrFail($id);
+
         return response()->json($tag);
     }
 
@@ -85,9 +87,9 @@ class TagController extends Controller
 
         $validated = $request->validate([
             'name' => 'sometimes|required|string|max:255',
-            'slug'        => 'sometimes|required|string|max:255|unique:tags,slug,' . $tag->id,
+            'slug' => 'sometimes|required|string|max:255|unique:tags,slug,'.$tag->id,
             'description' => 'nullable|string',
-            'status'      => 'sometimes|required|in:active,draft',
+            'status' => 'sometimes|required|in:active,draft',
             'is_featured' => 'nullable|boolean',
         ]);
 

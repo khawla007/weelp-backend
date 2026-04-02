@@ -3,20 +3,18 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Http;
-use App\Models\Country;
-use App\Models\State;
 use App\Models\City;
 use App\Models\Place;
-use App\Models\PlaceLocationDetail;
-use App\Models\PlaceTravelInfo;
-use App\Models\PlaceSeason;
-use App\Models\PlaceEvent;
 use App\Models\PlaceAdditionalInfo;
+use App\Models\PlaceEvent;
 use App\Models\PlaceFaq;
+use App\Models\PlaceLocationDetail;
+use App\Models\PlaceSeason;
 use App\Models\PlaceSeo;
+use App\Models\PlaceTravelInfo;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Validator;
 
 class PlaceImportController extends Controller
 {
@@ -37,7 +35,7 @@ class PlaceImportController extends Controller
         // Download the file
         $response = Http::get($fileUrl);
 
-        if (!$response->successful()) {
+        if (! $response->successful()) {
             return response()->json(['error' => 'Failed to download the file.'], 400);
         }
 
@@ -65,10 +63,10 @@ class PlaceImportController extends Controller
 
             // Finding ccity_id from the cities table by sheet's city code/city name
             $city = City::where('name', $this->sanitizeInput($row[3]))
-            ->orWhere('city_code', $this->sanitizeInput($row[3]))
-            ->first();
+                ->orWhere('city_code', $this->sanitizeInput($row[3]))
+                ->first();
 
-            if (!$city) {
+            if (! $city) {
                 return response()->json(['message' => 'City ID not exist!'], 404);
             }
 
@@ -97,13 +95,13 @@ class PlaceImportController extends Controller
             PlaceLocationDetail::firstOrCreate(
                 ['place_id' => $place->id],
                 [
-                    'latitude'      => $this->sanitizeInput($row[7]),
-                    'longitude'     => $this->sanitizeInput($row[8]),
-                    'capital_city'  => $this->sanitizeInput($row[9]),
-                    'population'    => $this->sanitizeInput($row[10]),
-                    'currency'      => $this->sanitizeInput($row[11]),
-                    'timezone'      => $this->sanitizeInput($row[12]),
-                    'language'      => $this->sanitizeInput($row[13]),
+                    'latitude' => $this->sanitizeInput($row[7]),
+                    'longitude' => $this->sanitizeInput($row[8]),
+                    'capital_city' => $this->sanitizeInput($row[9]),
+                    'population' => $this->sanitizeInput($row[10]),
+                    'currency' => $this->sanitizeInput($row[11]),
+                    'timezone' => $this->sanitizeInput($row[12]),
+                    'language' => $this->sanitizeInput($row[13]),
                     'local_cuisine' => $this->sanitizeInput($row[14]),
                 ]
             );
@@ -112,18 +110,18 @@ class PlaceImportController extends Controller
             PlaceTravelInfo::firstOrCreate(
                 ['place_id' => $place->id],
                 [
-                    'airport'               => $this->sanitizeInput($row[15]),
+                    'airport' => $this->sanitizeInput($row[15]),
                     'public_transportation' => $this->sanitizeInput($row[16]),
-                    'taxi_available'        => filter_var($this->sanitizeInput($row[17]), FILTER_VALIDATE_BOOLEAN) ? 1 : 0,
+                    'taxi_available' => filter_var($this->sanitizeInput($row[17]), FILTER_VALIDATE_BOOLEAN) ? 1 : 0,
                     'rental_cars_available' => filter_var($this->sanitizeInput($row[18]), FILTER_VALIDATE_BOOLEAN) ? 1 : 0,
-                    'hotels'                => filter_var($this->sanitizeInput($row[19]), FILTER_VALIDATE_BOOLEAN) ? 1 : 0,
-                    'hostels'               => filter_var($this->sanitizeInput($row[20]), FILTER_VALIDATE_BOOLEAN) ? 1 : 0,
-                    'apartments'            => filter_var($this->sanitizeInput($row[21]), FILTER_VALIDATE_BOOLEAN) ? 1 : 0,
-                    'resorts'               => filter_var($this->sanitizeInput($row[22]), FILTER_VALIDATE_BOOLEAN) ? 1 : 0,
-                    'visa_requirements'     => $this->sanitizeInput($row[23]),
-                    'best_time_to_visit'    => $this->sanitizeInput($row[24]),
-                    'travel_tips'           => $this->sanitizeInput($row[25]),
-                    'safety_information'    => $this->sanitizeInput($row[26]),
+                    'hotels' => filter_var($this->sanitizeInput($row[19]), FILTER_VALIDATE_BOOLEAN) ? 1 : 0,
+                    'hostels' => filter_var($this->sanitizeInput($row[20]), FILTER_VALIDATE_BOOLEAN) ? 1 : 0,
+                    'apartments' => filter_var($this->sanitizeInput($row[21]), FILTER_VALIDATE_BOOLEAN) ? 1 : 0,
+                    'resorts' => filter_var($this->sanitizeInput($row[22]), FILTER_VALIDATE_BOOLEAN) ? 1 : 0,
+                    'visa_requirements' => $this->sanitizeInput($row[23]),
+                    'best_time_to_visit' => $this->sanitizeInput($row[24]),
+                    'travel_tips' => $this->sanitizeInput($row[25]),
+                    'safety_information' => $this->sanitizeInput($row[26]),
                 ]
             );
 
@@ -207,7 +205,7 @@ class PlaceImportController extends Controller
             // Insert multiple FAQs
             $faqQuestions = explode('|', $this->sanitizeInput($row[38]));
             $faqAnswers = explode('|', $this->sanitizeInput($row[39]));
-            
+
             // Fetch the last question number from the database
             $lastQuestion = PlaceFaq::where('place_id', $place->id)->orderBy('question_number', 'desc')->first();
             $questionNumber = $lastQuestion ? $lastQuestion->question_number + 1 : 1;
@@ -217,7 +215,7 @@ class PlaceImportController extends Controller
                 if (empty($question)) {
                     continue;
                 }
-                
+
                 PlaceFaq::updateOrCreate(
                     [
                         'place_id' => $place->id,
@@ -232,7 +230,7 @@ class PlaceImportController extends Controller
             }
 
             // Insert into the `place_seo` table (only once per place)
-            if (!in_array($place->id, $processedPlaces)) {
+            if (! in_array($place->id, $processedPlaces)) {
                 $metaTitle = $this->sanitizeInput($row[40]);
                 $metaDescription = $this->sanitizeInput($row[41]);
                 $keywords = $this->sanitizeInput($row[42]);
@@ -280,6 +278,7 @@ class PlaceImportController extends Controller
                 return true;
             }
         }
+
         return false;
     }
 

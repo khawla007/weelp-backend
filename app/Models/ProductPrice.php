@@ -8,9 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * @property-read \App\Models\Product|null $product
  * @property-read \App\Models\ProductVariant|null $variant
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ProductPrice newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ProductPrice newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ProductPrice query()
+ *
  * @mixin \Eloquent
  */
 class ProductPrice extends Model

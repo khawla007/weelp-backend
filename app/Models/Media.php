@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 /**
@@ -37,6 +36,7 @@ use Illuminate\Support\Facades\Storage;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\TransferMediaGallery> $transferMedia
  * @property-read int|null $transfer_media_count
  * @property-read \App\Models\User|null $userAvatar
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Media newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Media newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Media query()
@@ -49,6 +49,7 @@ use Illuminate\Support\Facades\Storage;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Media whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Media whereUrl($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Media whereWidth($value)
+ *
  * @mixin \Eloquent
  */
 class Media extends Model
@@ -65,7 +66,7 @@ class Media extends Model
      */
     public function getUrlAttribute($value)
     {
-        if (!$value) {
+        if (! $value) {
             return null;
         }
 
@@ -97,9 +98,6 @@ class Media extends Model
      *   "China - Image 1" -> (second) -> "China - Image 1-1"
      *   "China - Image 1" -> (third) -> "China - Image 1-2"
      *   "China - Image 1-1" -> (next) -> "China - Image 1-2"
-     *
-     * @param string $name
-     * @return string
      */
     private static function getUniqueName(string $name): string
     {
@@ -116,10 +114,10 @@ class Media extends Model
             if (preg_match($pattern, $originalName, $matches)) {
                 // Already has a counter (e.g., "China - Image 1-1")
                 $baseName = $matches[1];
-                $uniqueName = $baseName . '-' . $counter;
+                $uniqueName = $baseName.'-'.$counter;
             } else {
                 // No counter yet (e.g., "China - Image 1")
-                $uniqueName = $originalName . '-' . $counter;
+                $uniqueName = $originalName.'-'.$counter;
             }
         }
 
@@ -128,9 +126,6 @@ class Media extends Model
 
     /**
      * Check if a name already exists in the media table
-     *
-     * @param string $name
-     * @return bool
      */
     private static function nameExists(string $name): bool
     {
@@ -161,7 +156,7 @@ class Media extends Model
     {
         return $this->hasMany(PlaceMediaGallery::class, 'media_id');
     }
-    
+
     // public function blogs()
     // {
     //     return $this->hasMany(Blog::class, 'featured_image');
@@ -195,5 +190,4 @@ class Media extends Model
     {
         return $this->belongsToMany(Review::class, 'review_media', 'media_id', 'review_id');
     }
-    
 }

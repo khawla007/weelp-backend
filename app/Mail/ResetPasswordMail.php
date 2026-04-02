@@ -26,8 +26,8 @@ class ResetPasswordMail extends Mailable
     public function build()
     {
         return $this->subject('Reset Your Password')
-                    ->markdown('emails.reset-password', [
-                        'token' => $this->token,
-                    ]);
+            ->markdown('emails.reset-password', [
+                'token' => $this->token,
+            ]);
     }
 }

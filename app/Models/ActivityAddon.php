@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Activity $activity
  * @property-read \App\Models\Addon $addon
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityAddon newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityAddon newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityAddon query()
@@ -20,6 +21,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityAddon whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityAddon whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityAddon whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class ActivityAddon extends Model

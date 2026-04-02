@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Media $media
  * @property-read \App\Models\State $state
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StateMediaGallery featured()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StateMediaGallery newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StateMediaGallery newQuery()
@@ -24,6 +25,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StateMediaGallery whereMediaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StateMediaGallery whereStateId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StateMediaGallery whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class StateMediaGallery extends Model

@@ -2,30 +2,32 @@
 
 namespace Database\Seeders;
 
+use App\Models\City;
+use App\Models\CityAdditionalInfo;
+use App\Models\CityEvent;
+use App\Models\CityFaq;
+use App\Models\CityLocationDetail;
+use App\Models\CityMediaGallery;
+use App\Models\CitySeason;
+use App\Models\CitySeo;
+use App\Models\CityTravelInfo;
+use App\Models\State;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use App\Models\City;
-use App\Models\State;
-use App\Models\CityMediaGallery;
-use App\Models\CityLocationDetail;
-use App\Models\CityTravelInfo;
-use App\Models\CitySeason;
-use App\Models\CityEvent;
-use App\Models\CityAdditionalInfo;
-use App\Models\CityFaq;
-use App\Models\CitySeo;
 
 class CitySeeder extends Seeder
 {
     /**
      * Generate a random date/datetime in 2027
-     * @param bool $dateOnly If true, return date only (Y-m-d), otherwise datetime (Y-m-d H:i:s)
+     *
+     * @param  bool  $dateOnly  If true, return date only (Y-m-d), otherwise datetime (Y-m-d H:i:s)
      */
     private function random2027Date(bool $dateOnly = false): string
     {
         $start = strtotime('2027-01-01');
         $end = strtotime('2027-12-31');
         $timestamp = mt_rand($start, $end);
+
         return date($dateOnly ? 'Y-m-d' : 'Y-m-d H:i:s', $timestamp);
     }
 
@@ -153,8 +155,9 @@ class CitySeeder extends Seeder
         foreach ($cities as $cityData) {
             $stateName = $cityData['state_name'];
             $state = \App\Models\State::where('name', $stateName)->first();
-            if (!$state) {
+            if (! $state) {
                 echo "WARNING: State '{$stateName}' not found for city '{$cityData['name']}' - skipping\n";
+
                 continue;
             }
             $cityData['state_id'] = $state->id;
@@ -226,7 +229,7 @@ class CitySeeder extends Seeder
                     'name' => $this->getEventName($city->name),
                     'type' => $this->getEventTypes(),
                     'date' => $this->random2027Date(true),
-                    'location' => $city->name . ' City Center',
+                    'location' => $city->name.' City Center',
                     'description' => $this->getEventDescription($city->name),
                 ]);
 
@@ -261,7 +264,7 @@ class CitySeeder extends Seeder
 
                 $createdCount++;
             } catch (\Exception $e) {
-                echo "ERROR creating city {$cityData['name']}: " . $e->getMessage() . "\n";
+                echo "ERROR creating city {$cityData['name']}: ".$e->getMessage()."\n";
             }
         }
 
@@ -305,6 +308,7 @@ class CitySeeder extends Seeder
             'Singapore City' => 'SGD', 'Novena' => 'SGD', 'Toa Payoh' => 'SGD',
             'Changi' => 'SGD', 'Bedok' => 'SGD', 'Pasir Ris' => 'SGD',
         ];
+
         return $currencies[$cityName] ?? 'USD';
     }
 
@@ -332,6 +336,7 @@ class CitySeeder extends Seeder
             'Singapore City' => 'Asia/Singapore', 'Novena' => 'Asia/Singapore', 'Toa Payoh' => 'Asia/Singapore',
             'Changi' => 'Asia/Singapore', 'Bedok' => 'Asia/Singapore', 'Pasir Ris' => 'Asia/Singapore',
         ];
+
         return $timezones[$cityName] ?? 'UTC';
     }
 
@@ -360,6 +365,7 @@ class CitySeeder extends Seeder
             'Toa Payoh' => ['English', 'Mandarin', 'Malay', 'Tamil'], 'Changi' => ['English', 'Mandarin', 'Malay', 'Tamil'],
             'Bedok' => ['English', 'Mandarin', 'Malay', 'Tamil'], 'Pasir Ris' => ['English', 'Mandarin', 'Malay', 'Tamil'],
         ];
+
         return $languages[$cityName] ?? ['English'];
     }
 
@@ -427,6 +433,7 @@ class CitySeeder extends Seeder
             'Bedok' => ['Hawker Food', 'Local Dishes'],
             'Pasir Ris' => ['Singaporean Food', 'Seafood'],
         ];
+
         return $cuisines[$cityName] ?? ['Local Cuisine', 'International Food'];
     }
 
@@ -494,6 +501,7 @@ class CitySeeder extends Seeder
             'Bedok' => 'Changi Airport (SIN)',
             'Pasir Ris' => 'Changi Airport (SIN)',
         ];
+
         return $airports[$cityName] ?? 'International Airport';
     }
 
@@ -508,14 +516,15 @@ class CitySeeder extends Seeder
         $resortCities = [
             'Antalya', 'Alanya', 'Belek', 'Phuket Town', 'Patong', 'Kata',
             'Dubai', 'Sharjah', 'Ajman', 'Abu Dhabi', 'Al Ain', 'Nice', 'Cannes',
-            'Bali' // for future reference
+            'Bali', // for future reference
         ];
+
         return in_array($cityName, $resortCities);
     }
 
     private function getVisaRequirements(string $cityName): string
     {
-        return "Visa requirements depend on your nationality. Check with the embassy for entry requirements.";
+        return 'Visa requirements depend on your nationality. Check with the embassy for entry requirements.';
     }
 
     private function getBestTimeToVisit(string $cityName): string
@@ -539,12 +548,13 @@ class CitySeeder extends Seeder
             'Kochi' => 'September to March',
             'Singapore City' => 'February to April',
         ];
+
         return $times[$cityName] ?? 'Year-round destination';
     }
 
     private function getTravelTips(string $cityName): string
     {
-        return "Book accommodation in advance, especially during peak season. Learn a few local phrases for a better experience.";
+        return 'Book accommodation in advance, especially during peak season. Learn a few local phrases for a better experience.';
     }
 
     private function getSafetyInfo(string $cityName): string
@@ -565,6 +575,7 @@ class CitySeeder extends Seeder
         if (in_array($cityName, ['Bangkok', 'Phuket Town', 'Mumbai', 'Kochi', 'Singapore City', 'Patong', 'Kata', 'Alanya', 'Belek'])) {
             return [$allSeasons[1], $allSeasons[0]]; // Dry and Wet seasons (Winter, Summer)
         }
+
         return [$allSeasons[2], $allSeasons[0]]; // Spring and Summer
     }
 
@@ -589,6 +600,7 @@ class CitySeeder extends Seeder
             'Kochi' => 'Onam Festival',
             'Singapore City' => 'Singapore Grand Prix',
         ];
+
         return $events[$cityName] ?? "{$cityName} Cultural Festival";
     }
 
@@ -611,8 +623,9 @@ class CitySeeder extends Seeder
     {
         $questions = [
             1 => "What is the best time of year to visit {$cityName}?",
-            2 => "How many days should I spend in {$cityName}?"
+            2 => "How many days should I spend in {$cityName}?",
         ];
+
         return $questions[$number] ?? "Common question about {$cityName}";
     }
 
@@ -620,8 +633,9 @@ class CitySeeder extends Seeder
     {
         $answers = [
             1 => "The best time to visit {$cityName} depends on your preferences. Spring and fall offer pleasant weather and fewer crowds. Summer is peak tourist season with warm weather, while winter can be quieter with cooler temperatures.",
-            2 => "We recommend spending at least 3-4 days in {$cityName} to explore the main attractions. For a more comprehensive experience including day trips and deeper cultural immersion, plan for a week or more."
+            2 => "We recommend spending at least 3-4 days in {$cityName} to explore the main attractions. For a more comprehensive experience including day trips and deeper cultural immersion, plan for a week or more.",
         ];
+
         return $answers[$number] ?? "Answer about {$cityName}";
     }
 
@@ -636,7 +650,7 @@ class CitySeeder extends Seeder
             'address' => [
                 '@type' => 'PostalAddress',
                 'addressLocality' => $cityName,
-            ]
+            ],
         ];
     }
 }

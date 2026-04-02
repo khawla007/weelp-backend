@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Addon $addon
  * @property-read \App\Models\Transfer $transfer
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferAddon newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferAddon newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferAddon query()
@@ -20,6 +21,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferAddon whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferAddon whereTransferId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferAddon whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class TransferAddon extends Model

@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read \App\Models\VendorDriver $driver
  * @property-read \App\Models\VendorVehicle $vehicle
  * @property-read \App\Models\Vendor $vendor
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|VendorDriverSchedule newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|VendorDriverSchedule newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|VendorDriverSchedule query()
@@ -30,24 +31,29 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|VendorDriverSchedule whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|VendorDriverSchedule whereVehicleId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|VendorDriverSchedule whereVendorId($value)
+ *
  * @mixin \Eloquent
  */
-class VendorDriverSchedule extends Model {
+class VendorDriverSchedule extends Model
+{
     use HasFactory;
 
     protected $table = 'vendor_driver_schedules';
 
     protected $fillable = ['vendor_id', 'driver_id', 'vehicle_id', 'date', 'shift', 'time'];
 
-    public function vendor() {
+    public function vendor()
+    {
         return $this->belongsTo(Vendor::class);
     }
 
-    public function driver() {
+    public function driver()
+    {
         return $this->belongsTo(VendorDriver::class);
     }
 
-    public function vehicle() {
+    public function vehicle()
+    {
         return $this->belongsTo(VendorVehicle::class);
     }
 }

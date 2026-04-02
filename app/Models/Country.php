@@ -35,6 +35,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\State> $states
  * @property-read int|null $states_count
  * @property-read \App\Models\CountryTravelInfo|null $travelInfo
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Country newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Country newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Country query()
@@ -48,6 +49,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Country whereSlug($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Country whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Country whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class Country extends Model
@@ -60,11 +62,11 @@ class Country extends Model
         'slug',
         'type',
         'description',
-        'featured_destination'
+        'featured_destination',
     ];
 
     protected $casts = [
-        'featured_destination' => 'boolean'
+        'featured_destination' => 'boolean',
     ];
 
     public function regions()
@@ -72,7 +74,7 @@ class Country extends Model
         // return $this->belongsToMany(Region::class, 'region_country');
         return $this->belongsToMany(Region::class, 'region_country', 'country_id', 'region_id');
     }
-    
+
     // public function cities(): HasMany
     // {
     //     return $this->hasMany(City::class);
@@ -82,12 +84,14 @@ class Country extends Model
     {
         return $this->hasMany(CountryMediaGallery::class, 'country_id');
     }
-    
-    public function locationDetails() {
+
+    public function locationDetails()
+    {
         return $this->hasOne(CountryLocationDetail::class);
     }
 
-    public function travelInfo() {
+    public function travelInfo()
+    {
         return $this->hasOne(CountryTravelInfo::class);
     }
 
@@ -95,24 +99,29 @@ class Country extends Model
     {
         return $this->hasMany(CountrySeason::class, 'country_id', 'id');
     }
-    
-    public function events() {
+
+    public function events()
+    {
         return $this->hasMany(CountryEvent::class, 'country_id', 'id');
     }
 
-    public function additionalInfo() {
+    public function additionalInfo()
+    {
         return $this->hasMany(CountryAdditionalInfo::class);
     }
-    
-    public function faqs() {
+
+    public function faqs()
+    {
         return $this->hasMany(CountryFaq::class);
     }
-    
-    public function seo() {
+
+    public function seo()
+    {
         return $this->hasOne(CountrySeo::class);
     }
 
-    public function states() {
+    public function states()
+    {
         return $this->hasMany(State::class);
     }
 }

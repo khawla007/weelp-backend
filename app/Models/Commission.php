@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -15,6 +16,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\User $creator
  * @property-read \App\Models\Order $order
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Commission newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Commission newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Commission query()
@@ -26,6 +28,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Commission whereOrderId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Commission whereStatus($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Commission whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class Commission extends Model

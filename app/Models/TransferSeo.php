@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Transfer $transfer
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferSeo newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferSeo newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferSeo query()
@@ -32,6 +33,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferSeo whereSchemaType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferSeo whereTransferId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferSeo whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class TransferSeo extends Model
@@ -39,14 +41,15 @@ class TransferSeo extends Model
     use HasFactory;
 
     protected $table = 'transfer_seo';
+
     protected $fillable = [
-        'transfer_id', 'meta_title', 'meta_description', 
-        'keywords', 'og_image_url', 'canonical_url', 
-        'schema_type', 'schema_data'
+        'transfer_id', 'meta_title', 'meta_description',
+        'keywords', 'og_image_url', 'canonical_url',
+        'schema_type', 'schema_data',
     ];
 
     protected $casts = [
-        'schema_data' => 'array'
+        'schema_data' => 'array',
     ];
 
     public function transfer()

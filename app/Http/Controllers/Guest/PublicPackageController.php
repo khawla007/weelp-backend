@@ -3,16 +3,14 @@
 namespace App\Http\Controllers\Guest;
 
 use App\Http\Controllers\Controller;
-use App\Models\Package;
-use App\Models\City;
-use App\Models\Category;
 use App\Models\Attribute;
+use App\Models\City;
+use App\Models\Package;
 use App\Models\Tag;
 use Illuminate\Http\JsonResponse;
 
 class PublicPackageController extends Controller
 {
-    
     //  -------------------Code to get Packages with location details-------------------
     public function index(): JsonResponse
     {
@@ -25,9 +23,9 @@ class PublicPackageController extends Controller
             'inclusionsExclusions',
             'mediaGallery.media',
             'seo',
-            'categories.category', 
+            'categories.category',
             'attributes',
-            'tags'
+            'tags',
         ])->get()->map(function ($package) {
             return [
                 'id' => $package->id,
@@ -40,6 +38,7 @@ class PublicPackageController extends Controller
                     ?? $package->mediaGallery->first()?->media?->url,
                 'locations' => $package->locations->map(function ($location) {
                     $city = $location->city;
+
                     return [
                         'city_id' => $city->id,
                         'city' => $city->name,
@@ -96,13 +95,13 @@ class PublicPackageController extends Controller
         if ($packages->isEmpty()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Packages not found'
+                'message' => 'Packages not found',
             ]);
         }
 
         return response()->json([
             'success' => true,
-            'data' => $packages
+            'data' => $packages,
         ]);
     }
 
@@ -119,28 +118,28 @@ class PublicPackageController extends Controller
             'attributes',
             'tags.tag',
         ])
-        ->where('featured_package', true);
+            ->where('featured_package', true);
 
         if ($citySlug) {
             $city = City::where('slug', $citySlug)->first();
-            if (!$city) {
+            if (! $city) {
                 return response()->json(['success' => false, 'message' => 'City not found'], 404);
             }
-            $query->whereHas('locations', fn($q) => $q->where('city_id', $city->id));
+            $query->whereHas('locations', fn ($q) => $q->where('city_id', $city->id));
         }
 
         // Tag filter
         $tagNames = request()->has('tags') ? array_filter(explode(',', request()->get('tags'))) : [];
-        if (!empty($tagNames)) {
-            $query->whereHas('tags.tag', fn($q) => $q->whereIn('name', $tagNames));
+        if (! empty($tagNames)) {
+            $query->whereHas('tags.tag', fn ($q) => $q->whereIn('name', $tagNames));
         }
 
         $packages = $query->get();
 
         // Get all tags from result set (for filter UI)
         $allTags = $packages->pluck('tags')->flatten()
-            ->filter(fn($pt) => $pt->tag !== null)
-            ->map(fn($pt) => ['id' => $pt->tag->id, 'name' => $pt->tag->name])
+            ->filter(fn ($pt) => $pt->tag !== null)
+            ->map(fn ($pt) => ['id' => $pt->tag->id, 'name' => $pt->tag->name])
             ->unique('id')
             ->values();
 
@@ -157,6 +156,7 @@ class PublicPackageController extends Controller
                     ?? $package->mediaGallery->first()?->media?->url,
                 'locations' => $package->locations->map(function ($location) {
                     $city = $location->city;
+
                     return [
                         'city_id' => $city->id,
                         'city' => $city->name,
@@ -169,7 +169,7 @@ class PublicPackageController extends Controller
                         'name' => $category->category->name,
                     ];
                 })->toArray(),
-                'tags' => $package->tags->filter(fn($pt) => $pt->tag !== null)->map(function ($pt) {
+                'tags' => $package->tags->filter(fn ($pt) => $pt->tag !== null)->map(function ($pt) {
                     return [
                         'id' => $pt->tag->id,
                         'name' => $pt->tag->name,
@@ -195,8 +195,8 @@ class PublicPackageController extends Controller
         $formattedPackages = match ($sortBy) {
             'name_asc' => $formattedPackages->sortBy('name'),
             'name_desc' => $formattedPackages->sortByDesc('name'),
-            'price_asc' => $formattedPackages->sortBy(fn($item) => $item['base_pricing']?->variations?->first()?->regular_price ?? 0),
-            'price_desc' => $formattedPackages->sortByDesc(fn($item) => $item['base_pricing']?->variations?->first()?->regular_price ?? 0),
+            'price_asc' => $formattedPackages->sortBy(fn ($item) => $item['base_pricing']?->variations?->first()?->regular_price ?? 0),
+            'price_desc' => $formattedPackages->sortByDesc(fn ($item) => $item['base_pricing']?->variations?->first()?->regular_price ?? 0),
             default => $formattedPackages->sortByDesc('id'),
         };
 
@@ -232,15 +232,15 @@ class PublicPackageController extends Controller
             'mediaGallery.media',
             'seo',
             'faqs',
-            'categories.category', 
+            'categories.category',
             'attributes.attribute',
-            'tags'
+            'tags',
         ])->where('slug', $slug)->first();
 
-        if (!$package) {
+        if (! $package) {
             return response()->json([
                 'success' => false,
-                'message' => 'Package not found'
+                'message' => 'Package not found',
             ], 404);
         }
 
@@ -255,6 +255,7 @@ class PublicPackageController extends Controller
                 ?? $package->mediaGallery->first()?->media?->url,
             'locations' => $package->locations->map(function ($location) {
                 $city = $location->city;
+
                 return [
                     'city_id' => $city->id,
                     'city' => $city->name,
@@ -268,7 +269,7 @@ class PublicPackageController extends Controller
                     'region' => $city->state && $city->state->country && $city->state->country->regions->isNotEmpty()
                         ? $city->state->country->regions->first()->name
                         : null,
-                    
+
                 ];
             }),
             'schedules' => $package->schedules->map(function ($schedule) {
@@ -351,13 +352,13 @@ class PublicPackageController extends Controller
         if (empty($formattedPackage)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Package not found'
+                'message' => 'Package not found',
             ]);
         }
-        
+
         return response()->json([
             'success' => true,
-            'data' => $formattedPackage
+            'data' => $formattedPackage,
         ]);
     }
 
@@ -369,10 +370,10 @@ class PublicPackageController extends Controller
     {
         $package = Package::where('slug', $slug)->first();
 
-        if (!$package) {
+        if (! $package) {
             return response()->json([
                 'success' => false,
-                'message' => 'Package not found'
+                'message' => 'Package not found',
             ], 404);
         }
 
@@ -395,8 +396,7 @@ class PublicPackageController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $addons
+            'data' => $addons,
         ]);
     }
-
 }

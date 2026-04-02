@@ -34,6 +34,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read int|null $seasons_count
  * @property-read \App\Models\StateSeo|null $seo
  * @property-read \App\Models\StateTravelInfo|null $travelInfo
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|State newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|State newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|State query()
@@ -47,6 +48,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|State whereSlug($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|State whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|State whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class State extends Model
@@ -54,14 +56,15 @@ class State extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name', 'code', 'slug', 'type', 'country_id', 'description', 'featured_destination'
+        'name', 'code', 'slug', 'type', 'country_id', 'description', 'featured_destination',
     ];
 
     protected $casts = [
-        'featured_destination' => 'boolean'
+        'featured_destination' => 'boolean',
     ];
-    
-    public function country() {
+
+    public function country()
+    {
         return $this->belongsTo(Country::class);
     }
 
@@ -69,7 +72,7 @@ class State extends Model
     {
         return $this->hasMany(StateMediaGallery::class, 'state_id');
     }
-    
+
     public function locationDetails()
     {
         return $this->hasOne(StateLocationDetail::class);
@@ -105,7 +108,8 @@ class State extends Model
         return $this->hasOne(StateSeo::class);
     }
 
-    public function cities() {
+    public function cities()
+    {
         return $this->hasMany(City::class);
     }
 }

@@ -11,6 +11,7 @@ class OtpMail extends Mailable
     use Queueable, SerializesModels;
 
     public $otp;
+
     public $name;
 
     public function __construct(string $otp, string $name)
@@ -22,9 +23,9 @@ class OtpMail extends Mailable
     public function build()
     {
         return $this->subject('Verify your Weelp account')
-                    ->markdown('emails.otp-mail', [
-                        'otp' => $this->otp,
-                        'name' => $this->name,
-                    ]);
+            ->markdown('emails.otp-mail', [
+                'otp' => $this->otp,
+                'name' => $this->name,
+            ]);
     }
 }

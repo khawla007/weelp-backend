@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\Addon;
 
 class AddonSeeder extends Seeder
 {
@@ -155,5 +154,4 @@ class AddonSeeder extends Seeder
             \App\Models\Addon::create($addon);
         }
     }
-
 }

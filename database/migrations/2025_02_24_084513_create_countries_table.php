@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('countries', function (Blueprint $table) {
             $table->id();
-            $table->string('name',255)->unique();
+            $table->string('name', 255)->unique();
             $table->string('code');
             $table->string('slug')->unique();
             $table->string('type')->default('country');

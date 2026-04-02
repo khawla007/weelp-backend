@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
+use App\Models\Media;
 use App\Models\Review;
 use App\Models\ReviewMediaGallery;
-use App\Models\Media;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Arr;
 
 class ReviewSeeder extends Seeder
@@ -18,22 +18,22 @@ class ReviewSeeder extends Seeder
 
         for ($i = 1; $i <= 11; $i++) {
             $review = Review::create([
-                'user_id'     => rand(1, 5),
-                'item_type'   => $itemTypes[array_rand($itemTypes)],
-                'item_id'     => rand(1, 10),
-                'rating'      => rand(1, 5),
+                'user_id' => rand(1, 5),
+                'item_type' => $itemTypes[array_rand($itemTypes)],
+                'item_id' => rand(1, 10),
+                'rating' => rand(1, 5),
                 'review_text' => fake()->sentence(12),
-                'status'      => $statuses[array_rand($statuses)],
+                'status' => $statuses[array_rand($statuses)],
                 'is_featured' => (bool) rand(0, 1),
             ]);
 
             // Attach random media if any exist
-            if (!empty($mediaIds)) {
+            if (! empty($mediaIds)) {
                 $selectedIds = Arr::random($mediaIds, min(rand(1, 3), count($mediaIds)));
                 foreach ((array) $selectedIds as $index => $mediaId) {
                     ReviewMediaGallery::create([
-                        'review_id'  => $review->id,
-                        'media_id'   => $mediaId,
+                        'review_id' => $review->id,
+                        'media_id' => $mediaId,
                         'sort_order' => $index,
                     ]);
                 }

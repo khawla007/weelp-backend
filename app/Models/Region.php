@@ -17,6 +17,7 @@ use Illuminate\Support\Str;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Country> $countries
  * @property-read int|null $countries_count
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Region newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Region newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Region query()
@@ -28,6 +29,7 @@ use Illuminate\Support\Str;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Region whereSlug($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Region whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Region whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class Region extends Model

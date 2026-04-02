@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\City $city
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CityLocationDetail newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CityLocationDetail newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CityLocationDetail query()
@@ -32,6 +33,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CityLocationDetail wherePopulation($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CityLocationDetail whereTimezone($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CityLocationDetail whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class CityLocationDetail extends Model
@@ -39,8 +41,8 @@ class CityLocationDetail extends Model
     use HasFactory;
 
     protected $fillable = [
-        'city_id', 'latitude', 'longitude', 'population', 'currency', 
-        'timezone', 'language', 'local_cuisine'
+        'city_id', 'latitude', 'longitude', 'population', 'currency',
+        'timezone', 'language', 'local_cuisine',
     ];
 
     protected $casts = [

@@ -2,31 +2,30 @@
 
 namespace App\Http\Controllers;
 
-
-use Illuminate\Http\Request;
 use App\Mail\ResetPasswordMail;
-use Illuminate\Support\Facades\Password;
-use App\Models\User;
 use App\Mail\VerifyEmailMail;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
-use Tymon\JWTAuth\Facades\JWTAuth;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Validator;
+use Tymon\JWTAuth\Facades\JWTAuth;
+
 // use Illuminate\Support\Facades\Auth;
 // use Tymon\JWTAuth\Exceptions\JWTException;
 
 class AuthController extends Controller
 {
-
-     /**
+    /**
      * Handle the user register request Old.
-    */
+     */
     // public function register(Request $request)
     // {
-        
+
     //     $validator = Validator::make($request->all(), [
-    //         'name' => 'required|string|max:255', 
+    //         'name' => 'required|string|max:255',
     //         'email' => 'required|email|unique:users,email',
     //         'password' => 'required|string|min:8',
     //     ]);
@@ -63,7 +62,7 @@ class AuthController extends Controller
     {
         $username = $request->input('username');
 
-        if (!$username || strlen($username) < 3) {
+        if (! $username || strlen($username) < 3) {
             return response()->json([
                 'available' => false,
                 'message' => 'Username must be at least 3 characters',
@@ -76,14 +75,14 @@ class AuthController extends Controller
             ->exists();
 
         return response()->json([
-            'available' => !$exists,
+            'available' => ! $exists,
             'message' => $exists ? 'Username already taken. Please choose another.' : 'Username available',
         ]);
     }
 
     /**
      * Handle the user register request New.
-    */
+     */
     public function register(Request $request)
     {
         $request->validate([
@@ -122,7 +121,7 @@ class AuthController extends Controller
 
     /**
      * Handle the user email verfication while regestring account.
-    */
+     */
     public function verifyEmail(Request $request)
     {
         $token = $request->token;
@@ -142,14 +141,14 @@ class AuthController extends Controller
 
             return response()->json([
                 'success' => true,
-                'email'   => $email,
-                'message' => 'Email verified successfully!'
+                'email' => $email,
+                'message' => 'Email verified successfully!',
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'email'   => null,
-                'message' => 'Invalid or expired token.'
+                'email' => null,
+                'message' => 'Invalid or expired token.',
             ], 400);
         }
     }
@@ -161,7 +160,7 @@ class AuthController extends Controller
         if ($user->email_verified_at) {
             return response()->json([
                 'success' => false,
-                'message' => 'Email already verified.'
+                'message' => 'Email already verified.',
             ]);
         }
 
@@ -183,14 +182,13 @@ class AuthController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Verification link resent successfully.'
+            'message' => 'Verification link resent successfully.',
         ]);
     }
 
     /**
      * Handle the user login request.
-    */
-
+     */
     public function login(Request $request)
     {
         $validated = $request->validate([
@@ -200,10 +198,10 @@ class AuthController extends Controller
 
         $user = User::where('email', $validated['email'])->first();
 
-        if (!$user || !Hash::check($validated['password'], $user->password)) {
+        if (! $user || ! Hash::check($validated['password'], $user->password)) {
             return response()->json([
                 'success' => false,
-                'error' => 'email or password incorrect'
+                'error' => 'email or password incorrect',
             ], 401);
         }
 
@@ -225,8 +223,7 @@ class AuthController extends Controller
 
     /**
      * Handle the user logout request.
-    */
-
+     */
     public function logout(Request $request)
     {
         try {
@@ -265,32 +262,32 @@ class AuthController extends Controller
 
     /**
      * Handle the user forgot password request.
-    */
+     */
 
     // public function forgotPassword(Request $request)
     // {
     //     $request->validate([
     //         'email' => 'required|email',
     //     ]);
-    
+
     //     $user = User::where('email', $request->email)->first();
-    
+
     //     if (!$user) {
     //         return response()->json([
     //             'success' => false,
     //             'message' => 'Email address not found.',
     //         ]);
     //     }
-    
+
     //     $payload = [
     //         'email' => $request->email,
     //         'exp' => now()->addMinutes(10)->timestamp,
     //     ];
     //     $token = JWTAuth::customClaims($payload)->fromUser($user);
-    
+
     //     // Store only the hash of the token
     //     $hashedToken = Hash::make($token);
-    
+
     //     DB::table('password_resets')->updateOrInsert(
     //         ['email' => $request->email],
     //         ['token' => $hashedToken, 'created_at' => now()]
@@ -301,7 +298,7 @@ class AuthController extends Controller
     //         $message->to($request->email);
     //         $message->subject('Reset Password Notification');
     //     });
-    
+
     //     return response()->json([
     //         'success' => true,
     //         'message' => 'Password reset link sent to your email.',
@@ -316,7 +313,7 @@ class AuthController extends Controller
 
         $user = User::where('email', $request->email)->first();
 
-        if (!$user) {
+        if (! $user) {
             return response()->json([
                 'success' => false,
                 'message' => 'Email address not found.',
@@ -349,8 +346,7 @@ class AuthController extends Controller
 
     /**
      * Handle the user reset password request.
-    */
-
+     */
     public function resetPassword(Request $request)
     {
         $request->validate([
@@ -366,41 +362,41 @@ class AuthController extends Controller
                 'message' => 'Invalid or link expired.',
             ], 400);
         }
-    
+
         $email = $decodedToken->get('email');
-    
+
         // Retrieve the stored hashed token
         $storedToken = DB::table('password_resets')->where('email', $email)->first();
-    
-        if (!$storedToken || !Hash::check($request->token, $storedToken->token)) {
+
+        if (! $storedToken || ! Hash::check($request->token, $storedToken->token)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Invalid or already used token.',
             ], 400);
         }
-    
+
         $user = User::where('email', $email)->first();
-        if (!$user) {
+        if (! $user) {
             return response()->json([
                 'success' => false,
                 'message' => 'User not found.',
             ], 404);
         }
-    
+
         $user->update(['password' => bcrypt($request->password)]);
-    
+
         // Delete the token after use
         DB::table('password_resets')->where('email', $email)->delete();
-    
+
         return response()->json([
             'success' => true,
             'message' => 'Password has been reset successfully.',
         ]);
     }
-    
+
     /**
      * Handle the get user detail request.
-    */
+     */
 
     // public function getUserDetails(Request $request)
     // {
@@ -425,13 +421,12 @@ class AuthController extends Controller
 
     /**
      * Handle the refresh token request.
-    */
-
+     */
     public function refreshToken(Request $request)
     {
         try {
             $newAccessToken = JWTAuth::refresh(JWTAuth::getToken());
-    
+
             return response()->json([
                 'success' => true,
                 'access_token' => $newAccessToken,
@@ -443,6 +438,5 @@ class AuthController extends Controller
         } catch (\Exception $e) {
             return response()->json(['error' => 'Could not refresh token'], 500);
         }
-    }    
-
+    }
 }

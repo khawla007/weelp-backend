@@ -2,8 +2,8 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -21,10 +21,10 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Relation::enforceMorphMap([
-            'activity'  => \App\Models\Activity::class,
-            'package'   => \App\Models\Package::class,
+            'activity' => \App\Models\Activity::class,
+            'package' => \App\Models\Package::class,
             'itinerary' => \App\Models\Itinerary::class,
-            'transfer'  => \App\Models\Transfer::class,
+            'transfer' => \App\Models\Transfer::class,
         ]);
     }
 }

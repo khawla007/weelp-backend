@@ -27,6 +27,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read int|null $transfer_vendor_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\VendorVehicle> $vehicles
  * @property-read int|null $vehicles_count
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Vendor newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Vendor newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Vendor query()
@@ -39,32 +40,39 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Vendor wherePhone($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Vendor whereStatus($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Vendor whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
-class Vendor extends Model {
+class Vendor extends Model
+{
     use HasFactory;
 
     protected $table = 'vendors'; // Custom table name
 
     protected $fillable = ['name', 'description', 'email', 'phone', 'address', 'status'];
 
-    public function routes() {
+    public function routes()
+    {
         return $this->hasMany(VendorRoute::class);
     }
 
-    public function pricingTiers() {
+    public function pricingTiers()
+    {
         return $this->hasMany(VendorPricingTier::class);
     }
 
-    public function vehicles() {
+    public function vehicles()
+    {
         return $this->hasMany(VendorVehicle::class);
     }
 
-    public function drivers() {
+    public function drivers()
+    {
         return $this->hasMany(VendorDriver::class);
     }
 
-    public function transferVendor() {
+    public function transferVendor()
+    {
         return $this->hasMany(TransferVendorRoute::class, 'vendor_id');
     }
 

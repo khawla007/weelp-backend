@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -22,6 +21,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read int|null $itineraries_addon_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\PackageAddon> $packagesAddon
  * @property-read int|null $packages_addon_count
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Addon newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Addon newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Addon query()
@@ -35,6 +35,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Addon whereSalePrice($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Addon whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Addon whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class Addon extends Model

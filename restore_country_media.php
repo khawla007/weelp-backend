@@ -12,11 +12,11 @@ echo "Restoring Country-Media relationships...\n\n";
 
 // Get all countries keyed by name
 $countries = \App\Models\Country::all()->keyBy('name');
-echo "Found " . $countries->count() . " countries\n";
+echo 'Found '.$countries->count()." countries\n";
 
 // Get media records with country names
 $mediaRecords = \App\Models\Media::where('name', 'like', '% - Image %')->get();
-echo "Found " . $mediaRecords->count() . " media records\n\n";
+echo 'Found '.$mediaRecords->count()." media records\n\n";
 
 $attached = 0;
 $notFound = 0;
@@ -36,9 +36,9 @@ foreach ($mediaRecords as $media) {
                 ->where('media_id', $media->id)
                 ->exists();
 
-            if (!$exists) {
+            if (! $exists) {
                 // Set first image as featured
-                $isFeatured = !DB::table('country_media_gallery')
+                $isFeatured = ! DB::table('country_media_gallery')
                     ->where('country_id', $country->id)
                     ->where('is_featured', true)
                     ->exists();
@@ -63,4 +63,4 @@ foreach ($mediaRecords as $media) {
 echo "\n=== Summary ===\n";
 echo "Total attachments created: {$attached}\n";
 echo "Countries not found: {$notFound}\n";
-echo "CountryMediaGallery count: " . DB::table('country_media_gallery')->count() . "\n";
+echo 'CountryMediaGallery count: '.DB::table('country_media_gallery')->count()."\n";

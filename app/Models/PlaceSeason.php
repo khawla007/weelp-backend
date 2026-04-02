@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Place $place
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PlaceSeason newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PlaceSeason newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PlaceSeason query()
@@ -26,9 +27,11 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PlaceSeason wherePlaceId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PlaceSeason whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PlaceSeason whereWeather($value)
+ *
  * @mixin \Eloquent
  */
-class PlaceSeason extends Model {
+class PlaceSeason extends Model
+{
     use HasFactory;
 
     protected $fillable = [
@@ -40,11 +43,12 @@ class PlaceSeason extends Model {
     ];
 
     protected $casts = [
-        'months' => 'array',     
-        'activities' => 'array', 
+        'months' => 'array',
+        'activities' => 'array',
     ];
 
-    public function place() {
+    public function place()
+    {
         return $this->belongsTo(Place::class);
     }
 }

@@ -48,6 +48,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read \App\Models\CitySeo|null $seo
  * @property-read \App\Models\State $state
  * @property-read \App\Models\CityTravelInfo|null $travelInfo
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|City newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|City newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|City query()
@@ -61,6 +62,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|City whereStateId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|City whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|City whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class City extends Model
@@ -69,10 +71,11 @@ class City extends Model
 
     protected $fillable = [
         'name', 'code', 'slug', 'type', 'state_id', 'description',
-        'featured_city'
+        'featured_city',
     ];
+
     protected $casts = [
-        'featured_destination' => 'boolean'
+        'featured_destination' => 'boolean',
     ];
     // public function country(): BelongsTo
     // {
@@ -141,31 +144,38 @@ class City extends Model
         return $this->hasOne(CitySeo::class);
     }
 
-    public function places() {
+    public function places()
+    {
         return $this->hasMany(Place::class);
     }
 
-    public function activityLocations() {
+    public function activityLocations()
+    {
         return $this->hasMany(ActivityLocation::class, 'city_id');
     }
 
-    public function activities() {
+    public function activities()
+    {
         return $this->hasManyThrough(Activity::class, ActivityLocation::class, 'city_id', 'id', 'id', 'activity_id');
     }
 
-    public function itineraryLocations() {
+    public function itineraryLocations()
+    {
         return $this->hasMany(ItineraryLocation::class, 'city_id');
     }
 
-    public function itineraries() {
+    public function itineraries()
+    {
         return $this->hasManyThrough(Itinerary::class, ItineraryLocation::class, 'city_id', 'id', 'id', 'itinerary_id');
     }
 
-    public function packageLocations() {
+    public function packageLocations()
+    {
         return $this->hasMany(PackageLocation::class, 'city_id');
     }
 
-    public function packages() {
+    public function packages()
+    {
         return $this->hasManyThrough(Package::class, PackageLocation::class, 'city_id', 'id', 'id', 'package_id');
     }
 }

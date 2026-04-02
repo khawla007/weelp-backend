@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\City $city
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CityAdditionalInfo newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CityAdditionalInfo newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CityAdditionalInfo query()
@@ -22,6 +23,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CityAdditionalInfo whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CityAdditionalInfo whereTitle($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CityAdditionalInfo whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class CityAdditionalInfo extends Model
@@ -30,7 +32,7 @@ class CityAdditionalInfo extends Model
 
     // protected $table = 'city_additional_info';
     protected $fillable = [
-        'city_id', 'title', 'content'
+        'city_id', 'title', 'content',
     ];
 
     public function city()

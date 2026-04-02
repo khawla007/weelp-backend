@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -12,6 +13,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Post $post
  * @property-read \App\Models\User $user
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PostLike newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PostLike newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PostLike query()
@@ -20,6 +22,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PostLike wherePostId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PostLike whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PostLike whereUserId($value)
+ *
  * @mixin \Eloquent
  */
 class PostLike extends Model

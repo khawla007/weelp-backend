@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Activity $activity
  * @property-read \App\Models\City $city
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityLocation newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityLocation newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityLocation query()
@@ -27,18 +28,22 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityLocation whereLocationLabel($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityLocation whereLocationType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityLocation whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
-class ActivityLocation extends Model {
+class ActivityLocation extends Model
+{
     use HasFactory;
 
     protected $fillable = ['activity_id', 'city_id', 'location_type', 'location_label', 'duration'];
 
-    public function activity() {
+    public function activity()
+    {
         return $this->belongsTo(Activity::class);
     }
 
-    public function city() {
+    public function city()
+    {
         return $this->belongsTo(City::class, 'city_id');
     }
 }

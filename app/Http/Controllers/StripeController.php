@@ -2,29 +2,24 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-
-use Illuminate\Support\Facades\Mail;
-use App\Mail\CustomerProcessingOrderMail;
-use App\Mail\CustomerFailedOrderMail;
-use App\Mail\CustomerRefundedOrderMail;
-use App\Mail\CustomerCancelledOrderMail;
 use App\Mail\AdminNewOrderMail;
-
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Session;
-use App\Models\User;
+use App\Mail\CustomerCancelledOrderMail;
+use App\Mail\CustomerFailedOrderMail;
+use App\Mail\CustomerProcessingOrderMail;
+use App\Mail\CustomerRefundedOrderMail;
+use App\Models\Commission;
 use App\Models\Order;
 use App\Models\OrderPayment;
-use App\Models\OrderEmergencyContact;
-use Stripe\Stripe;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Session;
 use Stripe\Checkout\Session as StripeSession;
-use App\Models\Commission;
-
+use Stripe\Stripe;
 
 class StripeController extends Controller
 {
-
     public function createOrder(Request $request)
     {
         $data = $request->validate([
@@ -47,7 +42,7 @@ class StripeController extends Controller
             'emergency_contact.relationship' => 'required|string',
         ]);
 
-        $orderableClass = 'App\\Models\\' . ucfirst($data['order_type']);
+        $orderableClass = 'App\\Models\\'.ucfirst($data['order_type']);
         $orderable = $orderableClass::findOrFail($data['orderable_id']);
         $totalAmount = $data['is_custom_amount'] ? $data['custom_amount'] : $data['amount'];
 
@@ -88,10 +83,10 @@ class StripeController extends Controller
                 'coupons_applied' => $order->applied_coupons ?? [],
                 'media' => $orderable->mediaGallery->map(function ($mg) {
                     return [
-                        'id'   => $mg->media?->id,
+                        'id' => $mg->media?->id,
                         'name' => $mg->media?->name,
-                        'url'  => $mg->media?->url,
-                        'alt'  => $mg->media?->alt_text,
+                        'url' => $mg->media?->url,
+                        'alt' => $mg->media?->alt_text,
                     ];
                 }),
             ];
@@ -125,13 +120,13 @@ class StripeController extends Controller
 
         // ✅ Save payment info (based on PaymentIntent, not session)
         $order->payment()->create([
-            'payment_status'    => 'pending',
-            'payment_method'    => 'credit_card',
-            'amount'            => $data['amount'],
-            'is_custom_amount'  => $data['is_custom_amount'],
-            'custom_amount'     => $data['custom_amount'],
-            'total_amount'      => $totalAmount,
-            'currency'          => $data['currency'],
+            'payment_status' => 'pending',
+            'payment_method' => 'credit_card',
+            'amount' => $data['amount'],
+            'is_custom_amount' => $data['is_custom_amount'],
+            'custom_amount' => $data['custom_amount'],
+            'total_amount' => $totalAmount,
+            'currency' => $data['currency'],
             'payment_intent_id' => $data['payment_intent_id'],
         ]);
 
@@ -151,7 +146,8 @@ class StripeController extends Controller
             try {
                 $event = \Stripe\Webhook::constructEvent($payload, $sigHeader, $webhookSecret);
             } catch (\Stripe\Exception\SignatureVerificationException $e) {
-                Log::error('Stripe webhook signature verification failed: ' . $e->getMessage());
+                Log::error('Stripe webhook signature verification failed: '.$e->getMessage());
+
                 return response('Invalid signature', 400);
             }
         } else {
@@ -161,10 +157,9 @@ class StripeController extends Controller
         if ($event->type == 'payment_intent.succeeded') {
             $intent_id = $event->data->object->id;
 
-
             $payment = OrderPayment::where('payment_intent_id', $intent_id)->first();
 
-            if (!$payment) {
+            if (! $payment) {
                 return response()->json(['error' => 'Payment record not found'], 404);
             }
 
@@ -205,7 +200,7 @@ class StripeController extends Controller
                 }
             }
         }
-        
+
         // ❌ Payment failed
         elseif ($event->type == 'payment_intent.payment_failed') {
             $intent_id = $event->data->object->id;
@@ -245,15 +240,15 @@ class StripeController extends Controller
         // ❌ Payment canceled
         elseif ($event->type == 'payment_intent.canceled') {
             $intent_id = $event->data->object->id;
-        
+
             $payment = OrderPayment::where('payment_intent_id', $intent_id)->first();
             if ($payment) {
                 $payment->update(['payment_status' => 'cancelled']);
                 $order = Order::with(['user'])->find($payment->order_id);
-        
+
                 if ($order) {
                     $order->update(['status' => 'cancelled']);
-        
+
                     // Customer mail
                     Mail::to($order->user->email)->send(new CustomerCancelledOrderMail($order));
                 }
@@ -263,54 +258,53 @@ class StripeController extends Controller
         return response('Webhook Handled', 200);
     }
 
-
     // thanku page get order details api
     public function getOrderByPaymentIntent(Request $request)
     {
         $paymentIntentId = $request->query('payment_intent');
 
-        if (!$paymentIntentId) {
+        if (! $paymentIntentId) {
             return response()->json(['error' => 'Payment Intent ID is required'], 400);
         }
-    
+
         $payment = OrderPayment::where('payment_intent_id', $paymentIntentId)->first();
-    
-        if (!$payment) {
+
+        if (! $payment) {
             return response()->json(['error' => 'Payment not found'], 404);
         }
-    
+
         $order = Order::with(['payment', 'emergencyContact'])->find($payment->order_id);
-    
-        if (!$order) {
+
+        if (! $order) {
             return response()->json(['error' => 'Order not found'], 404);
         }
-    
+
         $user = $order->user ?? null;
         $userProfile = $user?->profile;
-    
+
         // ✅ Load from snapshot if orderable is missing
         $snapshot = is_array($order->item_snapshot_json)
             ? $order->item_snapshot_json
             : json_decode($order->item_snapshot_json, true);
-    
+
         $media = collect($snapshot['media'] ?? [])->map(fn ($mediaLink) => [
             'name' => null,
             'alt_text' => $mediaLink['alt'] ?? null,
             'url' => $mediaLink['url'] ?? null,
         ]);
-    
+
         $locations = $snapshot['location'] ?? [];
         $cityName = $locations[0]['city'] ?? null;
         $countryId = null;
-    
-        if (!empty($locations[0]['country'])) {
+
+        if (! empty($locations[0]['country'])) {
             $countryId = \App\Models\Country::where('name', $locations[0]['country'])->value('id');
         }
-    
+
         $region = $countryId
             ? \App\Models\Region::whereHas('countries', fn ($q) => $q->where('countries.id', $countryId))->first()
             : null;
-    
+
         $response = [
             'id' => $order->id,
             'item_id' => $order->orderable_id,
@@ -337,15 +331,14 @@ class StripeController extends Controller
                 'phone' => $userProfile?->phone,
             ],
         ];
-    
+
         return response()->json([
             'success' => true,
-            'order' => $response
+            'order' => $response,
         ]);
-    }    
+    }
 
-
-    //old stripe code
+    // old stripe code
 
     public function createCheckoutSession(Request $request)
     {
@@ -370,7 +363,7 @@ class StripeController extends Controller
         ]);
 
         // ✅ Determine the orderable model
-        $orderableClass = 'App\\Models\\' . ucfirst($data['order_type']);
+        $orderableClass = 'App\\Models\\'.ucfirst($data['order_type']);
         $orderable = $orderableClass::findOrFail($data['orderable_id']);
 
         // ✅ Calculate total amount
@@ -384,7 +377,7 @@ class StripeController extends Controller
             ->where('preferred_time', $data['preferred_time'])
             ->whereHas('payment', function ($q) use ($totalAmount) {
                 $q->where('payment_status', 'pending')
-                ->where('total_amount', $totalAmount); // ensure same amount too
+                    ->where('total_amount', $totalAmount); // ensure same amount too
             })
             ->latest()
             ->first();
@@ -392,7 +385,7 @@ class StripeController extends Controller
         if ($existingOrder) {
             return response()->json([
                 'id' => $existingOrder->payment->stripe_session_id,
-                'url' => 'https://checkout.stripe.com/pay/' . $existingOrder->payment->stripe_session_id,
+                'url' => 'https://checkout.stripe.com/pay/'.$existingOrder->payment->stripe_session_id,
             ]);
         }
 
@@ -465,7 +458,7 @@ class StripeController extends Controller
             $order->item_snapshot_json = json_encode(collect($snapshot)->toArray());
             $order->save();
         }
-        
+
         // ✅ Setup Stripe
         Stripe::setApiKey(config('services.stripe.secret'));
 
@@ -475,27 +468,27 @@ class StripeController extends Controller
                 'price_data' => [
                     'currency' => $data['currency'],
                     'product_data' => [
-                        'name' => 'Trip Booking for ' . $data['travel_date'],
+                        'name' => 'Trip Booking for '.$data['travel_date'],
                     ],
                     'unit_amount' => $totalAmount * 100, // in cents
                 ],
                 'quantity' => 1,
             ]],
-            'mode'           => 'payment',
+            'mode' => 'payment',
             'customer_email' => $data['customer_email'],
-            'success_url'    => config('app.frontend_url') . '/checkout/success?session_id={CHECKOUT_SESSION_ID}',
-            'cancel_url'     => config('app.frontend_url') . '/checkout',
+            'success_url' => config('app.frontend_url').'/checkout/success?session_id={CHECKOUT_SESSION_ID}',
+            'cancel_url' => config('app.frontend_url').'/checkout',
         ]);
 
         // ✅ Save payment record
         $order->payment()->create([
-            'payment_status'    => 'pending',
-            'payment_method'    => 'credit_card',
-            'amount'            => $data['amount'],
-            'is_custom_amount'  => $data['is_custom_amount'],
-            'custom_amount'     => $data['custom_amount'],
-            'total_amount'      => $totalAmount,
-            'currency'          => $data['currency'],
+            'payment_status' => 'pending',
+            'payment_method' => 'credit_card',
+            'amount' => $data['amount'],
+            'is_custom_amount' => $data['is_custom_amount'],
+            'custom_amount' => $data['custom_amount'],
+            'total_amount' => $totalAmount,
+            'currency' => $data['currency'],
             'stripe_session_id' => $checkoutSession->id,
         ]);
 
@@ -504,7 +497,6 @@ class StripeController extends Controller
             'url' => $checkoutSession->url,
         ]);
     }
-
 
     public function confirmPayment(Request $request)
     {
@@ -522,7 +514,7 @@ class StripeController extends Controller
             // Find the order_payment record using session_id
             $payment = OrderPayment::where('stripe_session_id', $sessionId)->first();
 
-            if (!$payment) {
+            if (! $payment) {
                 return response()->json(['error' => 'Payment record not found'], 404);
             }
 
@@ -540,7 +532,7 @@ class StripeController extends Controller
                     'status' => 'processing',
                 ]);
             }
-            
+
             $user = User::find($order->user_id);
 
             // Get item name and price based on orderable_type
@@ -556,13 +548,13 @@ class StripeController extends Controller
                     $itemName = $activity?->name;
                     $itemPrice = $activity?->pricing?->regular_price;
                     break;
-            
+
                 case 'Package':
                     $package = \App\Models\Package::with('basePricing.variations')->where('id', $orderableId)->first();
                     $itemName = $package?->name;
                     $itemPrice = $package?->basePricing?->variations?->first()?->regular_price;
                     break;
-            
+
                 case 'Itinerary':
                     $itinerary = \App\Models\Itinerary::with('basePricing.variations')->where('id', $orderableId)->first();
                     $itemName = $itinerary?->name;
@@ -570,18 +562,17 @@ class StripeController extends Controller
                     break;
             }
 
-
             $itemDetail = [
                 'item_name' => $itemName,
                 'item_price' => $itemPrice,
                 'total_paid' => $payment->total_amount,
             ];
-    
+
             $userDetail = [
                 'name' => $user?->name,
                 'email' => $user?->email,
             ];
-    
+
             $orderDetail = [
                 'user_detail' => $userDetail,
                 'item_detail' => $itemDetail,
@@ -590,12 +581,11 @@ class StripeController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $orderDetail
+                'data' => $orderDetail,
             ]);
 
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Something went wrong: ' . $e->getMessage()], 500);
+            return response()->json(['error' => 'Something went wrong: '.$e->getMessage()], 500);
         }
-    }    
-
+    }
 }

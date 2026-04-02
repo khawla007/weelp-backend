@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Itinerary $itinerary
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryAvailability newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryAvailability newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryAvailability query()
@@ -28,6 +29,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryAvailability whereQuantityBasedItinerary($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryAvailability whereStartDate($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryAvailability whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class ItineraryAvailability extends Model

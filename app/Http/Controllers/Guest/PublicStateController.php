@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Guest;
 
 use App\Http\Controllers\Controller;
-use App\Models\State;
 use App\Models\Country;
+use App\Models\State;
 
 class PublicStateController extends Controller
 {
@@ -12,7 +12,7 @@ class PublicStateController extends Controller
     {
         $country = Country::where('slug', $country_slug)->first();
 
-        if (!$country) {
+        if (! $country) {
             return response()->json(['success' => false, 'message' => 'Country not found'], 404);
         }
 
@@ -24,20 +24,20 @@ class PublicStateController extends Controller
                 $featuredImage = $state->mediaGallery->firstWhere('is_featured', true);
                 $state->feature_image = $featuredImage?->media->url ?? null;
                 unset($state->mediaGallery);
+
                 return $state;
             });
 
         if (collect($states)->isEmpty()) {
             return response()->json([
                 'success' => false,
-                'message' => 'States not found'
+                'message' => 'States not found',
             ], 404);
         }
 
         return response()->json([
             'success' => true,
-            'data' => $states
+            'data' => $states,
         ], 200);
     }
 }
-

@@ -4,8 +4,8 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Auth;
+use Symfony\Component\HttpFoundation\Response;
 
 class AdminMiddleware
 {
@@ -19,7 +19,7 @@ class AdminMiddleware
         $user = Auth::user();
 
         // Check if user role is 'admin' or 'super_admin'
-        if (!$user || !in_array($user->role, ['admin', 'super_admin'])) {
+        if (! $user || ! in_array($user->role, ['admin', 'super_admin'])) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 

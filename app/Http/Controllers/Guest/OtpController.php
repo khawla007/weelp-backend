@@ -10,19 +10,21 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 class OtpController extends Controller
 {
     // OTP configuration
     private const OTP_LENGTH = 6;
+
     private const OTP_EXPIRY_SECONDS = 600; // 10 minutes
+
     private const MAX_ATTEMPTS = 3;
+
     private const RESEND_COOLDOWN_SECONDS = 30;
+
     private const RATE_LIMIT_PER_HOUR = 3;
 
     /**
@@ -62,6 +64,7 @@ class OtpController extends Controller
         $cooldownKey = "otp:cooldown:{$email}";
         if (Cache::has($cooldownKey)) {
             $remainingSeconds = Cache::get($cooldownKey) - time();
+
             return response()->json([
                 'success' => false,
                 'message' => 'Please wait before requesting another OTP',
@@ -133,7 +136,7 @@ class OtpController extends Controller
         // Get OTP data from cache
         $otpData = Cache::get("otp:{$email}");
 
-        if (!$otpData) {
+        if (! $otpData) {
             return response()->json([
                 'success' => false,
                 'message' => 'OTP not found or expired',
@@ -143,6 +146,7 @@ class OtpController extends Controller
         // Check attempts
         if ($otpData['attempts'] >= self::MAX_ATTEMPTS) {
             Cache::forget("otp:{$email}");
+
             return response()->json([
                 'success' => false,
                 'message' => 'Maximum attempts exceeded. Please request a new OTP',
@@ -213,6 +217,7 @@ class OtpController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
+
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to create account',

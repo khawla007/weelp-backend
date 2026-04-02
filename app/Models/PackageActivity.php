@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Activity $activity
  * @property-read \App\Models\PackageSchedule $schedule
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageActivity newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageActivity newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageActivity query()
@@ -31,6 +32,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageActivity whereScheduleId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageActivity whereStartTime($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageActivity whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class PackageActivity extends Model
@@ -48,7 +50,7 @@ class PackageActivity extends Model
     ];
 
     protected $casts = [
-        'included' => 'boolean'
+        'included' => 'boolean',
     ];
 
     public function schedule()

@@ -2,11 +2,11 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
+use App\Models\City;
 use App\Models\Place;
 use App\Models\PlaceMediaGallery;
-use App\Models\City;
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class PlaceSeeder extends Seeder
 {
@@ -85,6 +85,6 @@ class PlaceSeeder extends Seeder
             echo "Created: {$place->name}\n";
         }
 
-        echo "\nTotal places created: " . count($placesData) . "\n";
+        echo "\nTotal places created: ".count($placesData)."\n";
     }
 }

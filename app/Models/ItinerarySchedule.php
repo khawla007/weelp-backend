@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read \App\Models\Itinerary $itinerary
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ItineraryTransfer> $transfers
  * @property-read int|null $transfers_count
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItinerarySchedule newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItinerarySchedule newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItinerarySchedule query()
@@ -23,12 +24,13 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItinerarySchedule whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItinerarySchedule whereItineraryId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItinerarySchedule whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class ItinerarySchedule extends Model
 {
     protected $fillable = [
-        'itinerary_id', 'day'
+        'itinerary_id', 'day',
     ];
 
     public function itinerary()

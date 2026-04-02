@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Country $country
  * @property-read \App\Models\Media $media
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CountryMediaGallery featured()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CountryMediaGallery newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CountryMediaGallery newQuery()
@@ -24,6 +25,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CountryMediaGallery whereIsFeatured($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CountryMediaGallery whereMediaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CountryMediaGallery whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class CountryMediaGallery extends Model

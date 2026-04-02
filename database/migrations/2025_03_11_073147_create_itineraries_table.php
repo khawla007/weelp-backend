@@ -13,7 +13,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('slug')->unique();
             $table->text('description')->nullable();
-            $table->string('item_type')->default('itinerary'); 
+            $table->string('item_type')->default('itinerary');
             $table->boolean('featured_itinerary')->default(false);
             $table->boolean('private_itinerary')->default(false);
             $table->timestamps();

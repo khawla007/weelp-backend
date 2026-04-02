@@ -27,6 +27,7 @@ use Illuminate\Support\Str;
  * @property-read int|null $itineraries_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ItineraryAttribute> $itinerariesAttributes
  * @property-read int|null $itineraries_attributes_count
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Attribute newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Attribute newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Attribute query()
@@ -42,6 +43,7 @@ use Illuminate\Support\Str;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Attribute whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Attribute whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Attribute whereValues($value)
+ *
  * @mixin \Eloquent
  */
 class Attribute extends Model
@@ -86,15 +88,18 @@ class Attribute extends Model
         });
     }
 
-    public function activityAttributes() {
+    public function activityAttributes()
+    {
         return $this->hasMany(ActivityAttribute::class, 'attribute_id');
     }
-    
-    public function activities() {
+
+    public function activities()
+    {
         return $this->hasManyThrough(Activity::class, ActivityAttribute::class, 'attribute_id', 'id', 'id', 'activity_id');
     }
 
-    public function itinerariesAttributes() {
+    public function itinerariesAttributes()
+    {
         return $this->hasMany(ItineraryAttribute::class, 'attribute_id');
     }
 

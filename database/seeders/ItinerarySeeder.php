@@ -2,26 +2,25 @@
 
 namespace Database\Seeders;
 
+use App\Models\Addon;
+use App\Models\Itinerary;
+use App\Models\ItineraryActivity;
+use App\Models\ItineraryAddon;
+use App\Models\ItineraryAttribute;
+use App\Models\ItineraryAvailability;
+use App\Models\ItineraryBasePricing;
+use App\Models\ItineraryBlackoutDate;
+use App\Models\ItineraryCategory;
+use App\Models\ItineraryInclusionExclusion;
+use App\Models\ItineraryLocation;
+use App\Models\ItineraryMediaGallery;
+use App\Models\ItineraryPriceVariation;
+use App\Models\ItinerarySchedule;
+use App\Models\ItinerarySeo;
+use App\Models\ItineraryTag;
+use App\Models\ItineraryTransfer;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
-use App\Models\Itinerary;
-use App\Models\ItineraryLocation;
-use App\Models\ItinerarySchedule;
-use App\Models\ItineraryActivity;
-use App\Models\ItineraryTransfer;
-use App\Models\ItineraryBasePricing;
-use App\Models\ItineraryPriceVariation;
-use App\Models\ItineraryBlackoutDate;
-use App\Models\ItineraryInclusionExclusion;
-use App\Models\ItineraryMediaGallery;
-use App\Models\ItinerarySeo;
-use App\Models\ItineraryCategory;
-use App\Models\ItineraryAttribute;
-use App\Models\ItineraryTag;
-use App\Models\ItineraryAvailability;
-use App\Models\Addon;
-use App\Models\ItineraryAddon;
 
 class ItinerarySeeder extends Seeder
 {
@@ -303,68 +302,68 @@ class ItinerarySeeder extends Seeder
 
             ItineraryLocation::create([
                 'itinerary_id' => $itinerary->id,
-                'city_id'      => rand(382, 441),
+                'city_id' => rand(382, 441),
             ]);
 
             for ($day = 1; $day <= 3; $day++) {
                 $schedule = ItinerarySchedule::create([
                     'itinerary_id' => $itinerary->id,
-                    'day'          => $day,
+                    'day' => $day,
                 ]);
 
                 ItineraryActivity::create([
                     'schedule_id' => $schedule->id,
                     'activity_id' => rand(1, 35),
-                    'start_time'  => '09:00:00',
-                    'end_time'    => '11:00:00',
-                    'notes'       => 'Sample activity note',
-                    'price'       => 100.00,
-                    'included'    => true,
+                    'start_time' => '09:00:00',
+                    'end_time' => '11:00:00',
+                    'notes' => 'Sample activity note',
+                    'price' => 100.00,
+                    'included' => true,
                 ]);
 
                 ItineraryTransfer::create([
-                    'schedule_id'      => $schedule->id,
-                    'transfer_id'      => [1, 5, 6, 7][array_rand([1, 5, 6, 7])],
-                    'start_time'       => '12:00:00',
-                    'end_time'         => '14:00:00',
-                    'notes'            => 'Sample transfer note',
-                    'price'            => 50.00,
-                    'included'         => true,
-                    'pickup_location'  => 'Airport',
+                    'schedule_id' => $schedule->id,
+                    'transfer_id' => [1, 5, 6, 7][array_rand([1, 5, 6, 7])],
+                    'start_time' => '12:00:00',
+                    'end_time' => '14:00:00',
+                    'notes' => 'Sample transfer note',
+                    'price' => 50.00,
+                    'included' => true,
+                    'pickup_location' => 'Airport',
                     'dropoff_location' => 'Hotel',
-                    'pax'              => 2,
+                    'pax' => 2,
                 ]);
             }
 
             $basePricing = ItineraryBasePricing::create([
                 'itinerary_id' => $itinerary->id,
-                'currency'     => 'USD',
+                'currency' => 'USD',
                 'availability' => 'Available',
-                'start_date'   => now(),
-                'end_date'     => now()->addMonth(),
+                'start_date' => now(),
+                'end_date' => now()->addMonth(),
             ]);
 
             ItineraryPriceVariation::create([
                 'base_pricing_id' => $basePricing->id,
-                'name'            => 'Standard Package',
-                'regular_price'   => 1000.00,
-                'sale_price'      => 800.00,
-                'max_guests'      => 4,
-                'description'     => 'Standard package with discount',
+                'name' => 'Standard Package',
+                'regular_price' => 1000.00,
+                'sale_price' => 800.00,
+                'max_guests' => 4,
+                'description' => 'Standard package with discount',
             ]);
 
             ItineraryBlackoutDate::create([
                 'base_pricing_id' => $basePricing->id,
-                'date'            => now()->addDays(7),
-                'reason'          => 'Holiday season',
+                'date' => now()->addDays(7),
+                'reason' => 'Holiday season',
             ]);
 
             ItineraryInclusionExclusion::create([
                 'itinerary_id' => $itinerary->id,
-                'type'         => 'meal',
-                'title'        => 'Breakfast included',
-                'description'  => 'Breakfast included in the package',
-                'included'     => true,
+                'type' => 'meal',
+                'title' => 'Breakfast included',
+                'description' => 'Breakfast included in the package',
+                'included' => true,
             ]);
 
             // Assign 3-6 random media images per itinerary
@@ -372,19 +371,19 @@ class ItinerarySeeder extends Seeder
             for ($i = 0; $i < $mediaCount; $i++) {
                 ItineraryMediaGallery::create([
                     'itinerary_id' => $itinerary->id,
-                    'media_id'     => rand(78, 548),
+                    'media_id' => rand(78, 548),
                 ]);
             }
 
             ItinerarySeo::create([
-                'itinerary_id'     => $itinerary->id,
-                'meta_title'       => 'Sample Itinerary',
+                'itinerary_id' => $itinerary->id,
+                'meta_title' => 'Sample Itinerary',
                 'meta_description' => 'This is a sample itinerary for SEO testing.',
-                'keywords'         => 'itinerary, travel, sample',
-                'og_image_url'     => 'https://example.com/sample-og.jpg',
-                'canonical_url'    => 'https://example.com/sample',
-                'schema_type'      => 'Travel',
-                'schema_data'      => json_encode([
+                'keywords' => 'itinerary, travel, sample',
+                'og_image_url' => 'https://example.com/sample-og.jpg',
+                'canonical_url' => 'https://example.com/sample',
+                'schema_type' => 'Travel',
+                'schema_data' => json_encode([
                     'type' => 'Travel',
                     'name' => $itinerary->name,
                 ]),
@@ -392,7 +391,7 @@ class ItinerarySeeder extends Seeder
 
             ItineraryCategory::create([
                 'itinerary_id' => $itinerary->id,
-                'category_id'  => 1,
+                'category_id' => 1,
             ]);
 
             // ItineraryAttribute::create([
@@ -406,37 +405,37 @@ class ItinerarySeeder extends Seeder
                 2 => ['Easy', 'Medium', 'Hard'],
                 3 => ['1-5', '6-10', '11-20', '20+'],
             ];
-            
+
             $usedAttributeIds = [];
-            
+
             $randomAttributeIds = array_rand($attributeValues, rand(2, 3)); // 2 ya 3 attributes assign kare
-            
+
             // Ensure it's array
             $randomAttributeIds = is_array($randomAttributeIds) ? $randomAttributeIds : [$randomAttributeIds];
-            
+
             foreach ($randomAttributeIds as $attributeId) {
                 $valueOptions = $attributeValues[$attributeId];
                 $attributeValue = $valueOptions[array_rand($valueOptions)];
-            
+
                 ItineraryAttribute::create([
                     'itinerary_id' => $itinerary->id,
                     'attribute_id' => $attributeId,
-                    'attribute_value' => $attributeValue
+                    'attribute_value' => $attributeValue,
                 ]);
             }
 
             ItineraryTag::create([
                 'itinerary_id' => $itinerary->id,
-                'tag_id'       => 1,
+                'tag_id' => 1,
             ]);
 
             ItineraryAvailability::create([
-                'itinerary_id'             => $itinerary->id,
-                'date_based_itinerary'     => $dateBased = fake()->boolean,
-                'start_date'               => $dateBased ? fake()->dateTimeBetween('-1 month', '+1 month')->format('Y-m-d') : null,
-                'end_date'                 => $dateBased ? fake()->dateTimeBetween('+2 month', '+6 month')->format('Y-m-d') : null,
+                'itinerary_id' => $itinerary->id,
+                'date_based_itinerary' => $dateBased = fake()->boolean,
+                'start_date' => $dateBased ? fake()->dateTimeBetween('-1 month', '+1 month')->format('Y-m-d') : null,
+                'end_date' => $dateBased ? fake()->dateTimeBetween('+2 month', '+6 month')->format('Y-m-d') : null,
                 'quantity_based_itinerary' => $quantityBased = fake()->boolean,
-                'max_quantity'             => $quantityBased ? fake()->numberBetween(1, 100) : null,
+                'max_quantity' => $quantityBased ? fake()->numberBetween(1, 100) : null,
             ]);
 
             $addonIds = Addon::where('type', 'itinerary')
@@ -448,10 +447,9 @@ class ItinerarySeeder extends Seeder
             foreach ($addonIds as $addonId) {
                 ItineraryAddon::create([
                     'itinerary_id' => $itinerary->id,   // ✅ correct foreign key
-                    'addon_id'     => $addonId,
+                    'addon_id' => $addonId,
                 ]);
             }
         }
     }
-
 }

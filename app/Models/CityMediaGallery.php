@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\City $city
  * @property-read \App\Models\Media $media
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CityMediaGallery featured()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CityMediaGallery newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CityMediaGallery newQuery()
@@ -24,6 +25,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CityMediaGallery whereIsFeatured($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CityMediaGallery whereMediaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CityMediaGallery whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class CityMediaGallery extends Model

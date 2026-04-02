@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
  * @property bool $is_featured
  * @property-read \App\Models\Blog $blog
  * @property-read \App\Models\Media $media
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|BlogMedia featured()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|BlogMedia newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|BlogMedia newQuery()
@@ -19,6 +20,7 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|BlogMedia whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|BlogMedia whereIsFeatured($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|BlogMedia whereMediaId($value)
+ *
  * @mixin \Eloquent
  */
 class BlogMedia extends Pivot

@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Itinerary $itinerary
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItinerarySeo newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItinerarySeo newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItinerarySeo query()
@@ -31,21 +32,21 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItinerarySeo whereSchemaData($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItinerarySeo whereSchemaType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItinerarySeo whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class ItinerarySeo extends Model
 {
-
     protected $table = 'itinerary_seo';
 
     protected $fillable = [
-        'itinerary_id', 'meta_title', 'meta_description', 
-        'keywords', 'og_image_url', 'canonical_url', 
-        'schema_type', 'schema_data'
+        'itinerary_id', 'meta_title', 'meta_description',
+        'keywords', 'og_image_url', 'canonical_url',
+        'schema_type', 'schema_data',
     ];
 
     protected $casts = [
-        'schema_data' => 'array'
+        'schema_data' => 'array',
     ];
 
     public function itinerary()

@@ -4,16 +4,15 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\City;
-use App\Models\CityMediaGallery;
-use App\Models\CityLocationDetail;
-use App\Models\CityTravelInfo;
-use App\Models\CitySeason;
-use App\Models\CityEvent;
 use App\Models\CityAdditionalInfo;
+use App\Models\CityEvent;
 use App\Models\CityFaq;
+use App\Models\CityLocationDetail;
+use App\Models\CityMediaGallery;
+use App\Models\CitySeason;
 use App\Models\CitySeo;
+use App\Models\CityTravelInfo;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 
 class CityController extends Controller
 {
@@ -30,8 +29,8 @@ class CityController extends Controller
         $query = City::query()->with('mediaGallery.media', 'state.country.regions');
 
         // Name search
-        if ($request->has('name') && !empty($request->name)) {
-            $query->where('name', 'like', '%' . $request->name . '%');
+        if ($request->has('name') && ! empty($request->name)) {
+            $query->where('name', 'like', '%'.$request->name.'%');
         }
 
         // Pagination (perPage fix)
@@ -42,6 +41,7 @@ class CityController extends Controller
         $data = $cities->map(function ($city) {
             // Get featured image from media_gallery
             $featuredImage = $city->mediaGallery->firstWhere('is_featured', true);
+
             return [
                 'id' => $city->id,
                 'name' => $city->name,
@@ -87,6 +87,7 @@ class CityController extends Controller
                 }),
             ];
         });
+
         // 🎯 Custom response format
         return response()->json([
             'success' => true,
@@ -94,13 +95,13 @@ class CityController extends Controller
             'total' => $cities->total(),
             'per_page' => $cities->perPage(),
             'last_page' => $cities->lastPage(),
-            'current_page' => $cities->currentPage(), 
+            'current_page' => $cities->currentPage(),
         ]);
     }
-    
+
     /**
      * List of Citys dropdown
-    */
+     */
     public function cityList()
     {
         try {
@@ -110,25 +111,25 @@ class CityController extends Controller
                 return response()->json([
                     'success' => false,
                     'message' => 'No City found',
-                    'data' => []
+                    'data' => [],
                 ], 404);
             }
 
             return response()->json([
                 'success' => true,
                 'message' => 'City list fetched successfully',
-                'data' => $cities
+                'data' => $cities,
             ], 200);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Something went wrong while fetching City list',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
-    
+
     /**
      * Store a newly created resource in storage.
      */
@@ -145,7 +146,7 @@ class CityController extends Controller
             'featured_destination' => 'boolean',
 
             // Media (array of objects)
-            'media_gallery'     => 'nullable|array',
+            'media_gallery' => 'nullable|array',
 
             // Location Details
             'location_details.latitude' => 'nullable|string',
@@ -212,7 +213,7 @@ class CityController extends Controller
 
         if ($exists) {
             return response()->json([
-                'message' => 'This City already exists, please choose another name.'
+                'message' => 'This City already exists, please choose another name.',
             ], 422); // 422 = Unprocessable Entity (validation error)
         }
         // Create City
@@ -227,7 +228,7 @@ class CityController extends Controller
         ]);
 
         // Media Details
-        if (!empty($validated['media_gallery'])) {
+        if (! empty($validated['media_gallery'])) {
             // Ensure only one featured image
             $hasFeatured = false;
             foreach ($validated['media_gallery'] as $media) {
@@ -243,20 +244,20 @@ class CityController extends Controller
 
                 CityMediaGallery::create([
                     'city_id' => $city->id,
-                    'media_id'    => $media['media_id'],
+                    'media_id' => $media['media_id'],
                     'is_featured' => $isFeatured,
                 ]);
             }
         }
 
         // Location Details
-        if (!empty($validated['location_details'])) {
+        if (! empty($validated['location_details'])) {
             $validated['location_details']['city_id'] = $city->id;
             CityLocationDetail::create($validated['location_details']);
         }
 
         // Travel Info
-        if (!empty($validated['travel_info'])) {
+        if (! empty($validated['travel_info'])) {
             $validated['travel_info']['city_id'] = $city->id;
             CityTravelInfo::create($validated['travel_info']);
         }
@@ -276,7 +277,7 @@ class CityController extends Controller
         }
 
         // Additional Info
-        if (!empty($validated['additional_info'])) {
+        if (! empty($validated['additional_info'])) {
             foreach ($validated['additional_info'] as $additional) {
                 $additional['city_id'] = $city->id;
                 CityAdditionalInfo::create($additional);
@@ -284,7 +285,7 @@ class CityController extends Controller
         }
 
         // FAQs
-        if (!empty($validated['faqs'])) {
+        if (! empty($validated['faqs'])) {
             $questionNumber = 1;
             foreach ($validated['faqs'] as $faq) {
                 CityFaq::create([
@@ -297,14 +298,14 @@ class CityController extends Controller
         }
 
         // SEO
-        if (!empty($validated['seo'])) {
+        if (! empty($validated['seo'])) {
             $validated['seo']['city_id'] = $city->id;
             CitySeo::create($validated['seo']);
         }
 
         return response()->json([
             'message' => 'City created successfully',
-            'City' => $city
+            'City' => $city,
         ], 201);
     }
 
@@ -321,11 +322,11 @@ class CityController extends Controller
             'events',
             'additionalInfo',
             'faqs',
-            'seo'
+            'seo',
         ])->find($id);
 
         // Check if city exists FIRST (before accessing properties)
-        if (!$city) {
+        if (! $city) {
             return response()->json(['message' => 'City not found'], 404);
         }
 
@@ -360,7 +361,7 @@ class CityController extends Controller
     public function update(Request $request, $id)
     {
         $city = City::findOrFail($id);
-    
+
         $validated = $request->validate([
             // City fields
             'name' => 'nullable|string|max:255',
@@ -372,8 +373,8 @@ class CityController extends Controller
             'featured_destination' => 'boolean',
 
             // Media (array of objects)
-            'media_gallery'     => 'nullable|array',
-    
+            'media_gallery' => 'nullable|array',
+
             // Location Details
             'location_details.latitude' => 'nullable|string',
             'location_details.longitude' => 'nullable|string',
@@ -383,7 +384,7 @@ class CityController extends Controller
             'location_details.timezone' => 'nullable|string',
             'location_details.language' => 'nullable|array',
             'location_details.local_cuisine' => 'nullable|array',
-    
+
             // Travel Info
             'travel_info.airport' => 'nullable|string',
             'travel_info.public_transportation' => 'nullable|array',
@@ -397,7 +398,7 @@ class CityController extends Controller
             'travel_info.best_time_to_visit' => 'nullable|string',
             'travel_info.travel_tips' => 'nullable|string',
             'travel_info.safety_information' => 'nullable|string',
-    
+
             // Season (array of objects)
             'seasons' => 'nullable|array',
             'seasons.*.id' => 'nullable|integer|exists:city_seasons,id',
@@ -405,7 +406,7 @@ class CityController extends Controller
             'seasons.*.months' => 'nullable|array',
             'seasons.*.weather' => 'nullable|string',
             'seasons.*.activities' => 'nullable|array',
-    
+
             // Event (array of objects)
             'events' => 'nullable|array',
             'events.*.id' => 'nullable|integer|exists:city_events,id',
@@ -414,19 +415,19 @@ class CityController extends Controller
             'events.*.date' => 'nullable|date',
             'events.*.location' => 'nullable|string',
             'events.*.description' => 'nullable|string',
-    
+
             // Additional Info
             'additional_info' => 'nullable|array',
             'additional_info.*.id' => 'nullable|integer|exists:city_additional_infos,id',
             'additional_info.*.title' => 'required|string',
             'additional_info.*.content' => 'required|string',
-    
+
             // FAQs
             'faqs' => 'nullable|array',
             'faqs.*.id' => 'nullable|integer|exists:city_faqs,id',
             'faqs.*.question' => 'required|string',
             'faqs.*.answer' => 'required|string',
-    
+
             // SEO
             'seo.meta_title' => 'nullable|string',
             'seo.meta_description' => 'nullable|string',
@@ -436,7 +437,7 @@ class CityController extends Controller
             'seo.schema_type' => 'nullable|string',
             'seo.schema_data' => 'nullable|array',
         ]);
-    
+
         // === City main fields update ===
         $city->update([
             'name' => $validated['name'] ?? $city->name,
@@ -467,14 +468,14 @@ class CityController extends Controller
 
                 CityMediaGallery::create([
                     'city_id' => $city->id,
-                    'media_id'    => $media['media_id'],
+                    'media_id' => $media['media_id'],
                     'is_featured' => $isFeatured,
                 ]);
             }
         }
-    
+
         // === Location Details (hasOne) ===
-        if (!empty($validated['location_details'])) {
+        if (! empty($validated['location_details'])) {
             if ($city->locationDetails) {
                 $city->locationDetails->update($validated['location_details']);
             } else {
@@ -483,59 +484,59 @@ class CityController extends Controller
         }
 
         // === Travel Info (hasOne) ===
-        if (!empty($validated['travel_info'])) {
+        if (! empty($validated['travel_info'])) {
             if ($city->travelInfo) {
                 $city->travelInfo->update($validated['travel_info']);
             } else {
                 $city->travelInfo()->create($validated['travel_info']);
             }
         }
-    
+
         // === Seasons (hasMany) ===
         if ($request->has('seasons')) {
             $sentIds = collect($request->seasons)->pluck('id')->filter()->toArray();
-    
+
             // delete missing
             CitySeason::where('city_id', $city->id)
                 ->whereNotIn('id', $sentIds)
                 ->delete();
-    
+
             foreach ($request->seasons as $season) {
-                if (!empty($season['id'])) {
+                if (! empty($season['id'])) {
                     CitySeason::where('id', $season['id'])->update($season);
                 } else {
                     $city->seasons()->create($season);
                 }
             }
         }
-    
+
         // === Events (hasMany) ===
         if ($request->has('events')) {
             $sentIds = collect($request->events)->pluck('id')->filter()->toArray();
-    
+
             CityEvent::where('city_id', $city->id)
                 ->whereNotIn('id', $sentIds)
                 ->delete();
-    
+
             foreach ($request->events as $event) {
-                if (!empty($event['id'])) {
+                if (! empty($event['id'])) {
                     CityEvent::where('id', $event['id'])->update($event);
                 } else {
                     $city->events()->create($event);
                 }
             }
         }
-    
+
         // === Additional Info (hasMany) ===
         if ($request->has('additional_info')) {
             $sentIds = collect($request->additional_info)->pluck('id')->filter()->toArray();
-    
+
             CityAdditionalInfo::where('city_id', $city->id)
                 ->whereNotIn('id', $sentIds)
                 ->delete();
-    
+
             foreach ($request->additional_info as $info) {
-                if (!empty($info['id'])) {
+                if (! empty($info['id'])) {
                     CityAdditionalInfo::where('id', $info['id'])->update($info);
                 } else {
                     $info['city_id'] = $city->id;
@@ -543,18 +544,18 @@ class CityController extends Controller
                 }
             }
         }
-    
+
         // === FAQs (hasMany) ===
         if ($request->has('faqs')) {
             $sentIds = collect($request->faqs)->pluck('id')->filter()->toArray();
-    
+
             CityFaq::where('city_id', $city->id)
                 ->whereNotIn('id', $sentIds)
                 ->delete();
-    
+
             $questionNumber = 1;
             foreach ($request->faqs as $faq) {
-                if (!empty($faq['id'])) {
+                if (! empty($faq['id'])) {
                     CityFaq::where('id', $faq['id'])->update([
                         'question_number' => $questionNumber++,
                         'question' => $faq['question'],
@@ -570,25 +571,25 @@ class CityController extends Controller
                 }
             }
         }
-    
+
         // === SEO (hasOne) ===
-        if (!empty($validated['seo'])) {
+        if (! empty($validated['seo'])) {
             if ($city->seo) {
                 $city->seo->update($validated['seo']);
             } else {
                 $city->seo()->create($validated['seo']);
             }
         }
-    
+
         return response()->json([
             'message' => 'City updated successfully',
-            'City' => $city->fresh()
+            'City' => $city->fresh(),
         ], 200);
-    }    
+    }
 
     /**
      * Remove the specified resource from array of object tables.
-    */
+     */
     public function partialRemove(Request $request, $cityId)
     {
         // Events delete
@@ -597,33 +598,33 @@ class CityController extends Controller
                 ->where('city_id', $cityId)
                 ->delete();
         }
-    
+
         // Seasons delete
         if ($request->has('deleted_season_ids')) {
             CitySeason::whereIn('id', $request->deleted_season_ids)
                 ->where('city_id', $cityId)
                 ->delete();
         }
-    
+
         // FAQs delete
         if ($request->has('deleted_faq_ids')) {
             CityFaq::whereIn('id', $request->deleted_faq_ids)
                 ->where('city_id', $cityId)
                 ->delete();
         }
-    
+
         // Additional Info delete
         if ($request->has('deleted_additional_info_ids')) {
             CityAdditionalInfo::whereIn('id', $request->deleted_additional_info_ids)
                 ->where('city_id', $cityId)
                 ->delete();
         }
-    
+
         return response()->json([
             'success' => true,
-            'message' => 'Selected records removed successfully'
+            'message' => 'Selected records removed successfully',
         ]);
-    } 
+    }
 
     /**
      * Remove the specified resource from storage.
@@ -631,6 +632,7 @@ class CityController extends Controller
     public function destroy(string $id)
     {
         City::findOrFail($id)->delete();
+
         return response()->json(['message' => 'City deleted successfully']);
     }
 
@@ -649,12 +651,12 @@ class CityController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => "{$count} cities deleted successfully"
+                'message' => "{$count} cities deleted successfully",
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'error' => 'Failed to delete cities: ' . $e->getMessage()
+                'error' => 'Failed to delete cities: '.$e->getMessage(),
             ], 500);
         }
     }

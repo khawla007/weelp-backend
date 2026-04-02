@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Package $package
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageAvailability newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageAvailability newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageAvailability query()
@@ -28,6 +29,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageAvailability whereQuantityBasedPackage($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageAvailability whereStartDate($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageAvailability whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class PackageAvailability extends Model

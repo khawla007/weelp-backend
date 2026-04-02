@@ -23,6 +23,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Country $country
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CountryTravelInfo newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CountryTravelInfo newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CountryTravelInfo query()
@@ -42,6 +43,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CountryTravelInfo whereTravelTips($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CountryTravelInfo whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CountryTravelInfo whereVisaRequirements($value)
+ *
  * @mixin \Eloquent
  */
 class CountryTravelInfo extends Model
@@ -49,6 +51,7 @@ class CountryTravelInfo extends Model
     use HasFactory;
 
     protected $table = 'country_travel_info';
+
     protected $fillable = [
         'country_id',
         'airport',
@@ -62,11 +65,11 @@ class CountryTravelInfo extends Model
         'visa_requirements',
         'best_time_to_visit',
         'travel_tips',
-        'safety_information'
+        'safety_information',
     ];
 
     protected $casts = [
-        'public_transportation'     => 'array'
+        'public_transportation' => 'array',
     ];
 
     public function country()

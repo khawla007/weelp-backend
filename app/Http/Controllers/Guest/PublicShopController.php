@@ -3,16 +3,15 @@
 namespace App\Http\Controllers\Guest;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Activity;
+use App\Models\Category;
+use App\Models\City;
 use App\Models\Itinerary;
 use App\Models\Package;
-use App\Models\City;
 use App\Models\Region;
-use App\Models\Category;
 use App\Models\Tag;
+use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Collection;
 
 class PublicShopController extends Controller
 {
@@ -73,7 +72,7 @@ class PublicShopController extends Controller
     //                     return [
     //                         'id' => $location['region_id'],
     //                         'name' => $location['region'],
-    //                         'type' => 'region', 
+    //                         'type' => 'region',
     //                     ];
     //                 })
     //             );
@@ -114,7 +113,6 @@ class PublicShopController extends Controller
     //         }))
     //         ->unique('id')
     //         ->values();
-        
 
     //     $allItems = collect()
     //         ->merge($activities)
@@ -151,7 +149,7 @@ class PublicShopController extends Controller
     //             'message' => 'Shop items not found'
     //         ], 404);
     //     }
-        
+
     //     return response()->json([
     //         'success' => true,
     //         'data' => $paginatedItems->items(),
@@ -184,18 +182,18 @@ class PublicShopController extends Controller
 
         $perPage = 10;
         $page = request()->get('page', 1);
-    
+
         // Slug-based filtering
         $regionSlug = request()->get('region');
         $citySlug = request()->get('city');
         $itemType = request()->get('item_type'); // NEW: item_type filter
-    
+
         $region = $regionSlug ? Region::with('countries.states.cities')->where('slug', $regionSlug)->first() : null;
 
-        if ($regionSlug && !$region) {
+        if ($regionSlug && ! $region) {
             return response()->json([
                 'success' => 'false',
-                'message' => 'Region not found'
+                'message' => 'Region not found',
             ], 404);
         }
 
@@ -205,21 +203,21 @@ class PublicShopController extends Controller
         if ($region && $cities->isEmpty()) {
             return response()->json([
                 'success' => 'false',
-                'message' => 'City not found'
+                'message' => 'City not found',
             ], 404);
         }
 
         $city = $citySlug ? City::where('slug', $citySlug)->first() : null;
 
-        if ($citySlug && !$city) {
+        if ($citySlug && ! $city) {
             return response()->json([
                 'success' => 'false',
-                'message' => 'City not found'
+                'message' => 'City not found',
             ], 404);
         }
 
         $cityIds = $city ? [$city->id] : ($cities->isNotEmpty() ? $cities->pluck('id')->toArray() : []);
-    
+
         // Filters
         $categorySlugs = request()->has('categories') ? explode(',', request()->get('categories')) : [];
         $tagSlugs = request()->has('tags') ? explode(',', request()->get('tags')) : [];
@@ -227,76 +225,75 @@ class PublicShopController extends Controller
         $maxPrice = request()->get('max_price', null);
         $sortBy = request()->get('sort_by', 'id_desc');
         $featured = request()->filled('featured') ? request()->get('featured') === 'true' : null;
-    
+
         // Fetch Category & Tag IDs
         $categoryIds = Category::whereIn('slug', $categorySlugs)->pluck('id')->toArray();
         $tagIds = Tag::whereIn('slug', $tagSlugs)->pluck('id')->toArray();
 
         // Fetch All Activities, Itineraries, Packages with item_type filter
-        $activities = Activity::when(!empty($cityIds), fn ($query) => $query->whereHas('locations', fn ($q) => $q->whereIn('city_id', $cityIds)))
-        ->when($itemType, fn ($query) => $query->where('item_type', $itemType))
-        ->when($featured !== null, fn ($query) => $query->where('featured_activity', $featured))
-        ->with(['pricing', 'groupDiscounts', 'categories.category', 'locations.city.state.country.regions']);
+        $activities = Activity::when(! empty($cityIds), fn ($query) => $query->whereHas('locations', fn ($q) => $q->whereIn('city_id', $cityIds)))
+            ->when($itemType, fn ($query) => $query->where('item_type', $itemType))
+            ->when($featured !== null, fn ($query) => $query->where('featured_activity', $featured))
+            ->with(['pricing', 'groupDiscounts', 'categories.category', 'locations.city.state.country.regions']);
 
-        $itineraries = Itinerary::when(!empty($cityIds), fn ($query) => $query->whereHas('locations', fn ($q) => $q->whereIn('city_id', $cityIds)))
+        $itineraries = Itinerary::when(! empty($cityIds), fn ($query) => $query->whereHas('locations', fn ($q) => $q->whereIn('city_id', $cityIds)))
             ->when($itemType, fn ($query) => $query->where('item_type', $itemType))
             ->when($featured !== null, fn ($query) => $query->where('featured_itinerary', $featured))
             ->with(['basePricing.variations', 'categories.category', 'tags']);
 
-        $packages = Package::when(!empty($cityIds), fn ($query) => $query->whereHas('locations', fn ($q) => $q->whereIn('city_id', $cityIds)))
+        $packages = Package::when(! empty($cityIds), fn ($query) => $query->whereHas('locations', fn ($q) => $q->whereIn('city_id', $cityIds)))
             ->when($itemType, fn ($query) => $query->where('item_type', $itemType))
             ->when($featured !== null, fn ($query) => $query->where('featured_package', $featured))
             ->with(['basePricing.variations', 'categories.category', 'tags']);
-    
+
         // Apply Filters
-        if (!empty($categoryIds)) {
+        if (! empty($categoryIds)) {
             $activities->whereHas('categories', fn ($q) => $q->whereIn('category_id', $categoryIds));
             $itineraries->whereHas('categories', fn ($q) => $q->whereIn('category_id', $categoryIds));
             $packages->whereHas('categories', fn ($q) => $q->whereIn('category_id', $categoryIds));
-        } 
-        
-        if (!empty($categorySlugs) && empty($categoryIds)) {
+        }
+
+        if (! empty($categorySlugs) && empty($categoryIds)) {
             return response()->json([
                 'success' => 'false',
-                'message' => 'category not found'
+                'message' => 'category not found',
             ], 200);
         }
 
-        if (!empty($tagIds)) {
+        if (! empty($tagIds)) {
             $itineraries->whereHas('tags', fn ($q) => $q->whereIn('tags.id', $tagIds));
             $packages->whereHas('tags', fn ($q) => $q->whereIn('tags.id', $tagIds));
         }
 
-        if (!empty($tagSlugs) && empty($tagIds)) {
+        if (! empty($tagSlugs) && empty($tagIds)) {
             return response()->json([
                 'success' => 'false',
-                'message' => 'tag not found'
+                'message' => 'tag not found',
             ], 200);
         }
-    
+
         if ($maxPrice !== null) {
             $activities->whereHas('pricing', fn ($q) => $q->whereBetween('regular_price', [$minPrice, $maxPrice]));
             $itineraries->whereHas('basePricing.variations', fn ($q) => $q->whereBetween('regular_price', [$minPrice, $maxPrice]));
             $packages->whereHas('basePricing.variations', fn ($q) => $q->whereBetween('regular_price', [$minPrice, $maxPrice]));
         }
-    
+
         // Retrieve Data
         $activities = $activities->get();
         $itineraries = $itineraries->get();
         $packages = $packages->get();
-    
+
         // Merge Results (Using formatItem)
         $allItems = collect()
             ->merge($activities->map(fn ($activity) => $this->formatItem($activity, 'activity')))
             ->merge($itineraries->map(fn ($itinerary) => $this->formatItem($itinerary, 'itinerary')))
             ->merge($packages->map(fn ($package) => $this->formatItem($package, 'package')));
 
-
         // Check if no items are found within the region's cities
         if ($region && $allItems->isEmpty()) {
             return response()->json([
                 'success' => 'false',
-                'message' => 'Item not found in this region'
+                'message' => 'Item not found in this region',
             ], 404);
         }
 
@@ -304,7 +301,7 @@ class PublicShopController extends Controller
         if ($city && $allItems->isEmpty()) {
             return response()->json([
                 'success' => 'false',
-                'message' => 'Item not found in this city'
+                'message' => 'Item not found in this city',
             ], 404);
         }
 
@@ -312,10 +309,10 @@ class PublicShopController extends Controller
         if ($allItems->isEmpty()) {
             return response()->json([
                 'success' => 'false',
-                'message' => 'Item not found'
+                'message' => 'Item not found',
             ], 404);
         }
-    
+
         // Sorting
         switch ($sortBy) {
             case 'name_asc':
@@ -336,11 +333,10 @@ class PublicShopController extends Controller
             default:
                 $allItems = $allItems->sortByDesc('id'); // Default: Newest First
         }
-      
-    
+
         // Pagination
         $paginatedItems = $allItems->forPage($page, $perPage);
-    
+
         // Response
         return response()->json([
             'success' => 'true',
@@ -351,7 +347,6 @@ class PublicShopController extends Controller
             'total' => $allItems->count(),
         ], 200);
     }
-
 
     private function formatItem($item, $type)
     {
@@ -422,6 +417,7 @@ class PublicShopController extends Controller
 
             'locations' => $item->locations->map(function ($location) {
                 $city = $location->city;
+
                 return [
                     'city_id' => $city->id,
                     'city' => $city->name,
@@ -436,5 +432,4 @@ class PublicShopController extends Controller
             }),
         ];
     }
-
 }

@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * Dashboard Controller
- * 
+ *
  * Provides dashboard metrics and statistics for the admin dashboard
  */
 class DashboardController extends Controller
@@ -17,8 +17,6 @@ class DashboardController extends Controller
     /**
      * Get dashboard metrics
      * Returns total revenue, total bookings, active users, and growth percentage
-     *
-     * @return JsonResponse
      */
     public function getMetrics(): JsonResponse
     {
@@ -154,8 +152,6 @@ class DashboardController extends Controller
     /**
      * Get overview chart data
      * Returns monthly revenue data for the current year
-     *
-     * @return JsonResponse
      */
     public function getOverviewChart(): JsonResponse
     {
@@ -204,8 +200,6 @@ class DashboardController extends Controller
     /**
      * Get recent sales
      * Returns recent pending/confirmed orders with user details and monthly total from completed orders
-     *
-     * @return JsonResponse
      */
     public function getRecentSales(): JsonResponse
     {
@@ -228,9 +222,10 @@ class DashboardController extends Controller
 
             $monthlyTotal = $completedOrders->sum(function ($order) {
                 $payment = $order->payment;
-                if (!$payment) {
+                if (! $payment) {
                     return 0;
                 }
+
                 return ($payment->total_amount ?? 0) + ($payment->custom_amount ?? 0);
             });
 
@@ -241,11 +236,12 @@ class DashboardController extends Controller
                 $avatarMedia = $user?->avatarMedia;
 
                 // Handle orders without users
-                if (!$user) {
+                if (! $user) {
                     $amount = 0;
                     if ($payment) {
                         $amount = ($payment->total_amount ?? 0) + ($payment->custom_amount ?? 0);
                     }
+
                     return [
                         'username' => 'Unknown',
                         'email' => '',
@@ -256,7 +252,7 @@ class DashboardController extends Controller
 
                 // Generate avatar URL
                 $avatarUrl = null;
-                if ($avatarMedia && !empty($avatarMedia->url)) {
+                if ($avatarMedia && ! empty($avatarMedia->url)) {
                     $avatarUrl = $avatarMedia->url;
                 } else {
                     // Fallback to UI Avatars API
@@ -295,9 +291,6 @@ class DashboardController extends Controller
     /**
      * Search dashboard content
      * Searches across orders, users, activities, packages, and blogs
-     *
-     * @param \Illuminate\Http\Request $request
-     * @return JsonResponse
      */
     public function search(Request $request): JsonResponse
     {
@@ -313,7 +306,7 @@ class DashboardController extends Controller
                 ], 200);
             }
 
-            $searchTerm = '%' . $query . '%';
+            $searchTerm = '%'.$query.'%';
             $results = [];
 
             // Search Orders

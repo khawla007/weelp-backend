@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Country $country
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CountryEvent newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CountryEvent newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CountryEvent query()
@@ -28,6 +29,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CountryEvent whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CountryEvent whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CountryEvent whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class CountryEvent extends Model
@@ -42,13 +44,15 @@ class CountryEvent extends Model
         'location',
         'description',
     ];
+
     protected $casts = [
-        'type'     => 'array',
+        'type' => 'array',
         // 'location' => 'array',
-        'date'=> 'date:Y-m-d', 
+        'date' => 'date:Y-m-d',
     ];
 
-    public function country() {
+    public function country()
+    {
         return $this->belongsTo(Country::class);
     }
 }

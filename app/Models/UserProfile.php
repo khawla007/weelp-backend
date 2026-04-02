@@ -24,6 +24,7 @@ use Illuminate\Support\Facades\Storage;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\UserProfileUrl> $urls
  * @property-read int|null $urls_count
  * @property-read \App\Models\User $user
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|UserProfile newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|UserProfile newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|UserProfile query()
@@ -41,6 +42,7 @@ use Illuminate\Support\Facades\Storage;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|UserProfile whereState($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|UserProfile whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|UserProfile whereUserId($value)
+ *
  * @mixin \Eloquent
  */
 class UserProfile extends Model
@@ -71,7 +73,7 @@ class UserProfile extends Model
      */
     public function getAvatarAttribute($value)
     {
-        if (!$value) {
+        if (! $value) {
             return null;
         }
 

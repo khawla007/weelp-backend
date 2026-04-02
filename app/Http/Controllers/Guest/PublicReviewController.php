@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Guest;
 
 use App\Http\Controllers\Controller;
-use App\Models\Review;
-use App\Models\City;
 use App\Models\Activity;
-use App\Models\Package;
+use App\Models\City;
 use App\Models\Itinerary;
+use App\Models\Package;
+use App\Models\Review;
 
 class PublicReviewController extends Controller
 {
@@ -37,7 +37,7 @@ class PublicReviewController extends Controller
 
         if ($citySlug) {
             $city = City::where('slug', $citySlug)->first();
-            if (!$city) {
+            if (! $city) {
                 return response()->json(['success' => false, 'message' => 'City not found'], 404);
             }
             $this->applyCityFilter($query, $city->id);
@@ -45,7 +45,7 @@ class PublicReviewController extends Controller
 
         $reviews = $query->paginate($perPage);
 
-        $reviews->getCollection()->transform(fn($review) => $this->transformReview($review));
+        $reviews->getCollection()->transform(fn ($review) => $this->transformReview($review));
 
         return response()->json([
             'success' => true,
@@ -78,7 +78,7 @@ class PublicReviewController extends Controller
 
         if ($citySlug) {
             $city = City::where('slug', $citySlug)->first();
-            if (!$city) {
+            if (! $city) {
                 return response()->json(['success' => false, 'message' => 'City not found'], 404);
             }
             $this->applyCityFilter($query, $city->id);
@@ -86,7 +86,7 @@ class PublicReviewController extends Controller
 
         $reviews = $query->get();
 
-        $data = $reviews->map(fn($review) => $this->transformReview($review));
+        $data = $reviews->map(fn ($review) => $this->transformReview($review));
 
         if ($data->isEmpty()) {
             return response()->json(['success' => false, 'message' => 'No featured reviews found']);
@@ -112,7 +112,7 @@ class PublicReviewController extends Controller
     {
         $activity = Activity::where('slug', $activitySlug)->first();
 
-        if (!$activity) {
+        if (! $activity) {
             return response()->json(['success' => false, 'message' => 'Activity not found'], 404);
         }
 
@@ -135,7 +135,7 @@ class PublicReviewController extends Controller
         $averageRating = $totalReviews > 0 ? round((clone $approvedQuery)->avg('rating'), 1) : 0;
         $totalPhotos = \App\Models\ReviewMediaGallery::whereIn(
             'review_id',
-            fn($q) => $q->select('id')->from('reviews')
+            fn ($q) => $q->select('id')->from('reviews')
                 ->where('item_type', 'activity')
                 ->where('item_id', $activity->id)
                 ->where('status', 'approved')
@@ -159,7 +159,7 @@ class PublicReviewController extends Controller
 
         $reviews = $query->paginate($perPage);
 
-        $reviews->getCollection()->transform(fn($review) => [
+        $reviews->getCollection()->transform(fn ($review) => [
             'id' => $review->id,
             'rating' => $review->rating,
             'review_text' => $review->review_text,
@@ -168,11 +168,11 @@ class PublicReviewController extends Controller
                 'id' => $review->user->id,
                 'name' => $review->user->name,
             ] : null,
-            'media_gallery' => $review->mediaGallery->map(fn($rmg) => [
-                'id'   => $rmg->media->id,
+            'media_gallery' => $review->mediaGallery->map(fn ($rmg) => [
+                'id' => $rmg->media->id,
                 'name' => $rmg->media->name,
-                'alt'  => $rmg->media->alt_text,
-                'url'  => $rmg->media->url,
+                'alt' => $rmg->media->alt_text,
+                'url' => $rmg->media->url,
             ]),
             'created_at' => $review->created_at?->format('Y-m-d'),
         ]);
@@ -199,7 +199,7 @@ class PublicReviewController extends Controller
     {
         $activity = Activity::where('slug', $activitySlug)->first();
 
-        if (!$activity) {
+        if (! $activity) {
             return response()->json(['success' => false, 'message' => 'Activity not found'], 404);
         }
 
@@ -212,7 +212,7 @@ class PublicReviewController extends Controller
             ->limit(20)
             ->get();
 
-        $data = $reviews->map(fn($review) => [
+        $data = $reviews->map(fn ($review) => [
             'id' => $review->id,
             'rating' => $review->rating,
             'review_text' => $review->review_text,
@@ -221,11 +221,11 @@ class PublicReviewController extends Controller
                 'id' => $review->user->id,
                 'name' => $review->user->name,
             ] : null,
-            'media_gallery' => $review->mediaGallery->map(fn($rmg) => [
-                'id'   => $rmg->media->id,
+            'media_gallery' => $review->mediaGallery->map(fn ($rmg) => [
+                'id' => $rmg->media->id,
                 'name' => $rmg->media->name,
-                'alt'  => $rmg->media->alt_text,
-                'url'  => $rmg->media->url,
+                'alt' => $rmg->media->alt_text,
+                'url' => $rmg->media->url,
             ]),
             'created_at' => $review->created_at?->format('Y-m-d'),
         ]);
@@ -242,9 +242,9 @@ class PublicReviewController extends Controller
      */
     private function applyCityFilter($query, int $cityId): void
     {
-        $activityIds = Activity::whereHas('locations', fn($l) => $l->where('city_id', $cityId))->pluck('id');
-        $packageIds = Package::whereHas('locations', fn($l) => $l->where('city_id', $cityId))->pluck('id');
-        $itineraryIds = Itinerary::whereHas('locations', fn($l) => $l->where('city_id', $cityId))->pluck('id');
+        $activityIds = Activity::whereHas('locations', fn ($l) => $l->where('city_id', $cityId))->pluck('id');
+        $packageIds = Package::whereHas('locations', fn ($l) => $l->where('city_id', $cityId))->pluck('id');
+        $itineraryIds = Itinerary::whereHas('locations', fn ($l) => $l->where('city_id', $cityId))->pluck('id');
 
         $query->where(function ($q) use ($activityIds, $packageIds, $itineraryIds) {
             $q->where(function ($sub) use ($activityIds) {
@@ -265,7 +265,7 @@ class PublicReviewController extends Controller
         $item = $review->item;
         $citySlug = null;
 
-        if ($item && !($item instanceof \App\Models\Transfer)) {
+        if ($item && ! ($item instanceof \App\Models\Transfer)) {
             $location = $item->locations()->with('city')->first();
             $citySlug = $location?->city?->slug;
         }
@@ -286,11 +286,11 @@ class PublicReviewController extends Controller
                 'id' => $review->user->id,
                 'name' => $review->user->name,
             ] : null,
-            'media_gallery' => $review->mediaGallery->map(fn($rmg) => [
-                'id'   => $rmg->media->id,
+            'media_gallery' => $review->mediaGallery->map(fn ($rmg) => [
+                'id' => $rmg->media->id,
                 'name' => $rmg->media->name,
-                'alt'  => $rmg->media->alt_text,
-                'url'  => $rmg->media->url,
+                'alt' => $rmg->media->alt_text,
+                'url' => $rmg->media->url,
             ]),
             'created_at' => $review->created_at?->format('Y-m-d'),
         ];

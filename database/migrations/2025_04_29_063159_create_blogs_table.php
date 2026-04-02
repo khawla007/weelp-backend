@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('slug')->unique();
-            $table->longText('content'); 
+            $table->longText('content');
             $table->boolean('publish')->default(false);
             // $table->foreignId('featured_image')->constrained('media');
             // $table->foreignId('category_id')->constrained('categories');

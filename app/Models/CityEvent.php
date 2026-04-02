@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\City $city
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CityEvent newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CityEvent newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CityEvent query()
@@ -28,6 +29,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CityEvent whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CityEvent whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CityEvent whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class CityEvent extends Model
@@ -35,13 +37,13 @@ class CityEvent extends Model
     use HasFactory;
 
     protected $fillable = [
-        'city_id', 'name', 'type', 'date', 'location', 'description'
+        'city_id', 'name', 'type', 'date', 'location', 'description',
     ];
 
     protected $casts = [
-        'type'     => 'array',
+        'type' => 'array',
         // 'location' => 'array',
-        'date'=> 'date:Y-m-d', 
+        'date' => 'date:Y-m-d',
     ];
 
     public function city()

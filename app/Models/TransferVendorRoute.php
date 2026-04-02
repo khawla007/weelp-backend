@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read \App\Models\VendorRoute|null $route
  * @property-read \App\Models\Transfer $transfer
  * @property-read \App\Models\Vendor|null $vendor
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferVendorRoute newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferVendorRoute newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferVendorRoute query()
@@ -34,11 +35,13 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferVendorRoute whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferVendorRoute whereVehicleType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferVendorRoute whereVendorId($value)
+ *
  * @mixin \Eloquent
  */
 class TransferVendorRoute extends Model
 {
     use HasFactory;
+
     protected $fillable = [
         'transfer_id',
         'is_vendor',
@@ -51,7 +54,7 @@ class TransferVendorRoute extends Model
     ];
 
     protected $casts = [
-        'is_vendor' => 'boolean'
+        'is_vendor' => 'boolean',
     ];
 
     // Relationship with Transfer

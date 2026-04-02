@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -13,6 +14,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Post $post
  * @property-read Model|\Eloquent $taggable
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PostItemTag newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PostItemTag newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PostItemTag query()
@@ -22,6 +24,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PostItemTag whereTaggableId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PostItemTag whereTaggableType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PostItemTag whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class PostItemTag extends Model

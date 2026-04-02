@@ -32,6 +32,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read int|null $seasons_count
  * @property-read \App\Models\PlaceSeo|null $seo
  * @property-read \App\Models\PlaceTravelInfo|null $travelInfo
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Place newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Place newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Place query()
@@ -45,9 +46,11 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Place whereSlug($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Place whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Place whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
-class Place extends Model {
+class Place extends Model
+{
     use HasFactory;
 
     protected $fillable = [
@@ -61,7 +64,7 @@ class Place extends Model {
     ];
 
     protected $casts = [
-        'featured_destination' => 'boolean'
+        'featured_destination' => 'boolean',
     ];
 
     public function mediaGallery()
@@ -74,31 +77,38 @@ class Place extends Model {
         return $this->belongsTo(City::class, 'city_id');
     }
 
-    public function locationDetails() {
+    public function locationDetails()
+    {
         return $this->hasOne(PlaceLocationDetail::class);
     }
 
-    public function travelInfo() {
+    public function travelInfo()
+    {
         return $this->hasOne(PlaceTravelInfo::class);
     }
 
-    public function seasons() {
+    public function seasons()
+    {
         return $this->hasMany(PlaceSeason::class);
     }
 
-    public function events() {
+    public function events()
+    {
         return $this->hasMany(PlaceEvent::class);
     }
 
-    public function additionalInfo() {
+    public function additionalInfo()
+    {
         return $this->hasMany(PlaceAdditionalInfo::class);
     }
 
-    public function faqs() {
+    public function faqs()
+    {
         return $this->hasMany(PlaceFaq::class);
     }
 
-    public function seo() {
+    public function seo()
+    {
         return $this->hasOne(PlaceSeo::class);
     }
 }

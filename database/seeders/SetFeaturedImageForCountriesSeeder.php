@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Country;
 use App\Models\CountryMediaGallery;
+use Illuminate\Database\Seeder;
 
 class SetFeaturedImageForCountriesSeeder extends Seeder
 {
@@ -23,6 +23,7 @@ class SetFeaturedImageForCountriesSeeder extends Seeder
 
             if ($mediaGallery->isEmpty()) {
                 $this->command->warn("No media found for country: {$country->name}");
+
                 continue;
             }
 
@@ -31,6 +32,7 @@ class SetFeaturedImageForCountriesSeeder extends Seeder
 
             if ($hasFeatured) {
                 $this->command->info("Country '{$country->name}' already has a featured image. Skipping.");
+
                 continue;
             }
 

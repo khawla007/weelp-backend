@@ -2,29 +2,29 @@
 
 namespace Database\Seeders;
 
+use App\Models\Addon;
+use App\Models\Package;
+use App\Models\PackageActivity;
+use App\Models\PackageAddon;
+use App\Models\PackageAttribute;
+use App\Models\PackageAvailability;
+use App\Models\PackageBasePricing;
+use App\Models\PackageBlackoutDate;
+use App\Models\PackageCategory;
+use App\Models\PackageFaq;
+use App\Models\PackageInclusionExclusion;
+use App\Models\PackageInformation;
+use App\Models\PackageItinerary;
+use App\Models\PackageLocation;
+use App\Models\PackageMediaGallery;
+use App\Models\PackagePriceVariation;
+use App\Models\PackageSchedule;
+use App\Models\PackageSeo;
+use App\Models\PackageTag;
+use App\Models\PackageTransfer;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use App\Models\Package;
-use App\Models\PackageLocation;
-use App\Models\PackageInformation;
-use App\Models\PackageSchedule;
-use App\Models\PackageActivity;
-use App\Models\PackageTransfer;
-use App\Models\PackageItinerary;
-use App\Models\PackageBasePricing;
-use App\Models\PackagePriceVariation;
-use App\Models\PackageBlackoutDate;
-use App\Models\PackageInclusionExclusion;
-use App\Models\PackageMediaGallery;
-use App\Models\PackageFaq;
-use App\Models\PackageSeo;
-use App\Models\PackageCategory;
-use App\Models\PackageAttribute;
-use App\Models\PackageTag;
-use App\Models\PackageAvailability;
-use App\Models\Addon;
-use App\Models\PackageAddon;
 
 class PackageSeeder extends Seeder
 {
@@ -57,62 +57,62 @@ class PackageSeeder extends Seeder
 
         $packages = [
             [
-                'name'             => 'Holiday In Goa',
-                'slug'             => Str::slug('Holiday In Goa'),
-                'description'      => 'Explore the luxury of Kenyas wild safari.',
+                'name' => 'Holiday In Goa',
+                'slug' => Str::slug('Holiday In Goa'),
+                'description' => 'Explore the luxury of Kenyas wild safari.',
                 'featured_package' => true,
-                'private_package'  => false,
+                'private_package' => false,
             ],
             [
-                'name'             => 'Holidays In Kerala',
-                'slug'             => Str::slug('Holidays In Kerala'),
-                'description'      => 'Experience the thrill of the Himalayas.',
+                'name' => 'Holidays In Kerala',
+                'slug' => Str::slug('Holidays In Kerala'),
+                'description' => 'Experience the thrill of the Himalayas.',
                 'featured_package' => true,
-                'private_package'  => false,
+                'private_package' => false,
             ],
             [
-                'name'             => 'Honeymoon Package in Udisa',
-                'slug'             => Str::slug('Honeymoon Package in Udisa'),
-                'description'      => 'Relax on the white sands of Maldives.',
+                'name' => 'Honeymoon Package in Udisa',
+                'slug' => Str::slug('Honeymoon Package in Udisa'),
+                'description' => 'Relax on the white sands of Maldives.',
                 'featured_package' => false,
-                'private_package'  => false,
+                'private_package' => false,
             ],
             [
-                'name'             => 'Vacation In Pathankot',
-                'slug'             => Str::slug('Vacation In Pathankot'),
-                'description'      => 'Explore the rich culture of Japan.',
+                'name' => 'Vacation In Pathankot',
+                'slug' => Str::slug('Vacation In Pathankot'),
+                'description' => 'Explore the rich culture of Japan.',
                 'featured_package' => true,
-                'private_package'  => true,
+                'private_package' => true,
             ],
             [
-                'name'             => 'Holidays In Karnatka',
-                'slug'             => Str::slug('Holidays In Karnatka'),
-                'description'      => 'Explore the rich culture of Japan.',
+                'name' => 'Holidays In Karnatka',
+                'slug' => Str::slug('Holidays In Karnatka'),
+                'description' => 'Explore the rich culture of Japan.',
                 'featured_package' => true,
-                'private_package'  => true,
+                'private_package' => true,
             ],
             [
-                'name'             => 'Holidays in Dharamshala',
-                'slug'             => Str::slug('Holidays in Dharamshala'),
-                'description'      => 'Explore the rich culture of Japan.',
+                'name' => 'Holidays in Dharamshala',
+                'slug' => Str::slug('Holidays in Dharamshala'),
+                'description' => 'Explore the rich culture of Japan.',
                 'featured_package' => true,
-                'private_package'  => true,
+                'private_package' => true,
             ],
             [
-                'name'             => 'Holidays Package in Kashmir',
-                'slug'             => Str::slug('Holidays Package in Kashmir'),
-                'description'      => 'Explore the rich culture of Japan.',
+                'name' => 'Holidays Package in Kashmir',
+                'slug' => Str::slug('Holidays Package in Kashmir'),
+                'description' => 'Explore the rich culture of Japan.',
                 'featured_package' => true,
-                'private_package'  => true,
+                'private_package' => true,
             ],
             [
-                'name'             => 'Holidays Package in Triund',
-                'slug'             => Str::slug('Holidays Package in Triund'),
-                'description'      => 'Explore the rich culture of Japan.',
+                'name' => 'Holidays Package in Triund',
+                'slug' => Str::slug('Holidays Package in Triund'),
+                'description' => 'Explore the rich culture of Japan.',
                 'featured_package' => true,
-                'private_package'  => true,
+                'private_package' => true,
             ],
-        
+
             // --- 27 New Packages ---
             [
                 'name' => 'Beach Escape in Andaman',
@@ -308,7 +308,6 @@ class PackageSeeder extends Seeder
         foreach ($packages as $PackageData) {
             $package = Package::create($PackageData);
 
-
             // PackageInformation::create([
             //     'package_id'    => $package->id,
             //     'section_title' => 'Famous Tourist Attractions',
@@ -318,100 +317,100 @@ class PackageSeeder extends Seeder
             $informations = [
                 [
                     'section_title' => 'Famous Tourist Attractions',
-                    'content'       => 'Taj Mahal, Jaipur, Kerala Backwaters'
+                    'content' => 'Taj Mahal, Jaipur, Kerala Backwaters',
                 ],
                 [
                     'section_title' => 'Famous Tourist food',
-                    'content'       => 'burger, pizza, bread'
+                    'content' => 'burger, pizza, bread',
                 ],
                 [
                     'section_title' => 'Famous Tourist Vegies',
-                    'content'       => 'Potato, Lahusan, Tomato'
-                ]
+                    'content' => 'Potato, Lahusan, Tomato',
+                ],
             ];
 
             foreach ($informations as $information) {
                 PackageInformation::create([
-                    'package_id'    => $package->id,
+                    'package_id' => $package->id,
                     'section_title' => $information['section_title'],
-                    'content'       => $information['content']
+                    'content' => $information['content'],
                 ]);
             }
 
             PackageLocation::create([
                 'package_id' => $package->id,
-                'city_id'    => rand(382, 441), // Updated: Cities are IDs 382-441 (60 cities)
+                'city_id' => rand(382, 441), // Updated: Cities are IDs 382-441 (60 cities)
             ]);
 
             for ($day = 1; $day <= 3; $day++) {
                 $schedule = PackageSchedule::create([
                     'package_id' => $package->id,
-                    'day'        => $day,
+                    'day' => $day,
                 ]);
 
                 PackageTransfer::create([
-                    'schedule_id'      => $schedule->id,
-                    'transfer_id'      => [1, 5, 6, 7][array_rand([1, 5, 6, 7])], // Updated: Valid transfer IDs
-                    'start_time'       => '12:00:00',
-                    'end_time'         => '14:00:00',
-                    'notes'            => 'Sample transfer note',
-                    'price'            => 50.00,
-                    'included'         => true,
-                    'pickup_location'  => 'Airport',
+                    'schedule_id' => $schedule->id,
+                    'transfer_id' => [1, 5, 6, 7][array_rand([1, 5, 6, 7])], // Updated: Valid transfer IDs
+                    'start_time' => '12:00:00',
+                    'end_time' => '14:00:00',
+                    'notes' => 'Sample transfer note',
+                    'price' => 50.00,
+                    'included' => true,
+                    'pickup_location' => 'Airport',
                     'dropoff_location' => 'Hotel',
-                    'pax'              => 2,
+                    'pax' => 2,
                 ]);
 
                 PackageActivity::create([
                     'schedule_id' => $schedule->id,
                     'activity_id' => rand(1, 35), // Updated: Activities are IDs 1-35 (35 activities)
-                    'start_time'  => '09:00:00',
-                    'end_time'    => '11:00:00',
-                    'notes'       => 'Sample activity note',
-                    'price'       => 100.00,
-                    'included'    => true,
+                    'start_time' => '09:00:00',
+                    'end_time' => '11:00:00',
+                    'notes' => 'Sample activity note',
+                    'price' => 100.00,
+                    'included' => true,
                 ]);
 
                 PackageItinerary::create([
-                    'schedule_id'  => $schedule->id,
+                    'schedule_id' => $schedule->id,
                     'itinerary_id' => [38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72][array_rand([38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72])], // Updated: Valid itinerary IDs (non-sequential)
-                    'start_time'   => '09:00:00',
-                    'end_time'     => '11:00:00',
-                    'notes'        => 'Sample itinerary note',
-                    'price'        => 100.00,
-                    'included'     => true,
+                    'start_time' => '09:00:00',
+                    'end_time' => '11:00:00',
+                    'notes' => 'Sample itinerary note',
+                    'price' => 100.00,
+                    'included' => true,
                 ]);
             }
 
             $basePricing = PackageBasePricing::create([
-                'package_id'   => $package->id,
-                'currency'     => 'USD',
+                'package_id' => $package->id,
+                'currency' => 'USD',
                 'availability' => 'Available',
-                'start_date'   => now(),
-                'end_date'     => now()->addMonth(),
+                'start_date' => now(),
+                'end_date' => now()->addMonth(),
             ]);
 
             PackagePriceVariation::create([
                 'base_pricing_id' => $basePricing->id,
-                'name'            => 'Standard Package',
-                'regular_price'   => 1000.00,
-                'sale_price'      => 800.00,
-                'max_guests'      => 4,
-                'description'     => 'Standard package with discount',
+                'name' => 'Standard Package',
+                'regular_price' => 1000.00,
+                'sale_price' => 800.00,
+                'max_guests' => 4,
+                'description' => 'Standard package with discount',
             ]);
 
             PackageBlackoutDate::create([
                 'base_pricing_id' => $basePricing->id,
-                'date'            => now()->addDays(7),
-                'reason'          => 'Holiday season',
+                'date' => now()->addDays(7),
+                'reason' => 'Holiday season',
             ]);
 
             PackageInclusionExclusion::create([
-                'package_id'  => $package->id,
-                'type'        => 'Meal',
-                'title'       => 'Breakfast included',
+                'package_id' => $package->id,
+                'type' => 'Meal',
+                'title' => 'Breakfast included',
                 'description' => 'Breakfast included in the package',
-                'included'    => true,
+                'included' => true,
             ]);
 
             // Media Gallery - 3-6 images per package
@@ -419,7 +418,7 @@ class PackageSeeder extends Seeder
             for ($i = 0; $i < $mediaCount; $i++) {
                 PackageMediaGallery::create([
                     'package_id' => $package->id,
-                    'media_id'   => rand(78, 548), // Updated: Media are IDs 78-548 (471 images)
+                    'media_id' => rand(78, 548), // Updated: Media are IDs 78-548 (471 images)
                 ]);
             }
 
@@ -434,40 +433,40 @@ class PackageSeeder extends Seeder
             $faqs = [
                 [
                     'question' => 'Do I need a visa to visit India?',
-                    'answer'   => 'Yes, but Visa on arrival is available for many countries.'
+                    'answer' => 'Yes, but Visa on arrival is available for many countries.',
                 ],
                 [
                     'question' => 'What is the currency in India?',
-                    'answer'   => 'The Indian Rupee (INR) is the official currency.'
-                ]
+                    'answer' => 'The Indian Rupee (INR) is the official currency.',
+                ],
             ];
-            
+
             foreach ($faqs as $faq) {
                 PackageFaq::create([
                     'package_id' => $package->id,
                     // 'question_number' => $questionNumber,
-                    'question'   => $faq['question'],
-                    'answer'     => $faq['answer']
+                    'question' => $faq['question'],
+                    'answer' => $faq['answer'],
                 ]);
                 // $questionNumber++;
             }
 
             PackageSeo::create([
-                'package_id'       => $package->id,
-                'meta_title'       => 'Sample Package',
+                'package_id' => $package->id,
+                'meta_title' => 'Sample Package',
                 'meta_description' => 'This is a sample Package for SEO testing.',
-                'keywords'         => 'Package, travel, sample',
-                'og_image_url'     => 'https://example.com/sample-og.jpg',
-                'canonical_url'    => 'https://example.com/sample',
-                'schema_type'      => 'Travel',
-                'schema_data'      => json_encode([
+                'keywords' => 'Package, travel, sample',
+                'og_image_url' => 'https://example.com/sample-og.jpg',
+                'canonical_url' => 'https://example.com/sample',
+                'schema_type' => 'Travel',
+                'schema_data' => json_encode([
                     'type' => 'Travel',
                     'name' => $package->name,
                 ]),
             ]);
 
             PackageCategory::create([
-                'package_id'  => $package->id,
+                'package_id' => $package->id,
                 'category_id' => 1,
             ]);
 
@@ -482,52 +481,51 @@ class PackageSeeder extends Seeder
                 2 => ['Easy', 'Medium', 'Hard'],
                 3 => ['1-5', '6-10', '11-20', '20+'],
             ];
-            
+
             $usedAttributeIds = [];
-            
+
             $randomAttributeIds = array_rand($attributeValues, rand(2, 3)); // 2 ya 3 attributes assign kare
-            
+
             // Ensure it's array
             $randomAttributeIds = is_array($randomAttributeIds) ? $randomAttributeIds : [$randomAttributeIds];
-            
+
             foreach ($randomAttributeIds as $attributeId) {
                 $valueOptions = $attributeValues[$attributeId];
                 $attributeValue = $valueOptions[array_rand($valueOptions)];
-            
+
                 PackageAttribute::create([
                     'package_id' => $package->id,
                     'attribute_id' => $attributeId,
-                    'attribute_value' => $attributeValue
+                    'attribute_value' => $attributeValue,
                 ]);
             }
 
             PackageTag::create([
                 'package_id' => $package->id,
-                'tag_id'     => rand(1, 4),
+                'tag_id' => rand(1, 4),
             ]);
 
             PackageAvailability::create([
-                'package_id'             => $package->id,
-                'date_based_Package'     => $dateBased = fake()->boolean,
-                'start_date'             => $dateBased ? fake()->dateTimeBetween('-1 month', '+1 month')->format('Y-m-d') : null,
-                'end_date'               => $dateBased ? fake()->dateTimeBetween('+2 month', '+6 month')->format('Y-m-d') : null,
+                'package_id' => $package->id,
+                'date_based_Package' => $dateBased = fake()->boolean,
+                'start_date' => $dateBased ? fake()->dateTimeBetween('-1 month', '+1 month')->format('Y-m-d') : null,
+                'end_date' => $dateBased ? fake()->dateTimeBetween('+2 month', '+6 month')->format('Y-m-d') : null,
                 'quantity_based_Package' => $quantityBased = fake()->boolean,
-                'max_quantity'           => $quantityBased ? fake()->numberBetween(1, 100) : null,
+                'max_quantity' => $quantityBased ? fake()->numberBetween(1, 100) : null,
             ]);
 
             $addonIds = Addon::where('type', 'package')
-            ->where('active_status', true)
-            ->inRandomOrder()
-            ->limit(rand(2, 4))
-            ->pluck('id');
+                ->where('active_status', true)
+                ->inRandomOrder()
+                ->limit(rand(2, 4))
+                ->pluck('id');
 
             foreach ($addonIds as $addonId) {
                 PackageAddon::create([
                     'package_id' => $package->id,
-                    'addon_id'   => $addonId,
+                    'addon_id' => $addonId,
                 ]);
             }
         }
     }
-
 }

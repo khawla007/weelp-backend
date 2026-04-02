@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\ItineraryBasePricing $basePricing
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryBlackoutDate newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryBlackoutDate newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryBlackoutDate query()
@@ -21,12 +22,13 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryBlackoutDate whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryBlackoutDate whereReason($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryBlackoutDate whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class ItineraryBlackoutDate extends Model
 {
     protected $fillable = [
-        'base_pricing_id', 'date', 'reason'
+        'base_pricing_id', 'date', 'reason',
     ];
 
     public function basePricing()

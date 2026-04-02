@@ -15,36 +15,37 @@ class CategoryController extends Controller
     {
         if ($request->get('all')) {
             $categories = Category::orderBy('id', 'desc')->get();
+
             return response()->json([
                 'success' => true,
-                'data'    => $categories,
+                'data' => $categories,
             ]);
         }
 
         $perPage = 6;
-        $page    = $request->get('page', 1);
+        $page = $request->get('page', 1);
 
         $categories = Category::orderBy('id', 'desc')->paginate($perPage, ['*'], 'page', $page);
 
         return response()->json([
-            'success'      => true,
-            'data'         => $categories->items(),
+            'success' => true,
+            'data' => $categories->items(),
             'current_page' => $categories->currentPage(),
-            'per_page'     => $categories->perPage(),
-            'total'        => $categories->total(),
+            'per_page' => $categories->perPage(),
+            'total' => $categories->total(),
         ]);
-    }  
+    }
 
     /**
      * Display a listing for all items
-    */
+     */
     public function getCatList()
     {
         $categories = Category::all();
 
         return response()->json([
             'success' => true,
-            'data'    => $categories,
+            'data' => $categories,
         ]);
     }
 
@@ -54,11 +55,11 @@ class CategoryController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name'        => 'required|string|max:255',
-            'slug'        => 'sometimes|required|string|max:255|unique:categories,slug',
+            'name' => 'required|string|max:255',
+            'slug' => 'sometimes|required|string|max:255|unique:categories,slug',
             'description' => 'nullable|string',
-            'parent_id'   => 'nullable|exists:categories,id',
-            'status'      => 'required|in:active,draft',
+            'parent_id' => 'nullable|exists:categories,id',
+            'status' => 'required|in:active,draft',
             'is_featured' => 'nullable|boolean',
         ]);
 
@@ -77,6 +78,7 @@ class CategoryController extends Controller
     public function show(string $id)
     {
         $category = Category::findOrFail($id);
+
         return response()->json($category);
     }
 
@@ -85,14 +87,14 @@ class CategoryController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $category  = Category::findOrFail($id);
+        $category = Category::findOrFail($id);
 
         $validated = $request->validate([
-            'name'        => 'sometimes|required|string|max:255',
-            'slug'        => 'sometimes|required|string|max:255|unique:categories,slug,' . $category->id,
+            'name' => 'sometimes|required|string|max:255',
+            'slug' => 'sometimes|required|string|max:255|unique:categories,slug,'.$category->id,
             'description' => 'nullable|string',
-            'parent_id'   => 'nullable|exists:categories,id',
-            'status'      => 'sometimes|required|in:active,draft',
+            'parent_id' => 'nullable|exists:categories,id',
+            'status' => 'sometimes|required|in:active,draft',
             'is_featured' => 'nullable|boolean',
         ]);
 

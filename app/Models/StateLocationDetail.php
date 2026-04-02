@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\State $state
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StateLocationDetail newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StateLocationDetail newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StateLocationDetail query()
@@ -34,6 +35,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StateLocationDetail whereStateId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StateLocationDetail whereTimezone($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StateLocationDetail whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class StateLocationDetail extends Model
@@ -41,7 +43,7 @@ class StateLocationDetail extends Model
     use HasFactory;
 
     protected $fillable = [
-        'state_id', 'latitude', 'longitude', 'capital_city', 'population', 'currency', 'timezone', 'language', 'local_cuisine'
+        'state_id', 'latitude', 'longitude', 'capital_city', 'population', 'currency', 'timezone', 'language', 'local_cuisine',
     ];
 
     protected $casts = [

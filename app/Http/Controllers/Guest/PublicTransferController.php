@@ -3,9 +3,8 @@
 namespace App\Http\Controllers\Guest;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
 use App\Models\Transfer;
+use Illuminate\Http\JsonResponse;
 
 class PublicTransferController extends Controller
 {
@@ -17,7 +16,7 @@ class PublicTransferController extends Controller
             'pricingAvailability.pricingTier',
             'pricingAvailability.availability',
             'mediaGallery.media',
-            'seo'
+            'seo',
         ])->get()->map(function ($transfer) {
             $data = $transfer->toArray();
             $featuredImage = $transfer->mediaGallery->where('is_featured', true)->first();
@@ -33,19 +32,20 @@ class PublicTransferController extends Controller
                 ];
             })->toArray();
             unset($data['media_gallery_raw']);
+
             return $data;
         });
 
         if ($transfers->isEmpty()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Transfers not found'
+                'message' => 'Transfers not found',
             ], 404);
         }
 
         return response()->json([
             'success' => true,
-            'data' => $transfers
+            'data' => $transfers,
         ], 200);
     }
 
@@ -57,7 +57,7 @@ class PublicTransferController extends Controller
             'pricingAvailability.pricingTier',
             'pricingAvailability.availability',
             'mediaGallery.media',
-            'seo'
+            'seo',
         ])->find($id);
 
         // if (!$transfer) {
@@ -74,7 +74,7 @@ class PublicTransferController extends Controller
         if (empty($transfer)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Transfer not found'
+                'message' => 'Transfer not found',
             ], 404);
         }
 
@@ -94,7 +94,7 @@ class PublicTransferController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $data
+            'data' => $data,
         ], 200);
     }
 }

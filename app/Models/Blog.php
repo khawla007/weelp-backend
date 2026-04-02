@@ -21,6 +21,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read int|null $media_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Tag> $tags
  * @property-read int|null $tags_count
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Blog newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Blog newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Blog query()
@@ -32,6 +33,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Blog wherePublish($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Blog whereSlug($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Blog whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class Blog extends Model

@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Media $media
  * @property-read \App\Models\Place $place
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PlaceMediaGallery featured()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PlaceMediaGallery newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PlaceMediaGallery newQuery()
@@ -24,6 +25,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PlaceMediaGallery whereMediaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PlaceMediaGallery wherePlaceId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PlaceMediaGallery whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class PlaceMediaGallery extends Model

@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Attribute $attribute
  * @property-read \App\Models\Itinerary $itinerary
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryAttribute newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryAttribute newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryAttribute query()
@@ -22,12 +23,13 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryAttribute whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryAttribute whereItineraryId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryAttribute whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class ItineraryAttribute extends Model
 {
     protected $fillable = [
-        'itinerary_id', 'attribute_id', 'attribute_value'
+        'itinerary_id', 'attribute_id', 'attribute_value',
     ];
 
     public function itinerary()
@@ -35,7 +37,8 @@ class ItineraryAttribute extends Model
         return $this->belongsTo(Itinerary::class);
     }
 
-    public function attribute() {
+    public function attribute()
+    {
         return $this->belongsTo(Attribute::class, 'attribute_id');
     }
 }

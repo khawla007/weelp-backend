@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Country $country
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CountrySeo newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CountrySeo newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CountrySeo query()
@@ -32,6 +33,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CountrySeo whereSchemaData($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CountrySeo whereSchemaType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CountrySeo whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class CountrySeo extends Model
@@ -39,7 +41,7 @@ class CountrySeo extends Model
     use HasFactory;
 
     protected $table = 'country_seo';
-    
+
     protected $fillable = [
         'country_id',
         'meta_title',
@@ -67,8 +69,8 @@ class CountrySeo extends Model
         return json_decode($value, true);
     }
 
-    public function country() {
+    public function country()
+    {
         return $this->belongsTo(Country::class);
     }
-
 }

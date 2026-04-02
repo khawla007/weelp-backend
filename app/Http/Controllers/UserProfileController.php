@@ -2,46 +2,48 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Hash;
-use App\Models\User;
-use App\Models\UserProfile;
-use App\Models\UserMeta;  // Import UserMeta model
 use App\Models\Order;
 use App\Models\Review;
+use App\Models\User;
+use App\Models\UserMeta;
+use App\Models\UserProfile;  // Import UserMeta model
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class UserProfileController extends Controller
 {
     // Avatar constants
     const AVATAR_SIZE = 400;
+
     const MAX_AVATAR_SIZE_BYTES = 50000; // 50KB
+
     const INITIAL_QUALITY = 85;
+
     const MIN_QUALITY = 50;
+
     const QUALITY_STEP = 5;
 
     /**
      * Handle the get user profile request.
-    */
+     */
     public function show(Request $request)
     {
-        $user = User::with(['profile.urls', 'meta', ])->find($request->user()->id);
+        $user = User::with(['profile.urls', 'meta'])->find($request->user()->id);
 
-        if (!$user) {
+        if (! $user) {
             return response()->json(['error' => 'Profile not found'], 404);
         }
 
         // return response()->json($profile);
         return response()->json([
-            'user'    => $user,
+            'user' => $user,
         ]);
     }
 
     /**
      * Handle the insert/update user profile request.
-    */
-
+     */
     public function update(Request $request)
     {
         $validated = $request->validate([
@@ -77,7 +79,7 @@ class UserProfileController extends Controller
 
         $profile->fill($validated);
         $profile->save();
-        
+
         $userMeta = UserMeta::firstOrNew(['user_id' => $user->id]);
 
         if (isset($validated['username'])) {
@@ -90,28 +92,28 @@ class UserProfileController extends Controller
             $userMeta->bio = $validated['bio'];
         }
 
-        $userMeta->save();  
-                        
+        $userMeta->save();
+
         if ($request->has('urls')) {
             $incomingUrls = $validated['urls'];
             $existingUrls = $profile->urls()->orderBy('id')->get();
-            
+
             $existingCount = $existingUrls->count();
             $incomingCount = count($incomingUrls);
-        
+
             foreach ($incomingUrls as $index => $urlData) {
                 if ($index < $existingCount) {
                     // Update existing URL
                     $existingUrls[$index]->update([
                         'label' => $urlData['label'] ?? $existingUrls[$index]->label,
-                        'url' => $urlData['url'] ?? $existingUrls[$index]->url
+                        'url' => $urlData['url'] ?? $existingUrls[$index]->url,
                     ]);
                 } else {
                     // Create new URL entry
                     $profile->urls()->create($urlData);
                 }
             }
-        
+
             // If there are extra existing URLs beyond the incoming data, delete them
             if ($existingCount > $incomingCount) {
                 for ($i = $incomingCount; $i < $existingCount; $i++) {
@@ -119,12 +121,11 @@ class UserProfileController extends Controller
                 }
             }
         }
-        
-        
+
         return response()->json([
             'success' => true,
             'profile' => $profile->load('urls'),
-            'user_meta' => $userMeta
+            'user_meta' => $userMeta,
         ]);
     }
 
@@ -138,7 +139,7 @@ class UserProfileController extends Controller
         ]);
 
         // Check GD extension availability
-        if (!extension_loaded('gd')) {
+        if (! extension_loaded('gd')) {
             return response()->json(['error' => 'Image processing not available'], 500);
         }
 
@@ -152,7 +153,7 @@ class UserProfileController extends Controller
         try {
             // Read the image using real path for memory efficiency
             $image = imagecreatefromstring(file_get_contents($file->getRealPath()));
-            if (!$image) {
+            if (! $image) {
                 return response()->json(['error' => 'Failed to process image'], 400);
             }
 
@@ -174,7 +175,7 @@ class UserProfileController extends Controller
 
             // Start with initial quality
             $quality = self::INITIAL_QUALITY;
-            $filePath = sys_get_temp_dir() . '/' . uniqid('avatar_', true) . '.' . $extension;
+            $filePath = sys_get_temp_dir().'/'.uniqid('avatar_', true).'.'.$extension;
             $fileSize = null;
 
             // Compress until under max size (fixed infinite loop condition)
@@ -188,7 +189,7 @@ class UserProfileController extends Controller
             } while ($fileSize > self::MAX_AVATAR_SIZE_BYTES && $quality >= self::MIN_QUALITY);
 
             // Store in MinIO using real path for memory efficiency
-            $storagePath = 'avatars/' . $user->id . '.' . $extension;
+            $storagePath = 'avatars/'.$user->id.'.'.$extension;
             Storage::disk('minio')->put($storagePath, file_get_contents($filePath), 'public');
 
             // Save path to user profile
@@ -203,7 +204,8 @@ class UserProfileController extends Controller
 
         } catch (\Exception $e) {
             // Log internally, return generic message
-            \Log::error('Avatar upload failed: ' . $e->getMessage());
+            \Log::error('Avatar upload failed: '.$e->getMessage());
+
             return response()->json(['error' => 'Failed to upload avatar'], 500);
         } finally {
             // Clean up resources - always execute
@@ -232,9 +234,9 @@ class UserProfileController extends Controller
         $user = $request->user();
 
         // Verify current password
-        if (!Hash::check($validated['current_password'], $user->password)) {
+        if (! Hash::check($validated['current_password'], $user->password)) {
             return response()->json([
-                'error' => 'Current password is incorrect'
+                'error' => 'Current password is incorrect',
             ], 401);
         }
 
@@ -244,7 +246,7 @@ class UserProfileController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Password changed successfully'
+            'message' => 'Password changed successfully',
         ]);
     }
 
@@ -286,7 +288,7 @@ class UserProfileController extends Controller
                     'per_page' => $perPage,
                     'current_page' => $page,
                     'last_page' => 1,
-                ]
+                ],
             ]);
         }
 
@@ -299,89 +301,89 @@ class UserProfileController extends Controller
             $regionName = null;
 
             // ✅ Load from snapshot if orderable is missing
-                $snapshot = is_array($order->item_snapshot_json)
-                    ? $order->item_snapshot_json
-                    : json_decode($order->item_snapshot_json, true);
+            $snapshot = is_array($order->item_snapshot_json)
+                ? $order->item_snapshot_json
+                : json_decode($order->item_snapshot_json, true);
 
-                $media = collect($snapshot['media'] ?? [])->map(fn ($mediaLink) => [
-                    'id' => $mediaLink['id'] ?? null,
-                    'name' => $mediaLink['name'] ?? null,
-                    'alt_text' => $mediaLink['alt'] ?? null,
-                    'url' => $mediaLink['url'] ?? null,
+            $media = collect($snapshot['media'] ?? [])->map(fn ($mediaLink) => [
+                'id' => $mediaLink['id'] ?? null,
+                'name' => $mediaLink['name'] ?? null,
+                'alt_text' => $mediaLink['alt'] ?? null,
+                'url' => $mediaLink['url'] ?? null,
+            ]);
+
+            $locations = $snapshot['location'] ?? $snapshot['locations'] ?? [];
+            $cityName = $locations[0]['city'] ?? null;
+            $countryId = null;
+
+            if (! empty($locations[0]['country'])) {
+                $countryId = \App\Models\Country::where('name', $locations[0]['country'])->value('id');
+            }
+
+            $region = $countryId
+                ? \App\Models\Region::whereHas('countries', fn ($q) => $q->where('countries.id', $countryId))->first()
+                : null;
+
+            // $review = \App\Models\Review::where('user_id', $user->id)
+            //     ->where('item_id', $order->orderable_id)
+            //     ->first();
+
+            $review = \App\Models\Review::with('mediaGallery.media')
+                ->where('user_id', $user->id)
+                ->where('item_id', $order->orderable_id)
+                ->first();
+
+            $reviewData = null;
+
+            if ($review) {
+                $reviewMedia = $review->mediaGallery->map(fn ($rmg) => [
+                    'id' => $rmg->media->id,
+                    'name' => $rmg->media->name,
+                    'alt_text' => $rmg->media->alt_text,
+                    'url' => $rmg->media->url,
                 ]);
 
-                $locations = $snapshot['location'] ?? $snapshot['locations'] ?? [];
-                $cityName = $locations[0]['city'] ?? null;
-                $countryId = null;
-
-                if (!empty($locations[0]['country'])) {
-                    $countryId = \App\Models\Country::where('name', $locations[0]['country'])->value('id');
-                }
-
-                $region = $countryId
-                    ? \App\Models\Region::whereHas('countries', fn ($q) => $q->where('countries.id', $countryId))->first()
-                    : null;
-
-                // $review = \App\Models\Review::where('user_id', $user->id)
-                //     ->where('item_id', $order->orderable_id)
-                //     ->first();
-
-                $review = \App\Models\Review::with('mediaGallery.media')
-                            ->where('user_id', $user->id)
-                            ->where('item_id', $order->orderable_id)
-                            ->first();
-
-                $reviewData = null;
-
-                if ($review) {
-                    $reviewMedia = $review->mediaGallery->map(fn($rmg) => [
-                        'id' => $rmg->media->id,
-                        'name' => $rmg->media->name,
-                        'alt_text' => $rmg->media->alt_text,
-                        'url' => $rmg->media->url,
-                    ]);
-
-                    $reviewData = [
-                        'id' => $review->id,
-                        'user_id' => $review->user_id,
-                        'item_type' => $review->item_type,
-                        'item_id' => $review->item_id,
-                        'rating' => $review->rating,
-                        'review_text' => $review->review_text,
-                        'status' => $review->status,
-                        'media_gallery' => $reviewMedia->values(),
-                        'created_at' => $review->created_at,
-                        'updated_at' => $review->updated_at,
-                    ];
-                }
-                    
-                return [
-                    'id' => $order->id,
-                    'item_id' => $order->orderable_id,
-                    'status' => $order->status,
-                    'travel_date' => $order->travel_date,
-                    'preferred_time' => $order->preferred_time,
-                    'number_of_adults' => $order->number_of_adults,
-                    'number_of_children' => $order->number_of_children,
-                    'special_requirements' => $order->special_requirements,
-                    'payment' => $order->payment,
-                    'emergency_contact' => $order->emergencyContact,
-                    'item' => [
-                        'name' => $snapshot['name'] ?? null,
-                        'slug' => $snapshot['slug'] ?? null,
-                        'item_type' => $snapshot['item_type'] ?? null,
-                        'city' => $cityName,
-                        'region' => $region?->name,
-                        'locations' => $snapshot['location'] ?? null,
-                        'media' => $media,
-                    ],
-                    'review' => $reviewData,
-                    'user' => [
-                        'name' => $user->name,
-                        'email' => $user->email,
-                        'phone' => $userProfile?->phone,
-                    ],
+                $reviewData = [
+                    'id' => $review->id,
+                    'user_id' => $review->user_id,
+                    'item_type' => $review->item_type,
+                    'item_id' => $review->item_id,
+                    'rating' => $review->rating,
+                    'review_text' => $review->review_text,
+                    'status' => $review->status,
+                    'media_gallery' => $reviewMedia->values(),
+                    'created_at' => $review->created_at,
+                    'updated_at' => $review->updated_at,
                 ];
+            }
+
+            return [
+                'id' => $order->id,
+                'item_id' => $order->orderable_id,
+                'status' => $order->status,
+                'travel_date' => $order->travel_date,
+                'preferred_time' => $order->preferred_time,
+                'number_of_adults' => $order->number_of_adults,
+                'number_of_children' => $order->number_of_children,
+                'special_requirements' => $order->special_requirements,
+                'payment' => $order->payment,
+                'emergency_contact' => $order->emergencyContact,
+                'item' => [
+                    'name' => $snapshot['name'] ?? null,
+                    'slug' => $snapshot['slug'] ?? null,
+                    'item_type' => $snapshot['item_type'] ?? null,
+                    'city' => $cityName,
+                    'region' => $region?->name,
+                    'locations' => $snapshot['location'] ?? null,
+                    'media' => $media,
+                ],
+                'review' => $reviewData,
+                'user' => [
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'phone' => $userProfile?->phone,
+                ],
+            ];
         });
 
         return response()->json([
@@ -392,10 +394,9 @@ class UserProfileController extends Controller
                 'per_page' => $orders->perPage(),
                 'current_page' => $orders->currentPage(),
                 'last_page' => $orders->lastPage(),
-            ]
+            ],
         ]);
     }
-
 
     // ****************************Review api all for customers********************************
 
@@ -415,11 +416,11 @@ class UserProfileController extends Controller
         $paginatedReviews = $reviewsQuery->paginate($perPage, ['*'], 'page', $page);
 
         $reviews = $paginatedReviews->getCollection()->map(function ($review) {
-            $media = $review->mediaGallery->map(fn($rmg) => [
-                'id'       => $rmg->media->id,
-                'name'     => $rmg->media->name,
+            $media = $review->mediaGallery->map(fn ($rmg) => [
+                'id' => $rmg->media->id,
+                'name' => $rmg->media->name,
                 'alt_text' => $rmg->media->alt_text,
-                'url'      => $rmg->media->url,
+                'url' => $rmg->media->url,
             ])->values();
 
             // Use helper methods for display data
@@ -428,19 +429,19 @@ class UserProfileController extends Controller
             $hasLiveItem = $review->hasLiveItem();
 
             return [
-                'id'            => $review->id,
-                'order_id'      => $review->order_id,          // NEW
-                'item_type'     => $review->item_type,
-                'item_id'       => $review->item_id,
-                'item_name'     => $displayName,               // Changed: use helper
-                'item_slug'     => $displaySlug,               // NEW
+                'id' => $review->id,
+                'order_id' => $review->order_id,          // NEW
+                'item_type' => $review->item_type,
+                'item_id' => $review->item_id,
+                'item_name' => $displayName,               // Changed: use helper
+                'item_slug' => $displaySlug,               // NEW
                 'has_live_item' => $hasLiveItem,               // NEW
-                'rating'        => $review->rating,
-                'review_text'   => $review->review_text,
-                'status'        => $review->status,
+                'rating' => $review->rating,
+                'review_text' => $review->review_text,
+                'status' => $review->status,
                 'media_gallery' => $media,
-                'created_at'    => $review->created_at,
-                'updated_at'    => $review->updated_at,
+                'created_at' => $review->created_at,
+                'updated_at' => $review->updated_at,
             ];
         });
 
@@ -448,11 +449,11 @@ class UserProfileController extends Controller
             'success' => true,
             'reviews' => $reviews,
             'pagination' => [
-                'total'        => $paginatedReviews->total(),
-                'per_page'     => $paginatedReviews->perPage(),
+                'total' => $paginatedReviews->total(),
+                'per_page' => $paginatedReviews->perPage(),
                 'current_page' => $paginatedReviews->currentPage(),
-                'last_page'    => $paginatedReviews->lastPage(),
-            ]
+                'last_page' => $paginatedReviews->lastPage(),
+            ],
         ]);
     }
 
@@ -462,13 +463,13 @@ class UserProfileController extends Controller
 
         // Validate review + optional file upload
         $request->validate([
-            'item_type'  => 'required|string|in:activity,package,itinerary',
-            'item_id'    => 'required|integer',
-            'order_id'   => 'nullable|integer|exists:orders,id',
-            'rating'     => 'required|integer|min:1|max:5',
-            'review_text'=> 'required|string',
-            'file'       => 'nullable|array',
-            'file.*'     => 'file|mimes:jpg,jpeg,png,pdf,doc|max:2048',
+            'item_type' => 'required|string|in:activity,package,itinerary',
+            'item_id' => 'required|integer',
+            'order_id' => 'nullable|integer|exists:orders,id',
+            'rating' => 'required|integer|min:1|max:5',
+            'review_text' => 'required|string',
+            'file' => 'nullable|array',
+            'file.*' => 'file|mimes:jpg,jpeg,png,pdf,doc|max:2048',
         ]);
 
         $uploadedMediaIds = [];
@@ -478,15 +479,15 @@ class UserProfileController extends Controller
             foreach ($request->file('file') as $file) {
                 $filePath = $file->store('media', 'minio');
 
-                if (!$filePath) {
+                if (! $filePath) {
                     return response()->json([
-                        'message' => 'File upload failed.'
+                        'message' => 'File upload failed.',
                     ], 500);
                 }
 
                 $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
 
-                $media = new \App\Models\Media();
+                $media = new \App\Models\Media;
                 $media->name = $originalName;
                 $media->alt_text = $originalName;
                 $media->url = $filePath;
@@ -513,10 +514,10 @@ class UserProfileController extends Controller
         }
 
         // Ensure item exists before creating review
-        if (!$item) {
+        if (! $item) {
             return response()->json([
                 'success' => false,
-                'message' => 'The requested item could not be found.'
+                'message' => 'The requested item could not be found.',
             ], 404);
         }
 
@@ -526,15 +527,15 @@ class UserProfileController extends Controller
 
         // Create review with snapshots
         $review = \App\Models\Review::create([
-            'user_id'            => $user->id,
-            'order_id'           => $request->order_id,
-            'item_type'          => $request->item_type,
-            'item_id'            => $request->item_id,
+            'user_id' => $user->id,
+            'order_id' => $request->order_id,
+            'item_type' => $request->item_type,
+            'item_id' => $request->item_id,
             'item_name_snapshot' => $itemName,
             'item_slug_snapshot' => $itemSlug,
-            'rating'             => $request->rating,
-            'review_text'        => $request->review_text,
-            'status'             => 'pending',
+            'rating' => $request->rating,
+            'review_text' => $request->review_text,
+            'status' => 'pending',
         ]);
 
         // Sync media to review_media_gallery table
@@ -547,7 +548,7 @@ class UserProfileController extends Controller
         $review->load('mediaGallery.media');
 
         // Full media details
-        $media = $review->mediaGallery->map(fn($rmg) => [
+        $media = $review->mediaGallery->map(fn ($rmg) => [
             'id' => $rmg->media->id,
             'name' => $rmg->media->name,
             'alt_text' => $rmg->media->alt_text,
@@ -569,10 +570,10 @@ class UserProfileController extends Controller
 
         return response()->json([
             'success' => true,
-            'review' => $reviewData
+            'review' => $reviewData,
         ]);
     }
-    
+
     public function reviewShow($id)
     {
         $user = auth()->user();
@@ -582,19 +583,19 @@ class UserProfileController extends Controller
             ->where('user_id', $user->id)
             ->first();
 
-        if (!$review) {
+        if (! $review) {
             return response()->json([
                 'success' => false,
-                'message' => 'Review not found or access denied'
+                'message' => 'Review not found or access denied',
             ], 404);
         }
 
         // Load media details
-        $media = $review->mediaGallery->map(fn($rmg) => [
-            'id'       => $rmg->media->id,
-            'name'     => $rmg->media->name,
+        $media = $review->mediaGallery->map(fn ($rmg) => [
+            'id' => $rmg->media->id,
+            'name' => $rmg->media->name,
             'alt_text' => $rmg->media->alt_text,
-            'url'      => $rmg->media->url,
+            'url' => $rmg->media->url,
         ])->values();
 
         // Use helper methods
@@ -603,141 +604,13 @@ class UserProfileController extends Controller
         $hasLiveItem = $review->hasLiveItem();
 
         $reviewData = [
-            'id'            => $review->id,
-            'order_id'      => $review->order_id,          // NEW
-            'item_type'     => $review->item_type,
-            'item_id'       => $review->item_id,
-            'item_name'     => $displayName,               // Changed
-            'item_slug'     => $displaySlug,               // NEW
-            'has_live_item' => $hasLiveItem,               // NEW
-            'rating'        => $review->rating,
-            'review_text'   => $review->review_text,
-            'status'        => $review->status,
-            'media_gallery' => $media,
-            'created_at'    => $review->created_at,
-            'updated_at'    => $review->updated_at,
-        ];
-
-        return response()->json([
-            'success' => true,
-            'review'  => $reviewData,
-        ]);
-    }
-
-    public function reviewUpdate(Request $request, $id)
-    {
-    try {
-        $user = auth()->user();
-
-        // Find the review
-        $review = \App\Models\Review::where('id', $id)
-            ->where('user_id', $user->id)
-            ->first();
-
-        if (!$review) {
-            return response()->json(['error' => 'Review not found or access denied'], 404);
-        }
-
-        // Validate optional fields
-        $request->validate([
-            'rating'               => 'nullable|integer|min:1|max:5',
-            'review_text'          => 'nullable|string',
-            'order_id'             => 'nullable|integer|exists:orders,id',
-            'file'                 => 'nullable|array',
-            'file.*'               => 'file|mimes:jpg,jpeg,png,pdf,doc|max:2048',
-            'existing_media_ids'   => 'nullable|array',
-            'existing_media_ids.*' => 'integer|exists:media,id',
-        ]);
-
-        // Update basic fields if provided
-        $review->rating = $request->rating ?? $review->rating;
-        $review->review_text = $request->review_text ?? $review->review_text;
-
-        if ($request->has('order_id')) {
-            $review->order_id = $request->order_id;
-        }
-
-        // Cast existing_media_ids to integer array
-        $existingMediaIdsFromRequest = collect($request->existing_media_ids ?? [])->map(fn($id) => (int)$id)->toArray();
-        $currentMediaIds = $review->load('mediaGallery')->mediaGallery->pluck('media_id')->toArray();
-
-        // Delete media not present in request
-        foreach ($currentMediaIds as $oldMediaId) {
-            if (!in_array($oldMediaId, $existingMediaIdsFromRequest)) {
-                $oldMedia = \App\Models\Media::find($oldMediaId);
-                if ($oldMedia && !empty($oldMedia->getRawOriginal('url'))) {
-                    $relativePath = $oldMedia->getRawOriginal('url');
-
-                    // Legacy fallback: handle full URLs from before migration cleanup
-                    if (str_starts_with($relativePath, 'http')) {
-                        $parsed = parse_url($relativePath, PHP_URL_PATH);
-                        $relativePath = ltrim($parsed, '/');
-                        $bucket = config('filesystems.disks.minio.bucket');
-                        $relativePath = preg_replace('#^' . preg_quote($bucket, '#') . '/#', '', $relativePath);
-                    }
-
-                    if ($relativePath) {
-                        Storage::disk('minio')->delete($relativePath);
-                    }
-                    // Delete DB record
-                    $oldMedia->delete();
-                }
-            }
-        }
-
-        $updatedMediaIds = $existingMediaIdsFromRequest; // keep media user wants
-
-        // Handle new file uploads
-        if ($request->hasFile('file')) {
-            foreach ($request->file('file') as $file) {
-                $filePath = $file->store('media', 'minio');
-
-                if (!$filePath) {
-                    return response()->json(['message' => 'File upload failed.'], 500);
-                }
-
-                $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
-
-                $media = new \App\Models\Media();
-                $media->name = $originalName;
-                $media->alt_text = $originalName;
-                $media->url = $filePath;
-                $media->save();
-
-                $updatedMediaIds[] = $media->id;
-            }
-        }
-
-        // Sync to review_media_gallery table
-        $review->mediaGallery()->delete();
-        foreach ($updatedMediaIds as $index => $mediaId) {
-            $review->mediaGallery()->create([
-                'media_id' => $mediaId,
-                'sort_order' => $index,
-            ]);
-        }
-
-        // Refresh snapshots if item still exists
-        if ($review->item) {
-            $review->item_name_snapshot = $review->item->name;
-            $review->item_slug_snapshot = $review->item->slug;
-        }
-        $review->save();
-        $review->load('mediaGallery.media');
-
-        // Full media details
-        $media = $review->mediaGallery->map(fn($rmg) => [
-            'id' => $rmg->media->id,
-            'name' => $rmg->media->name,
-            'alt_text' => $rmg->media->alt_text,
-            'url' => $rmg->media->url,
-        ])->values();
-
-        $reviewData = [
             'id' => $review->id,
-            'user_id' => $review->user_id,
+            'order_id' => $review->order_id,          // NEW
             'item_type' => $review->item_type,
             'item_id' => $review->item_id,
+            'item_name' => $displayName,               // Changed
+            'item_slug' => $displaySlug,               // NEW
+            'has_live_item' => $hasLiveItem,               // NEW
             'rating' => $review->rating,
             'review_text' => $review->review_text,
             'status' => $review->status,
@@ -748,16 +621,144 @@ class UserProfileController extends Controller
 
         return response()->json([
             'success' => true,
-            'review' => $reviewData
+            'review' => $reviewData,
         ]);
-
-    } catch (\Throwable $e) {
-        return response()->json([
-            'success' => false,
-            'error'   => $e->getMessage(),
-            'trace'   => $e->getTraceAsString(),
-        ], 500);
     }
+
+    public function reviewUpdate(Request $request, $id)
+    {
+        try {
+            $user = auth()->user();
+
+            // Find the review
+            $review = \App\Models\Review::where('id', $id)
+                ->where('user_id', $user->id)
+                ->first();
+
+            if (! $review) {
+                return response()->json(['error' => 'Review not found or access denied'], 404);
+            }
+
+            // Validate optional fields
+            $request->validate([
+                'rating' => 'nullable|integer|min:1|max:5',
+                'review_text' => 'nullable|string',
+                'order_id' => 'nullable|integer|exists:orders,id',
+                'file' => 'nullable|array',
+                'file.*' => 'file|mimes:jpg,jpeg,png,pdf,doc|max:2048',
+                'existing_media_ids' => 'nullable|array',
+                'existing_media_ids.*' => 'integer|exists:media,id',
+            ]);
+
+            // Update basic fields if provided
+            $review->rating = $request->rating ?? $review->rating;
+            $review->review_text = $request->review_text ?? $review->review_text;
+
+            if ($request->has('order_id')) {
+                $review->order_id = $request->order_id;
+            }
+
+            // Cast existing_media_ids to integer array
+            $existingMediaIdsFromRequest = collect($request->existing_media_ids ?? [])->map(fn ($id) => (int) $id)->toArray();
+            $currentMediaIds = $review->load('mediaGallery')->mediaGallery->pluck('media_id')->toArray();
+
+            // Delete media not present in request
+            foreach ($currentMediaIds as $oldMediaId) {
+                if (! in_array($oldMediaId, $existingMediaIdsFromRequest)) {
+                    $oldMedia = \App\Models\Media::find($oldMediaId);
+                    if ($oldMedia && ! empty($oldMedia->getRawOriginal('url'))) {
+                        $relativePath = $oldMedia->getRawOriginal('url');
+
+                        // Legacy fallback: handle full URLs from before migration cleanup
+                        if (str_starts_with($relativePath, 'http')) {
+                            $parsed = parse_url($relativePath, PHP_URL_PATH);
+                            $relativePath = ltrim($parsed, '/');
+                            $bucket = config('filesystems.disks.minio.bucket');
+                            $relativePath = preg_replace('#^'.preg_quote($bucket, '#').'/#', '', $relativePath);
+                        }
+
+                        if ($relativePath) {
+                            Storage::disk('minio')->delete($relativePath);
+                        }
+                        // Delete DB record
+                        $oldMedia->delete();
+                    }
+                }
+            }
+
+            $updatedMediaIds = $existingMediaIdsFromRequest; // keep media user wants
+
+            // Handle new file uploads
+            if ($request->hasFile('file')) {
+                foreach ($request->file('file') as $file) {
+                    $filePath = $file->store('media', 'minio');
+
+                    if (! $filePath) {
+                        return response()->json(['message' => 'File upload failed.'], 500);
+                    }
+
+                    $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+
+                    $media = new \App\Models\Media;
+                    $media->name = $originalName;
+                    $media->alt_text = $originalName;
+                    $media->url = $filePath;
+                    $media->save();
+
+                    $updatedMediaIds[] = $media->id;
+                }
+            }
+
+            // Sync to review_media_gallery table
+            $review->mediaGallery()->delete();
+            foreach ($updatedMediaIds as $index => $mediaId) {
+                $review->mediaGallery()->create([
+                    'media_id' => $mediaId,
+                    'sort_order' => $index,
+                ]);
+            }
+
+            // Refresh snapshots if item still exists
+            if ($review->item) {
+                $review->item_name_snapshot = $review->item->name;
+                $review->item_slug_snapshot = $review->item->slug;
+            }
+            $review->save();
+            $review->load('mediaGallery.media');
+
+            // Full media details
+            $media = $review->mediaGallery->map(fn ($rmg) => [
+                'id' => $rmg->media->id,
+                'name' => $rmg->media->name,
+                'alt_text' => $rmg->media->alt_text,
+                'url' => $rmg->media->url,
+            ])->values();
+
+            $reviewData = [
+                'id' => $review->id,
+                'user_id' => $review->user_id,
+                'item_type' => $review->item_type,
+                'item_id' => $review->item_id,
+                'rating' => $review->rating,
+                'review_text' => $review->review_text,
+                'status' => $review->status,
+                'media_gallery' => $media,
+                'created_at' => $review->created_at,
+                'updated_at' => $review->updated_at,
+            ];
+
+            return response()->json([
+                'success' => true,
+                'review' => $reviewData,
+            ]);
+
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ], 500);
+        }
     }
 
     public function reviewDelete($id)
@@ -770,7 +771,7 @@ class UserProfileController extends Controller
             ->where('user_id', $user->id)
             ->first();
 
-        if (!$review) {
+        if (! $review) {
             return response()->json(['error' => 'Review not found or access denied'], 404);
         }
 
@@ -779,7 +780,7 @@ class UserProfileController extends Controller
 
         foreach ($currentMediaIds as $mediaId) {
             $media = \App\Models\Media::find($mediaId);
-            if ($media && !empty($media->getRawOriginal('url'))) {
+            if ($media && ! empty($media->getRawOriginal('url'))) {
                 $relativePath = $media->getRawOriginal('url');
 
                 // Legacy fallback: handle full URLs from before migration cleanup
@@ -787,7 +788,7 @@ class UserProfileController extends Controller
                     $parsed = parse_url($relativePath, PHP_URL_PATH);
                     $relativePath = ltrim($parsed, '/');
                     $bucket = config('filesystems.disks.minio.bucket');
-                    $relativePath = preg_replace('#^' . preg_quote($bucket, '#') . '/#', '', $relativePath);
+                    $relativePath = preg_replace('#^'.preg_quote($bucket, '#').'/#', '', $relativePath);
                 }
 
                 if ($relativePath) {
@@ -803,9 +804,7 @@ class UserProfileController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Review deleted successfully'
+            'message' => 'Review deleted successfully',
         ]);
     }
-    
-
 }

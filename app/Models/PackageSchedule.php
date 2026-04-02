@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read \App\Models\Package $package
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\PackageTransfer> $transfers
  * @property-read int|null $transfers_count
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageSchedule newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageSchedule newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageSchedule query()
@@ -26,6 +27,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageSchedule whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageSchedule wherePackageId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageSchedule whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class PackageSchedule extends Model
@@ -56,5 +58,4 @@ class PackageSchedule extends Model
     {
         return $this->hasMany(PackageItinerary::class, 'schedule_id');
     }
-
 }

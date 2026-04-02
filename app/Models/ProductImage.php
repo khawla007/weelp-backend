@@ -7,9 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property-read \App\Models\Product|null $product
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ProductImage newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ProductImage newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ProductImage query()
+ *
  * @mixin \Eloquent
  */
 class ProductImage extends Model

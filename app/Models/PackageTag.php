@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Package $package
  * @property-read \App\Models\Tag $tag
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageTag newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageTag newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageTag query()
@@ -20,12 +21,13 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageTag wherePackageId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageTag whereTagId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageTag whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class PackageTag extends Model
 {
     protected $fillable = [
-        'package_id', 'tag_id'
+        'package_id', 'tag_id',
     ];
 
     public function package()

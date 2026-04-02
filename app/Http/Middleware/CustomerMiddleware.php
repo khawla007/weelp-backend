@@ -4,8 +4,8 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Auth;
+use Symfony\Component\HttpFoundation\Response;
 
 class CustomerMiddleware
 {
@@ -19,7 +19,7 @@ class CustomerMiddleware
         $user = Auth::user();
 
         // Check if user role is 'admin' or 'super_admin'
-        if (!$user || !in_array($user->role, ['customer'])) {
+        if (! $user || ! in_array($user->role, ['customer'])) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 

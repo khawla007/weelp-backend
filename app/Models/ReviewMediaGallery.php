@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Media $media
  * @property-read \App\Models\Review $review
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ReviewMediaGallery newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ReviewMediaGallery newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ReviewMediaGallery query()
@@ -22,6 +23,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ReviewMediaGallery whereReviewId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ReviewMediaGallery whereSortOrder($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ReviewMediaGallery whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class ReviewMediaGallery extends Model

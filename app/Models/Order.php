@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
 /**
  * @property int $id
  * @property int $user_id
@@ -23,6 +24,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property-read \App\Models\OrderPayment|null $payment
  * @property-read \App\Models\Review|null $review
  * @property-read \App\Models\User $user
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order query()
@@ -39,6 +41,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereTravelDate($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereUserId($value)
+ *
  * @mixin \Eloquent
  */
 class Order extends Model
@@ -48,7 +51,7 @@ class Order extends Model
     protected $fillable = [
         'user_id', 'orderable_type', 'orderable_id', 'item_snapshot_json',
         'travel_date', 'preferred_time', 'number_of_adults',
-        'number_of_children', 'status', 'special_requirements'
+        'number_of_children', 'status', 'special_requirements',
     ];
 
     public function orderable()
@@ -77,6 +80,4 @@ class Order extends Model
             ->where('user_id', $this->user_id)
             ->where('item_type', strtolower(class_basename($this->orderable_type)));
     }
-
 }
-

@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
-use App\Models\Review;
 use App\Models\Activity;
-use App\Models\Package;
 use App\Models\Itinerary;
+use App\Models\Package;
+use App\Models\Review;
 use Illuminate\Database\Seeder;
 
 class ReviewSnapshotSeeder extends Seeder

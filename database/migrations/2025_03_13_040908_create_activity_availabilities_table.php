@@ -20,11 +20,11 @@ return new class extends Migration
             $table->boolean('quantity_based_activity')->default(false);
             $table->integer('max_quantity')->nullable(); // If quantity-based activity is true
             $table->timestamps();
-    
+
             // Foreign key constraint
             $table->foreign('activity_id')->references('id')->on('activities')->onDelete('cascade');
         });
-    
+
     }
 
     /**

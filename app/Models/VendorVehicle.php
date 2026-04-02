@@ -25,6 +25,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\VendorDriver> $drivers
  * @property-read int|null $drivers_count
  * @property-read \App\Models\Vendor $vendor
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|VendorVehicle newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|VendorVehicle newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|VendorVehicle query()
@@ -42,16 +43,19 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|VendorVehicle whereVehicleType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|VendorVehicle whereVendorId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|VendorVehicle whereYear($value)
+ *
  * @mixin \Eloquent
  */
-class VendorVehicle extends Model {
+class VendorVehicle extends Model
+{
     use HasFactory;
 
     protected $table = 'vendor_vehicles';
 
     protected $fillable = ['vendor_id', 'vehicle_type', 'capacity', 'make', 'model', 'year', 'license_plate', 'features', 'status', 'last_maintenance', 'next_maintenance'];
 
-    public function vendor() {
+    public function vendor()
+    {
         return $this->belongsTo(Vendor::class);
     }
 
@@ -60,7 +64,8 @@ class VendorVehicle extends Model {
         return $this->hasMany(VendorAvailabilityTimeSlot::class, 'vehicle_id');
     }
 
-    public function drivers() {
+    public function drivers()
+    {
         return $this->hasMany(VendorDriver::class, 'assigned_vehicle_id');
     }
 }

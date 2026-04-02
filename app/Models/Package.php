@@ -44,6 +44,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read \App\Models\PackageSeo|null $seo
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\PackageTag> $tags
  * @property-read int|null $tags_count
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Package newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Package newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Package query()
@@ -56,6 +57,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Package wherePrivatePackage($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Package whereSlug($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Package whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class Package extends Model
@@ -73,10 +75,11 @@ class Package extends Model
 
     protected $casts = [
         'featured_package' => 'boolean',
-        'private_package' => 'boolean'
+        'private_package' => 'boolean',
     ];
 
-    public function locations() {
+    public function locations()
+    {
 
         return $this->hasMany(PackageLocation::class);
     }
@@ -116,7 +119,7 @@ class Package extends Model
     // Tag relation
     public function tags()
     {
-        return $this->hasMany(PackageTag::class,);
+        return $this->hasMany(PackageTag::class);
     }
 
     public function faqs()

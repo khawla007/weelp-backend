@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Media $media
  * @property-read \App\Models\Transfer $transfer
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferMediaGallery featured()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferMediaGallery newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferMediaGallery newQuery()
@@ -24,6 +25,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferMediaGallery whereMediaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferMediaGallery whereTransferId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferMediaGallery whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class TransferMediaGallery extends Model

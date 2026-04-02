@@ -23,6 +23,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\City $city
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CityTravelInfo newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CityTravelInfo newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CityTravelInfo query()
@@ -42,6 +43,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CityTravelInfo whereTravelTips($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CityTravelInfo whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CityTravelInfo whereVisaRequirements($value)
+ *
  * @mixin \Eloquent
  */
 class CityTravelInfo extends Model
@@ -49,15 +51,16 @@ class CityTravelInfo extends Model
     use HasFactory;
 
     protected $table = 'city_travel_info';
+
     protected $fillable = [
-        'city_id', 'airport', 'public_transportation', 'taxi_available', 
-        'rental_cars_available', 'hotels', 'hostels', 'apartments', 
-        'resorts', 'visa_requirements', 'best_time_to_visit', 
-        'travel_tips', 'safety_information'
+        'city_id', 'airport', 'public_transportation', 'taxi_available',
+        'rental_cars_available', 'hotels', 'hostels', 'apartments',
+        'resorts', 'visa_requirements', 'best_time_to_visit',
+        'travel_tips', 'safety_information',
     ];
 
     protected $casts = [
-        'public_transportation'     => 'array'
+        'public_transportation' => 'array',
     ];
 
     public function city()

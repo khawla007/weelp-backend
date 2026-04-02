@@ -39,6 +39,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read \App\Models\ItinerarySeo|null $seo
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ItineraryTag> $tags
  * @property-read int|null $tags_count
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Itinerary newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Itinerary newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Itinerary query()
@@ -51,21 +52,24 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Itinerary wherePrivateItinerary($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Itinerary whereSlug($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Itinerary whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class Itinerary extends Model
 {
     protected $table = 'itineraries';
+
     protected $fillable = [
-        'name', 'slug', 'description', 'featured_itinerary', 'private_itinerary'
+        'name', 'slug', 'description', 'featured_itinerary', 'private_itinerary',
     ];
 
     protected $casts = [
         'featured_itinerary' => 'boolean',
-        'private_itinerary' => 'boolean'
+        'private_itinerary' => 'boolean',
     ];
 
-    public function locations() {
+    public function locations()
+    {
 
         return $this->hasMany(ItineraryLocation::class);
     }
@@ -101,7 +105,8 @@ class Itinerary extends Model
     }
 
     // Category relation
-    public function categories() {
+    public function categories()
+    {
         return $this->hasMany(ItineraryCategory::class);
     }
 
@@ -121,6 +126,7 @@ class Itinerary extends Model
     {
         return $this->hasOne(ItineraryAvailability::class);
     }
+
     public function orders()
     {
         return $this->morphMany(Order::class, 'orderable');

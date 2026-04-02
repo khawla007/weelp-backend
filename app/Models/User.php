@@ -4,10 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Tymon\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-
+use Tymon\JWTAuth\Contracts\JWTSubject;
 
 /**
  * @property int $id
@@ -33,6 +32,7 @@ use Illuminate\Notifications\Notifiable;
  * @property-read \App\Models\UserProfile|null $profile
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Review> $reviews
  * @property-read int|null $reviews_count
+ *
  * @method static \Database\Factories\UserFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User newQuery()
@@ -49,6 +49,7 @@ use Illuminate\Notifications\Notifiable;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereRole($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereStatus($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class User extends Authenticatable implements JWTSubject
@@ -57,14 +58,15 @@ class User extends Authenticatable implements JWTSubject
 
     // Role constants
     const ROLE_SUPER_ADMIN = 'super_admin';
-    const ROLE_ADMIN = 'admin';
-    const ROLE_CUSTOMER = 'customer';
 
+    const ROLE_ADMIN = 'admin';
+
+    const ROLE_CUSTOMER = 'customer';
 
     // Status constants
     const STATUS_ACTIVE = 'active';
-    const STATUS_INACTIVE = 'inactive';
 
+    const STATUS_INACTIVE = 'inactive';
 
     /**
      * The attributes that are mass assignable.
@@ -77,8 +79,9 @@ class User extends Authenticatable implements JWTSubject
         'password',
         'role', // Add role here
         'status',
-        'email_verified_at'
+        'email_verified_at',
     ];
+
     /**
      * The attributes that should be hidden for serialization.
      *
@@ -120,12 +123,10 @@ class User extends Authenticatable implements JWTSubject
                 $user->status = self::STATUS_ACTIVE; // Default status to 'active'
             }
         });
-        
-    }
-    
-    
 
-        /**
+    }
+
+    /**
      * Get the identifier that will be stored in the JWT claim.
      *
      * @return mixed
@@ -174,7 +175,6 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->getKey(); // This will return the user id for JWT identification
     }
-
 
     public function profile()
     {

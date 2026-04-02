@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -13,6 +12,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\PackageBasePricing $basePricing
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageBlackoutDate newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageBlackoutDate newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageBlackoutDate query()
@@ -22,12 +22,13 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageBlackoutDate whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageBlackoutDate whereReason($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageBlackoutDate whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class PackageBlackoutDate extends Model
 {
     protected $fillable = [
-        'base_pricing_id', 'date', 'reason'
+        'base_pricing_id', 'date', 'reason',
     ];
 
     public function basePricing()

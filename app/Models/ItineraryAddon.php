@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Addon $addon
  * @property-read \App\Models\Itinerary $itinerary
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryAddon newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryAddon newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryAddon query()
@@ -20,6 +21,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryAddon whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryAddon whereItineraryId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryAddon whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class ItineraryAddon extends Model

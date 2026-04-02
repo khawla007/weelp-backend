@@ -7,9 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property-read \App\Models\Itinerary|null $itinerary
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryFaq newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryFaq newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryFaq query()
+ *
  * @mixin \Eloquent
  */
 class ItineraryFaq extends Model

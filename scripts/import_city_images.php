@@ -4,7 +4,6 @@
  * City Images Import Script
  * Run: php artisan tinker --execute="include 'scripts/import_city_images.php';"
  */
-
 echo "Starting city images import...\n";
 
 $stats = [
@@ -16,7 +15,7 @@ $stats = [
 // Get all cities from database
 $cities = \App\Models\City::all();
 
-echo "Found " . $cities->count() . " cities in database\n\n";
+echo 'Found '.$cities->count()." cities in database\n\n";
 
 foreach ($cities as $city) {
     $imageCount = rand(2, 5);  // Randomize per city
@@ -26,6 +25,7 @@ foreach ($cities as $city) {
     $existingCount = \App\Models\CityMediaGallery::where('city_id', $city->id)->count();
     if ($existingCount > 0) {
         echo "  SKIP: City already has {$existingCount} images\n\n";
+
         continue;
     }
 
@@ -36,15 +36,16 @@ foreach ($cities as $city) {
             echo "  Image {$i}: Downloading...\n";
 
             // Check for duplicate by media name
-            $mediaName = $city->name . ' - Image ' . $i;
+            $mediaName = $city->name.' - Image '.$i;
             $existingMedia = \App\Models\Media::where('name', $mediaName)->first();
             if ($existingMedia) {
                 echo "  Image {$i}: SKIP - Media already exists\n";
+
                 continue;
             }
 
             // Generate seed-based URL for unique images
-            $seed = $city->slug . '-' . $i;
+            $seed = $city->slug.'-'.$i;
             $imageUrl = "https://picsum.photos/seed/{$seed}/800/600.jpg";
 
             // Download image with timeout and SSL verification disabled
@@ -60,12 +61,12 @@ foreach ($cities as $city) {
             $imageContent = @file_get_contents($imageUrl, false, $context);
 
             if ($imageContent === false || empty($imageContent)) {
-                throw new \Exception("Failed to download or empty content");
+                throw new \Exception('Failed to download or empty content');
             }
 
             // Generate filename and path
-            $fileName = $city->slug . '-' . $i . '.jpg';
-            $path = 'cities/' . $fileName;
+            $fileName = $city->slug.'-'.$i.'.jpg';
+            $path = 'cities/'.$fileName;
 
             // Upload to MinIO
             \Illuminate\Support\Facades\Storage::disk('minio')->put($path, $imageContent);
@@ -80,7 +81,7 @@ foreach ($cities as $city) {
                 'file_name' => $fileName,
                 'file_size' => strlen($imageContent),
                 'mime_type' => 'image/jpeg',
-                'alt_text' => $city->name . ' travel image',
+                'alt_text' => $city->name.' travel image',
             ]);
 
             // Attach to city via CityMediaGallery pivot (first image = featured)
@@ -90,7 +91,7 @@ foreach ($cities as $city) {
                 'is_featured' => $isFirst,
             ]);
 
-            echo "  Image {$i}: ✓ Added to " . ($isFirst ? 'FEATURED' : 'gallery') . "\n";
+            echo "  Image {$i}: ✓ Added to ".($isFirst ? 'FEATURED' : 'gallery')."\n";
 
             $stats['images']++;
             $isFirst = false;
@@ -109,8 +110,8 @@ echo "\n=== Import Summary ===\n";
 echo "Cities processed: {$stats['cities']}\n";
 echo "Images uploaded: {$stats['images']}\n";
 
-if (!empty($stats['errors'])) {
-    echo "Errors: " . count($stats['errors']) . "\n";
+if (! empty($stats['errors'])) {
+    echo 'Errors: '.count($stats['errors'])."\n";
     foreach ($stats['errors'] as $error) {
         echo "  - {$error}\n";
     }

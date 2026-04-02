@@ -18,7 +18,7 @@ class PublicFilterController extends Controller
 
         if ($citySlug) {
             $city = City::where('slug', $citySlug)->first();
-            if (!$city) {
+            if (! $city) {
                 return response()->json(['message' => 'City not found'], 404);
             }
             $query->where('city_id', $city->id);
@@ -26,7 +26,7 @@ class PublicFilterController extends Controller
 
         if ($regionSlug) {
             $region = Region::where('slug', $regionSlug)->first();
-            if (!$region) {
+            if (! $region) {
                 return response()->json(['message' => 'Region not found'], 404);
             }
 
@@ -48,5 +48,4 @@ class PublicFilterController extends Controller
 
         return response()->json($query->get());
     }
-
 }

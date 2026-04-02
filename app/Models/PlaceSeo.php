@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Place $place
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PlaceSeo newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PlaceSeo newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PlaceSeo query()
@@ -32,12 +33,15 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PlaceSeo whereSchemaData($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PlaceSeo whereSchemaType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PlaceSeo whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
-class PlaceSeo extends Model {
+class PlaceSeo extends Model
+{
     use HasFactory;
 
     protected $table = 'place_seo';
+
     protected $fillable = [
         'place_id',
         'meta_title',
@@ -63,7 +67,8 @@ class PlaceSeo extends Model {
         return json_decode($value, true);
     }
 
-    public function place() {
+    public function place()
+    {
         return $this->belongsTo(Place::class);
     }
 }

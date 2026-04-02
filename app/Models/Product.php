@@ -12,15 +12,17 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read int|null $prices_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ProductVariant> $variants
  * @property-read int|null $variants_count
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Product newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Product newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Product query()
+ *
  * @mixin \Eloquent
  */
 class Product extends Model
 {
     use HasFactory;
-    
+
     protected $fillable = ['name', 'slug', 'overview', 'whats_included', 'is_variable'];
 
     public function variants()

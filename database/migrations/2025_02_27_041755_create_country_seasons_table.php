@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('country_seasons', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('country_id')->constrained()->onDelete('cascade'); 
+            $table->foreignId('country_id')->constrained()->onDelete('cascade');
             $table->string('name');
             $table->json('months')->nullable();
             $table->text('weather');

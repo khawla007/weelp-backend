@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\TransferVendorRoute> $transferRoutes
  * @property-read int|null $transfer_routes_count
  * @property-read \App\Models\Vendor $vendor
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|VendorRoute newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|VendorRoute newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|VendorRoute query()
@@ -34,16 +35,19 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|VendorRoute whereStatus($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|VendorRoute whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|VendorRoute whereVendorId($value)
+ *
  * @mixin \Eloquent
  */
-class VendorRoute extends Model {
+class VendorRoute extends Model
+{
     use HasFactory;
 
     protected $table = 'vendor_routes';
 
     protected $fillable = ['vendor_id', 'name', 'description', 'start_point', 'end_point', 'base_price', 'price_per_km', 'status'];
 
-    public function vendor() {
+    public function vendor()
+    {
         return $this->belongsTo(Vendor::class);
     }
 

@@ -4,7 +4,6 @@
  * Quick Country Images Import Script
  * Run: php artisan tinker --execute="include 'scripts/import_country_images.php';"
  */
-
 $imagesPerCountry = 5;
 
 // Country data with direct image URLs (free to use)
@@ -164,9 +163,10 @@ foreach ($countryImages as $countryName => $imageUrls) {
 
     $country = \App\Models\Country::where('name', $countryName)->first();
 
-    if (!$country) {
+    if (! $country) {
         echo "  ERROR: Country not found\n";
         $stats['errors'][] = "{$countryName}: Country not found";
+
         continue;
     }
 
@@ -174,30 +174,30 @@ foreach ($countryImages as $countryName => $imageUrls) {
 
     foreach ($imageUrls as $index => $imageUrl) {
         try {
-            echo "  Image " . ($index + 1) . ": Downloading...\n";
+            echo '  Image '.($index + 1).": Downloading...\n";
 
             // Download image
             $imageContent = file_get_contents($imageUrl);
 
-            if (!$imageContent) {
-                throw new \Exception("Failed to download");
+            if (! $imageContent) {
+                throw new \Exception('Failed to download');
             }
 
             // Generate filename
             $extension = '.jpg';
-            $fileName = \Illuminate\Support\Str::slug($countryName) . '_' . ($index + 1) . '_' . time() . $extension;
-            $path = 'countries/' . $fileName;
+            $fileName = \Illuminate\Support\Str::slug($countryName).'_'.($index + 1).'_'.time().$extension;
+            $path = 'countries/'.$fileName;
 
             // Upload to MinIO
             \Illuminate\Support\Facades\Storage::disk('minio')->put($path, $imageContent);
             $url = \Illuminate\Support\Facades\Storage::disk('minio')->url($path);
 
-            echo "  Image " . ($index + 1) . ": Uploaded to MinIO\n";
+            echo '  Image '.($index + 1).": Uploaded to MinIO\n";
 
             // Create Media record
             $media = \App\Models\Media::create([
-                'name' => $countryName . ' - Image ' . ($index + 1),
-                'alt_text' => $countryName . ' travel image',
+                'name' => $countryName.' - Image '.($index + 1),
+                'alt_text' => $countryName.' travel image',
                 'url' => $url,
                 'file_name' => $fileName,
                 'file_size' => strlen($imageContent),
@@ -211,14 +211,14 @@ foreach ($countryImages as $countryName => $imageUrls) {
                 'is_featured' => $isFirst,
             ]);
 
-            echo "  Image " . ($index + 1) . ": ✓ Added to " . ($isFirst ? 'FEATURED' : 'gallery') . "\n";
+            echo '  Image '.($index + 1).': ✓ Added to '.($isFirst ? 'FEATURED' : 'gallery')."\n";
 
             $stats['images']++;
             $isFirst = false;
 
         } catch (\Exception $e) {
-            echo "  Image " . ($index + 1) . ": ✗ Error - {$e->getMessage()}\n";
-            $stats['errors'][] = "{$countryName} Image " . ($index + 1) . ": {$e->getMessage()}";
+            echo '  Image '.($index + 1).": ✗ Error - {$e->getMessage()}\n";
+            $stats['errors'][] = "{$countryName} Image ".($index + 1).": {$e->getMessage()}";
         }
     }
 
@@ -230,8 +230,8 @@ echo "\n=== Import Summary ===\n";
 echo "Countries processed: {$stats['countries']}\n";
 echo "Images uploaded: {$stats['images']}\n";
 
-if (!empty($stats['errors'])) {
-    echo "Errors: " . count($stats['errors']) . "\n";
+if (! empty($stats['errors'])) {
+    echo 'Errors: '.count($stats['errors'])."\n";
 }
 
 echo "=== Done ===\n";

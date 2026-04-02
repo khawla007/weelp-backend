@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read \App\Models\Itinerary $itinerary
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ItineraryPriceVariation> $variations
  * @property-read int|null $variations_count
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryBasePricing newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryBasePricing newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryBasePricing query()
@@ -29,15 +30,16 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryBasePricing whereItineraryId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryBasePricing whereStartDate($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryBasePricing whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class ItineraryBasePricing extends Model
 {
     protected $table = 'itinerary_base_pricing';
-    
+
     protected $fillable = [
-        'itinerary_id', 'currency', 'availability', 
-        'start_date', 'end_date'
+        'itinerary_id', 'currency', 'availability',
+        'start_date', 'end_date',
     ];
 
     public function itinerary()

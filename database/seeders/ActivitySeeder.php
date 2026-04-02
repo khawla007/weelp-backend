@@ -2,27 +2,28 @@
 
 namespace Database\Seeders;
 
+use App\Models\Activity;
+use App\Models\ActivityAddon;
+use App\Models\ActivityAttribute;
+use App\Models\ActivityAvailability;
+use App\Models\ActivityCategory;
+use App\Models\ActivityEarlyBirdDiscount;
+use App\Models\ActivityGroupDiscount;
+use App\Models\ActivityLastMinuteDiscount;
+use App\Models\ActivityLocation;
+use App\Models\ActivityMediaGallery;
+use App\Models\ActivityPricing;
+use App\Models\ActivityPromoCode;
+use App\Models\ActivitySeasonalPricing;
+use App\Models\ActivityTag;
+use App\Models\Addon;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use App\Models\Activity;
-use App\Models\ActivityCategory;
-use App\Models\ActivityAttribute;
-use App\Models\ActivityTag;
-use App\Models\ActivityLocation;
-use App\Models\Attribute;
-use App\Models\ActivityPricing;
-use App\Models\ActivitySeasonalPricing;
-use App\Models\ActivityGroupDiscount;
-use App\Models\ActivityEarlyBirdDiscount;
-use App\Models\ActivityLastMinuteDiscount;
-use App\Models\ActivityPromoCode;
-use App\Models\ActivityMediaGallery;
-use App\Models\ActivityAvailability;
-use App\Models\Addon;
-use App\Models\ActivityAddon;
 
-class ActivitySeeder extends Seeder {
-    public function run() {
+class ActivitySeeder extends Seeder
+{
+    public function run()
+    {
         // Disable foreign key checks for truncating
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
 
@@ -298,11 +299,11 @@ class ActivitySeeder extends Seeder {
 
             ActivityCategory::create([
                 'activity_id' => $activity->id,
-                'category_id' => rand(1, 3) 
+                'category_id' => rand(1, 3),
             ]);
             ActivityCategory::create([
                 'activity_id' => $activity->id,
-                'category_id' => rand(2, 4) 
+                'category_id' => rand(2, 4),
             ]);
             // ActivityAttribute::create([
             //     'activity_id' => $activity->id,
@@ -320,22 +321,22 @@ class ActivitySeeder extends Seeder {
                 2 => ['Easy', 'Medium', 'Hard'],
                 3 => ['1-5', '6-10', '11-20', '20+'],
             ];
-            
+
             $usedAttributeIds = [];
-            
+
             $randomAttributeIds = array_rand($attributeValues, rand(2, 3)); // 2 ya 3 attributes assign kare
-            
+
             // Ensure it's array
             $randomAttributeIds = is_array($randomAttributeIds) ? $randomAttributeIds : [$randomAttributeIds];
-            
+
             foreach ($randomAttributeIds as $attributeId) {
                 $valueOptions = $attributeValues[$attributeId];
                 $attributeValue = $valueOptions[array_rand($valueOptions)];
-            
+
                 ActivityAttribute::create([
                     'activity_id' => $activity->id,
                     'attribute_id' => $attributeId,
-                    'attribute_value' => $attributeValue
+                    'attribute_value' => $attributeValue,
                 ]);
             }
 
@@ -354,7 +355,7 @@ class ActivitySeeder extends Seeder {
                 'city_id' => rand(382, 441),
                 'location_type' => 'primary',
                 'location_label' => 'Main Location',
-                'duration' => null
+                'duration' => null,
             ]);
 
             ActivityLocation::create([
@@ -362,7 +363,7 @@ class ActivitySeeder extends Seeder {
                 'city_id' => rand(382, 441),
                 'location_type' => 'additional',
                 'location_label' => 'Highlight', // Custom value allowed
-                'duration' => rand(5, 20)
+                'duration' => rand(5, 20),
             ]);
 
             // Pricing
@@ -375,14 +376,14 @@ class ActivitySeeder extends Seeder {
             // ⏳ Seasonal Pricing (if enabled)
             $seasons = ['winter', 'summer', 'spring', 'autumn'];
             // if ($pricing->enable_seasonal_pricing) {
-                ActivitySeasonalPricing::create([
-                    'activity_id' => $activity->id,
-                    'enable_seasonal_pricing' => true,
-                    'season_name' => $seasons[array_rand($seasons)],
-                    'season_start' => '2025-12-01',
-                    'season_end'    => '2026-02-28',
-                    'season_price' => rand(60, 400),
-                ]);
+            ActivitySeasonalPricing::create([
+                'activity_id' => $activity->id,
+                'enable_seasonal_pricing' => true,
+                'season_name' => $seasons[array_rand($seasons)],
+                'season_start' => '2025-12-01',
+                'season_end' => '2026-02-28',
+                'season_price' => rand(60, 400),
+            ]);
             // }
 
             // 👫 Group Discounts
@@ -390,35 +391,35 @@ class ActivitySeeder extends Seeder {
                 'activity_id' => $activity->id,
                 'min_people' => rand(5, 10),
                 'discount_amount' => rand(10, 50),
-                'discount_type' => 'percentage'
+                'discount_type' => 'percentage',
             ]);
             ActivityGroupDiscount::create([
                 'activity_id' => $activity->id,
                 'min_people' => rand(11, 20),
                 'discount_amount' => rand(5, 30),
-                'discount_type' => 'fixed'
+                'discount_type' => 'fixed',
             ]);
 
             // 🎟 Early Bird Discount (if enabled)
             // if ($pricing->enable_early_bird_discount) {
-                ActivityEarlyBirdDiscount::create([
-                    'activity_id' => $activity->id,
-                    'enabled' => true,
-                    'days_before_start' => rand(10, 30),
-                    'discount_amount' => rand(5, 20),
-                    'discount_type' => 'percentage'
-                ]);
+            ActivityEarlyBirdDiscount::create([
+                'activity_id' => $activity->id,
+                'enabled' => true,
+                'days_before_start' => rand(10, 30),
+                'discount_amount' => rand(5, 20),
+                'discount_type' => 'percentage',
+            ]);
             // }
 
             // ⏳ Last Minute Discount (if enabled)
             // if ($pricing->enable_last_minute_discount) {
-                ActivityLastMinuteDiscount::create([
-                    'activity_id' => $activity->id,
-                    'enabled' => true,
-                    'days_before_start' => rand(1, 5),
-                    'discount_amount' => rand(5, 15),
-                    'discount_type' => 'fixed'
-                ]);
+            ActivityLastMinuteDiscount::create([
+                'activity_id' => $activity->id,
+                'enabled' => true,
+                'days_before_start' => rand(1, 5),
+                'discount_amount' => rand(5, 15),
+                'discount_type' => 'fixed',
+            ]);
             // }
 
             // 🎁 Promo Codes
@@ -462,11 +463,11 @@ class ActivitySeeder extends Seeder {
                 ->inRandomOrder()
                 ->limit(rand(2, 4))   // 2 से 4 addons random select
                 ->pluck('id');
-        
+
             foreach ($addonIds as $addonId) {
                 ActivityAddon::create([
                     'activity_id' => $activity->id,
-                    'addon_id'    => $addonId,
+                    'addon_id' => $addonId,
                 ]);
             }
         }

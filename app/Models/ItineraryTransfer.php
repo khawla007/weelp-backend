@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\ItinerarySchedule $schedule
  * @property-read \App\Models\Transfer $transfer
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryTransfer newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryTransfer newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryTransfer query()
@@ -36,18 +37,21 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryTransfer whereStartTime($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryTransfer whereTransferId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryTransfer whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class ItineraryTransfer extends Model
 {
     protected $fillable = [
-        'schedule_id', 'transfer_id', 'start_time', 'end_time', 
-        'notes', 'price', 'included', 
-        'pickup_location', 'dropoff_location', 'pax'
+        'schedule_id', 'transfer_id', 'start_time', 'end_time',
+        'notes', 'price', 'included',
+        'pickup_location', 'dropoff_location', 'pax',
     ];
+
     protected $casts = [
-        'included' => 'boolean'
+        'included' => 'boolean',
     ];
+
     public function schedule()
     {
         return $this->belongsTo(ItinerarySchedule::class, 'schedule_id');

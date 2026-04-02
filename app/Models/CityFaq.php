@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\City $city
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CityFaq newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CityFaq newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CityFaq query()
@@ -24,6 +25,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CityFaq whereQuestion($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CityFaq whereQuestionNumber($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CityFaq whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class CityFaq extends Model
@@ -31,7 +33,7 @@ class CityFaq extends Model
     use HasFactory;
 
     protected $fillable = [
-        'city_id', 'question_number', 'question', 'answer'
+        'city_id', 'question_number', 'question', 'answer',
     ];
 
     public function city()

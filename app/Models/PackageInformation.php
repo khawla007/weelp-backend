@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Package $package
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageInformation newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageInformation newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageInformation query()
@@ -22,6 +23,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageInformation wherePackageId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageInformation whereSectionTitle($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageInformation whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class PackageInformation extends Model

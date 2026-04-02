@@ -21,6 +21,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read \App\Models\VendorAvailabilityTimeSlot|null $availability
  * @property-read \App\Models\VendorPricingTier|null $pricingTier
  * @property-read \App\Models\Transfer $transfer
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferPricingAvailability newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferPricingAvailability newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferPricingAvailability query()
@@ -36,28 +37,29 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferPricingAvailability whereTransferId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferPricingAvailability whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferPricingAvailability whereWaitingCharge($value)
+ *
  * @mixin \Eloquent
  */
 class TransferPricingAvailability extends Model
 {
-
     use HasFactory;
+
     protected $fillable = [
         'transfer_id',
         'is_vendor',
         'pricing_tier_id',
         'availability_id',
-        'base_price',          
-        'currency',             
-        'price_type',           
-        'extra_luggage_charge', 
-        'waiting_charge', 
+        'base_price',
+        'currency',
+        'price_type',
+        'extra_luggage_charge',
+        'waiting_charge',
     ];
 
     protected $casts = [
         'is_vendor' => 'boolean',
     ];
-    
+
     // Relationship with Transfer
     public function transfer()
     {

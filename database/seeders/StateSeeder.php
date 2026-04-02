@@ -2,29 +2,31 @@
 
 namespace Database\Seeders;
 
+use App\Models\State;
+use App\Models\StateAdditionalInfo;
+use App\Models\StateEvent;
+use App\Models\StateFaq;
+use App\Models\StateLocationDetail;
+use App\Models\StateMediaGallery;
+use App\Models\StateSeason;
+use App\Models\StateSeo;
+use App\Models\StateTravelInfo;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use App\Models\State;
-use App\Models\StateMediaGallery;
-use App\Models\StateLocationDetail;
-use App\Models\StateTravelInfo;
-use App\Models\StateSeason;
-use App\Models\StateEvent;
-use App\Models\StateAdditionalInfo;
-use App\Models\StateFaq;
-use App\Models\StateSeo;
 
 class StateSeeder extends Seeder
 {
     /**
      * Generate a random date/datetime in 2027
-     * @param bool $dateOnly If true, return date only (Y-m-d), otherwise datetime (Y-m-d H:i:s)
+     *
+     * @param  bool  $dateOnly  If true, return date only (Y-m-d), otherwise datetime (Y-m-d H:i:s)
      */
     private function random2027Date(bool $dateOnly = false): string
     {
         $start = strtotime('2027-01-01');
         $end = strtotime('2027-12-31');
         $timestamp = mt_rand($start, $end);
+
         return date($dateOnly ? 'Y-m-d' : 'Y-m-d H:i:s', $timestamp);
     }
 
@@ -106,8 +108,9 @@ class StateSeeder extends Seeder
         foreach ($states as &$stateData) {
             $countryName = $countryMap[$stateData['name']];
             $country = \App\Models\Country::where('name', $countryName)->first();
-            if (!$country) {
+            if (! $country) {
                 echo "WARNING: Country '{$countryName}' not found for state '{$stateData['name']}' - skipping\n";
+
                 continue;
             }
             $stateData['country_id'] = $country->id;
@@ -139,7 +142,7 @@ class StateSeeder extends Seeder
                 'currency' => 'INR',
                 'timezone' => 'GMT+5:30',
                 'language' => ['Hindi', 'Rajasthani'],
-                'local_cuisine' => ['Dal Baati Churma', 'Gatte ki Sabzi']
+                'local_cuisine' => ['Dal Baati Churma', 'Gatte ki Sabzi'],
             ]);
 
             // Insert Travel Information
@@ -156,7 +159,7 @@ class StateSeeder extends Seeder
                 'visa_requirements' => 'No separate visa needed for domestic tourists',
                 'best_time_to_visit' => 'October - March',
                 'travel_tips' => 'Carry light cotton clothes during summer',
-                'safety_information' => 'Safe but be cautious of local scams'
+                'safety_information' => 'Safe but be cautious of local scams',
             ]);
 
             // Insert Seasons
@@ -165,7 +168,7 @@ class StateSeeder extends Seeder
                 'name' => 'Winter',
                 'months' => ['November', 'February'],
                 'weather' => 'Pleasant during the day, cold at night',
-                'activities' => ['Camel Safari', 'Sightseeing']
+                'activities' => ['Camel Safari', 'Sightseeing'],
             ]);
 
             // Insert Events
@@ -175,41 +178,41 @@ class StateSeeder extends Seeder
                 'type' => ['Cultural', 'Festival'],
                 'date' => '2025-11-14',
                 'location' => 'Pushkar, Rajasthan',
-                'description' => 'A vibrant fair with camels, cultural performances, and shopping'
+                'description' => 'A vibrant fair with camels, cultural performances, and shopping',
             ]);
 
             // Insert Additional Information
             StateAdditionalInfo::create([
                 'state_id' => $state->id,
                 'title' => 'Must-Visit Places',
-                'content' => 'Jaipur, Udaipur, Jaisalmer, Mount Abu'
+                'content' => 'Jaipur, Udaipur, Jaisalmer, Mount Abu',
             ]);
 
             $stateId = $state->id;
 
             $lastQuestion = StateFaq::where('state_id', $stateId)
-            ->orderBy('question_number', 'desc')
-            ->first();
+                ->orderBy('question_number', 'desc')
+                ->first();
 
             $questionNumber = $lastQuestion ? $lastQuestion->question_number + 1 : 1;
 
             $faqs = [
                 [
                     'question' => 'Do I need a visa to visit India?',
-                    'answer' => 'Yes, but Visa on arrival is available for many countries.'
+                    'answer' => 'Yes, but Visa on arrival is available for many countries.',
                 ],
                 [
                     'question' => 'What is the currency in India?',
-                    'answer' => 'The Indian Rupee (INR) is the official currency.'
-                ]
+                    'answer' => 'The Indian Rupee (INR) is the official currency.',
+                ],
             ];
-            
+
             foreach ($faqs as $faq) {
                 StateFaq::create([
                     'state_id' => $state->id,
                     'question_number' => $questionNumber,
                     'question' => $faq['question'],
-                    'answer' => $faq['answer']
+                    'answer' => $faq['answer'],
                 ]);
                 $questionNumber++;
             }
@@ -224,11 +227,11 @@ class StateSeeder extends Seeder
                 'canonical_url' => 'https://example.com/rajasthan',
                 'schema_type' => 'TravelDestination',
                 'schema_data' => [
-                    "@context" => "https://schema.org",
-                    "@type" => "TravelDestination",
-                    "name" => "Rajasthan",
-                    "description" => "The land of kings and royal heritage.",
-                    "image" => "https://example.com/rajasthan.jpg"
+                    '@context' => 'https://schema.org',
+                    '@type' => 'TravelDestination',
+                    'name' => 'Rajasthan',
+                    'description' => 'The land of kings and royal heritage.',
+                    'image' => 'https://example.com/rajasthan.jpg',
                 ],
             ]);
         }

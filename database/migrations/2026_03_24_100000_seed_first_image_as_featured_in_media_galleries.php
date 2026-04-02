@@ -33,15 +33,15 @@ return new class extends Migration
 
         // Get the first (oldest) media gallery entry ID for each parent that lacks a featured image
         $firstEntryIds = DB::table($table)
-            ->when(!empty($withFeatured), function ($query) use ($foreignKey, $withFeatured) {
+            ->when(! empty($withFeatured), function ($query) use ($foreignKey, $withFeatured) {
                 $query->whereNotIn($foreignKey, $withFeatured);
             })
-            ->selectRaw("MIN(id) as id")
+            ->selectRaw('MIN(id) as id')
             ->groupBy($foreignKey)
             ->pluck('id')
             ->toArray();
 
-        if (!empty($firstEntryIds)) {
+        if (! empty($firstEntryIds)) {
             DB::table($table)
                 ->whereIn('id', $firstEntryIds)
                 ->update(['is_featured' => true]);

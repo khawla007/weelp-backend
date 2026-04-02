@@ -21,6 +21,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\PackageSchedule $schedule
  * @property-read \App\Models\Transfer $transfer
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageTransfer newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageTransfer newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageTransfer query()
@@ -37,6 +38,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageTransfer whereStartTime($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageTransfer whereTransferId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageTransfer whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class PackageTransfer extends Model
@@ -57,7 +59,7 @@ class PackageTransfer extends Model
     ];
 
     protected $casts = [
-        'included' => 'boolean'
+        'included' => 'boolean',
     ];
 
     public function schedule()

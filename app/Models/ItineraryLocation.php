@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\City $city
  * @property-read \App\Models\Itinerary $itinerary
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryLocation newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryLocation newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryLocation query()
@@ -21,6 +22,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryLocation whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryLocation whereItineraryId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryLocation whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class ItineraryLocation extends Model
@@ -37,8 +39,9 @@ class ItineraryLocation extends Model
         return $this->belongsTo(Itinerary::class);
     }
 
-    public function city() {
-        
+    public function city()
+    {
+
         return $this->belongsTo(City::class, 'city_id');
     }
 }

@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Country $country
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CountryLocationDetail newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CountryLocationDetail newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CountryLocationDetail query()
@@ -34,6 +35,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CountryLocationDetail wherePopulation($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CountryLocationDetail whereTimezone($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CountryLocationDetail whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class CountryLocationDetail extends Model
@@ -42,7 +44,7 @@ class CountryLocationDetail extends Model
 
     protected $fillable = [
         'country_id', 'latitude', 'longitude', 'capital_city',
-        'population', 'currency', 'timezone', 'language', 'local_cuisine'
+        'population', 'currency', 'timezone', 'language', 'local_cuisine',
     ];
 
     protected $casts = [
@@ -50,7 +52,8 @@ class CountryLocationDetail extends Model
         'local_cuisine' => 'array',
     ];
 
-    public function country() {
+    public function country()
+    {
         return $this->belongsTo(Country::class);
     }
 }
