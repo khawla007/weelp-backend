@@ -54,13 +54,13 @@ class TagController extends Controller
             'name' => 'required|string|max:255',
             'slug'        => 'sometimes|required|string|max:255|unique:tags,slug',
             'description' => 'nullable|string',
-            'status'      => 'required|in:active,draft',
+            'status'      => 'sometimes|in:active,draft',
             'is_featured' => 'nullable|boolean',
         ]);
 
-        // $validated['slug'] = str_replace(' ', '_', strtolower($validated['name']));
-        // $validated['taxonomy'] = 'tag';
-        // $validated['post_type'] = 'activity';
+        if (!isset($validated['status'])) {
+            $validated['status'] = 'active';
+        }
 
         $tag = Tag::create($validated);
 
