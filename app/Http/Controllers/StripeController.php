@@ -283,9 +283,7 @@ class StripeController extends Controller
         $userProfile = $user?->profile;
 
         // ✅ Load from snapshot if orderable is missing
-        $snapshot = is_array($order->item_snapshot_json)
-            ? $order->item_snapshot_json
-            : json_decode($order->item_snapshot_json, true);
+        $snapshot = json_decode($order->item_snapshot_json, true);
 
         $media = collect($snapshot['media'] ?? [])->map(fn ($mediaLink) => [
             'name' => null,

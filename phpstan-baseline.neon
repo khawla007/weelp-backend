@@ -61,12 +61,6 @@ parameters:
 			path: app/Http/Controllers/Admin/CityController.php
 
 		-
-			message: '#^Property App\\Models\\City\:\:\$media_gallery \(array\) does not accept Illuminate\\Support\\Collection\<int, array\<string, mixed\>\>\.$#'
-			identifier: assign.propertyType
-			count: 1
-			path: app/Http/Controllers/Admin/CityController.php
-
-		-
 			message: '#^Anonymous function should return array\{id\: int, name\: string, code\: string, slug\: string, type\: string, region\: string\|null, regions\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, slug\: string\|null\}\>, description\: string\|null, \.\.\.\} but returns array\{id\: int, name\: string, code\: string, slug\: string, type\: string, region\: string\|null, regions\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, slug\: string\|null\}\>, description\: string\|null, \.\.\.\}\.$#'
 			identifier: return.type
 			count: 1
@@ -79,38 +73,8 @@ parameters:
 			path: app/Http/Controllers/Admin/CountryController.php
 
 		-
-			message: '#^Property App\\Models\\Country\:\:\$media_gallery \(array\) does not accept Illuminate\\Support\\Collection\<int, array\<string, mixed\>\>\.$#'
-			identifier: assign.propertyType
-			count: 1
-			path: app/Http/Controllers/Admin/CountryController.php
-
-		-
 			message: '#^Negated boolean expression is always false\.$#'
 			identifier: booleanNot.alwaysFalse
-			count: 1
-			path: app/Http/Controllers/Admin/DashboardController.php
-
-		-
-			message: '#^Variable \$activeUsers on left side of \?\? always exists and is not nullable\.$#'
-			identifier: nullCoalesce.variable
-			count: 1
-			path: app/Http/Controllers/Admin/DashboardController.php
-
-		-
-			message: '#^Variable \$totalActivities on left side of \?\? always exists and is not nullable\.$#'
-			identifier: nullCoalesce.variable
-			count: 1
-			path: app/Http/Controllers/Admin/DashboardController.php
-
-		-
-			message: '#^Variable \$totalBookings on left side of \?\? always exists and is not nullable\.$#'
-			identifier: nullCoalesce.variable
-			count: 1
-			path: app/Http/Controllers/Admin/DashboardController.php
-
-		-
-			message: '#^Variable \$totalRevenue on left side of \?\? always exists and is not nullable\.$#'
-			identifier: nullCoalesce.variable
 			count: 1
 			path: app/Http/Controllers/Admin/DashboardController.php
 
@@ -135,12 +99,6 @@ parameters:
 		-
 			message: '#^Anonymous function should return non\-empty\-array but returns non\-empty\-array\.$#'
 			identifier: return.type
-			count: 1
-			path: app/Http/Controllers/Admin/ItineraryController.php
-
-		-
-			message: '#^Call to function is_string\(\) with class\-string will always evaluate to true\.$#'
-			identifier: function.alreadyNarrowedType
 			count: 1
 			path: app/Http/Controllers/Admin/ItineraryController.php
 
@@ -205,12 +163,6 @@ parameters:
 			path: app/Http/Controllers/Admin/PackageController.php
 
 		-
-			message: '#^Call to function is_string\(\) with class\-string will always evaluate to true\.$#'
-			identifier: function.alreadyNarrowedType
-			count: 1
-			path: app/Http/Controllers/Admin/PackageController.php
-
-		-
 			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Package\>\:\:map\(\) expects callable\(App\\Models\\Package, int\)\: non\-empty\-array, Closure\(App\\Models\\Package\)\: non\-empty\-array given\.$#'
 			identifier: argument.type
 			count: 1
@@ -259,38 +211,32 @@ parameters:
 			path: app/Http/Controllers/Admin/PlaceController.php
 
 		-
-			message: '#^Property App\\Models\\Place\:\:\$media_gallery \(array\) does not accept Illuminate\\Support\\Collection\<int, array\<string, mixed\>\>\.$#'
-			identifier: assign.propertyType
-			count: 1
-			path: app/Http/Controllers/Admin/PlaceController.php
-
-		-
-			message: '#^Access to property \$id on an unknown class Eloquent\.$#'
-			identifier: class.notFound
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
 			count: 2
 			path: app/Http/Controllers/Admin/ReviewController.php
 
 		-
-			message: '#^Access to property \$item_type on an unknown class Eloquent\.$#'
-			identifier: class.notFound
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$item_type\.$#'
+			identifier: property.notFound
 			count: 2
 			path: app/Http/Controllers/Admin/ReviewController.php
 
 		-
-			message: '#^Access to property \$locations on an unknown class Eloquent\.$#'
-			identifier: class.notFound
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$locations\.$#'
+			identifier: property.notFound
 			count: 1
 			path: app/Http/Controllers/Admin/ReviewController.php
 
 		-
-			message: '#^Access to property \$name on an unknown class Eloquent\.$#'
-			identifier: class.notFound
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
 			count: 1
 			path: app/Http/Controllers/Admin/ReviewController.php
 
 		-
-			message: '#^Access to property \$slug on an unknown class Eloquent\.$#'
-			identifier: class.notFound
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$slug\.$#'
+			identifier: property.notFound
 			count: 3
 			path: app/Http/Controllers/Admin/ReviewController.php
 
@@ -301,8 +247,8 @@ parameters:
 			path: app/Http/Controllers/Admin/ReviewController.php
 
 		-
-			message: '#^Call to method locations\(\) on an unknown class Eloquent\.$#'
-			identifier: class.notFound
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:locations\(\)\.$#'
+			identifier: method.notFound
 			count: 1
 			path: app/Http/Controllers/Admin/ReviewController.php
 
@@ -337,12 +283,6 @@ parameters:
 			path: app/Http/Controllers/Admin/StateController.php
 
 		-
-			message: '#^Property App\\Models\\State\:\:\$media_gallery \(array\) does not accept Illuminate\\Support\\Collection\<int, array\<string, mixed\>\>\.$#'
-			identifier: assign.propertyType
-			count: 1
-			path: app/Http/Controllers/Admin/StateController.php
-
-		-
 			message: '#^Anonymous function should return non\-empty\-array but returns non\-empty\-array\.$#'
 			identifier: return.type
 			count: 1
@@ -351,12 +291,6 @@ parameters:
 		-
 			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,App\\Models\\Transfer\>\:\:map\(\) expects callable\(App\\Models\\Transfer, int\)\: non\-empty\-array, Closure\(App\\Models\\Transfer, int\)\: non\-empty\-array given\.$#'
 			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/Admin/TransferController.php
-
-		-
-			message: '#^Property App\\Models\\Transfer\:\:\$media_gallery \(array\) does not accept Illuminate\\Support\\Collection\<int, array\<string, mixed\>\>\.$#'
-			identifier: assign.propertyType
 			count: 1
 			path: app/Http/Controllers/Admin/TransferController.php
 
@@ -373,26 +307,20 @@ parameters:
 			path: app/Http/Controllers/Admin/TransferController.php
 
 		-
-			message: '#^Caught class App\\Http\\Controllers\\JWTException not found\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Controllers/AuthController.php
-
-		-
-			message: '#^Access to property \$mediaGallery on an unknown class Eloquent\.$#'
-			identifier: class.notFound
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$mediaGallery\.$#'
+			identifier: property.notFound
 			count: 1
 			path: app/Http/Controllers/Creator/CreatorDashboardController.php
 
 		-
-			message: '#^Access to property \$name on an unknown class Eloquent\.$#'
-			identifier: class.notFound
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
 			count: 1
 			path: app/Http/Controllers/Creator/CreatorDashboardController.php
 
 		-
-			message: '#^Access to property \$slug on an unknown class Eloquent\.$#'
-			identifier: class.notFound
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$slug\.$#'
+			identifier: property.notFound
 			count: 1
 			path: app/Http/Controllers/Creator/CreatorDashboardController.php
 
@@ -409,7 +337,7 @@ parameters:
 			path: app/Http/Controllers/Creator/CreatorDashboardController.php
 
 		-
-			message: '#^Strict comparison using \!\=\= between Eloquent\|Illuminate\\Database\\Eloquent\\Model and null will always evaluate to true\.$#'
+			message: '#^Strict comparison using \!\=\= between Illuminate\\Database\\Eloquent\\Model and null will always evaluate to true\.$#'
 			identifier: notIdentical.alwaysTrue
 			count: 1
 			path: app/Http/Controllers/Creator/CreatorDashboardController.php
@@ -433,12 +361,6 @@ parameters:
 			path: app/Http/Controllers/Guest/PublicActivityController.php
 
 		-
-			message: '#^Variable \$formattedActivity in empty\(\) always exists and is not falsy\.$#'
-			identifier: empty.variable
-			count: 1
-			path: app/Http/Controllers/Guest/PublicActivityController.php
-
-		-
 			message: '#^Anonymous function should return array\{id\: int, name\: string, slug\: string, excerpt\: string, publish\: bool, media_gallery\: Illuminate\\Support\\Collection\<int, array\{media_id\: int, name\: string\|null, alt\: string\|null, url\: mixed, is_featured\: int\}\>, categories\: Illuminate\\Support\\Collection\<int, array\{category_id\: int, category_name\: string, slug\: string\|null\}\>, tags\: Illuminate\\Support\\Collection\<int, array\{tag_id\: int, tag_name\: string, slug\: string\|null\}\>, \.\.\.\} but returns array\{id\: int, name\: string, slug\: string, excerpt\: string, publish\: bool, media_gallery\: Illuminate\\Support\\Collection\<int, array\{media_id\: int, name\: string\|null, alt\: string\|null, url\: mixed, is_featured\: int\}\>, categories\: Illuminate\\Support\\Collection\<int, array\{category_id\: int, category_name\: string, slug\: string\|null\}\>, tags\: Illuminate\\Support\\Collection\<int, array\{tag_id\: int, tag_name\: string, slug\: string\|null\}\>, \.\.\.\}\.$#'
 			identifier: return.type
 			count: 1
@@ -451,46 +373,10 @@ parameters:
 			path: app/Http/Controllers/Guest/PublicBlogController.php
 
 		-
-			message: '#^Variable \$cities in empty\(\) always exists and is not falsy\.$#'
-			identifier: empty.variable
-			count: 1
-			path: app/Http/Controllers/Guest/PublicCitiesController.php
-
-		-
 			message: '#^Call to static method query\(\) on an unknown class App\\Http\\Controllers\\Guest\\YourModel\.$#'
 			identifier: class.notFound
 			count: 1
 			path: app/Http/Controllers/Guest/PublicFilterController.php
-
-		-
-			message: '#^Call to static method where\(\) on an unknown class App\\Http\\Controllers\\Guest\\City\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Controllers/Guest/PublicFilterController.php
-
-		-
-			message: '#^Call to static method where\(\) on an unknown class App\\Http\\Controllers\\Guest\\Region\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Controllers/Guest/PublicFilterController.php
-
-		-
-			message: '#^Result of && is always false\.$#'
-			identifier: booleanAnd.alwaysFalse
-			count: 5
-			path: app/Http/Controllers/Guest/PublicHomeSearchController.php
-
-		-
-			message: '#^Variable \$categorySlugs in empty\(\) is never defined\.$#'
-			identifier: empty.variable
-			count: 3
-			path: app/Http/Controllers/Guest/PublicHomeSearchController.php
-
-		-
-			message: '#^Variable \$tagSlugs in empty\(\) is never defined\.$#'
-			identifier: empty.variable
-			count: 2
-			path: app/Http/Controllers/Guest/PublicHomeSearchController.php
 
 		-
 			message: '#^Anonymous function should return array\{day\: int, activities\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float\|int\|string\|null, include_in_package\: bool, main_location\: string\|null, \.\.\.\}\>, transfers\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, pickup_location\: string\|null, dropoff_location\: string\|null, pax\: int\|null, price\: float\|int\|string\|null, \.\.\.\}\>\} but returns array\{day\: int, activities\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float\|int\|string\|null, include_in_package\: bool, main_location\: string\|null, \.\.\.\}\>, transfers\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, pickup_location\: string\|null, dropoff_location\: string\|null, pax\: int\|null, price\: float\|int\|string\|null, \.\.\.\}\>\}\.$#'
@@ -529,12 +415,6 @@ parameters:
 			path: app/Http/Controllers/Guest/PublicItineraryController.php
 
 		-
-			message: '#^Variable \$formattedItinerary in empty\(\) always exists and is not falsy\.$#'
-			identifier: empty.variable
-			count: 1
-			path: app/Http/Controllers/Guest/PublicItineraryController.php
-
-		-
 			message: '#^Anonymous function should return array\{day\: int, activities\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float\|int\|string\|null, include_in_package\: bool, main_location\: string\|null, \.\.\.\}\>, transfers\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, pickup_location\: string, dropoff_location\: string, pax\: int\|null, price\: float\|int\|string\|null, \.\.\.\}\>\} but returns array\{day\: int, activities\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float\|int\|string\|null, include_in_package\: bool, main_location\: string\|null, \.\.\.\}\>, transfers\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, pickup_location\: string, dropoff_location\: string, pax\: int\|null, price\: float\|int\|string\|null, \.\.\.\}\>\}\.$#'
 			identifier: return.type
 			count: 1
@@ -563,36 +443,6 @@ parameters:
 			identifier: notIdentical.alwaysTrue
 			count: 1
 			path: app/Http/Controllers/Guest/PublicPackageController.php
-
-		-
-			message: '#^Variable \$formattedPackage in empty\(\) always exists and is not falsy\.$#'
-			identifier: empty.variable
-			count: 1
-			path: app/Http/Controllers/Guest/PublicPackageController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\ItineraryTag\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Guest/PublicRegionController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\ItineraryTag\:\:\$slug\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Guest/PublicRegionController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\PackageTag\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Guest/PublicRegionController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\PackageTag\:\:\$slug\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Guest/PublicRegionController.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$basePricing\.$#'
@@ -715,20 +565,8 @@ parameters:
 			path: app/Http/Controllers/Guest/PublicRegionController.php
 
 		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\ItineraryTag\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Http/Controllers/Guest/PublicRegionController.php
-
-		-
 			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Package\>\:\:map\(\) expects callable\(App\\Models\\Package, int\)\: array\{id\: int, name\: string, slug\: string, item_type\: ''package'', featured\: bool, city_slug\: string\|null, pricing\: App\\Models\\PackageBasePricing\|null, categories\: array\<mixed\>, tags\: array\<mixed\>, locations\: Illuminate\\Support\\Collection\<int, array\{city_id\: int, city\: string, city_slug\: string, state_id\: int, state\: string, country_id\: int, country\: string, region_id\: int\|null, region\: string\|null\}\>\}, Closure\(App\\Models\\Package, int\)\: array\{id\: int, name\: string, slug\: string, item_type\: ''package'', featured\: bool, city_slug\: string\|null, pricing\: App\\Models\\PackageBasePricing\|null, categories\: array\<mixed\>, tags\: array\<mixed\>, locations\: Illuminate\\Support\\Collection\<int, array\{city_id\: int, city\: string, city_slug\: string, state_id\: int, state\: string, country_id\: int, country\: string, region_id\: int\|null, region\: string\|null\}\>\} given\.$#'
 			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/Guest/PublicRegionController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\PackageTag\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
 			count: 1
 			path: app/Http/Controllers/Guest/PublicRegionController.php
 
@@ -775,26 +613,14 @@ parameters:
 			path: app/Http/Controllers/Guest/PublicRegionController.php
 
 		-
-			message: '#^Access to property \$id on an unknown class Eloquent\.$#'
-			identifier: class.notFound
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
 			count: 1
 			path: app/Http/Controllers/Guest/PublicReviewController.php
 
 		-
-			message: '#^Access to property \$item_type on an unknown class Eloquent\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Controllers/Guest/PublicReviewController.php
-
-		-
-			message: '#^Access to property \$name on an unknown class Eloquent\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Controllers/Guest/PublicReviewController.php
-
-		-
-			message: '#^Access to property \$slug on an unknown class Eloquent\.$#'
-			identifier: class.notFound
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
 			count: 1
 			path: app/Http/Controllers/Guest/PublicReviewController.php
 
@@ -805,8 +631,8 @@ parameters:
 			path: app/Http/Controllers/Guest/PublicReviewController.php
 
 		-
-			message: '#^Call to method locations\(\) on an unknown class Eloquent\.$#'
-			identifier: class.notFound
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:locations\(\)\.$#'
+			identifier: method.notFound
 			count: 1
 			path: app/Http/Controllers/Guest/PublicReviewController.php
 
@@ -823,13 +649,19 @@ parameters:
 			path: app/Http/Controllers/Guest/PublicReviewController.php
 
 		-
-			message: '#^Call to function is_array\(\) with string\|null will always evaluate to false\.$#'
-			identifier: function.impossibleType
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$label\.$#'
+			identifier: property.notFound
 			count: 1
-			path: app/Http/Controllers/StripeController.php
+			path: app/Http/Controllers/UserProfileController.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$label\.$#'
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/UserProfileController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$slug\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Http/Controllers/UserProfileController.php
@@ -837,18 +669,6 @@ parameters:
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$url\.$#'
 			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/UserProfileController.php
-
-		-
-			message: '#^Access to property \$name on an unknown class Eloquent\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Controllers/UserProfileController.php
-
-		-
-			message: '#^Access to property \$slug on an unknown class Eloquent\.$#'
-			identifier: class.notFound
 			count: 1
 			path: app/Http/Controllers/UserProfileController.php
 
@@ -861,18 +681,6 @@ parameters:
 		-
 			message: '#^Anonymous function should return array\{id\: int, order_id\: int\|null, item_type\: string, item_id\: int, item_name\: string, item_slug\: string\|null, has_live_item\: bool, rating\: int, \.\.\.\} but returns array\{id\: int, order_id\: int\|null, item_type\: string, item_id\: int, item_name\: string, item_slug\: string\|null, has_live_item\: bool, rating\: int, \.\.\.\}\.$#'
 			identifier: return.type
-			count: 1
-			path: app/Http/Controllers/UserProfileController.php
-
-		-
-			message: '#^Call to function is_array\(\) with string\|null will always evaluate to false\.$#'
-			identifier: function.impossibleType
-			count: 1
-			path: app/Http/Controllers/UserProfileController.php
-
-		-
-			message: '#^Call to static method error\(\) on an unknown class Log\.$#'
-			identifier: class.notFound
 			count: 1
 			path: app/Http/Controllers/UserProfileController.php
 
@@ -895,37 +703,7 @@ parameters:
 			path: app/Http/Controllers/UserProfileController.php
 
 		-
-			message: '#^PHPDoc tag @property\-read for property App\\Models\\Order\:\:\$orderable contains unknown class Eloquent\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Models/Order.php
-
-		-
-			message: '#^PHPDoc tag @property\-read for property App\\Models\\PostItemTag\:\:\$taggable contains unknown class Eloquent\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Models/PostItemTag.php
-
-		-
-			message: '#^Access to property \$name on an unknown class Eloquent\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Models/Review.php
-
-		-
-			message: '#^Access to property \$slug on an unknown class Eloquent\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Models/Review.php
-
-		-
-			message: '#^PHPDoc tag @property\-read for property App\\Models\\Review\:\:\$item contains unknown class Eloquent\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Models/Review.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between Eloquent\|Illuminate\\Database\\Eloquent\\Model and null will always evaluate to true\.$#'
+			message: '#^Strict comparison using \!\=\= between Illuminate\\Database\\Eloquent\\Model and null will always evaluate to true\.$#'
 			identifier: notIdentical.alwaysTrue
 			count: 1
 			path: app/Models/Review.php

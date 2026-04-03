@@ -320,7 +320,7 @@ class PlaceController extends Controller
 
         // media_gallery ko transform karna
         if ($place->mediaGallery->count()) {
-            $place->media_gallery = $place->mediaGallery->map(function ($gallery) {
+            $mediaCollection = $place->mediaGallery->map(function ($gallery) {
                 return [
                     'id' => $gallery->id,
                     'place_id' => $gallery->place_id,
@@ -332,8 +332,9 @@ class PlaceController extends Controller
                 ];
             })->values();
             // Get featured image from media_gallery
-            $featuredImage = $place->media_gallery->firstWhere('is_featured', true);
+            $featuredImage = $mediaCollection->firstWhere('is_featured', true);
             $place->feature_image = $featuredImage['url'] ?? null;
+            $place->media_gallery = $mediaCollection->toArray();
             unset($place->mediaGallery); // nested relation hatane ke liye
         } else {
             $place->media_gallery = [];

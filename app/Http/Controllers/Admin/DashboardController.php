@@ -119,22 +119,22 @@ class DashboardController extends Controller
                     'metrics' => [
                         [
                             'title' => 'Total Revenue',
-                            'total' => $totalRevenue ?? 0,
+                            'total' => $totalRevenue,
                             'change' => $revenueGrowth,
                         ],
                         [
                             'title' => 'Bookings',
-                            'total' => $totalBookings ?? 0,
+                            'total' => $totalBookings,
                             'change' => $bookingsGrowth,
                         ],
                         [
                             'title' => 'Active Users',
-                            'total' => $activeUsers ?? 0,
+                            'total' => $activeUsers,
                             'change' => $usersGrowth,
                         ],
                         [
                             'title' => 'Total Activities',
-                            'total' => $totalActivities ?? 0,
+                            'total' => $totalActivities,
                             'change' => 0, // No growth calculation for activities count
                         ],
                     ],

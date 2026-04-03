@@ -346,17 +346,6 @@ class PublicPackageController extends Controller
             'seo' => $package->seo,
         ];
 
-        // return response()->json([
-        //     'data' => $formattedPackage
-        // ]);
-
-        if (empty($formattedPackage)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Package not found',
-            ]);
-        }
-
         return response()->json([
             'success' => true,
             'data' => $formattedPackage,

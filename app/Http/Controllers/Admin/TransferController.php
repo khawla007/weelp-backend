@@ -432,7 +432,7 @@ class TransferController extends Controller
                     'url' => $gallery->media->url ?? null,
                     'is_featured' => $gallery->is_featured ?? false,
                 ];
-            })->values();
+            })->values()->toArray();
 
             // Get featured image from media_gallery
             $featuredImage = $transfer->mediaGallery->firstWhere('is_featured', true);

@@ -21,7 +21,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  * @property bool $is_featured
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read Model|\Eloquent $item
+ * @property-read \Illuminate\Database\Eloquent\Model $item
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ReviewMediaGallery> $mediaGallery
  * @property-read int|null $media_gallery_count
  * @property-read \App\Models\Order|null $order

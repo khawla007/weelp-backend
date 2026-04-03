@@ -328,7 +328,7 @@ class CountryController extends Controller
 
         // media_gallery ko transform karna
         if ($country->mediaGallery->count()) {
-            $country->media_gallery = $country->mediaGallery->map(function ($gallery) {
+            $mediaCollection = $country->mediaGallery->map(function ($gallery) {
                 return [
                     'id' => $gallery->id,
                     'country_id' => $gallery->country_id,
@@ -340,8 +340,9 @@ class CountryController extends Controller
                 ];
             })->values();
             // Get featured image from media_gallery
-            $featuredImage = $country->media_gallery->firstWhere('is_featured', true);
+            $featuredImage = $mediaCollection->firstWhere('is_featured', true);
             $country->feature_image = $featuredImage['url'] ?? null;
+            $country->media_gallery = $mediaCollection->toArray();
             unset($country->mediaGallery); // nested relation hatane ke liye
         } else {
             $country->media_gallery = [];

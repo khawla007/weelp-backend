@@ -9,6 +9,7 @@ use App\Models\UserMeta;
 use App\Models\UserProfile;  // Import UserMeta model
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class UserProfileController extends Controller
@@ -204,7 +205,7 @@ class UserProfileController extends Controller
 
         } catch (\Exception $e) {
             // Log internally, return generic message
-            \Log::error('Avatar upload failed: '.$e->getMessage());
+            Log::error('Avatar upload failed: '.$e->getMessage());
 
             return response()->json(['error' => 'Failed to upload avatar'], 500);
         } finally {
@@ -301,9 +302,7 @@ class UserProfileController extends Controller
             $regionName = null;
 
             // ✅ Load from snapshot if orderable is missing
-            $snapshot = is_array($order->item_snapshot_json)
-                ? $order->item_snapshot_json
-                : json_decode($order->item_snapshot_json, true);
+            $snapshot = json_decode($order->item_snapshot_json, true);
 
             $media = collect($snapshot['media'] ?? [])->map(fn ($mediaLink) => [
                 'id' => $mediaLink['id'] ?? null,

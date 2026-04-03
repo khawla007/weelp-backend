@@ -197,7 +197,7 @@ class PublicRegionController extends Controller
             'basePricing.variations',
             'mediaGallery.media',
             'categories.category',
-            'tags',
+            'tags.tag',
         ])->where('featured_itinerary', true)->get();
 
         if ($itineraries->isEmpty()) {
@@ -239,8 +239,8 @@ class PublicRegionController extends Controller
                 })->toArray(),
                 'tags' => $itinerary->tags->map(function ($tag) {
                     return [
-                        'id' => $tag->id,
-                        'name' => $tag->name,
+                        'id' => $tag->tag->id,
+                        'name' => $tag->tag->name,
                     ];
                 })->toArray(),
                 'base_pricing' => $itinerary->basePricing,
@@ -423,12 +423,12 @@ class PublicRegionController extends Controller
 
         $itineraries = (! $itemType || $itemType === 'itinerary')
             ? Itinerary::whereHas('locations', fn ($query) => $query->where('city_id', $city->id)
-            )->with(['basePricing.variations', 'mediaGallery.media', 'categories.category', 'tags'])
+            )->with(['basePricing.variations', 'mediaGallery.media', 'categories.category', 'tags.tag'])
             : null;
 
         $packages = (! $itemType || $itemType === 'package')
             ? Package::whereHas('locations', fn ($query) => $query->where('city_id', $city->id)
-            )->with(['basePricing.variations', 'mediaGallery.media', 'categories.category', 'tags'])
+            )->with(['basePricing.variations', 'mediaGallery.media', 'categories.category', 'tags.tag'])
             : null;
 
         if (! empty($categoryIds)) {
@@ -483,8 +483,8 @@ class PublicRegionController extends Controller
                     'name' => $category->category->name,
                 ])->toArray(),
                 'tags' => $itinerary->tags->map(fn ($tag) => [
-                    'slug' => $tag->slug,
-                    'name' => $tag->name,
+                    'slug' => $tag->tag->slug,
+                    'name' => $tag->tag->name,
                 ])->toArray(),
             ]))
             ->merge($packages->map(fn (Package $package, int $key) => [
@@ -502,8 +502,8 @@ class PublicRegionController extends Controller
                     'name' => $category->category->name,
                 ])->toArray(),
                 'tags' => $package->tags->map(fn ($tag) => [
-                    'slug' => $tag->slug,
-                    'name' => $tag->name,
+                    'slug' => $tag->tag->slug,
+                    'name' => $tag->tag->name,
                 ])->toArray(),
             ]));
 

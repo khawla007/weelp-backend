@@ -23,7 +23,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\OrderEmergencyContact|null $emergencyContact
- * @property-read Model|\Eloquent $orderable
+ * @property-read \Illuminate\Database\Eloquent\Model $orderable
  * @property-read \App\Models\OrderPayment|null $payment
  * @property-read \App\Models\Review|null $review
  * @property-read \App\Models\User $user

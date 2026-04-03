@@ -95,6 +95,13 @@ class PublicHomeSearchController extends Controller
         $categoryIds = Category::whereIn('slug', $categorySlugs)->pluck('id')->toArray();
         $tagIds = Tag::whereIn('slug', $tagSlugs)->pluck('id')->toArray();
 
+        if (! empty($categorySlugs) && empty($categoryIds)) {
+            return response()->json(['success' => false, 'message' => 'Category not found'], 200);
+        }
+        if (! empty($tagSlugs) && empty($tagIds)) {
+            return response()->json(['success' => false, 'message' => 'Tag not found'], 200);
+        }
+
         $activities = $this->searchActivities($cityIds, $startDate, $endDate, $quantity, $categoryIds, $tagIds, $sortBy, $minPrice, $maxPrice, $featured, $itemType);
         $itineraries = $this->searchItineraries($cityIds, $startDate, $endDate, $quantity, $categoryIds, $tagIds, $sortBy, $minPrice, $maxPrice, $featured, $itemType);
         $packages = $this->searchPackages($cityIds, $startDate, $endDate, $quantity, $categoryIds, $tagIds, $sortBy, $minPrice, $maxPrice, $featured, $itemType);
@@ -246,13 +253,6 @@ class PublicHomeSearchController extends Controller
             });
         }
 
-        if (! empty($categorySlugs) && empty($categoryIds)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Category not found',
-            ], 200);
-        }
-
         // return $query->get();
         return $query->get()->map(function ($activity) {
             $categories = $activity->categories->map(function ($activityCategory) {
@@ -357,22 +357,8 @@ class PublicHomeSearchController extends Controller
             });
         }
 
-        if (! empty($categorySlugs) && empty($categoryIds)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Category not found',
-            ], 200);
-        }
-
         if (! empty($tagIds)) {
             $query->whereHas('tags', fn ($q) => $q->whereIn('tag_id', $tagIds));
-        }
-
-        if (! empty($tagSlugs) && empty($tagIds)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Tag not found',
-            ], 200);
         }
 
         $itineraries = $query->get();
@@ -487,22 +473,8 @@ class PublicHomeSearchController extends Controller
             });
         }
 
-        if (! empty($categorySlugs) && empty($categoryIds)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Category not found',
-            ], 200);
-        }
-
         if (! empty($tagIds)) {
             $query->whereHas('tags', fn ($q) => $q->whereIn('tag_id', $tagIds));
-        }
-
-        if (! empty($tagSlugs) && empty($tagIds)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Tag not found',
-            ], 200);
         }
 
         // return $query->get();

@@ -330,7 +330,7 @@ class CityController extends Controller
 
         // media_gallery ko transform karna
         if ($city->mediaGallery->count()) {
-            $city->media_gallery = $city->mediaGallery->map(function ($gallery) {
+            $mediaCollection = $city->mediaGallery->map(function ($gallery) {
                 return [
                     'id' => $gallery->id,
                     'city_id' => $gallery->city_id,
@@ -342,8 +342,9 @@ class CityController extends Controller
                 ];
             })->values();
             // Get featured image from media_gallery
-            $featuredImage = $city->media_gallery->firstWhere('is_featured', true);
+            $featuredImage = $mediaCollection->firstWhere('is_featured', true);
             $city->feature_image = $featuredImage['url'] ?? null;
+            $city->media_gallery = $mediaCollection->toArray();
             unset($city->mediaGallery); // nested relation hatane ke liye
         } else {
             $city->media_gallery = [];

@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Post $post
- * @property-read Model|\Eloquent $taggable
+ * @property-read \Illuminate\Database\Eloquent\Model $taggable
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PostItemTag newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PostItemTag newQuery()

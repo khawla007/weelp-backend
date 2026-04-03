@@ -40,7 +40,7 @@ class PublicCitiesController extends Controller
                 return $city;
             });
 
-        if (empty($cities)) {
+        if ($cities->isEmpty()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Cities not found',

@@ -760,7 +760,7 @@ class ItineraryController extends Controller
 
                     $attributes = array_merge($item, $extra);
 
-                    if (! empty($item['id']) && $modelClass && is_string($modelClass)) {
+                    if (! empty($item['id']) && $modelClass) {
                         $model = $modelClass::find($item['id']);
                         if ($model) {
                             $model->fill($attributes)->save();

@@ -339,14 +339,6 @@ class PublicActivityController extends Controller
             ],
         ];
 
-        // return response()->json($formattedActivity);
-        if (empty($formattedActivity)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Activity not found',
-            ]);
-        }
-
         return response()->json([
             'success' => true,
             'data' => $formattedActivity,

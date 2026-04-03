@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Guest;
 
 use App\Http\Controllers\Controller;
+use App\Models\City;
+use App\Models\Region;
 use Illuminate\Http\Request;
 
 class PublicFilterController extends Controller

@@ -333,7 +333,7 @@ class StateController extends Controller
 
         // media_gallery ko transform karna
         if ($state->mediaGallery->count()) {
-            $state->media_gallery = $state->mediaGallery->map(function ($gallery) {
+            $mediaCollection = $state->mediaGallery->map(function ($gallery) {
                 return [
                     'id' => $gallery->id,
                     'state_id' => $gallery->state_id,
@@ -345,8 +345,9 @@ class StateController extends Controller
                 ];
             })->values();
             // Get featured image from media_gallery
-            $featuredImage = $state->media_gallery->firstWhere('is_featured', true);
+            $featuredImage = $mediaCollection->firstWhere('is_featured', true);
             $state->feature_image = $featuredImage['url'] ?? null;
+            $state->media_gallery = $mediaCollection->toArray();
             unset($state->mediaGallery); // nested relation hatane ke liye
         } else {
             $state->media_gallery = [];

@@ -336,16 +336,6 @@ class PublicItineraryController extends Controller
             'seo' => $itinerary->seo,
         ];
 
-        // return response()->json([
-        //     'data' => $formattedItinerary
-        // ]);
-        if (empty($formattedItinerary)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Itinerary not found',
-            ]);
-        }
-
         return response()->json([
             'success' => true,
             'data' => $formattedItinerary,
