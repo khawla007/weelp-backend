@@ -140,7 +140,7 @@ class PublicPackageController extends Controller
         // Get all tags from result set (for filter UI)
         $allTags = $packages->pluck('tags')->flatten()
             ->filter(fn($pt) => $pt->tag !== null)
-            ->map(fn($pt) => ['id' => $pt->tag->id, 'name' => $pt->tag->name])
+            ->map(fn($pt) => ['id' => $pt->tag->id, 'name' => $pt->tag->name, 'is_featured' => (bool) $pt->tag->is_featured])
             ->unique('id')
             ->values();
 
