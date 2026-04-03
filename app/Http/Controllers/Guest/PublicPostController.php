@@ -12,17 +12,38 @@ class PublicPostController extends Controller
 {
     public function index(Request $request)
     {
-        $posts = Post::with(['creator.avatarMedia', 'media', 'taggedItems.taggable'])
-            ->where('status', 'published')
-            ->orderBy('created_at', 'desc')
-            ->paginate(15);
+        $query = Post::with(['creator.avatarMedia', 'media', 'taggedItems.taggable.locations.city'])
+            ->where('status', 'published');
 
-        return response()->json($posts);
+        // Source filter
+        if ($request->query('source') === 'mine') {
+            $user = Auth::guard('api')->user();
+            if ($user) {
+                $query->where('creator_id', $user->id);
+            } else {
+                return response()->json(['data' => [], 'last_page' => 1, 'current_page' => 1]);
+            }
+        }
+
+        // Sort
+        switch ($request->query('sort', 'latest')) {
+            case 'oldest':
+                $query->orderBy('created_at', 'asc');
+                break;
+            case 'top_rated':
+                $query->orderBy('likes_count', 'desc')->orderBy('created_at', 'desc');
+                break;
+            default:
+                $query->orderBy('created_at', 'desc');
+                break;
+        }
+
+        return response()->json($query->paginate(15));
     }
 
     public function show($id)
     {
-        $post = Post::with(['creator.avatarMedia', 'media', 'taggedItems.taggable'])
+        $post = Post::with(['creator.avatarMedia', 'media', 'taggedItems.taggable.locations.city'])
             ->where('status', 'published')
             ->findOrFail($id);
 

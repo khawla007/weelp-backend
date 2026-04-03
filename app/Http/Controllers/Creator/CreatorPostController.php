@@ -11,7 +11,7 @@ class CreatorPostController extends Controller
 {
     public function index()
     {
-        $posts = Post::with(['media', 'taggedItems.taggable'])
+        $posts = Post::with(['media', 'taggedItems.taggable.locations.city'])
             ->where('creator_id', Auth::id())
             ->orderBy('created_at', 'desc')
             ->paginate(15);
@@ -45,7 +45,7 @@ class CreatorPostController extends Controller
             }
         }
 
-        $post->load(['media', 'taggedItems.taggable']);
+        $post->load(['media', 'taggedItems.taggable.locations.city']);
 
         return response()->json([
             'success' => true,
@@ -83,7 +83,7 @@ class CreatorPostController extends Controller
             }
         }
 
-        $post->load(['media', 'taggedItems.taggable']);
+        $post->load(['media', 'taggedItems.taggable.locations.city']);
 
         return response()->json([
             'success' => true,
