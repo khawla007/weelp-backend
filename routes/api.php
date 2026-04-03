@@ -35,7 +35,6 @@ use App\Http\Controllers\Guest\PublicActivityController;
 use App\Http\Controllers\Guest\PublicBlogController;
 use App\Http\Controllers\Guest\PublicCategoryController;
 use App\Http\Controllers\Guest\PublicCitiesController;
-use App\Http\Controllers\Guest\PublicFilterController;
 use App\Http\Controllers\Guest\PublicHomeSearchController;
 use App\Http\Controllers\Guest\PublicItineraryController;
 use App\Http\Controllers\Guest\PublicMenuController;
@@ -441,9 +440,6 @@ Route::prefix('packages')->group(function () {
 // Search API
 Route::get('/regions-cities', [PublicHomeSearchController::class, 'getRegionsAndCities']);
 Route::get('/homesearch', [PublicHomeSearchController::class, 'homeSearch']);
-
-// Filter API
-Route::get('/filter', [PublicFilterController::class, 'filter']);
 
 // Shop Page all items API
 Route::get('/shop', [PublicShopController::class, 'index']);
