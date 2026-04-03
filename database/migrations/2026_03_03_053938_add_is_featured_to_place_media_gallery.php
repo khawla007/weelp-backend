@@ -17,13 +17,26 @@ return new class extends Migration
         });
 
         // Migrate existing data: if place has feature_image, find matching media_id and set is_featured = true
-        DB::statement('
-            UPDATE place_media_gallery pmg
-            INNER JOIN places p ON pmg.place_id = p.id
-            INNER JOIN media m ON pmg.media_id = m.id
-            SET pmg.is_featured = 1
-            WHERE p.feature_image = m.url
-        ');
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement('
+                UPDATE place_media_gallery pmg
+                INNER JOIN places p ON pmg.place_id = p.id
+                INNER JOIN media m ON pmg.media_id = m.id
+                SET pmg.is_featured = 1
+                WHERE p.feature_image = m.url
+            ');
+        } else {
+            DB::statement('
+                UPDATE place_media_gallery
+                SET is_featured = 1
+                WHERE id IN (
+                    SELECT pmg.id FROM place_media_gallery pmg
+                    JOIN places p ON pmg.place_id = p.id
+                    JOIN media m ON pmg.media_id = m.id
+                    WHERE p.feature_image = m.url
+                )
+            ');
+        }
     }
 
     /**

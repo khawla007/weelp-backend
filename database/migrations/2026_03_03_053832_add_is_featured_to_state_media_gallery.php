@@ -17,13 +17,26 @@ return new class extends Migration
         });
 
         // Migrate existing data: if state has feature_image, find matching media_id and set is_featured = true
-        DB::statement('
-            UPDATE state_media_gallery smg
-            INNER JOIN states s ON smg.state_id = s.id
-            INNER JOIN media m ON smg.media_id = m.id
-            SET smg.is_featured = 1
-            WHERE s.feature_image = m.url
-        ');
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement('
+                UPDATE state_media_gallery smg
+                INNER JOIN states s ON smg.state_id = s.id
+                INNER JOIN media m ON smg.media_id = m.id
+                SET smg.is_featured = 1
+                WHERE s.feature_image = m.url
+            ');
+        } else {
+            DB::statement('
+                UPDATE state_media_gallery
+                SET is_featured = 1
+                WHERE id IN (
+                    SELECT smg.id FROM state_media_gallery smg
+                    JOIN states s ON smg.state_id = s.id
+                    JOIN media m ON smg.media_id = m.id
+                    WHERE s.feature_image = m.url
+                )
+            ');
+        }
     }
 
     /**

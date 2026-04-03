@@ -10,7 +10,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::rename('blog_media', 'blog_media_gallery');
+        if (Schema::hasTable('blog_media') && ! Schema::hasTable('blog_media_gallery')) {
+            Schema::rename('blog_media', 'blog_media_gallery');
+        }
     }
 
     /**
@@ -18,6 +20,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::rename('blog_media_gallery', 'blog_media');
+        if (Schema::hasTable('blog_media_gallery') && ! Schema::hasTable('blog_media')) {
+            Schema::rename('blog_media_gallery', 'blog_media');
+        }
     }
 };
