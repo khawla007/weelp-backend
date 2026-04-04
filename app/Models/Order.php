@@ -46,7 +46,7 @@ class Order extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id', 'orderable_type', 'orderable_id', 'item_snapshot_json',
+        'user_id', 'creator_id', 'orderable_type', 'orderable_id', 'item_snapshot_json',
         'travel_date', 'preferred_time', 'number_of_adults',
         'number_of_children', 'status', 'special_requirements'
     ];
@@ -69,6 +69,16 @@ class Order extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'creator_id');
+    }
+
+    public function commission()
+    {
+        return $this->hasOne(Commission::class);
     }
 
     public function review()
