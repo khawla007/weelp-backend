@@ -16,7 +16,7 @@ class DashboardController extends Controller
 {
     /**
      * Get dashboard metrics
-     * Returns total revenue, total bookings, active users, and growth percentage
+     * Returns monthly revenue, bookings, new users, pending orders with growth percentage
      *
      * @return JsonResponse
      */
@@ -84,60 +84,75 @@ class DashboardController extends Controller
                 $bookingsGrowth = 0;
             }
 
-            // Active Users (current month) - users with status = 'active' who registered this month
-            $activeUsers = DB::table('users')
-                ->where('status', 'active')
+            // New Users (current month) - all users registered this month
+            $newUsers = DB::table('users')
                 ->whereMonth('created_at', $currentMonth)
                 ->whereYear('created_at', $currentYear)
                 ->count();
 
-            // Active Users (last month) - for growth comparison
-            $lastMonthActiveUsers = DB::table('users')
-                ->where('status', 'active')
+            // New Users (last month) - for growth comparison
+            $lastMonthNewUsers = DB::table('users')
                 ->whereMonth('created_at', $lastMonthNum)
                 ->whereYear('created_at', $lastMonthYear)
                 ->count();
 
             // Calculate users growth percentage
-            if ($lastMonthActiveUsers > 0) {
-                $usersGrowth = round((($activeUsers - $lastMonthActiveUsers) / $lastMonthActiveUsers) * 100, 1);
-            } elseif ($activeUsers > 0) {
-                // Last month was 0, current month has users - show 100% growth
+            if ($lastMonthNewUsers > 0) {
+                $usersGrowth = round((($newUsers - $lastMonthNewUsers) / $lastMonthNewUsers) * 100, 1);
+            } elseif ($newUsers > 0) {
                 $usersGrowth = 100;
             } else {
-                // Both months are 0
                 $usersGrowth = 0;
             }
 
-            // Total Activities count
-            $totalActivities = DB::table('activities')->count();
+            // Pending Orders (current month) - orders needing attention
+            $pendingOrders = DB::table('orders')
+                ->whereMonth('created_at', $currentMonth)
+                ->whereYear('created_at', $currentYear)
+                ->whereIn('status', ['pending', 'processing'])
+                ->count();
 
-            // Total Packages count
-            $totalPackages = DB::table('packages')->count();
+            // Pending Orders (last month) - for growth comparison
+            $lastMonthPendingOrders = DB::table('orders')
+                ->whereMonth('created_at', $lastMonthNum)
+                ->whereYear('created_at', $lastMonthYear)
+                ->whereIn('status', ['pending', 'processing'])
+                ->count();
+
+            // Calculate pending orders growth percentage
+            if ($lastMonthPendingOrders > 0) {
+                $pendingGrowth = round((($pendingOrders - $lastMonthPendingOrders) / $lastMonthPendingOrders) * 100, 1);
+            } elseif ($pendingOrders > 0) {
+                $pendingGrowth = 100;
+            } else {
+                $pendingGrowth = 0;
+            }
+
+            $monthName = $now->format('F'); // e.g. "April", "May", etc.
 
             return response()->json([
                 'success' => true,
                 'data' => [
                     'metrics' => [
                         [
-                            'title' => 'Total Revenue',
+                            'title' => $monthName . ' Revenue',
                             'total' => $totalRevenue ?? 0,
                             'change' => $revenueGrowth,
                         ],
                         [
-                            'title' => 'Bookings',
+                            'title' => $monthName . ' Bookings',
                             'total' => $totalBookings ?? 0,
                             'change' => $bookingsGrowth,
                         ],
                         [
-                            'title' => 'Active Users',
-                            'total' => $activeUsers ?? 0,
+                            'title' => $monthName . ' New Users',
+                            'total' => $newUsers ?? 0,
                             'change' => $usersGrowth,
                         ],
                         [
-                            'title' => 'Total Activities',
-                            'total' => $totalActivities ?? 0,
-                            'change' => 0, // No growth calculation for activities count
+                            'title' => $monthName . ' Orders In Process',
+                            'total' => $pendingOrders ?? 0,
+                            'change' => $pendingGrowth,
                         ],
                     ],
                 ],
