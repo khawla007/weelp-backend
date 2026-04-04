@@ -16,7 +16,6 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin'     => \App\Http\Middleware\AdminMiddleware::class,
             'customer'  => \App\Http\Middleware\CustomerMiddleware::class,
             'creator'   => \App\Http\Middleware\CreatorMiddleware::class,
-            'affiliate' => \App\Http\Middleware\DetectAffiliateMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

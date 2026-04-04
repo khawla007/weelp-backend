@@ -434,7 +434,7 @@ Route::get('/cities/{city_slug}/all-items', [PublicCitiesController::class, 'get
 Route::prefix('activities')->group(function () {
     Route::get('/', [PublicActivityController::class, 'getActivities']);
     Route::get('/featured-activities', [PublicActivityController::class, 'getFeaturedActivities']);
-    Route::get('/{activity_slug}', [PublicActivityController::class, 'getActivityBySlug'])->middleware('affiliate');
+    Route::get('/{activity_slug}', [PublicActivityController::class, 'getActivityBySlug']);
 });
 
 // transfer api
@@ -447,7 +447,7 @@ Route::prefix('transfers')->group(function () {
 Route::prefix('itineraries')->group(function () {
     Route::get('/', [PublicItineraryController::class, 'index']);
     Route::get('/featured-itineraries', [PublicItineraryController::class, 'getFeaturedItineraries']);
-    Route::get('/{slug}', [PublicItineraryController::class, 'show'])->middleware('affiliate');
+    Route::get('/{slug}', [PublicItineraryController::class, 'show']);
     Route::get('/{slug}/addons', [PublicItineraryController::class, 'getAddons']);
 });
 
@@ -455,7 +455,7 @@ Route::prefix('itineraries')->group(function () {
 Route::prefix('packages')->group(function () {
     Route::get('/', [PublicPackageController::class, 'index']);
     Route::get('/featured-packages', [PublicPackageController::class, 'getFeaturedPackages']);
-    Route::get('/{slug}', [PublicPackageController::class, 'show'])->middleware('affiliate');
+    Route::get('/{slug}', [PublicPackageController::class, 'show']);
     Route::get('/{slug}/addons', [PublicPackageController::class, 'getAddons']);
 });
 
