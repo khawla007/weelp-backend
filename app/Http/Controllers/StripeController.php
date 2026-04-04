@@ -45,6 +45,12 @@ class StripeController extends Controller
             'emergency_contact.name' => 'required|string',
             'emergency_contact.phone' => 'required|string',
             'emergency_contact.relationship' => 'required|string',
+            'addons' => 'nullable|array',
+            'addons.*.addon_id' => 'required_with:addons|integer',
+            'addons.*.addon_name' => 'required_with:addons|string',
+            'addons.*.price' => 'required_with:addons|numeric',
+            'base_amount' => 'nullable|numeric',
+            'addons_amount' => 'nullable|numeric',
         ]);
 
         $orderableClass = 'App\\Models\\' . ucfirst($data['order_type']);
@@ -119,6 +125,9 @@ class StripeController extends Controller
         }
 
         if (isset($snapshot)) {
+            $snapshot['addons'] = $data['addons'] ?? [];
+            $snapshot['base_amount'] = $data['base_amount'] ?? $data['amount'];
+            $snapshot['addons_amount'] = $data['addons_amount'] ?? 0;
             $order->item_snapshot_json = json_encode(collect($snapshot)->toArray());
             $order->save();
         }
