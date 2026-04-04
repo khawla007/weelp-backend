@@ -17,8 +17,10 @@ class CreatorDashboardController extends Controller
     {
         $creatorId = Auth::id();
 
-        $totalSales = Commission::where('creator_id', $creatorId)->count();
-        $totalEarnings = Commission::where('creator_id', $creatorId)->sum('commission_amount');
+        $completedCommissions = Commission::where('creator_id', $creatorId)
+            ->whereHas('order', fn($q) => $q->where('status', 'completed'));
+        $totalSales = (clone $completedCommissions)->count();
+        $totalEarnings = (clone $completedCommissions)->sum('commission_amount');
         $totalClicks = Post::where('creator_id', $creatorId)->sum('shares_count');
 
         return response()->json([
