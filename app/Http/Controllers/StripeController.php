@@ -340,6 +340,9 @@ class StripeController extends Controller
                 'locations' => $snapshot['location'] ?? null,
                 'media' => $media,
             ],
+            'addons' => $snapshot['addons'] ?? [],
+            'base_amount' => $snapshot['base_amount'] ?? null,
+            'addons_amount' => $snapshot['addons_amount'] ?? 0,
             'user' => [
                 'name' => $user?->name,
                 'email' => $user?->email,
