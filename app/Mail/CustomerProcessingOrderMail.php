@@ -16,11 +16,26 @@ class CustomerProcessingOrderMail extends Mailable
     /**
      * Create a new message instance.
      */
-    public $order; // order ko public ya protected karo
+    public $order;
+    public $itemName;
+    public $addons;
+    public $baseAmount;
+    public $addonsAmount;
+    public $currencySymbol;
 
     public function __construct($order)
     {
         $this->order = $order;
+
+        $snapshot = is_array($order->item_snapshot_json)
+            ? $order->item_snapshot_json
+            : json_decode($order->item_snapshot_json, true);
+
+        $this->itemName = $snapshot['name'] ?? 'N/A';
+        $this->addons = $snapshot['addons'] ?? [];
+        $this->baseAmount = $snapshot['base_amount'] ?? $order->payment->amount;
+        $this->addonsAmount = $snapshot['addons_amount'] ?? 0;
+        $this->currencySymbol = strtoupper($order->payment->currency ?? 'USD') === 'USD' ? '$' : strtoupper($order->payment->currency ?? '');
     }
 
     /**
