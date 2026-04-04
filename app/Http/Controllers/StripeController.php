@@ -50,6 +50,7 @@ class StripeController extends Controller
             'addons.*.addon_name' => 'required_with:addons|string',
             'addons.*.price' => 'required_with:addons|numeric',
             'base_amount' => 'nullable|numeric',
+            'creator_id' => 'nullable|integer',
             'addons_amount' => 'nullable|numeric',
         ]);
 
@@ -57,9 +58,19 @@ class StripeController extends Controller
         $orderable = $orderableClass::findOrFail($data['orderable_id']);
         $totalAmount = $data['is_custom_amount'] ? $data['custom_amount'] : $data['amount'];
 
+        // Validate creator if provided
+        $creatorId = null;
+        if (!empty($data['creator_id'])) {
+            $creator = User::where('id', $data['creator_id'])->where('is_creator', true)->first();
+            if ($creator) {
+                $creatorId = $creator->id;
+            }
+        }
+
         // ✅ Create order
         $order = Order::create([
             'user_id' => $data['user_id'],
+            'creator_id' => $creatorId,
             'orderable_type' => $orderableClass,
             'orderable_id' => $data['orderable_id'],
             'travel_date' => $data['travel_date'],
@@ -144,6 +155,18 @@ class StripeController extends Controller
             'payment_intent_id' => $data['payment_intent_id'],
         ]);
 
+        // Create affiliate commission if order is from a creator referral
+        if ($creatorId) {
+            $commissionRate = config('services.creator.commission_rate', 10.00);
+            Commission::create([
+                'creator_id' => $creatorId,
+                'order_id' => $order->id,
+                'commission_rate' => $commissionRate,
+                'commission_amount' => round($totalAmount * ($commissionRate / 100), 2),
+                'status' => 'pending',
+            ]);
+        }
+
         return response()->json([
             'success' => true,
             'order_id' => $order->id,
@@ -195,23 +218,6 @@ class StripeController extends Controller
                 // Send admin mail
                 Mail::to(config('mail.admin_address', 'khawla@fanaticcoders.com'))->send(new AdminNewOrderMail($order));
 
-                // Create affiliate commission if cookie exists
-                $affiliateRef = $request->cookie('affiliate_ref');
-                if ($affiliateRef) {
-                    $creator = User::where('id', $affiliateRef)->where('is_creator', true)->first();
-                    if ($creator) {
-                        $commissionRate = config('services.creator.commission_rate', 10.00);
-                        $paymentAmount = $payment->total_amount ?? $payment->amount;
-
-                        Commission::create([
-                            'creator_id' => $creator->id,
-                            'order_id' => $order->id,
-                            'commission_rate' => $commissionRate,
-                            'commission_amount' => round($paymentAmount * ($commissionRate / 100), 2),
-                            'status' => 'pending',
-                        ]);
-                    }
-                }
             }
         }
         
