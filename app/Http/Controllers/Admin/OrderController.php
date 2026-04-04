@@ -101,8 +101,9 @@ class OrderController extends Controller
         $page    = $request->get('page', 1);
         $status  = $request->get('status');
 
-        // Base query for pagination (filtered)
-        $query = Order::with(['user', 'orderable', 'payment', 'emergencyContact']);
+        // Base query for pagination (filtered), latest first
+        $query = Order::with(['user', 'orderable', 'payment', 'emergencyContact'])
+            ->orderBy('created_at', 'desc');
 
         if ($status && in_array($status, ['pending', 'confirmed', 'cancelled'])) {
             $query->where('status', $status);
@@ -248,6 +249,10 @@ class OrderController extends Controller
                 return ($payment->total_amount ?? 0) + ($payment->custom_amount ?? 0);
             }),
             'total_revenue_growth' => $totalRevenueGrowth,
+            'monthly_orders' => $totalOrdersCurrent,
+            'monthly_pending_orders' => $pendingOrdersCurrent,
+            'monthly_completed_orders' => $completedOrdersCurrent,
+            'monthly_revenue' => $totalRevenueCurrent,
         ];
 
         // Final Response
