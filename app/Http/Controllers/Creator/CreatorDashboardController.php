@@ -33,7 +33,7 @@ class CreatorDashboardController extends Controller
 
     public function completedBookings()
     {
-        $orders = Order::where('user_id', Auth::id())
+        $orders = Order::where('creator_id', Auth::id())
             ->where('status', 'completed')
             ->with(['orderable' => function ($morphTo) {
                 $morphTo->morphWith([
