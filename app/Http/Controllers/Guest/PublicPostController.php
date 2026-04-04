@@ -25,6 +25,17 @@ class PublicPostController extends Controller
             }
         }
 
+        // Search filter — caption + creator name
+        $query->when($request->query('search'), fn($q) =>
+            $q->where(function ($sub) use ($request) {
+                $search = $request->query('search');
+                $sub->where('caption', 'like', "%{$search}%")
+                    ->orWhereHas('creator', fn($cq) =>
+                        $cq->where('name', 'like', "%{$search}%")
+                    );
+            })
+        );
+
         // Sort
         switch ($request->query('sort', 'latest')) {
             case 'oldest':
@@ -38,7 +49,9 @@ class PublicPostController extends Controller
                 break;
         }
 
-        return response()->json($query->paginate(15));
+        $perPage = (int) $request->query('per_page', 15);
+
+        return response()->json($query->paginate($perPage));
     }
 
     public function show($id)
