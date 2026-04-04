@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Order;
 use App\Models\OrderPayment;
 use App\Models\OrderEmergencyContact;
+use App\Models\Commission;
 
 class OrderController extends Controller
 {
@@ -322,6 +323,8 @@ class OrderController extends Controller
                 if (isset($refund->status) && $refund->status === 'succeeded') {
                     $order->payment->update(['payment_status' => 'refunded']);
                     $order->update(['status' => 'refunded']);
+
+                    Commission::where('order_id', $order->id)->delete();
                 }
 
                 Mail::to($order->user->email)->send(new \App\Mail\CustomerRefundedOrderMail($order));
@@ -373,6 +376,13 @@ class OrderController extends Controller
 
         // Update order status
         $order->update(['status' => $status]);
+
+        // Update commission lifecycle
+        if ($status === 'completed') {
+            Commission::where('order_id', $order->id)->update(['status' => 'approved']);
+        } elseif ($status === 'cancelled') {
+            Commission::where('order_id', $order->id)->delete();
+        }
 
         // Email sending
         if ($status === 'completed') {
