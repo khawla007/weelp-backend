@@ -8,6 +8,7 @@ use App\Models\ItineraryLike;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Collection;
 
 class ExploreCreatorItineraryController extends Controller
 {
@@ -60,7 +61,14 @@ class ExploreCreatorItineraryController extends Controller
 
         $userId = Auth::guard('api')->id();
 
-        $collection = $paginated->getCollection()->map(function (Itinerary $itinerary) use ($userId) {
+        $likedIds = $userId
+            ? ItineraryLike::where('user_id', $userId)
+                ->whereIn('itinerary_id', $paginated->pluck('id'))
+                ->pluck('itinerary_id')
+                ->toArray()
+            : [];
+
+        $collection = $paginated->getCollection()->map(function (Itinerary $itinerary) use ($userId, $likedIds) {
             $featuredMedia = $itinerary->mediaGallery->first();
             $variation = $itinerary->basePricing?->variations->first();
 
@@ -71,7 +79,7 @@ class ExploreCreatorItineraryController extends Controller
                 'description' => $itinerary->description,
                 'creator' => $itinerary->creator,
                 'locations' => $itinerary->locations,
-                'is_liked' => $userId ? $itinerary->isLikedBy($userId) : false,
+                'is_liked' => in_array($itinerary->id, $likedIds),
                 'day_count' => $itinerary->schedules->count(),
                 'featured_image' => $featuredMedia?->media?->url,
                 'display_price' => $variation?->sale_price ?? $variation?->regular_price,

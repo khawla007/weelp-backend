@@ -7,6 +7,7 @@ use App\Models\ItineraryActivity;
 use App\Models\ItineraryAddon;
 use App\Models\ItineraryAttribute;
 use App\Models\ItineraryBasePricing;
+use App\Models\ItineraryPriceVariation;
 use App\Models\ItineraryCategory;
 use App\Models\ItineraryInclusionExclusion;
 use App\Models\ItineraryLocation;
@@ -35,6 +36,11 @@ class ItineraryDeepCopyService
         ?int $userId = null,
     ): Itinerary {
         return DB::transaction(function () use ($original, $modifiedSchedules, $creatorId, $userId) {
+            $original->load([
+                'locations', 'basePricing.variations', 'inclusionsExclusions',
+                'mediaGallery', 'seo', 'categories', 'tags', 'attributes', 'addons',
+            ]);
+
             $copy = $this->createCopyRecord($original, $creatorId, $userId);
 
             $this->copyRelations($original, $copy);
@@ -100,13 +106,24 @@ class ItineraryDeepCopyService
             return;
         }
 
-        ItineraryBasePricing::create([
+        $copiedPricing = ItineraryBasePricing::create([
             'itinerary_id' => $copy->id,
             'currency' => $original->basePricing->currency,
             'availability' => $original->basePricing->availability,
             'start_date' => $original->basePricing->start_date,
             'end_date' => $original->basePricing->end_date,
         ]);
+
+        foreach ($original->basePricing->variations as $variation) {
+            ItineraryPriceVariation::create([
+                'base_pricing_id' => $copiedPricing->id,
+                'name' => $variation->name,
+                'regular_price' => $variation->regular_price,
+                'sale_price' => $variation->sale_price,
+                'max_guests' => $variation->max_guests,
+                'description' => $variation->description,
+            ]);
+        }
     }
 
     private function copyInclusionsExclusions(Itinerary $original, Itinerary $copy): void
