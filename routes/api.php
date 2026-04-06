@@ -67,6 +67,7 @@ use App\Http\Controllers\Creator\CreatorItineraryController;
 use App\Http\Controllers\Admin\CreatorApplicationManagementController;
 use App\Http\Controllers\Admin\CreatorItineraryManagementController;
 use App\Http\Controllers\Customer\CustomerItineraryController;
+use App\Http\Controllers\Explore\ExploreCreatorItineraryController;
 
 Route::get('/test', function () {
     return response()->json(['message' => 'Route Working!']);
@@ -524,6 +525,15 @@ Route::prefix('posts')->group(function () {
 Route::middleware('auth:api')->group(function () {
     Route::post('/posts/{id}/like', [PublicPostController::class, 'toggleLike']);
     Route::post('/posts/{id}/share', [PublicPostController::class, 'incrementShare']);
+});
+
+// Explore Creator Itineraries (public)
+Route::get('/explore/creator-itineraries', [ExploreCreatorItineraryController::class, 'index']);
+Route::post('/explore/creator-itineraries/{id}/view', [ExploreCreatorItineraryController::class, 'recordView']);
+
+// Explore Creator Itineraries (authenticated)
+Route::middleware('auth:api')->group(function () {
+    Route::post('/explore/creator-itineraries/{id}/like', [ExploreCreatorItineraryController::class, 'toggleLike']);
 });
 
 // Itinerary edit data (both creators and customers need access)
