@@ -61,6 +61,7 @@ use App\Http\Controllers\Guest\PublicReviewController;
 use App\Http\Controllers\Guest\OtpController;
 use App\Http\Controllers\Guest\PublicPostController;
 use App\Http\Controllers\Creator\CreatorPostController;
+use App\Http\Controllers\Creator\CreatorApplicationController;
 use App\Http\Controllers\Creator\CreatorDashboardController;
 
 Route::get('/test', function () {
@@ -122,6 +123,10 @@ Route::middleware(['auth:api', 'customer'])->prefix('customer')->group(function 
 
     // Upgrade to creator
     Route::post('/upgrade-to-creator', [AuthController::class, 'upgradeToCreator']);
+
+    // Creator application
+    Route::post('/creator/apply', [CreatorApplicationController::class, 'apply']);
+    Route::get('/creator/application-status', [CreatorApplicationController::class, 'status']);
 });
 
 // Creator routes
