@@ -20,6 +20,7 @@ use App\Models\OrderEmergencyContact;
 use Stripe\Stripe;
 use Stripe\Checkout\Session as StripeSession;
 use App\Models\Commission;
+use App\Models\Notification;
 
 
 class StripeController extends Controller
@@ -164,6 +165,14 @@ class StripeController extends Controller
                 'commission_rate' => $commissionRate,
                 'commission_amount' => round($totalAmount * ($commissionRate / 100), 2),
                 'status' => 'pending',
+            ]);
+
+            Notification::create([
+                'user_id' => $creatorId,
+                'type' => 'new_booking',
+                'title' => 'New Booking',
+                'message' => "Someone booked your itinerary! Order total: {$data['currency']} {$totalAmount}",
+                'data' => ['order_id' => $order->id],
             ]);
         }
 

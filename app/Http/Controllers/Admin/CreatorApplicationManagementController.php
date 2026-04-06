@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\CreatorApplication;
+use App\Models\Notification;
 use App\Models\UserProfile;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -83,6 +84,13 @@ class CreatorApplicationManagementController extends Controller
             ]
         );
 
+        Notification::create([
+            'user_id' => $application->user_id,
+            'type' => 'application_approved',
+            'title' => 'Application Approved',
+            'message' => 'Your creator application has been approved! You can now create itineraries.',
+        ]);
+
         return response()->json([
             'success' => true,
             'message' => 'Application approved successfully.',
@@ -117,6 +125,15 @@ class CreatorApplicationManagementController extends Controller
             'admin_notes' => $request->admin_notes,
             'reviewed_by' => Auth::id(),
             'reviewed_at' => now(),
+        ]);
+
+        Notification::create([
+            'user_id' => $application->user_id,
+            'type' => 'application_rejected',
+            'title' => 'Application Rejected',
+            'message' => $request->admin_notes
+                ? "Your creator application was not approved. Reason: {$request->admin_notes}"
+                : 'Your creator application was not approved. You may re-apply.',
         ]);
 
         return response()->json([

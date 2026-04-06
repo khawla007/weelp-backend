@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Itinerary;
+use App\Models\Notification;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -110,6 +111,14 @@ class CreatorItineraryManagementController extends Controller
 
         $itinerary->update(['approval_status' => 'approved']);
 
+        Notification::create([
+            'user_id' => $itinerary->creator_id,
+            'type' => 'itinerary_approved',
+            'title' => 'Itinerary Approved',
+            'message' => "Your itinerary \"{$itinerary->name}\" has been approved and is now visible on the Explore page.",
+            'data' => ['itinerary_id' => $itinerary->id],
+        ]);
+
         return response()->json([
             'success' => true,
             'message' => 'Itinerary approved.',
@@ -136,6 +145,14 @@ class CreatorItineraryManagementController extends Controller
         }
 
         $itinerary->update(['approval_status' => 'rejected']);
+
+        Notification::create([
+            'user_id' => $itinerary->creator_id,
+            'type' => 'itinerary_rejected',
+            'title' => 'Itinerary Rejected',
+            'message' => "Your itinerary \"{$itinerary->name}\" was not approved.",
+            'data' => ['itinerary_id' => $itinerary->id],
+        ]);
 
         return response()->json([
             'success' => true,
