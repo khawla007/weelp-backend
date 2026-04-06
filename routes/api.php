@@ -63,6 +63,10 @@ use App\Http\Controllers\Guest\PublicPostController;
 use App\Http\Controllers\Creator\CreatorPostController;
 use App\Http\Controllers\Creator\CreatorApplicationController;
 use App\Http\Controllers\Creator\CreatorDashboardController;
+use App\Http\Controllers\Creator\CreatorItineraryController;
+use App\Http\Controllers\Admin\CreatorApplicationManagementController;
+use App\Http\Controllers\Admin\CreatorItineraryManagementController;
+use App\Http\Controllers\Customer\CustomerItineraryController;
 
 Route::get('/test', function () {
     return response()->json(['message' => 'Route Working!']);
@@ -127,6 +131,10 @@ Route::middleware(['auth:api', 'customer'])->prefix('customer')->group(function 
     // Creator application
     Route::post('/creator/apply', [CreatorApplicationController::class, 'apply']);
     Route::get('/creator/application-status', [CreatorApplicationController::class, 'status']);
+
+    // Customer Itinerary Submission
+    Route::post('/itineraries', [CustomerItineraryController::class, 'store']);
+    Route::get('/my-itineraries', [CustomerItineraryController::class, 'myItineraries']);
 });
 
 // Creator routes
@@ -141,6 +149,10 @@ Route::middleware(['auth:api', 'creator'])->prefix('creator')->group(function ()
     Route::get('/dashboard/stats', [CreatorDashboardController::class, 'stats']);
     Route::get('/completed-bookings', [CreatorDashboardController::class, 'completedBookings']);
     Route::post('/resolve-link', [CreatorDashboardController::class, 'resolveLink']);
+
+    // Creator Itinerary Submission
+    Route::post('/itineraries', [CreatorItineraryController::class, 'store']);
+    Route::get('/my-itineraries', [CreatorItineraryController::class, 'myItineraries']);
 });
 
 // Stripe Payment api
@@ -399,6 +411,23 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
         Route::post('/bulk-delete', [AddonController::class, 'bulkDelete']);
     });
 
+    // Admin Creator Application Management
+    Route::prefix('creator-applications')->group(function () {
+        Route::get('/', [CreatorApplicationManagementController::class, 'index']);
+        Route::get('/{id}', [CreatorApplicationManagementController::class, 'show']);
+        Route::put('/{id}/approve', [CreatorApplicationManagementController::class, 'approve']);
+        Route::put('/{id}/reject', [CreatorApplicationManagementController::class, 'reject']);
+    });
+
+    // Admin Creator Itinerary Management
+    Route::prefix('creator-itineraries')->group(function () {
+        Route::get('/', [CreatorItineraryManagementController::class, 'index']);
+        Route::get('/{id}', [CreatorItineraryManagementController::class, 'show']);
+        Route::get('/{id}/original', [CreatorItineraryManagementController::class, 'original']);
+        Route::put('/{id}/approve', [CreatorItineraryManagementController::class, 'approve']);
+        Route::put('/{id}/reject', [CreatorItineraryManagementController::class, 'reject']);
+    });
+
 });
 
 // *****************************************************************************************************************
@@ -495,4 +524,12 @@ Route::prefix('posts')->group(function () {
 Route::middleware('auth:api')->group(function () {
     Route::post('/posts/{id}/like', [PublicPostController::class, 'toggleLike']);
     Route::post('/posts/{id}/share', [PublicPostController::class, 'incrementShare']);
+});
+
+// Itinerary edit data (both creators and customers need access)
+Route::middleware('auth:api')->group(function () {
+    Route::get('/itineraries/{slug}/edit-data', [PublicItineraryController::class, 'editData']);
+    Route::get('/itineraries/{slug}/city-activities', [PublicItineraryController::class, 'cityActivities']);
+    Route::get('/itineraries/{slug}/city-transfers', [PublicItineraryController::class, 'cityTransfers']);
+    Route::get('/itineraries/{slug}/city-places', [PublicItineraryController::class, 'cityPlaces']);
 });
