@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Notification extends Model
 {
+    protected $table = 'user_notifications';
+
     protected $fillable = [
         'user_id',
         'type',
@@ -31,8 +33,4 @@ class Notification extends Model
         return $query->whereNull('read_at');
     }
 
-    public function scopeLatest($query)
-    {
-        return $query->orderBy('created_at', 'desc');
-    }
 }
