@@ -7,7 +7,6 @@ use App\Models\Commission;
 use App\Models\Itinerary;
 use App\Models\Order;
 use App\Models\Package;
-use App\Models\Post;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -21,14 +20,16 @@ class CreatorDashboardController extends Controller
             ->whereHas('order', fn($q) => $q->where('status', 'completed'));
         $totalSales = (clone $completedCommissions)->count();
         $totalEarnings = (clone $completedCommissions)->sum('commission_amount');
-        $totalClicks = Post::where('creator_id', $creatorId)->sum('shares_count');
+        $totalViews = Itinerary::where('creator_id', $creatorId)
+            ->approved()
+            ->sum('views_count');
 
         return response()->json([
             'success' => true,
             'data' => [
+                'total_views' => (int) $totalViews,
                 'total_sales' => $totalSales,
                 'total_earnings' => (float) $totalEarnings,
-                'total_clicks' => (int) $totalClicks,
             ],
         ]);
     }
