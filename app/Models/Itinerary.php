@@ -57,13 +57,42 @@ class Itinerary extends Model
 {
     protected $table = 'itineraries';
     protected $fillable = [
-        'name', 'slug', 'description', 'featured_itinerary', 'private_itinerary'
+        'name', 'slug', 'description', 'featured_itinerary', 'private_itinerary',
+        'creator_id', 'user_id', 'parent_itinerary_id', 'approval_status',
+        'views_count', 'likes_count',
     ];
 
     protected $casts = [
         'featured_itinerary' => 'boolean',
-        'private_itinerary' => 'boolean'
+        'private_itinerary' => 'boolean',
+        'views_count' => 'integer',
+        'likes_count' => 'integer',
     ];
+
+    public function scopeOriginal($query)
+    {
+        return $query->whereNull('creator_id')->whereNull('user_id');
+    }
+
+    public function scopeCreatorCopies($query)
+    {
+        return $query->whereNotNull('creator_id');
+    }
+
+    public function scopeApproved($query)
+    {
+        return $query->where('approval_status', 'approved');
+    }
+
+    public function scopeUserCopies($query, $userId)
+    {
+        return $query->where('user_id', $userId);
+    }
+
+    public function scopePendingApproval($query)
+    {
+        return $query->where('approval_status', 'pending_approval');
+    }
 
     public function locations() {
 
@@ -144,5 +173,35 @@ class Itinerary extends Model
     public function postTags()
     {
         return $this->morphMany(PostItemTag::class, 'taggable');
+    }
+
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'creator_id');
+    }
+
+    public function owner()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function parentItinerary()
+    {
+        return $this->belongsTo(Itinerary::class, 'parent_itinerary_id');
+    }
+
+    public function copies()
+    {
+        return $this->hasMany(Itinerary::class, 'parent_itinerary_id');
+    }
+
+    public function likes()
+    {
+        return $this->hasMany(ItineraryLike::class);
+    }
+
+    public function isLikedBy($userId): bool
+    {
+        return $this->likes()->where('user_id', $userId)->exists();
     }
 }

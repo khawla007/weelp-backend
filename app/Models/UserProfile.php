@@ -61,6 +61,10 @@ class UserProfile extends Model
         'linkedin_url',
         'myspace_url',
         'pinterest_url',
+        'gender',
+        'instagram_handle',
+        'youtube_url',
+        'facebook_url_profile',
     ];
 
     protected $appends = ['avatar'];

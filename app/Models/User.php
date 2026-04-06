@@ -210,4 +210,24 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->hasMany(PostLike::class);
     }
+
+    public function creatorApplication()
+    {
+        return $this->hasOne(CreatorApplication::class)->latest();
+    }
+
+    public function creatorApplications()
+    {
+        return $this->hasMany(CreatorApplication::class);
+    }
+
+    public function creatorItineraries()
+    {
+        return $this->hasMany(Itinerary::class, 'creator_id');
+    }
+
+    public function userItineraries()
+    {
+        return $this->hasMany(Itinerary::class, 'user_id');
+    }
 }
