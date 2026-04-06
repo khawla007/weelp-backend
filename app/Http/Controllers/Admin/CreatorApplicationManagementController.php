@@ -3,12 +3,15 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Mail\CreatorApplicationApprovedMail;
+use App\Mail\CreatorApplicationRejectedMail;
 use App\Models\CreatorApplication;
 use App\Models\Notification;
 use App\Models\UserProfile;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 
 class CreatorApplicationManagementController extends Controller
 {
@@ -91,10 +94,61 @@ class CreatorApplicationManagementController extends Controller
             'message' => 'Your creator application has been approved! You can now create itineraries.',
         ]);
 
+        Mail::to($application->email)->send(new CreatorApplicationApprovedMail($application));
+
         return response()->json([
             'success' => true,
             'message' => 'Application approved successfully.',
             'data' => $application->fresh(['user', 'reviewer']),
+        ]);
+    }
+
+    public function update(Request $request, $id): JsonResponse
+    {
+        $application = CreatorApplication::find($id);
+
+        if (!$application) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Application not found',
+            ], 404);
+        }
+
+        $validated = $request->validate([
+            'name' => 'sometimes|string|max:255',
+            'email' => 'sometimes|email|max:255',
+            'gender' => 'sometimes|in:male,female,other',
+            'instagram' => 'sometimes|string|max:255',
+            'phone' => 'sometimes|string|max:50',
+            'youtube' => 'nullable|string|max:255',
+            'facebook' => 'nullable|string|max:255',
+        ]);
+
+        $application->update($validated);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Application updated successfully.',
+            'data' => $application->fresh(['user', 'reviewer']),
+        ]);
+    }
+
+    public function destroy($id): JsonResponse
+    {
+        $application = CreatorApplication::find($id);
+
+        if (!$application) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Application not found',
+            ], 404);
+        }
+
+        $application->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Application deleted successfully.',
         ]);
     }
 
@@ -135,6 +189,8 @@ class CreatorApplicationManagementController extends Controller
                 ? "Your creator application was not approved. Reason: {$request->admin_notes}"
                 : 'Your creator application was not approved. You may re-apply.',
         ]);
+
+        Mail::to($application->email)->send(new CreatorApplicationRejectedMail($application));
 
         return response()->json([
             'success' => true,

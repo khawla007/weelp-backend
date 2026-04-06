@@ -3,24 +3,28 @@
         <x-emails.components.header />
     </x-slot>
 
-    <h1 style="margin: 0 0 16px 0; color: #273F4E; font-size: 24px; font-weight: 600;">Payment Failed</h1>
+    <h1 style="margin: 0 0 16px 0; color: #273F4E; font-size: 24px; font-weight: 600;">Application Received!</h1>
 
     <p style="margin: 0 0 16px 0; color: #435A67; font-size: 15px; line-height: 1.6;">
-        Hi {{ $order->user->name }},
+        Hello {{ $application->name }},
     </p>
 
     <p style="margin: 0 0 24px 0; color: #435A67; font-size: 15px; line-height: 1.6;">
-        Unfortunately, your payment for order <strong>#{{ $order->id }}</strong> has failed.
+        Thank you for submitting your creator application on Weelp!
     </p>
 
     <p style="margin: 24px 0 8px 0; color: #435A67; font-size: 14px;">
-        Please try again or contact support if the issue persists.
+        Our expert team will verify your social profiles and review your application. We'll let you know the status by email.
+    </p>
+
+    <p style="margin: 8px 0 24px 0; color: #435A67; font-size: 14px;">
+        Until then, feel free to check out our latest itineraries!
     </p>
 
     <table border="0" cellpadding="0" cellspacing="0" width="100%">
         <tr>
             <td style="padding: 24px 0 0 0; text-align: center;">
-                <a href="{{ url('/checkout') }}" class="email-button" target="_blank">Retry Payment</a>
+                <a href="{{ config('app.frontend_url') }}/explore" class="email-button" target="_blank">Explore Itineraries</a>
             </td>
         </tr>
     </table>

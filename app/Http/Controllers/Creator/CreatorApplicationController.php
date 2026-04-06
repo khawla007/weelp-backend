@@ -3,9 +3,12 @@
 namespace App\Http\Controllers\Creator;
 
 use App\Http\Controllers\Controller;
+use App\Mail\AdminNewCreatorApplicationMail;
+use App\Mail\CreatorApplicationSubmittedMail;
 use App\Models\CreatorApplication;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 
 class CreatorApplicationController extends Controller
 {
@@ -45,6 +48,9 @@ class CreatorApplicationController extends Controller
             'user_id' => $user->id,
             ...$validated,
         ]);
+
+        Mail::to(config('mail.admin_address', 'khawla@fanaticcoders.com'))->send(new AdminNewCreatorApplicationMail($application));
+        Mail::to($application->email)->send(new CreatorApplicationSubmittedMail($application));
 
         return response()->json([
             'success' => true,

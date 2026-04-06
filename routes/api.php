@@ -417,6 +417,8 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
     Route::prefix('creator-applications')->group(function () {
         Route::get('/', [CreatorApplicationManagementController::class, 'index']);
         Route::get('/{id}', [CreatorApplicationManagementController::class, 'show']);
+        Route::put('/{id}', [CreatorApplicationManagementController::class, 'update']);
+        Route::delete('/{id}', [CreatorApplicationManagementController::class, 'destroy']);
         Route::put('/{id}/approve', [CreatorApplicationManagementController::class, 'approve']);
         Route::put('/{id}/reject', [CreatorApplicationManagementController::class, 'reject']);
     });
