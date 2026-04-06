@@ -60,8 +60,9 @@ class ItineraryController extends Controller
         $ageGroupAttr   = Attribute::where('slug', 'age-restriction')->first();
 
         $query = Itinerary::query()
-            ->select('itineraries.*')  
-            ->join('itinerary_base_pricing', 'itinerary_base_pricing.itinerary_id', '=', 'itineraries.id') 
+            ->original()
+            ->select('itineraries.*')
+            ->join('itinerary_base_pricing', 'itinerary_base_pricing.itinerary_id', '=', 'itineraries.id')
             ->join('itinerary_price_variations', 'itinerary_price_variations.base_pricing_id', '=', 'itinerary_base_pricing.id')
             ->with([
                 'categories.category', 

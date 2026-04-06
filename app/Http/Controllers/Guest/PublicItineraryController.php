@@ -25,10 +25,10 @@ class PublicItineraryController extends Controller
             'inclusionsExclusions',
             'mediaGallery.media',
             'seo',
-            'categories.category', 
+            'categories.category',
             'attributes',
             'tags'
-        ])->get()->map(function ($itinerary) {
+        ])->original()->get()->map(function ($itinerary) {
             return [
                 'id' => $itinerary->id,
                 'name' => $itinerary->name,
@@ -125,6 +125,7 @@ class PublicItineraryController extends Controller
             'attributes',
             'tags'
         ])
+        ->original()
         ->where('featured_itinerary', true);
 
         if ($citySlug) {
