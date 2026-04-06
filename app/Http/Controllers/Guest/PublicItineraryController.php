@@ -4,6 +4,9 @@ namespace App\Http\Controllers\Guest;
 
 use App\Http\Controllers\Controller;
 use App\Models\Itinerary;
+use App\Models\Activity;
+use App\Models\Transfer;
+use App\Models\Place;
 use App\Models\City;
 use App\Models\Category;
 use App\Models\Attribute;
@@ -388,6 +391,150 @@ class PublicItineraryController extends Controller
         return response()->json([
             'success' => true,
             'data' => $addons
+        ]);
+    }
+
+    /**
+     * Get itinerary data for the edit/customization screen.
+     */
+    public function editData($slug): JsonResponse
+    {
+        $itinerary = Itinerary::with([
+            'locations',
+            'schedules.activities',
+            'schedules.transfers',
+            'basePricing',
+            'inclusionsExclusions',
+            'mediaGallery',
+        ])->original()->where('slug', $slug)->first();
+
+        if (!$itinerary) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Itinerary not found',
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $itinerary,
+        ]);
+    }
+
+    /**
+     * Get activities available in the itinerary's cities.
+     */
+    public function cityActivities($slug): JsonResponse
+    {
+        $itinerary = Itinerary::with('locations')->original()->where('slug', $slug)->first();
+
+        if (!$itinerary) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Itinerary not found',
+            ], 404);
+        }
+
+        $cityIds = $itinerary->locations->pluck('city_id')->unique()->values();
+
+        $activities = Activity::whereHas('locations', function ($query) use ($cityIds) {
+            $query->whereIn('city_id', $cityIds);
+        })
+            ->select('id', 'name', 'slug', 'description', 'item_type', 'featured_activity')
+            ->with(['tags.tag', 'mediaGallery' => function ($q) {
+                $q->where('is_featured', true);
+            }, 'mediaGallery.media', 'locations'])
+            ->get()
+            ->map(function ($activity) {
+                $primaryLocation = $activity->locations->where('location_type', 'primary')->first();
+                $featuredMedia = $activity->mediaGallery->where('is_featured', true)->first();
+
+                return [
+                    'id' => $activity->id,
+                    'name' => $activity->name,
+                    'slug' => $activity->slug,
+                    'main_location' => $primaryLocation?->city_id,
+                    'duration_minutes' => $primaryLocation?->duration,
+                    'type' => $activity->item_type,
+                    'featured_image' => $featuredMedia?->media?->url,
+                    'tags' => $activity->tags->map(fn($t) => [
+                        'id' => $t->tag?->id,
+                        'name' => $t->tag?->name,
+                    ]),
+                ];
+            });
+
+        return response()->json([
+            'success' => true,
+            'data' => $activities,
+        ]);
+    }
+
+    /**
+     * Get transfers available (all transfers since they lack city association).
+     */
+    public function cityTransfers($slug): JsonResponse
+    {
+        $itinerary = Itinerary::with('locations')->original()->where('slug', $slug)->first();
+
+        if (!$itinerary) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Itinerary not found',
+            ], 404);
+        }
+
+        // Transfers don't have a direct city_id relationship.
+        // Return all transfers so users can pick from the full list.
+        $transfers = Transfer::select('id', 'name', 'slug', 'transfer_type', 'description')
+            ->with(['vendorRoutes', 'mediaGallery' => function ($q) {
+                $q->where('is_featured', true);
+            }, 'mediaGallery.media'])
+            ->get()
+            ->map(function ($transfer) {
+                $featuredMedia = $transfer->mediaGallery->where('is_featured', true)->first();
+
+                return [
+                    'id' => $transfer->id,
+                    'name' => $transfer->name,
+                    'slug' => $transfer->slug,
+                    'vehicle_type' => $transfer->vendorRoutes?->vehicle_type,
+                    'duration' => null,
+                    'featured_image' => $featuredMedia?->media?->url,
+                    'seating_capacity' => null,
+                ];
+            });
+
+        return response()->json([
+            'success' => true,
+            'data' => $transfers,
+        ]);
+    }
+
+    /**
+     * Get places in the itinerary's cities.
+     */
+    public function cityPlaces($slug): JsonResponse
+    {
+        $itinerary = Itinerary::with('locations')->original()->where('slug', $slug)->first();
+
+        if (!$itinerary) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Itinerary not found',
+            ], 404);
+        }
+
+        $cityIds = $itinerary->locations->pluck('city_id')->unique()->values();
+
+        $places = Place::whereIn('city_id', $cityIds)
+            ->select('id', 'name', 'city_id')
+            ->orderBy('name')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $places,
         ]);
     }
 
