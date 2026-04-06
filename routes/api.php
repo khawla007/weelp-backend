@@ -544,3 +544,11 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/itineraries/{slug}/city-transfers', [PublicItineraryController::class, 'cityTransfers']);
     Route::get('/itineraries/{slug}/city-places', [PublicItineraryController::class, 'cityPlaces']);
 });
+
+// Notifications (all authenticated users)
+Route::middleware('auth:api')->group(function () {
+    Route::get('/notifications', [App\Http\Controllers\NotificationController::class, 'index']);
+    Route::get('/notifications/unread-count', [App\Http\Controllers\NotificationController::class, 'unreadCount']);
+    Route::put('/notifications/{id}/read', [App\Http\Controllers\NotificationController::class, 'markAsRead']);
+    Route::put('/notifications/read-all', [App\Http\Controllers\NotificationController::class, 'markAllAsRead']);
+});
