@@ -126,8 +126,8 @@ Route::middleware(['auth:api', 'customer'])->prefix('customer')->group(function 
         Route::delete('{id}', [UserProfileController::class, 'reviewDelete']);
     });
 
-    // Upgrade to creator
-    Route::post('/upgrade-to-creator', [AuthController::class, 'upgradeToCreator']);
+    // DEPRECATED: Replaced by creator itinerary system
+    // Route::post('/upgrade-to-creator', [AuthController::class, 'upgradeToCreator']);
 
     // Creator application
     Route::post('/creator/apply', [CreatorApplicationController::class, 'apply']);
@@ -140,12 +140,13 @@ Route::middleware(['auth:api', 'customer'])->prefix('customer')->group(function 
 
 // Creator routes
 Route::middleware(['auth:api', 'creator'])->prefix('creator')->group(function () {
-    Route::prefix('posts')->group(function () {
-        Route::get('/', [CreatorPostController::class, 'index']);
-        Route::post('/', [CreatorPostController::class, 'store']);
-        Route::put('/{id}', [CreatorPostController::class, 'update']);
-        Route::delete('/{id}', [CreatorPostController::class, 'destroy']);
-    });
+    // DEPRECATED: Replaced by creator itinerary system
+    // Route::prefix('posts')->group(function () {
+    //     Route::get('/', [CreatorPostController::class, 'index']);
+    //     Route::post('/', [CreatorPostController::class, 'store']);
+    //     Route::put('/{id}', [CreatorPostController::class, 'update']);
+    //     Route::delete('/{id}', [CreatorPostController::class, 'destroy']);
+    // });
 
     Route::get('/dashboard/stats', [CreatorDashboardController::class, 'stats']);
     Route::get('/completed-bookings', [CreatorDashboardController::class, 'completedBookings']);
@@ -515,17 +516,17 @@ Route::prefix('reviews')->group(function () {
     Route::get('/activity/{activity_slug}/featured', [PublicReviewController::class, 'getActivityFeaturedReviews']);
 });
 
-// Public posts feed
-Route::prefix('posts')->group(function () {
-    Route::get('/', [PublicPostController::class, 'index']);
-    Route::get('/{id}', [PublicPostController::class, 'show']);
-});
+// DEPRECATED: Replaced by creator itinerary system
+// Route::prefix('posts')->group(function () {
+//     Route::get('/', [PublicPostController::class, 'index']);
+//     Route::get('/{id}', [PublicPostController::class, 'show']);
+// });
 
-// Authenticated post interactions (any logged-in user)
-Route::middleware('auth:api')->group(function () {
-    Route::post('/posts/{id}/like', [PublicPostController::class, 'toggleLike']);
-    Route::post('/posts/{id}/share', [PublicPostController::class, 'incrementShare']);
-});
+// DEPRECATED: Replaced by creator itinerary system
+// Route::middleware('auth:api')->group(function () {
+//     Route::post('/posts/{id}/like', [PublicPostController::class, 'toggleLike']);
+//     Route::post('/posts/{id}/share', [PublicPostController::class, 'incrementShare']);
+// });
 
 // Explore Creator Itineraries (public)
 Route::get('/explore/creator-itineraries', [ExploreCreatorItineraryController::class, 'index']);
