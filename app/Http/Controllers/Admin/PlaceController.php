@@ -118,6 +118,31 @@ class PlaceController extends Controller
     }
     
     /**
+     * List of Places filtered by City (for dropdowns)
+     */
+    public function placesByCity($cityId)
+    {
+        try {
+            $places = Place::select('id', 'name', 'type')
+                ->where('city_id', $cityId)
+                ->orderBy('name')
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $places
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong while fetching places',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)

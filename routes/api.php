@@ -269,6 +269,7 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
     Route::prefix('/places')->group(function () {
         Route::get('/', [PlaceController::class, 'index']);
         Route::get('/list', [PlaceController::class, 'placeList']);
+        Route::get('/by-city/{cityId}', [PlaceController::class, 'placesByCity']);
         Route::get('{id}', [PlaceController::class, 'show']);
         Route::post('/', [PlaceController::class, 'store']);
         Route::put('{id}', [PlaceController::class, 'update']);
