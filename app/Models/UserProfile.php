@@ -16,9 +16,7 @@ use Illuminate\Support\Facades\Storage;
  * @property string|null $country
  * @property string|null $post_code
  * @property string|null $phone
- * @property string|null $facebook_url
- * @property string|null $instagram_url
- * @property string|null $linkedin_url
+ * @property string|null $gender
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\UserProfileUrl> $urls
@@ -32,10 +30,8 @@ use Illuminate\Support\Facades\Storage;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|UserProfile whereCity($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|UserProfile whereCountry($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|UserProfile whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|UserProfile whereFacebookUrl($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UserProfile whereGender($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|UserProfile whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|UserProfile whereInstagramUrl($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|UserProfile whereLinkedinUrl($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|UserProfile wherePhone($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|UserProfile wherePostCode($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|UserProfile whereState($value)
@@ -56,18 +52,10 @@ class UserProfile extends Model
         'country',
         'post_code',
         'phone',
-        'facebook_url',
-        'instagram_url',
-        'linkedin_url',
-        'myspace_url',
-        'pinterest_url',
         'gender',
-        'instagram_handle',
-        'youtube_url',
-        'facebook_url_profile',
     ];
 
-    protected $appends = ['avatar'];
+    protected $appends = [];
 
     /**
      * Get the full URL for the avatar.

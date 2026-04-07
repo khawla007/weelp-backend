@@ -76,16 +76,36 @@ class CreatorApplicationManagementController extends Controller
         $user->is_creator = true;
         $user->save();
 
-        UserProfile::updateOrCreate(
+        $profile = UserProfile::updateOrCreate(
             ['user_id' => $user->id],
             [
                 'gender' => $application->gender,
-                'instagram_handle' => $application->instagram,
                 'phone' => $application->phone,
-                'youtube_url' => $application->youtube,
-                'facebook_url_profile' => $application->facebook,
             ]
         );
+
+        // Store social URLs in user_profile_urls table
+        $socialUrls = [
+            ['label' => 'Instagram', 'value' => $application->instagram, 'prefix' => 'https://instagram.com/'],
+            ['label' => 'YouTube',   'value' => $application->youtube,   'prefix' => ''],
+            ['label' => 'Facebook',  'value' => $application->facebook,  'prefix' => ''],
+        ];
+
+        foreach ($socialUrls as $social) {
+            if (empty($social['value'])) {
+                continue;
+            }
+
+            $url = $social['value'];
+            if (!str_starts_with($url, 'http') && !empty($social['prefix'])) {
+                $url = $social['prefix'] . ltrim($url, '@');
+            }
+
+            $profile->urls()->updateOrCreate(
+                ['label' => $social['label']],
+                ['url' => $url]
+            );
+        }
 
         Notification::create([
             'user_id' => $application->user_id,

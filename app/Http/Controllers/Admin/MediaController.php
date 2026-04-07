@@ -68,9 +68,20 @@ class MediaController extends Controller
                         ], 500);
                     }
 
-                    // Use Laravel's store() method instead of manual file_get_contents()
-                    // This is more memory-efficient and handles streaming properly
-                    $filePath = $file->store('media', 'minio');
+                    // Preserve original filename when storing to MinIO
+                    $originalFileName = $file->getClientOriginalName();
+                    $nameWithoutExt = pathinfo($originalFileName, PATHINFO_FILENAME);
+                    $extension = $file->getClientOriginalExtension();
+                    $fileName = $originalFileName;
+                    $counter = 0;
+
+                    // Handle duplicate filenames in storage
+                    while (Storage::disk('minio')->exists("media/{$fileName}")) {
+                        $counter++;
+                        $fileName = "{$nameWithoutExt}_{$counter}.{$extension}";
+                    }
+
+                    $filePath = $file->storeAs('media', $fileName, 'minio');
 
                     // Check if filePath is valid
                     if (!$filePath) {

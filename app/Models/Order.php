@@ -39,6 +39,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereTravelDate($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereUserId($value)
+ * @property int|null $creator_id
+ * @property-read \App\Models\Commission|null $commission
+ * @property-read \App\Models\User|null $creator
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereCreatorId($value)
  * @mixin \Eloquent
  */
 class Order extends Model

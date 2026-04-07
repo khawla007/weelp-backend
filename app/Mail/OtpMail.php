@@ -22,7 +22,7 @@ class OtpMail extends Mailable
     public function build()
     {
         return $this->subject('Verify your Weelp account')
-                    ->markdown('emails.otp-mail', [
+                    ->view('emails.otp-mail', [
                         'otp' => $this->otp,
                         'name' => $this->name,
                     ]);

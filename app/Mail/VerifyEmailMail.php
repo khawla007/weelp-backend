@@ -22,7 +22,7 @@ class VerifyEmailMail extends Mailable
     public function build()
     {
         return $this->subject('Verify Your Email Address')
-                    ->markdown('emails.verify-email', [
+                    ->view('emails.verify-email', [
                         'user' => $this->user,
                         'token' => $this->token,
                     ]);

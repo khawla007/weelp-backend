@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Guest;
 
 use App\Http\Controllers\Controller;
+use App\Mail\AdminNewUserMail;
 use App\Mail\OtpMail;
+use App\Mail\WelcomeRegistrationMail;
 use App\Models\User;
 use App\Models\UserMeta;
 use Illuminate\Http\Request;
@@ -198,6 +200,14 @@ class OtpController extends Controller
             Cache::forget("otp:{$email}");
 
             DB::commit();
+
+            // Send post-registration emails (non-blocking)
+            try {
+                Mail::to($user->email)->send(new WelcomeRegistrationMail($user->name));
+                Mail::to(config('mail.admin_address', 'khawla@fanaticcoders.com'))->send(new AdminNewUserMail($user, $otpData['username']));
+            } catch (\Exception $e) {
+                Log::warning('Post-registration email failed: ' . $e->getMessage());
+            }
 
             return response()->json([
                 'success' => true,

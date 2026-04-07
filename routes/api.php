@@ -107,6 +107,7 @@ Route::post('/resend-verification', [AuthController::class, 'resendVerification'
 
 // Role-agnostic authenticated routes
 Route::middleware(['auth:api'])->prefix('user')->group(function () {
+    Route::get('/profile', [UserProfileController::class, 'show']);
     Route::post('/avatar', [UserProfileController::class, 'uploadAvatar']);
     Route::delete('/avatar', [UserProfileController::class, 'deleteAvatar']);
 });

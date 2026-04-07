@@ -46,9 +46,7 @@ class UserProfileController extends Controller
             'country' => 'nullable|string|max:255',
             'post_code' => 'nullable|string|max:20',
             'phone' => 'nullable|string|max:20',
-            'facebook_url' => 'nullable|url',
-            'instagram_url' => 'nullable|url',
-            'linkedin_url' => 'nullable|url',
+            'gender' => 'nullable|string|in:male,female,other',
             'username' => 'nullable|string|max:255',
             'interest' => 'nullable|string',
             'bio' => 'nullable|string',
@@ -408,7 +406,19 @@ class UserProfileController extends Controller
         // ✅ Handle file upload if present
         if ($request->hasFile('file')) {
             foreach ($request->file('file') as $file) {
-                $filePath = $file->store('media', 'minio');
+                // Preserve original filename
+                $originalFileName = $file->getClientOriginalName();
+                $nameWithoutExt = pathinfo($originalFileName, PATHINFO_FILENAME);
+                $extension = $file->getClientOriginalExtension();
+                $fileName = $originalFileName;
+                $counter = 0;
+
+                while (Storage::disk('minio')->exists("media/{$fileName}")) {
+                    $counter++;
+                    $fileName = "{$nameWithoutExt}_{$counter}.{$extension}";
+                }
+
+                $filePath = $file->storeAs('media', $fileName, 'minio');
 
                 if (!$filePath) {
                     return response()->json([
@@ -422,7 +432,6 @@ class UserProfileController extends Controller
                 $media->name = $originalName;
                 $media->alt_text = $originalName;
                 $media->url = $filePath;
-                // $media->user_id = $user->id; // user ownership track karne ke liye
                 $media->save();
 
                 $uploadedMediaIds[] = $media->id;
@@ -622,7 +631,19 @@ class UserProfileController extends Controller
         // Handle new file uploads
         if ($request->hasFile('file')) {
             foreach ($request->file('file') as $file) {
-                $filePath = $file->store('media', 'minio');
+                // Preserve original filename
+                $originalFileName = $file->getClientOriginalName();
+                $nameWithoutExt = pathinfo($originalFileName, PATHINFO_FILENAME);
+                $extension = $file->getClientOriginalExtension();
+                $fileName = $originalFileName;
+                $counter = 0;
+
+                while (Storage::disk('minio')->exists("media/{$fileName}")) {
+                    $counter++;
+                    $fileName = "{$nameWithoutExt}_{$counter}.{$extension}";
+                }
+
+                $filePath = $file->storeAs('media', $fileName, 'minio');
 
                 if (!$filePath) {
                     return response()->json(['message' => 'File upload failed.'], 500);

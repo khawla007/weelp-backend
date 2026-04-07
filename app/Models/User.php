@@ -46,6 +46,13 @@ use Illuminate\Notifications\Notifiable;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereRole($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereStatus($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereUpdatedAt($value)
+ * @property-read \App\Models\CreatorApplication|null $creatorApplication
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\CreatorApplication> $creatorApplications
+ * @property-read int|null $creator_applications_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Itinerary> $creatorItineraries
+ * @property-read int|null $creator_itineraries_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Itinerary> $userItineraries
+ * @property-read int|null $user_itineraries_count
  * @mixin \Eloquent
  */
 class User extends Authenticatable implements JWTSubject

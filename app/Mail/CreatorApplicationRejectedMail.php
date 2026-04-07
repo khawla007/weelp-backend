@@ -20,7 +20,7 @@ class CreatorApplicationRejectedMail extends Mailable
     public function build()
     {
         return $this->subject('Update on Your Creator Application')
-                    ->markdown('emails.creator-application-rejected', [
+                    ->view('emails.creator-application-rejected', [
                         'application' => $this->application,
                     ]);
     }

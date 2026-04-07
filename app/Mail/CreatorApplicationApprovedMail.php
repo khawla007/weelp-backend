@@ -20,7 +20,7 @@ class CreatorApplicationApprovedMail extends Mailable
     public function build()
     {
         return $this->subject('Your Creator Application Has Been Approved!')
-                    ->markdown('emails.creator-application-approved', [
+                    ->view('emails.creator-application-approved', [
                         'application' => $this->application,
                     ]);
     }

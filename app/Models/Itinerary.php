@@ -51,6 +51,29 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Itinerary wherePrivateItinerary($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Itinerary whereSlug($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Itinerary whereUpdatedAt($value)
+ * @property int|null $creator_id
+ * @property int|null $user_id
+ * @property int|null $parent_itinerary_id
+ * @property string|null $approval_status
+ * @property int $views_count
+ * @property-read int|null $likes_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Itinerary> $copies
+ * @property-read int|null $copies_count
+ * @property-read \App\Models\User|null $creator
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ItineraryLike> $likes
+ * @property-read \App\Models\User|null $owner
+ * @property-read Itinerary|null $parentItinerary
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Itinerary approved()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Itinerary creatorCopies()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Itinerary original()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Itinerary pendingApproval()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Itinerary userCopies($userId)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Itinerary whereApprovalStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Itinerary whereCreatorId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Itinerary whereLikesCount($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Itinerary whereParentItineraryId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Itinerary whereUserId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Itinerary whereViewsCount($value)
  * @mixin \Eloquent
  */
 class Itinerary extends Model
