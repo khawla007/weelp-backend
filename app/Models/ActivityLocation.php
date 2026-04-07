@@ -32,7 +32,7 @@ use Illuminate\Database\Eloquent\Model;
 class ActivityLocation extends Model {
     use HasFactory;
 
-    protected $fillable = ['activity_id', 'city_id', 'location_type', 'location_label', 'duration'];
+    protected $fillable = ['activity_id', 'city_id', 'place_id', 'location_type', 'location_label', 'duration'];
 
     public function activity() {
         return $this->belongsTo(Activity::class);
@@ -40,5 +40,9 @@ class ActivityLocation extends Model {
 
     public function city() {
         return $this->belongsTo(City::class, 'city_id');
+    }
+
+    public function place() {
+        return $this->belongsTo(Place::class, 'place_id');
     }
 }

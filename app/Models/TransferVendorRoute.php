@@ -46,6 +46,8 @@ class TransferVendorRoute extends Model
         'route_id',
         'pickup_location',
         'dropoff_location',
+        'pickup_place_id',
+        'dropoff_place_id',
         'vehicle_type',
         'inclusion',
     ];
@@ -70,5 +72,15 @@ class TransferVendorRoute extends Model
     public function route()
     {
         return $this->belongsTo(VendorRoute::class);
+    }
+
+    public function pickupPlace()
+    {
+        return $this->belongsTo(Place::class, 'pickup_place_id');
+    }
+
+    public function dropoffPlace()
+    {
+        return $this->belongsTo(Place::class, 'dropoff_place_id');
     }
 }
