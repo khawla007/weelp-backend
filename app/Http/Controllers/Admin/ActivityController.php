@@ -666,8 +666,25 @@ class ActivityController extends Controller
                 }
             };
     
-            foreach (['locations'] as $relation) {
-            // foreach (['locations', 'seasonalPricing', 'group_discounts', 'early_bird_discount', 'last_minute_discount', 'promo_codes', 'availability'] as $relation) {
+            // Handle locations separately to auto-derive city_id from place_id
+            if ($request->has('locations')) {
+                $locationsData = collect($request->locations)->map(function ($location) {
+                    $cityId = $location['city_id'] ?? null;
+                    if (!empty($location['place_id'])) {
+                        $place = \App\Models\Place::find($location['place_id']);
+                        if ($place) {
+                            $cityId = $place->city_id;
+                        }
+                    }
+                    $location['city_id'] = $cityId;
+                    return $location;
+                })->toArray();
+
+                $updateOrCreateRelation('locations', $locationsData);
+            }
+
+            foreach ([] as $relation) {
+            // foreach (['seasonalPricing', 'group_discounts', 'early_bird_discount', 'last_minute_discount', 'promo_codes', 'availability'] as $relation) {
                 if ($request->has($relation)) {
                     $updateOrCreateRelation($relation, $request->$relation);
                 }
