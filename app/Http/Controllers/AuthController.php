@@ -207,6 +207,8 @@ class AuthController extends Controller
             ], 401);
         }
 
+        $user->load('profile');
+
         $accessToken = JWTAuth::fromUser($user);
 
         $refreshToken = JWTAuth::customClaims(['type' => 'refresh'])->fromUser($user);
@@ -220,6 +222,7 @@ class AuthController extends Controller
             'name' => $user->name,
             'role' => $user->role,
             'is_creator' => $user->is_creator,
+            'avatar' => $user->profile?->avatar,
         ]);
     }
 
