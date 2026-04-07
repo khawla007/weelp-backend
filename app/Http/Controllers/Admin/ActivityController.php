@@ -56,7 +56,7 @@ class ActivityController extends Controller
         $query = Activity::query()
             ->select('activities.*')  // Select all fields from activities
             ->join('activity_pricing', 'activity_pricing.activity_id', '=', 'activities.id') // Join with activity_pricing table
-            ->with(['categories.category', 'tags.tag', 'locations.city', 'pricing', 'attributes', 'mediaGallery.media', 'addons.addon']) // Eager load relationships
+            ->with(['categories.category', 'tags.tag', 'locations.city', 'locations.place', 'pricing', 'attributes', 'mediaGallery.media', 'addons.addon']) // Eager load relationships
 
             ->when($search, fn($query) =>
                 $query->where('activities.name', 'like', "%{$search}%")
@@ -150,9 +150,12 @@ class ActivityController extends Controller
             // Replace transformed fields
             $data['locations'] = collect($activity->locations)->map(function ($location) {
                 return [
-                    'id'         => $location->id,
-                    'city_id'    => $location->city_id,
-                    'city_name'  => $location->city->name ?? null,
+                    'id'             => $location->id,
+                    'city_id'        => $location->city_id,
+                    'city_name'      => $location->city->name ?? null,
+                    'place_id'       => $location->place_id,
+                    'place_name'     => $location->place->name ?? null,
+                    'location_type'  => $location->location_type,
                 ];
             });
         
@@ -280,9 +283,19 @@ class ActivityController extends Controller
             // Locations
             if ($request->has('locations')) {
                 foreach ($request->locations as $location) {
+                    // Auto-derive city_id from place if place_id is provided
+                    $cityId = $location['city_id'] ?? null;
+                    if (!empty($location['place_id'])) {
+                        $place = \App\Models\Place::find($location['place_id']);
+                        if ($place) {
+                            $cityId = $place->city_id;
+                        }
+                    }
+
                     ActivityLocation::create([
                         'activity_id'    => $activity->id,
-                        'city_id'        => $location['city_id'],
+                        'city_id'        => $cityId,
+                        'place_id'       => $location['place_id'] ?? null,
                         'location_type'  => $location['location_type'],
                         'location_label' => $location['location_label'],
                         'duration'       => $location['duration'] ?? null,
@@ -428,8 +441,9 @@ class ActivityController extends Controller
     public function show(string $id)
     {
         $activity = Activity::with([
-            'categories', 
-            'locations.city', 
+            'categories',
+            'locations.city',
+            'locations.place',
             'attributes.attribute',
             'tags.tag',
             'pricing', 'seasonalPricing', 
@@ -452,7 +466,9 @@ class ActivityController extends Controller
                 'activity_id'    => $location->activity_id,
                 'location_type'  => $location->location_type,
                 'city_id'        => $location->city_id,
-                'city_name'      => $location->city->name ?? null, // Get city name
+                'city_name'      => $location->city->name ?? null,
+                'place_id'       => $location->place_id,
+                'place_name'     => $location->place->name ?? null,
                 'location_label' => $location->location_label,
                 'duration'       => $location->duration,
                 'created_at'     => $location->created_at,
