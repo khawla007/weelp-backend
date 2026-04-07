@@ -20,10 +20,11 @@
     <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f2f7f5; border-radius: 8px; margin: 24px 0;">
         <tr>
             <td style="padding: 20px;">
-                <p style="margin: 0 0 8px 0; color: #273F4E; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Here's how to get started:</p>
-                <p style="margin: 8px 0 4px 0; color: #435A67; font-size: 14px;">1. Create your first itinerary on the single itinerary page</p>
-                <p style="margin: 4px 0 4px 0; color: #435A67; font-size: 14px;">2. Track the status of your itineraries on the Explore page</p>
-                <p style="margin: 4px 0 0 0; color: #435A67; font-size: 14px;">3. Manage everything from your My Account page</p>
+                <p style="margin: 0 0 8px 0; color: #273F4E; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">How to create your first itinerary:</p>
+                <p style="margin: 8px 0 4px 0; color: #435A67; font-size: 14px;">1. Go to the <strong>Explore</strong> page and open any <strong>single itinerary page</strong> that inspires you</p>
+                <p style="margin: 4px 0 4px 0; color: #435A67; font-size: 14px;">2. <strong>Add or edit the schedule</strong> — customize it with your own activities, timings, and travel tips</p>
+                <p style="margin: 4px 0 4px 0; color: #435A67; font-size: 14px;">3. <strong>Submit for approval</strong> — our team will review and publish it on the Explore page</p>
+                <p style="margin: 4px 0 0 0; color: #435A67; font-size: 14px;">4. Track all your created itineraries from the <strong>My Itineraries</strong> section in your dashboard</p>
             </td>
         </tr>
     </table>
@@ -31,7 +32,7 @@
     <table border="0" cellpadding="0" cellspacing="0" width="100%">
         <tr>
             <td style="padding: 24px 0 0 0; text-align: center;">
-                <a href="{{ config('app.frontend_url') }}/dashboard/creator" class="email-button" target="_blank">Go to Creator Dashboard</a>
+                <a href="{{ config('app.frontend_url') }}/explore" class="email-button" target="_blank">Go to Explore Page</a>
             </td>
         </tr>
     </table>
