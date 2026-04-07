@@ -18,7 +18,6 @@ class ExploreCreatorItineraryController extends Controller
             ->with([
                 'creator:id,name,email',
                 'creator.profile:id,user_id,avatar',
-                'creator.avatarMedia:id,url',
                 'locations:id,itinerary_id,city_id',
                 'locations.city:id,name',
                 'mediaGallery' => fn($q) => $q->featured()->with('media:id,url')->limit(1),

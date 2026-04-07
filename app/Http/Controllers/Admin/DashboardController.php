@@ -226,7 +226,7 @@ class DashboardController extends Controller
     {
         try {
             // Fetch recent 5 orders regardless of status (pending, processing, completed)
-            $recentOrders = \App\Models\Order::with(['user.avatarMedia', 'payment'])
+            $recentOrders = \App\Models\Order::with(['user.profile', 'payment'])
                 ->orderBy('orders.created_at', 'desc')
                 ->limit(5)
                 ->get();
@@ -253,7 +253,6 @@ class DashboardController extends Controller
             $formattedOrders = $recentOrders->map(function ($order) {
                 $user = $order->user;
                 $payment = $order->payment;
-                $avatarMedia = $user?->avatarMedia;
 
                 // Handle orders without users
                 if (!$user) {
@@ -270,10 +269,8 @@ class DashboardController extends Controller
                 }
 
                 // Generate avatar URL
-                $avatarUrl = null;
-                if ($avatarMedia && !empty($avatarMedia->url)) {
-                    $avatarUrl = $avatarMedia->url;
-                } else {
+                $avatarUrl = $user->profile?->avatar;
+                if (empty($avatarUrl)) {
                     // Fallback to UI Avatars API
                     $name = urlencode($user->name ?? 'User');
                     $avatarUrl = "https://ui-avatars.com/api/?name={$name}&background=random";

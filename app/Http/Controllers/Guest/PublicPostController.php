@@ -12,7 +12,7 @@ class PublicPostController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Post::with(['creator.avatarMedia', 'media', 'taggedItems.taggable.locations.city'])
+        $query = Post::with(['creator.profile', 'media', 'taggedItems.taggable.locations.city'])
             ->where('status', 'published');
 
         // Source filter
@@ -55,7 +55,7 @@ class PublicPostController extends Controller
 
     public function show($id)
     {
-        $post = Post::with(['creator.avatarMedia', 'media', 'taggedItems.taggable.locations.city'])
+        $post = Post::with(['creator.profile', 'media', 'taggedItems.taggable.locations.city'])
             ->where('status', 'published')
             ->findOrFail($id);
 
