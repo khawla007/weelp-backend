@@ -262,14 +262,14 @@ class PlaceController extends Controller
             }
         }
 
-        // Location Details
-        if (!empty($validated['location_details'])) {
+        // Location Details - only create if meaningful data exists
+        if (!empty($validated['location_details']) && array_filter($validated['location_details'], fn($v) => !is_null($v) && $v !== '' && $v !== [] && $v !== 0)) {
             $validated['location_details']['place_id'] = $place->id;
             PlaceLocationDetail::create($validated['location_details']);
         }
 
-        // Travel Info
-        if (!empty($validated['travel_info'])) {
+        // Travel Info - only create if meaningful data exists
+        if (!empty($validated['travel_info']) && array_filter($validated['travel_info'], fn($v) => !is_null($v) && $v !== '' && $v !== [] && $v !== false)) {
             $validated['travel_info']['place_id'] = $place->id;
             PlaceTravelInfo::create($validated['travel_info']);
         }
@@ -487,14 +487,14 @@ class PlaceController extends Controller
         }
     
         // === Location Details (hasOne) ===
-        if (!empty($validated['location_details'])) {
+        if (!empty($validated['location_details']) && array_filter($validated['location_details'], fn($v) => !is_null($v) && $v !== '' && $v !== [] && $v !== 0)) {
             $place->locationDetails()
                 ? $place->locationDetails->update($validated['location_details'])
                 : $place->locationDetails()->create($validated['location_details']);
         }
-    
+
         // === Travel Info (hasOne) ===
-        if (!empty($validated['travel_info'])) {
+        if (!empty($validated['travel_info']) && array_filter($validated['travel_info'], fn($v) => !is_null($v) && $v !== '' && $v !== [] && $v !== false)) {
             $place->travelInfo()
                 ? $place->travelInfo->update($validated['travel_info'])
                 : $place->travelInfo()->create($validated['travel_info']);
