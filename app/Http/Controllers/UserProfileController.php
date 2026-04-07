@@ -14,13 +14,6 @@ use Illuminate\Http\Request;
 
 class UserProfileController extends Controller
 {
-    // Avatar constants
-    const AVATAR_SIZE = 400;
-    const MAX_AVATAR_SIZE_BYTES = 50000; // 50KB
-    const INITIAL_QUALITY = 85;
-    const MIN_QUALITY = 50;
-    const QUALITY_STEP = 5;
-
     /**
      * Handle the get user profile request.
     */
@@ -133,90 +126,29 @@ class UserProfileController extends Controller
      */
     public function uploadAvatar(Request $request)
     {
-        $validated = $request->validate([
+        $request->validate([
             'file' => 'required|file|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
-        // Check GD extension availability
-        if (!extension_loaded('gd')) {
-            return response()->json(['error' => 'Image processing not available'], 500);
-        }
-
-        $user = $request->user();
-        $file = $request->file('file');
-
-        $image = null;
-        $squared = null;
-        $filePath = null;
-
         try {
-            // Read the image using real path for memory efficiency
-            $image = imagecreatefromstring(file_get_contents($file->getRealPath()));
-            if (!$image) {
-                return response()->json(['error' => 'Failed to process image'], 400);
-            }
-
-            // Get original dimensions
-            $width = imagesx($image);
-            $height = imagesy($image);
-
-            // Calculate crop to square (center crop)
-            $size = min($width, $height);
-            $x = ($width - $size) / 2;
-            $y = ($height - $size) / 2;
-
-            // Create new square image
-            $squared = imagecreatetruecolor(self::AVATAR_SIZE, self::AVATAR_SIZE);
-            imagecopyresampled($squared, $image, 0, 0, $x, $y, self::AVATAR_SIZE, self::AVATAR_SIZE, $size, $size);
-
-            // Determine output format
-            $extension = 'webp';
-
-            // Start with initial quality
-            $quality = self::INITIAL_QUALITY;
-            $filePath = sys_get_temp_dir() . '/' . uniqid('avatar_', true) . '.' . $extension;
-            $fileSize = null;
-
-            // Compress until under max size (fixed infinite loop condition)
-            do {
-                imagewebp($squared, $filePath, $quality);
-                $fileSize = filesize($filePath);
-
-                if ($fileSize > self::MAX_AVATAR_SIZE_BYTES) {
-                    $quality -= self::QUALITY_STEP;
-                }
-            } while ($fileSize > self::MAX_AVATAR_SIZE_BYTES && $quality >= self::MIN_QUALITY);
-
-            // Store in MinIO using real path for memory efficiency
-            $storagePath = 'avatars/' . $user->id . '.' . $extension;
-            Storage::disk('minio')->put($storagePath, file_get_contents($filePath), 'public');
-
-            // Save path to user profile
-            $profile = $user->profile ?? new UserProfile(['user_id' => $user->id]);
-            $profile->avatar = $storagePath;
-            $profile->save();
+            $avatarService = new \App\Services\AvatarService();
+            $url = $avatarService->upload($request->user(), $request->file('file'));
 
             return response()->json([
                 'success' => true,
-                'url' => Storage::disk('minio')->url($storagePath),
+                'url' => $url,
             ]);
-
-        } catch (\Exception $e) {
-            // Log internally, return generic message
-            \Log::error('Avatar upload failed: ' . $e->getMessage());
-            return response()->json(['error' => 'Failed to upload avatar'], 500);
-        } finally {
-            // Clean up resources - always execute
-            if ($image) {
-                imagedestroy($image);
-            }
-            if ($squared) {
-                imagedestroy($squared);
-            }
-            if ($filePath && file_exists($filePath)) {
-                unlink($filePath);
-            }
+        } catch (\RuntimeException $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
         }
+    }
+
+    public function deleteAvatar(Request $request)
+    {
+        $avatarService = new \App\Services\AvatarService();
+        $avatarService->delete($request->user());
+
+        return response()->json(['success' => true]);
     }
 
     /**

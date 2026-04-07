@@ -105,6 +105,12 @@ Route::get('/check-username', [AuthController::class, 'checkUsername']);
 Route::get('/verify-email', [AuthController::class, 'verifyEmail']);
 Route::post('/resend-verification', [AuthController::class, 'resendVerification']);
 
+// Role-agnostic authenticated routes
+Route::middleware(['auth:api'])->prefix('user')->group(function () {
+    Route::post('/avatar', [UserProfileController::class, 'uploadAvatar']);
+    Route::delete('/avatar', [UserProfileController::class, 'deleteAvatar']);
+});
+
 // Route::middleware('auth:api')->group(function () {
 Route::middleware(['auth:api', 'customer'])->prefix('customer')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
@@ -112,7 +118,6 @@ Route::middleware(['auth:api', 'customer'])->prefix('customer')->group(function 
     // Route::get('/user', [UserController::class, 'getUser']);
     Route::get('/profile', [UserProfileController::class, 'show']);
     Route::put('/profile', [UserProfileController::class, 'update']);
-    Route::post('/avatar', [UserProfileController::class, 'uploadAvatar']);
     Route::put('/password', [UserProfileController::class, 'changePassword']);
 
     // 👇 Logged-in user ke orders
@@ -191,6 +196,7 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
         Route::put('/update{id}', [UserController::class, 'update']);
         Route::delete('{id}', [UserController::class, 'destroy']);
         Route::post('/bulk-delete', [UserController::class, 'bulkDelete']);
+        Route::post('{id}/avatar', [UserController::class, 'uploadUserAvatar']);
     });
 
     // Admin Side Category Routes

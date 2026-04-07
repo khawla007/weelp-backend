@@ -228,6 +228,27 @@ class UserController extends Controller
         ], 200);
     }
 
+    public function uploadUserAvatar(Request $request, $id)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:jpg,jpeg,png,webp|max:2048',
+        ]);
+
+        $user = User::findOrFail($id);
+
+        try {
+            $avatarService = new \App\Services\AvatarService();
+            $url = $avatarService->upload($user, $request->file('file'));
+
+            return response()->json([
+                'success' => true,
+                'url' => $url,
+            ]);
+        } catch (\RuntimeException $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
     public function destroy($id)
     {
         $user = User::find($id);
