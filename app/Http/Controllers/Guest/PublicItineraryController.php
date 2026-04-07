@@ -422,7 +422,7 @@ class PublicItineraryController extends Controller
     }
 
     /**
-     * Get activities available in the itinerary's cities.
+     * Get activities available in the itinerary's cities (primary location only).
      */
     public function cityActivities($slug): JsonResponse
     {
@@ -438,12 +438,13 @@ class PublicItineraryController extends Controller
         $cityIds = $itinerary->locations->pluck('city_id')->unique()->values();
 
         $activities = Activity::whereHas('locations', function ($query) use ($cityIds) {
-            $query->whereIn('city_id', $cityIds);
+            $query->where('location_type', 'primary')
+                  ->whereIn('city_id', $cityIds);
         })
             ->select('id', 'name', 'slug', 'description', 'item_type', 'featured_activity')
             ->with(['tags.tag', 'mediaGallery' => function ($q) {
                 $q->where('is_featured', true);
-            }, 'mediaGallery.media', 'locations'])
+            }, 'mediaGallery.media', 'locations.place'])
             ->get()
             ->map(function ($activity) {
                 $primaryLocation = $activity->locations->where('location_type', 'primary')->first();
@@ -453,7 +454,7 @@ class PublicItineraryController extends Controller
                     'id' => $activity->id,
                     'name' => $activity->name,
                     'slug' => $activity->slug,
-                    'main_location' => $primaryLocation?->city_id,
+                    'main_location' => $primaryLocation?->place?->name ?? $primaryLocation?->city_id,
                     'duration_minutes' => $primaryLocation?->duration,
                     'type' => $activity->item_type,
                     'featured_image' => $featuredMedia?->media?->url,
@@ -471,7 +472,7 @@ class PublicItineraryController extends Controller
     }
 
     /**
-     * Get transfers available (all transfers since they lack city association).
+     * Get transfers available in the itinerary's cities (by pickup place).
      */
     public function cityTransfers($slug): JsonResponse
     {
@@ -484,10 +485,14 @@ class PublicItineraryController extends Controller
             ], 404);
         }
 
-        // Transfers don't have a direct city_id relationship.
-        // Return all transfers so users can pick from the full list.
-        $transfers = Transfer::select('id', 'name', 'slug', 'transfer_type', 'description')
-            ->with(['vendorRoutes', 'mediaGallery' => function ($q) {
+        $cityIds = $itinerary->locations->pluck('city_id')->unique()->values();
+        $placeIds = Place::whereIn('city_id', $cityIds)->pluck('id');
+
+        $transfers = Transfer::whereHas('vendorRoutes', function ($query) use ($placeIds) {
+            $query->whereIn('pickup_place_id', $placeIds);
+        })
+            ->select('id', 'name', 'slug', 'transfer_type', 'description')
+            ->with(['vendorRoutes.pickupPlace', 'vendorRoutes.dropoffPlace', 'mediaGallery' => function ($q) {
                 $q->where('is_featured', true);
             }, 'mediaGallery.media'])
             ->get()
@@ -502,6 +507,8 @@ class PublicItineraryController extends Controller
                     'duration' => null,
                     'featured_image' => $featuredMedia?->media?->url,
                     'seating_capacity' => null,
+                    'pickup_place_name' => $transfer->vendorRoutes?->pickupPlace?->name,
+                    'dropoff_place_name' => $transfer->vendorRoutes?->dropoffPlace?->name,
                 ];
             });
 
