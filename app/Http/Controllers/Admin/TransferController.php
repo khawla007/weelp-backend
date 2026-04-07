@@ -38,6 +38,7 @@ class TransferController extends Controller
                 'vendorRoutes.route',
                 'vendorRoutes.vendor.vehicles',
                 'vendorRoutes.vendor.availabilityTimeSlots',
+                'vendorRoutes.pickupPlace',
                 'pricingAvailability.pricingTier',
                 'pricingAvailability.availability',
                 'mediaGallery.media',
@@ -180,7 +181,10 @@ class TransferController extends Controller
 
             // Add vendor_routes with is_vendor flag (required by frontend for Edit link routing)
             $data['vendor_routes'] = [
-                'is_vendor' => $transfer->vendorRoutes?->is_vendor ?? false,
+                'is_vendor'        => $transfer->vendorRoutes?->is_vendor ?? false,
+                'pickup_place_id'  => $transfer->vendorRoutes?->pickup_place_id,
+                'dropoff_place_id' => $transfer->vendorRoutes?->dropoff_place_id,
+                'pickup_city_id'   => $transfer->vendorRoutes?->pickupPlace?->city_id,
             ];
 
             // Tags and attributes not yet implemented for Transfers - return empty arrays
@@ -217,11 +221,13 @@ class TransferController extends Controller
             'route_id' => 'nullable|integer|exists:vendor_routes,id',
     
             // Non-vendor location fields
-            'pickup_location'  => 'nullable|string|max:255',
-            'dropoff_location' => 'nullable|string|max:255',
-            'vehicle_type'     => 'nullable|string|max:255',
-            'inclusion'        => 'nullable|string',
-    
+            'pickup_location'   => 'nullable|string|max:255',
+            'dropoff_location'  => 'nullable|string|max:255',
+            'pickup_place_id'   => 'nullable|integer|exists:places,id',
+            'dropoff_place_id'  => 'nullable|integer|exists:places,id',
+            'vehicle_type'      => 'nullable|string|max:255',
+            'inclusion'         => 'nullable|string',
+
             // Vendor pricing/availability
             'pricing_tier_id' => 'nullable|integer|exists:vendor_pricing_tiers,id',
             'availability_id' => 'nullable|integer|exists:vendor_availability_time_slots,id',
@@ -295,14 +301,16 @@ class TransferController extends Controller
     
         // Create TransferVendorRoute
         TransferVendorRoute::create([
-            'transfer_id'      => $transfer->id,
-            'is_vendor'        => $validatedData['is_vendor'],
-            'vendor_id'        => $validatedData['is_vendor'] ? $validatedData['vendor_id'] : null,
-            'route_id'         => $validatedData['is_vendor'] ? $validatedData['route_id'] : null,
-            'pickup_location'  => !$validatedData['is_vendor'] ? $validatedData['pickup_location'] : null,
-            'dropoff_location' => !$validatedData['is_vendor'] ? $validatedData['dropoff_location'] : null,
-            'vehicle_type'     => !$validatedData['is_vendor'] ? $validatedData['vehicle_type'] : null,
-            'inclusion'        => !$validatedData['is_vendor'] ? $validatedData['inclusion'] : null,
+            'transfer_id'       => $transfer->id,
+            'is_vendor'         => $validatedData['is_vendor'],
+            'vendor_id'         => $validatedData['is_vendor'] ? $validatedData['vendor_id'] : null,
+            'route_id'          => $validatedData['is_vendor'] ? $validatedData['route_id'] : null,
+            'pickup_location'   => !$validatedData['is_vendor'] ? ($validatedData['pickup_location'] ?? null) : null,
+            'dropoff_location'  => !$validatedData['is_vendor'] ? ($validatedData['dropoff_location'] ?? null) : null,
+            'pickup_place_id'   => !$validatedData['is_vendor'] ? ($validatedData['pickup_place_id'] ?? null) : null,
+            'dropoff_place_id'  => !$validatedData['is_vendor'] ? ($validatedData['dropoff_place_id'] ?? null) : null,
+            'vehicle_type'      => !$validatedData['is_vendor'] ? $validatedData['vehicle_type'] : null,
+            'inclusion'         => !$validatedData['is_vendor'] ? $validatedData['inclusion'] : null,
         ]);
     
         // Create Pricing Availability
@@ -406,7 +414,8 @@ class TransferController extends Controller
     public function show(string $id)
     {
         $transfer = Transfer::with([
-            'vendorRoutes',
+            'vendorRoutes.pickupPlace',
+            'vendorRoutes.dropoffPlace',
             'pricingAvailability',
             'mediaGallery.media',
             'schedule',
@@ -466,6 +475,14 @@ class TransferController extends Controller
             })->values();
         }
 
+        // Add place names for vendor routes
+        if ($transfer->vendorRoutes) {
+            $transfer->vendorRoutes->pickup_place_name  = $transfer->vendorRoutes->pickupPlace?->name;
+            $transfer->vendorRoutes->dropoff_place_name = $transfer->vendorRoutes->dropoffPlace?->name;
+            $transfer->vendorRoutes->pickup_city_id     = $transfer->vendorRoutes->pickupPlace?->city_id;
+            $transfer->vendorRoutes->dropoff_city_id    = $transfer->vendorRoutes->dropoffPlace?->city_id;
+        }
+
         return response()->json($transfer);
     }    
 
@@ -490,10 +507,12 @@ class TransferController extends Controller
             'route_id' => 'sometimes|nullable|integer|exists:vendor_routes,id',
     
             // Non-vendor location fields
-            'pickup_location'  => 'sometimes|nullable|string|max:255',
-            'dropoff_location' => 'sometimes|nullable|string|max:255',
-            'vehicle_type'     => 'sometimes|nullable|string|max:255',
-            'inclusion'        => 'sometimes|nullable|string',
+            'pickup_location'   => 'sometimes|nullable|string|max:255',
+            'dropoff_location'  => 'sometimes|nullable|string|max:255',
+            'pickup_place_id'   => 'sometimes|nullable|integer|exists:places,id',
+            'dropoff_place_id'  => 'sometimes|nullable|integer|exists:places,id',
+            'vehicle_type'      => 'sometimes|nullable|string|max:255',
+            'inclusion'         => 'sometimes|nullable|string',
     
             // Vendor pricing/availability
             'pricing_tier_id' => 'sometimes|nullable|integer|exists:vendor_pricing_tiers,id',
@@ -541,7 +560,7 @@ class TransferController extends Controller
         $transfer->save();
     
         // === Update TransferVendorRoute ===
-        if (!empty($validatedData['is_vendor']) || $request->hasAny(['vendor_id', 'route_id', 'pickup_location', 'dropoff_location', 'vehicle_type', 'inclusion'])) {
+        if (!empty($validatedData['is_vendor']) || $request->hasAny(['vendor_id', 'route_id', 'pickup_location', 'dropoff_location', 'pickup_place_id', 'dropoff_place_id', 'vehicle_type', 'inclusion'])) {
             $vendorRoute = TransferVendorRoute::where('transfer_id', $transfer->id)->first();
             if ($vendorRoute) {
                 $vendorRoute->update([
@@ -550,6 +569,8 @@ class TransferController extends Controller
                     'route_id'         => $validatedData['route_id'] ?? $vendorRoute->route_id,
                     'pickup_location'  => $validatedData['pickup_location'] ?? $vendorRoute->pickup_location,
                     'dropoff_location' => $validatedData['dropoff_location'] ?? $vendorRoute->dropoff_location,
+                    'pickup_place_id'  => $validatedData['pickup_place_id'] ?? $vendorRoute->pickup_place_id,
+                    'dropoff_place_id' => $validatedData['dropoff_place_id'] ?? $vendorRoute->dropoff_place_id,
                     'vehicle_type'     => $validatedData['vehicle_type'] ?? $vendorRoute->vehicle_type,
                     'inclusion'        => $validatedData['inclusion'] ?? $vendorRoute->inclusion,
                 ]);
