@@ -68,7 +68,6 @@ class UserController extends Controller
             'confirm_password' => 'required|same:password',
             'role' => 'required|in:admin,customer',
             'status' => 'required|in:active,inactive',
-            'avatar' => 'nullable|exists:media,id',
         ]);
 
         if ($validator->fails()) {
@@ -82,7 +81,6 @@ class UserController extends Controller
             'password' => Hash::make($request->password),
             'role' => $request->role,
             'status' => $request->status,
-            'avatar' => $request->avatar,
         ]);
 
         // Insert username into `user_meta` table
@@ -92,7 +90,7 @@ class UserController extends Controller
         ]);
 
         // Fetch user with meta data
-        $userWithMeta = User::with('meta')->find($user->id);
+        $userWithMeta = User::with(['meta', 'profile'])->find($user->id);
 
         return response()->json([
             'message' => 'User created successfully',
@@ -102,10 +100,7 @@ class UserController extends Controller
                 'email' => $userWithMeta->email,
                 'role' => $userWithMeta->role,
                 'status' => $userWithMeta->status,
-                'avatar' => [
-                    'id' => $userWithMeta->avatarMedia->id ?? null,
-                    'url' => $userWithMeta->avatarMedia->url ?? null,
-                ],
+                'avatar' => $userWithMeta->profile?->avatar,
                 'meta' => [
                     'username' => $userWithMeta->meta->username ?? null
                 ],
@@ -120,7 +115,7 @@ class UserController extends Controller
     {
         try {
             // user + meta fetch
-            $user = User::with('meta')->findOrFail($id);
+            $user = User::with(['meta', 'profile'])->findOrFail($id);
 
             return response()->json([
                 'success' => true,
@@ -130,10 +125,7 @@ class UserController extends Controller
                     'email' => $user->email,
                     'role' => $user->role,
                     'status' => $user->status,
-                    'avatar' => [
-                        'id' => $user->avatarMedia->id ?? null,
-                        'url' => $user->avatarMedia->url ?? null,
-                    ],
+                    'avatar' => $user->profile?->avatar,
                     'meta' => [
                         'username' => $user->meta->username ?? null
                     ],
@@ -166,7 +158,6 @@ class UserController extends Controller
             'confirm_password' => 'sometimes|same:password',
             'role' => 'sometimes|in:admin,customer',
             'status' => 'sometimes|in:active,inactive',
-            'avatar' => 'nullable|exists:media,id',
         ]);
 
         if ($validator->fails()) {
@@ -205,7 +196,7 @@ class UserController extends Controller
         // }
 
         // Refresh user with meta
-        $userWithMeta = User::with('meta')->find($user->id);
+        $userWithMeta = User::with(['meta', 'profile'])->find($user->id);
 
         return response()->json([
             'message' => 'User updated successfully',
@@ -215,10 +206,7 @@ class UserController extends Controller
                 'email' => $userWithMeta->email,
                 'role' => $userWithMeta->role,
                 'status' => $userWithMeta->status,
-                'avatar' => [
-                    'id' => $userWithMeta->avatarMedia->id ?? null,
-                    'url' => $userWithMeta->avatarMedia->url ?? null,
-                ],
+                'avatar' => $userWithMeta->profile?->avatar,
                 'meta' => [
                     'username' => $userWithMeta->meta->username ?? null
                 ],

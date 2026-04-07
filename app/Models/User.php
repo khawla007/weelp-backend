@@ -16,13 +16,11 @@ use Illuminate\Notifications\Notifiable;
  * @property string $role
  * @property string $status
  * @property int $is_creator
- * @property int|null $avatar
  * @property \Illuminate\Support\Carbon|null $email_verified_at
  * @property string $password
  * @property string|null $remember_token
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\Media|null $avatarMedia
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Commission> $commissions
  * @property-read int|null $commissions_count
  * @property-read \App\Models\UserMeta|null $meta
@@ -37,7 +35,6 @@ use Illuminate\Notifications\Notifiable;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereAvatar($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereEmail($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereEmailVerifiedAt($value)
@@ -184,11 +181,6 @@ class User extends Authenticatable implements JWTSubject
     public function meta()
     {
         return $this->hasOne(UserMeta::class, 'user_id', 'id');
-    }
-
-    public function avatarMedia()
-    {
-        return $this->belongsTo(Media::class, 'avatar');
     }
 
     public function reviews()
