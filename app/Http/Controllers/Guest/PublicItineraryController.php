@@ -439,24 +439,27 @@ class PublicItineraryController extends Controller
         $cityIds = $itinerary->locations->pluck('city_id')->unique()->values();
 
         $activities = Activity::whereHas('locations', function ($query) use ($cityIds) {
-            $query->where('location_type', 'primary')
-                  ->whereIn('city_id', $cityIds);
+            $query->whereIn('city_id', $cityIds);
         })
             ->select('id', 'name', 'slug', 'description', 'item_type', 'featured_activity')
             ->with(['tags.tag', 'mediaGallery' => function ($q) {
                 $q->where('is_featured', true);
-            }, 'mediaGallery.media', 'locations.place'])
+            }, 'mediaGallery.media', 'locations.place', 'locations.city'])
             ->get()
             ->map(function ($activity) {
+                // Get primary location or any location
                 $primaryLocation = $activity->locations->where('location_type', 'primary')->first();
+                $cityLocation = $primaryLocation ?? $activity->locations->first();
+
                 $featuredMedia = $activity->mediaGallery->where('is_featured', true)->first();
 
                 return [
                     'id' => $activity->id,
                     'name' => $activity->name,
                     'slug' => $activity->slug,
-                    'main_location' => $primaryLocation?->place?->name ?? $primaryLocation?->city_id,
-                    'duration_minutes' => $primaryLocation?->duration,
+                    'city_name' => $cityLocation?->city?->name,
+                    'place_name' => $cityLocation?->place?->name,
+                    'duration_minutes' => $cityLocation?->duration,
                     'type' => $activity->item_type,
                     'featured_image' => $featuredMedia?->media?->url,
                     'tags' => $activity->tags->map(fn($t) => [
