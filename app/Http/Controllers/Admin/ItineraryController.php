@@ -287,6 +287,7 @@ class ItineraryController extends Controller
                     $record = ItinerarySchedule::create([
                         'itinerary_id' => $itinerary->id,
                         'day'          => $schedule['day'],
+                        'title'        => $schedule['title'] ?? null,
                     ]);
                     $scheduleMap[$schedule['day']] = $record->id;
                 }
@@ -568,8 +569,9 @@ class ItineraryController extends Controller
         // Schedules flat (only day)
         $itineraryData['schedules'] = collect($itinerary->schedules)->map(function ($schedule) {
             return [
-                'id'  => $schedule->id,
-                'day' => $schedule->day,
+                'id'    => $schedule->id,
+                'day'   => $schedule->day,
+                'title' => $schedule->title,
             ];
         });
 
