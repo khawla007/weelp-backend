@@ -488,14 +488,14 @@ class PlaceController extends Controller
     
         // === Location Details (hasOne) ===
         if (!empty($validated['location_details']) && array_filter($validated['location_details'], fn($v) => !is_null($v) && $v !== '' && $v !== [] && $v !== 0)) {
-            $place->locationDetails()
+            $place->locationDetails
                 ? $place->locationDetails->update($validated['location_details'])
                 : $place->locationDetails()->create($validated['location_details']);
         }
 
         // === Travel Info (hasOne) ===
         if (!empty($validated['travel_info']) && array_filter($validated['travel_info'], fn($v) => !is_null($v) && $v !== '' && $v !== [] && $v !== false)) {
-            $place->travelInfo()
+            $place->travelInfo
                 ? $place->travelInfo->update($validated['travel_info'])
                 : $place->travelInfo()->create($validated['travel_info']);
         }
@@ -582,7 +582,7 @@ class PlaceController extends Controller
     
         // === SEO (hasOne) ===
         if (!empty($validated['seo'])) {
-            $place->seo()
+            $place->seo
                 ? $place->seo->update($validated['seo'])
                 : $place->seo()->create($validated['seo']);
         }

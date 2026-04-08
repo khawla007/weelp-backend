@@ -57,7 +57,7 @@ class Media extends Model
 
     protected $fillable = ['name', 'alt_text', 'url', 'file_size', 'width', 'height'];
 
-    protected $appends = ['url'];
+    // Note: 'url' column stores relative paths; getUrlAttribute accessor converts to full URLs automatically
 
     /**
      * Get the full URL for the media file.

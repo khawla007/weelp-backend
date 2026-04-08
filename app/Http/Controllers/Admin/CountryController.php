@@ -461,14 +461,14 @@ class CountryController extends Controller
     
         // === Location Details (hasOne) ===
         if (!empty($validated['location_details'])) {
-            $country->locationDetails()
+            $country->locationDetails
                 ? $country->locationDetails->update($validated['location_details'])
                 : $country->locationDetails()->create($validated['location_details']);
         }
     
         // === Travel Info (hasOne) ===
         if (!empty($validated['travel_info'])) {
-            $country->travelInfo()
+            $country->travelInfo
                 ? $country->travelInfo->update($validated['travel_info'])
                 : $country->travelInfo()->create($validated['travel_info']);
         }
@@ -559,7 +559,7 @@ class CountryController extends Controller
     
         // === SEO (hasOne) ===
         if (!empty($validated['seo'])) {
-            $country->seo()
+            $country->seo
                 ? $country->seo->update($validated['seo'])
                 : $country->seo()->create($validated['seo']);
         }

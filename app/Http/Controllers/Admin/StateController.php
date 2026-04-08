@@ -468,14 +468,14 @@ class StateController extends Controller
     
         // === Location Details (hasOne) ===
         if (!empty($validated['location_details'])) {
-            $state->locationDetails()
+            $state->locationDetails
                 ? $state->locationDetails->update($validated['location_details'])
                 : $state->locationDetails()->create($validated['location_details']);
         }
     
         // === Travel Info (hasOne) ===
         if (!empty($validated['travel_info'])) {
-            $state->travelInfo()
+            $state->travelInfo
                 ? $state->travelInfo->update($validated['travel_info'])
                 : $state->travelInfo()->create($validated['travel_info']);
         }
@@ -566,7 +566,7 @@ class StateController extends Controller
     
         // === SEO (hasOne) ===
         if (!empty($validated['seo'])) {
-            $state->seo()
+            $state->seo
                 ? $state->seo->update($validated['seo'])
                 : $state->seo()->create($validated['seo']);
         }

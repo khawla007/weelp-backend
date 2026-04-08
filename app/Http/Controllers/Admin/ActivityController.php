@@ -33,10 +33,12 @@ class ActivityController extends Controller
     */
     public function index(Request $request)
     {
-        $perPage        = 3; 
-        $page           = $request->get('page', 1); 
-        
+        $perPage        = 3;
+        $page           = $request->get('page', 1);
+        $all            = $request->get('all'); // Skip pagination when 'all' is passed
+
         $search         = $request->get('search'); // Search by activity name
+        $cityIds        = $request->get('city_ids'); // Comma-separated city IDs to filter activities by city
         $categorySlug   = $request->get('category');
         $difficulty     = $request->get('difficulty_level');
         $duration       = $request->get('duration');
@@ -55,8 +57,14 @@ class ActivityController extends Controller
         
         $query = Activity::query()
             ->select('activities.*')  // Select all fields from activities
-            ->join('activity_pricing', 'activity_pricing.activity_id', '=', 'activities.id') // Join with activity_pricing table
+            ->leftJoin('activity_pricing', 'activity_pricing.activity_id', '=', 'activities.id') // Left join so activities without pricing still show
             ->with(['categories.category', 'tags.tag', 'locations.city', 'locations.place', 'pricing', 'attributes', 'mediaGallery.media', 'addons.addon']) // Eager load relationships
+
+            ->when($cityIds, fn($query) =>
+                $query->whereHas('locations', fn($q) =>
+                    $q->whereIn('city_id', array_map('intval', explode(',', $cityIds)))
+                )
+            )
 
             ->when($search, fn($query) =>
                 $query->where('activities.name', 'like', "%{$search}%")
@@ -123,13 +131,11 @@ class ActivityController extends Controller
                     $query->orderBy('activities.id', 'desc'); // Default to newest first (created_at_desc)
                     break;
             }
-            $allItems = $query->get(); 
-            // ->get();
-        
-        $paginatedItems = $allItems->forPage($page, $perPage);
-        
+            $allItems = $query->get();
 
-        $transformed = $paginatedItems->map(function ($activity) {
+        $items = $all ? $allItems : $allItems->forPage($page, $perPage);
+
+        $transformed = $items->map(function ($activity) {
             $data = $activity->toArray(); // keep all original fields
         
             // Replace transformed fields for addons

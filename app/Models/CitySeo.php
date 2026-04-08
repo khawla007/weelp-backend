@@ -57,7 +57,7 @@ class CitySeo extends Model
     // Retrieve JSON as array
     public function getSchemaDataAttribute($value)
     {
-        return json_decode($value, true);
+        return $value ? json_decode($value, true) : null;
     }
 
     public function city()

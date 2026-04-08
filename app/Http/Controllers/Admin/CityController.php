@@ -475,14 +475,14 @@ class CityController extends Controller
     
         // === Location Details (hasOne) ===
         if (!empty($validated['location_details'])) {
-            $city->locationDetails()
+            $city->locationDetails
                 ? $city->locationDetails->update($validated['location_details'])
                 : $city->locationDetails()->create($validated['location_details']);
         }
     
         // === Travel Info (hasOne) ===
         if (!empty($validated['travel_info'])) {
-            $city->travelInfo()
+            $city->travelInfo
                 ? $city->travelInfo->update($validated['travel_info'])
                 : $city->travelInfo()->create($validated['travel_info']);
         }
@@ -569,7 +569,7 @@ class CityController extends Controller
     
         // === SEO (hasOne) ===
         if (!empty($validated['seo'])) {
-            $city->seo()
+            $city->seo
                 ? $city->seo->update($validated['seo'])
                 : $city->seo()->create($validated['seo']);
         }

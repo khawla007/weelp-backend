@@ -547,13 +547,13 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/explore/creator-itineraries/{id}/like', [ExploreCreatorItineraryController::class, 'toggleLike']);
 });
 
-// Itinerary edit data (both creators and customers need access)
+// Itinerary edit data (edit-data requires auth, city lookups are public for guest editing)
 Route::middleware('auth:api')->group(function () {
     Route::get('/itineraries/{slug}/edit-data', [PublicItineraryController::class, 'editData']);
-    Route::get('/itineraries/{slug}/city-activities', [PublicItineraryController::class, 'cityActivities']);
-    Route::get('/itineraries/{slug}/city-transfers', [PublicItineraryController::class, 'cityTransfers']);
-    Route::get('/itineraries/{slug}/city-places', [PublicItineraryController::class, 'cityPlaces']);
 });
+Route::get('/itineraries/{slug}/city-activities', [PublicItineraryController::class, 'cityActivities']);
+Route::get('/itineraries/{slug}/city-transfers', [PublicItineraryController::class, 'cityTransfers']);
+Route::get('/itineraries/{slug}/city-places', [PublicItineraryController::class, 'cityPlaces']);
 
 // Notifications (all authenticated users)
 Route::middleware('auth:api')->group(function () {

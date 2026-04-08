@@ -13,7 +13,7 @@ class CreatorItineraryManagementController extends Controller
     public function index(Request $request): JsonResponse
     {
         $query = Itinerary::creatorCopies()
-            ->with(['creator', 'parentItinerary', 'locations', 'mediaGallery.media']);
+            ->with(['creator', 'parentItinerary.locations.city', 'locations', 'mediaGallery.media']);
 
         if ($request->has('approval_status')) {
             $query->where('approval_status', $request->approval_status);
@@ -33,11 +33,13 @@ class CreatorItineraryManagementController extends Controller
             ->with([
                 'creator',
                 'creator.profile',
-                'parentItinerary',
-                'locations',
-                'schedules.activities',
-                'schedules.transfers',
-                'basePricing',
+                'parentItinerary.locations.city',
+                'locations.city',
+                'schedules.activities.activity.locations.city',
+                'schedules.activities.activity.mediaGallery.media',
+                'schedules.transfers.transfer',
+                'basePricing.variations',
+                'basePricing.blackoutDates',
                 'inclusionsExclusions',
                 'mediaGallery.media',
                 'seo',
@@ -51,9 +53,66 @@ class CreatorItineraryManagementController extends Controller
             ], 404);
         }
 
+        // Transform to match the format expected by frontend components
+        $data = $itinerary->toArray();
+
+        // Flatten media_gallery: { media: { url } } → { url }
+        $data['media_gallery'] = $itinerary->mediaGallery->map(function ($media) {
+            return [
+                'id' => $media->media->id,
+                'name' => $media->media->name,
+                'alt_text' => $media->media->alt_text,
+                'url' => $media->media->url,
+                'is_featured' => (bool) $media->is_featured,
+            ];
+        })->toArray();
+
+        // Transform schedules with flattened activities and transfers
+        $data['schedules'] = $itinerary->schedules->map(function ($schedule) {
+            return [
+                'day' => $schedule->day,
+                'title' => $schedule->title,
+                'activities' => $schedule->activities->map(function ($activity) {
+                    $activityModel = $activity->activity;
+                    $primaryLocation = $activityModel?->locations->where('location_type', 'primary')->first();
+                    $featuredMedia = $activityModel?->mediaGallery->where('is_featured', true)->first();
+
+                    return [
+                        'id' => $activity->id,
+                        'name' => $activityModel?->name,
+                        'start_time' => $activity->start_time,
+                        'end_time' => $activity->end_time,
+                        'notes' => $activity->notes,
+                        'price' => $activity->price,
+                        'include_in_package' => $activity->include_in_package,
+                        'main_location' => $primaryLocation?->city?->name,
+                        'duration_minutes' => $primaryLocation?->duration,
+                        'featured_image' => $featuredMedia?->media?->url
+                            ?? $activityModel?->mediaGallery->first()?->media?->url,
+                    ];
+                }),
+                'transfers' => $schedule->transfers->map(function ($transfer) {
+                    return [
+                        'id' => $transfer->id,
+                        'name' => $transfer->transfer ? $transfer->transfer->name : null,
+                        'start_time' => $transfer->start_time,
+                        'end_time' => $transfer->end_time,
+                        'pickup_location' => $transfer->pickup_location,
+                        'dropoff_location' => $transfer->dropoff_location,
+                        'pax' => $transfer->pax,
+                        'price' => $transfer->price,
+                        'include_in_package' => $transfer->include_in_package,
+                    ];
+                }),
+            ];
+        });
+
+        // Ensure base_pricing includes variations
+        $data['base_pricing'] = $itinerary->basePricing;
+
         return response()->json([
             'success' => true,
-            'data' => $itinerary,
+            'data' => $data,
         ]);
     }
 
