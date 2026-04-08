@@ -496,23 +496,26 @@ class PublicItineraryController extends Controller
             $query->whereIn('pickup_place_id', $placeIds);
         })
             ->select('id', 'name', 'slug', 'transfer_type', 'description')
-            ->with(['vendorRoutes.pickupPlace', 'vendorRoutes.dropoffPlace', 'mediaGallery' => function ($q) {
+            ->with(['vendorRoutes.pickupPlace.city', 'vendorRoutes.dropoffPlace.city', 'mediaGallery' => function ($q) {
                 $q->where('is_featured', true);
             }, 'mediaGallery.media'])
             ->get()
             ->map(function ($transfer) {
                 $featuredMedia = $transfer->mediaGallery->where('is_featured', true)->first();
+                $route = $transfer->vendorRoutes?->first();
 
                 return [
                     'id' => $transfer->id,
                     'name' => $transfer->name,
                     'slug' => $transfer->slug,
-                    'vehicle_type' => $transfer->vendorRoutes?->vehicle_type,
+                    'vehicle_type' => $route?->vehicle_type,
                     'duration' => null,
                     'featured_image' => $featuredMedia?->media?->url,
                     'seating_capacity' => null,
-                    'pickup_place_name' => $transfer->vendorRoutes?->pickupPlace?->name,
-                    'dropoff_place_name' => $transfer->vendorRoutes?->dropoffPlace?->name,
+                    'pickup_place_name' => $route?->pickupPlace?->name,
+                    'pickup_city_name' => $route?->pickupPlace?->city?->name,
+                    'dropoff_place_name' => $route?->dropoffPlace?->name,
+                    'dropoff_city_name' => $route?->dropoffPlace?->city?->name,
                 ];
             });
 
