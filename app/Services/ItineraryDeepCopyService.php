@@ -215,6 +215,7 @@ class ItineraryDeepCopyService
             $schedule = ItinerarySchedule::create([
                 'itinerary_id' => $copy->id,
                 'day' => $scheduleData['day'],
+                'title' => $scheduleData['title'] ?? null,
             ]);
 
             if (! empty($scheduleData['activities'])) {

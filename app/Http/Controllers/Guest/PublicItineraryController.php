@@ -273,6 +273,7 @@ class PublicItineraryController extends Controller
             'schedules' => $itinerary->schedules->map(function ($schedule) {
                 return [
                     'day' => $schedule->day,
+                    'title' => $schedule->title,
                     'activities' => $schedule->activities->map(function ($activity) {
                         $activityModel = $activity->activity;
                         $primaryLocation = $activityModel?->locations->where('location_type', 'primary')->first();
