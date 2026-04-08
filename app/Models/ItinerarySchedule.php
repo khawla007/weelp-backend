@@ -28,7 +28,7 @@ use Illuminate\Database\Eloquent\Model;
 class ItinerarySchedule extends Model
 {
     protected $fillable = [
-        'itinerary_id', 'day'
+        'itinerary_id', 'day', 'title'
     ];
 
     public function itinerary()
