@@ -33,7 +33,12 @@ class CustomerItineraryController extends Controller
 
     public function myItineraries(): JsonResponse
     {
-        $itineraries = Itinerary::where('user_id', Auth::id())
+        $userId = Auth::id();
+
+        $itineraries = Itinerary::where(function ($q) use ($userId) {
+                $q->where('user_id', $userId)
+                  ->orWhere('creator_id', $userId);
+            })
             ->with([
                 'parentItinerary',
                 'mediaGallery.media',
