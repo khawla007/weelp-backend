@@ -3,10 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Mail\ItineraryApprovedMail;
+use App\Mail\ItineraryRejectedMail;
 use App\Models\Itinerary;
 use App\Models\Notification;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 class CreatorItineraryManagementController extends Controller
 {
@@ -178,6 +181,9 @@ class CreatorItineraryManagementController extends Controller
             'data' => ['itinerary_id' => $itinerary->id],
         ]);
 
+        $itinerary->load('creator');
+        Mail::to($itinerary->creator->email)->send(new ItineraryApprovedMail($itinerary, $itinerary->creator));
+
         return response()->json([
             'success' => true,
             'message' => 'Itinerary approved.',
@@ -212,6 +218,9 @@ class CreatorItineraryManagementController extends Controller
             'message' => "Your itinerary \"{$itinerary->name}\" was not approved.",
             'data' => ['itinerary_id' => $itinerary->id],
         ]);
+
+        $itinerary->load('creator');
+        Mail::to($itinerary->creator->email)->send(new ItineraryRejectedMail($itinerary, $itinerary->creator));
 
         return response()->json([
             'success' => true,
