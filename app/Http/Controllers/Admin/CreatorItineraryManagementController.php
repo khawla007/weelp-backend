@@ -4,12 +4,19 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Mail\ItineraryApprovedMail;
+use App\Mail\ItineraryEditApprovedMail;
+use App\Mail\ItineraryEditRejectedMail;
 use App\Mail\ItineraryRejectedMail;
+use App\Mail\ItineraryRemovalApprovedMail;
+use App\Mail\ItineraryRemovalRejectedMail;
 use App\Models\Itinerary;
 use App\Models\Notification;
+use App\Services\ItineraryDraftService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 
 class CreatorItineraryManagementController extends Controller
 {
@@ -227,5 +234,162 @@ class CreatorItineraryManagementController extends Controller
             'message' => 'Itinerary rejected.',
             'data' => $itinerary,
         ]);
+    }
+
+    public function update(Request $request, $id): JsonResponse
+    {
+        $itinerary = Itinerary::creatorCopies()->find($id);
+        if (!$itinerary) {
+            return response()->json(['success' => false, 'message' => 'Creator itinerary not found'], 404);
+        }
+
+        $adminController = app(\App\Http\Controllers\Admin\ItineraryController::class);
+        return $adminController->update($request, $id);
+    }
+
+    public function destroy($id): JsonResponse
+    {
+        $itinerary = Itinerary::creatorCopies()->find($id);
+        if (!$itinerary) {
+            return response()->json(['success' => false, 'message' => 'Creator itinerary not found'], 404);
+        }
+
+        DB::transaction(function () use ($itinerary) {
+            if ($itinerary->draft_itinerary_id) {
+                $draft = Itinerary::find($itinerary->draft_itinerary_id);
+                if ($draft) {
+                    (new ItineraryDraftService())->deleteDraft($draft);
+                }
+            }
+
+            $itinerary->schedules()->each(function ($schedule) {
+                $schedule->activities()->delete();
+                $schedule->transfers()->delete();
+                $schedule->delete();
+            });
+            $itinerary->locations()->delete();
+            $itinerary->basePricing?->variations()?->delete();
+            $itinerary->basePricing?->delete();
+            $itinerary->inclusionsExclusions()->delete();
+            $itinerary->mediaGallery()->delete();
+            $itinerary->seo?->delete();
+            $itinerary->categories()->delete();
+            $itinerary->tags()->delete();
+            $itinerary->attributes()->delete();
+            $itinerary->addons()->delete();
+            $itinerary->delete();
+        });
+
+        return response()->json(['success' => true, 'message' => 'Itinerary removed.']);
+    }
+
+    public function approveEdit($id): JsonResponse
+    {
+        $itinerary = Itinerary::creatorCopies()->find($id);
+        if (!$itinerary || !$itinerary->draft_itinerary_id) {
+            return response()->json(['success' => false, 'message' => 'No pending edit found for this itinerary.'], 404);
+        }
+
+        $draft = Itinerary::find($itinerary->draft_itinerary_id);
+        if (!$draft || $draft->approval_status !== 'edit_pending_approval') {
+            return response()->json(['success' => false, 'message' => 'Draft is not pending approval.'], 422);
+        }
+
+        $service = new ItineraryDraftService();
+        $updated = $service->mergeDraft($itinerary, $draft);
+
+        Notification::create([
+            'user_id' => $itinerary->creator_id,
+            'type' => 'itinerary_edit_approved',
+            'title' => 'Itinerary Edit Approved',
+            'message' => "Your edits to \"{$updated->name}\" have been approved.",
+            'data' => ['itinerary_id' => $updated->id],
+        ]);
+
+        $updated->load('creator');
+        Mail::to($updated->creator->email)->send(new ItineraryEditApprovedMail($updated, $updated->creator));
+
+        return response()->json(['success' => true, 'message' => 'Edit approved and changes applied.', 'data' => $updated]);
+    }
+
+    public function rejectEdit($id): JsonResponse
+    {
+        $itinerary = Itinerary::creatorCopies()->find($id);
+        if (!$itinerary || !$itinerary->draft_itinerary_id) {
+            return response()->json(['success' => false, 'message' => 'No pending edit found for this itinerary.'], 404);
+        }
+
+        $draft = Itinerary::find($itinerary->draft_itinerary_id);
+        if (!$draft || $draft->approval_status !== 'edit_pending_approval') {
+            return response()->json(['success' => false, 'message' => 'Draft is not pending approval.'], 422);
+        }
+
+        $service = new ItineraryDraftService();
+        $service->deleteDraft($draft);
+
+        Notification::create([
+            'user_id' => $itinerary->creator_id,
+            'type' => 'itinerary_edit_rejected',
+            'title' => 'Itinerary Edit Rejected',
+            'message' => "Your edits to \"{$itinerary->name}\" were not approved.",
+            'data' => ['itinerary_id' => $itinerary->id],
+        ]);
+
+        $itinerary->load('creator');
+        Mail::to($itinerary->creator->email)->send(new ItineraryEditRejectedMail($itinerary, $itinerary->creator));
+
+        return response()->json(['success' => true, 'message' => 'Edit rejected.']);
+    }
+
+    public function approveRemoval($id): JsonResponse
+    {
+        $itinerary = Itinerary::creatorCopies()->find($id);
+        if (!$itinerary || $itinerary->removal_status !== 'requested') {
+            return response()->json(['success' => false, 'message' => 'No pending removal request found.'], 404);
+        }
+
+        $itinerary->update([
+            'approval_status' => 'removed',
+            'removal_status' => 'approved',
+        ]);
+
+        Notification::create([
+            'user_id' => $itinerary->creator_id,
+            'type' => 'itinerary_removal_approved',
+            'title' => 'Itinerary Removed',
+            'message' => "Your itinerary \"{$itinerary->name}\" has been removed.",
+            'data' => ['itinerary_id' => $itinerary->id],
+        ]);
+
+        $itinerary->load('creator');
+        Mail::to($itinerary->creator->email)->send(new ItineraryRemovalApprovedMail($itinerary, $itinerary->creator));
+
+        return response()->json(['success' => true, 'message' => 'Removal approved.']);
+    }
+
+    public function rejectRemoval($id): JsonResponse
+    {
+        $itinerary = Itinerary::creatorCopies()->find($id);
+        if (!$itinerary || $itinerary->removal_status !== 'requested') {
+            return response()->json(['success' => false, 'message' => 'No pending removal request found.'], 404);
+        }
+
+        $itinerary->update([
+            'removal_status' => null,
+            'removal_reason' => null,
+        ]);
+
+        Notification::create([
+            'user_id' => $itinerary->creator_id,
+            'type' => 'itinerary_removal_rejected',
+            'title' => 'Removal Request Declined',
+            'message' => "Your removal request for \"{$itinerary->name}\" was declined.",
+            'data' => ['itinerary_id' => $itinerary->id],
+        ]);
+
+        $itinerary->load('creator');
+        Mail::to($itinerary->creator->email)->send(new ItineraryRemovalRejectedMail($itinerary, $itinerary->creator));
+
+        return response()->json(['success' => true, 'message' => 'Removal rejected.']);
     }
 }

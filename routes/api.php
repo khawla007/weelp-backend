@@ -438,6 +438,12 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
         Route::get('/{id}/original', [CreatorItineraryManagementController::class, 'original']);
         Route::put('/{id}/approve', [CreatorItineraryManagementController::class, 'approve']);
         Route::put('/{id}/reject', [CreatorItineraryManagementController::class, 'reject']);
+        Route::put('/{id}/update', [CreatorItineraryManagementController::class, 'update']);
+        Route::delete('/{id}', [CreatorItineraryManagementController::class, 'destroy']);
+        Route::put('/{id}/approve-edit', [CreatorItineraryManagementController::class, 'approveEdit']);
+        Route::put('/{id}/reject-edit', [CreatorItineraryManagementController::class, 'rejectEdit']);
+        Route::put('/{id}/approve-removal', [CreatorItineraryManagementController::class, 'approveRemoval']);
+        Route::put('/{id}/reject-removal', [CreatorItineraryManagementController::class, 'rejectRemoval']);
     });
 
 });
