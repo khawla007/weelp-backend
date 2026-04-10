@@ -161,6 +161,13 @@ Route::middleware(['auth:api', 'creator'])->prefix('creator')->group(function ()
     // Creator Itinerary Submission
     Route::post('/itineraries', [CreatorItineraryController::class, 'store']);
     Route::get('/my-itineraries', [CreatorItineraryController::class, 'myItineraries']);
+
+    // Creator Itinerary Edit/Removal Requests
+    Route::get('/itineraries/drafts/{id}', [CreatorItineraryController::class, 'getDraft']);
+    Route::post('/itineraries/{id}/request-edit', [CreatorItineraryController::class, 'requestEdit']);
+    Route::put('/itineraries/drafts/{id}', [CreatorItineraryController::class, 'updateDraft']);
+    Route::put('/itineraries/drafts/{id}/submit', [CreatorItineraryController::class, 'submitDraft']);
+    Route::post('/itineraries/{id}/request-removal', [CreatorItineraryController::class, 'requestRemoval']);
 });
 
 // Stripe Payment api
