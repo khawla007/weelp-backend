@@ -39,10 +39,11 @@ class CustomerItineraryController extends Controller
                 $q->where('user_id', $userId)
                   ->orWhere('creator_id', $userId);
             })
+            ->where('approval_status', '!=', 'draft')
             ->with([
                 'parentItinerary',
                 'mediaGallery.media',
-                'locations',
+                'locations.city',
                 'schedules.activities',
                 'schedules.transfers',
             ])
