@@ -4,10 +4,13 @@ namespace App\Http\Controllers\Creator;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreItineraryRequest;
+use App\Mail\ItinerarySubmittedAdminMail;
+use App\Mail\ItinerarySubmittedCreatorMail;
 use App\Models\Itinerary;
 use App\Services\ItineraryDeepCopyService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 
 class CreatorItineraryController extends Controller
 {
@@ -23,6 +26,10 @@ class CreatorItineraryController extends Controller
             $validated['schedules'],
             creatorId: Auth::id(),
         );
+
+        $creator = Auth::user();
+        Mail::to($creator->email)->send(new ItinerarySubmittedCreatorMail($copy, $creator));
+        Mail::to(config('mail.admin_address', 'khawla@fanaticcoders.com'))->send(new ItinerarySubmittedAdminMail($copy, $creator));
 
         return response()->json([
             'success' => true,
