@@ -81,8 +81,9 @@ class Itinerary extends Model
     protected $table = 'itineraries';
     protected $fillable = [
         'name', 'slug', 'description', 'featured_itinerary', 'private_itinerary',
-        'creator_id', 'user_id', 'parent_itinerary_id', 'approval_status',
-        'views_count', 'likes_count',
+        'creator_id', 'user_id', 'parent_itinerary_id', 'draft_itinerary_id',
+        'approval_status', 'views_count', 'likes_count',
+        'removal_status', 'removal_reason',
     ];
 
     protected $casts = [
@@ -115,6 +116,26 @@ class Itinerary extends Model
     public function scopePendingApproval($query)
     {
         return $query->where('approval_status', 'pending_approval');
+    }
+
+    public function scopeDraft($query)
+    {
+        return $query->where('approval_status', 'draft');
+    }
+
+    public function scopeEditPending($query)
+    {
+        return $query->where('approval_status', 'edit_pending_approval');
+    }
+
+    public function scopeRemovalRequested($query)
+    {
+        return $query->whereNotNull('removal_status')->where('removal_status', 'requested');
+    }
+
+    public function draftItinerary()
+    {
+        return $this->belongsTo(Itinerary::class, 'draft_itinerary_id');
     }
 
     public function locations() {
