@@ -7,7 +7,10 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::rename('notifications', 'user_notifications');
+        // Only rename if the source table exists (in case it was already created as user_notifications)
+        if (Schema::hasTable('notifications') && !Schema::hasTable('user_notifications')) {
+            Schema::rename('notifications', 'user_notifications');
+        }
     }
 
     public function down(): void

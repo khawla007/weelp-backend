@@ -281,11 +281,13 @@ class PublicItineraryController extends Controller
 
                         return [
                             'id' => $activity->id,
+                            'activity_id' => $activity->activity_id,
                             'name' => $activityModel?->name,
                             'start_time' => $activity->start_time,
                             'end_time' => $activity->end_time,
                             'notes' => $activity->notes,
                             'price' => $activity->price,
+                            'included' => $activity->included,
                             'include_in_package' => $activity->include_in_package,
                             'main_location' => $primaryLocation?->city?->name,
                             'duration_minutes' => $primaryLocation?->duration,
@@ -296,6 +298,7 @@ class PublicItineraryController extends Controller
                     'transfers' => $schedule->transfers->map(function ($transfer) {
                         return [
                             'id' => $transfer->id,
+                            'transfer_id' => $transfer->transfer_id,
                             'name' => $transfer->transfer ? $transfer->transfer->name : null,
                             'start_time' => $transfer->start_time,
                             'end_time' => $transfer->end_time,
@@ -303,6 +306,7 @@ class PublicItineraryController extends Controller
                             'dropoff_location' => $transfer->dropoff_location,
                             'pax' => $transfer->pax,
                             'price' => $transfer->price,
+                            'included' => $transfer->included,
                             'include_in_package' => $transfer->include_in_package,
                         ];
                     }),

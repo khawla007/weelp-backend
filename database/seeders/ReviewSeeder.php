@@ -29,7 +29,7 @@ class ReviewSeeder extends Seeder
 
             // Attach random media if any exist
             if (!empty($mediaIds)) {
-                $selectedIds = Arr::random($mediaIds, min(rand(1, 3), count($mediaIds)));
+                $selectedIds = Arr::random($mediaIds, min(rand(3, 4), count($mediaIds)));
                 foreach ((array) $selectedIds as $index => $mediaId) {
                     ReviewMediaGallery::create([
                         'review_id'  => $review->id,

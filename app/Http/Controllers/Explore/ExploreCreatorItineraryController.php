@@ -29,7 +29,7 @@ class ExploreCreatorItineraryController extends Controller
         if ($request->query('source') === 'mine') {
             $user = Auth::guard('api')->user();
             if ($user) {
-                $query->where('creator_id', $user->id);
+                $query->whereHas('meta', fn($q) => $q->where('creator_id', $user->id));
             } else {
                 return response()->json([
                     'success' => true,
@@ -40,19 +40,25 @@ class ExploreCreatorItineraryController extends Controller
             }
         }
 
-        // Sort
+        // Sort — likes_count and views_count live on itinerary_meta
         switch ($request->query('sort', 'latest')) {
             case 'oldest':
-                $query->orderBy('created_at', 'asc');
+                $query->orderBy('itineraries.created_at', 'asc');
                 break;
             case 'top_rated':
-                $query->orderBy('likes_count', 'desc')->orderBy('created_at', 'desc');
+                $query->join('itinerary_meta', 'itineraries.id', '=', 'itinerary_meta.itinerary_id')
+                      ->orderBy('itinerary_meta.likes_count', 'desc')
+                      ->orderBy('itineraries.created_at', 'desc')
+                      ->select('itineraries.*');
                 break;
             case 'most_viewed':
-                $query->orderBy('views_count', 'desc')->orderBy('created_at', 'desc');
+                $query->join('itinerary_meta', 'itineraries.id', '=', 'itinerary_meta.itinerary_id')
+                      ->orderBy('itinerary_meta.views_count', 'desc')
+                      ->orderBy('itineraries.created_at', 'desc')
+                      ->select('itineraries.*');
                 break;
             default:
-                $query->orderBy('created_at', 'desc');
+                $query->orderBy('itineraries.created_at', 'desc');
                 break;
         }
 
@@ -108,7 +114,7 @@ class ExploreCreatorItineraryController extends Controller
 
         if ($existing) {
             $existing->delete();
-            $itinerary->decrement('likes_count');
+            $itinerary->meta?->decrement('likes_count');
 
             return response()->json([
                 'success' => true,
@@ -121,7 +127,7 @@ class ExploreCreatorItineraryController extends Controller
             'itinerary_id' => $itinerary->id,
             'user_id' => $user->id,
         ]);
-        $itinerary->increment('likes_count');
+        $itinerary->meta?->increment('likes_count');
 
         return response()->json([
             'success' => true,
@@ -133,7 +139,7 @@ class ExploreCreatorItineraryController extends Controller
     public function recordView(int $id): JsonResponse
     {
         $itinerary = Itinerary::creatorCopies()->approved()->findOrFail($id);
-        $itinerary->increment('views_count');
+        $itinerary->meta?->increment('views_count');
 
         return response()->json([
             'success' => true,

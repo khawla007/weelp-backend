@@ -15,6 +15,7 @@ use App\Services\ItineraryDraftService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
@@ -34,8 +35,15 @@ class CreatorItineraryController extends Controller
         );
 
         $creator = Auth::user();
-        Mail::to($creator->email)->send(new ItinerarySubmittedCreatorMail($copy, $creator));
-        Mail::to(config('mail.admin_address', 'khawla@fanaticcoders.com'))->send(new ItinerarySubmittedAdminMail($copy, $creator));
+        try {
+            Mail::to($creator->email)->send(new ItinerarySubmittedCreatorMail($copy, $creator));
+            Mail::to(config('mail.admin_address', 'khawla@fanaticcoders.com'))->send(new ItinerarySubmittedAdminMail($copy, $creator));
+        } catch (\Exception $e) {
+            Log::error('Failed to send itinerary submission emails', [
+                'itinerary_id' => $copy->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
 
         return response()->json([
             'success' => true,
@@ -46,7 +54,7 @@ class CreatorItineraryController extends Controller
 
     public function myItineraries(): JsonResponse
     {
-        $itineraries = Itinerary::where('creator_id', Auth::id())
+        $itineraries = Itinerary::whereHas('meta', fn($q) => $q->where('creator_id', Auth::id()))
             ->with([
                 'parentItinerary',
                 'mediaGallery.media',
@@ -65,8 +73,8 @@ class CreatorItineraryController extends Controller
 
     public function getDraft($id): JsonResponse
     {
-        $draft = Itinerary::where('creator_id', Auth::id())
-            ->whereIn('approval_status', ['draft', 'edit_pending_approval'])
+        $draft = Itinerary::whereHas('meta', fn($q) => $q->where('creator_id', Auth::id())
+            ->whereIn('status', ['draft', 'edit_pending']))
             ->with([
                 'locations.city',
                 'schedules.activities.activity.mediaGallery.media',
@@ -119,8 +127,8 @@ class CreatorItineraryController extends Controller
 
     public function requestEdit($id): JsonResponse
     {
-        $itinerary = Itinerary::where('creator_id', Auth::id())
-            ->where('approval_status', 'approved')
+        $itinerary = Itinerary::whereHas('meta', fn($q) => $q->where('creator_id', Auth::id()))
+            ->approved()
             ->find($id);
 
         if (!$itinerary) {
@@ -143,8 +151,8 @@ class CreatorItineraryController extends Controller
 
     public function updateDraft(Request $request, $id): JsonResponse
     {
-        $draft = Itinerary::where('creator_id', Auth::id())
-            ->where('approval_status', 'draft')
+        $draft = Itinerary::whereHas('meta', fn($q) => $q->where('creator_id', Auth::id()))
+            ->draft()
             ->find($id);
 
         if (!$draft) {
@@ -231,29 +239,36 @@ class CreatorItineraryController extends Controller
 
     public function submitDraft($id): JsonResponse
     {
-        $draft = Itinerary::where('creator_id', Auth::id())
-            ->where('approval_status', 'draft')
+        $draft = Itinerary::whereHas('meta', fn($q) => $q->where('creator_id', Auth::id()))
+            ->draft()
             ->find($id);
 
         if (!$draft) {
             return response()->json(['success' => false, 'message' => 'Draft not found.'], 404);
         }
 
-        $draft->update(['approval_status' => 'edit_pending_approval']);
+        $draft->update(['status' => 'edit_pending']);
 
-        $approved = Itinerary::where('draft_itinerary_id', $draft->id)->first();
+        $approved = Itinerary::whereHas('meta', fn($q) => $q->where('draft_itinerary_id', $draft->id))->first();
 
         $creator = Auth::user();
-        Mail::to(config('mail.admin_address', 'khawla@fanaticcoders.com'))
-            ->send(new ItineraryEditSubmittedMail($approved ?? $draft, $creator));
+        try {
+            Mail::to(config('mail.admin_address', 'khawla@fanaticcoders.com'))
+                ->send(new ItineraryEditSubmittedMail($approved ?? $draft, $creator));
+        } catch (\Exception $e) {
+            Log::error('Failed to send draft submission email', [
+                'draft_id' => $draft->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
 
         return response()->json(['success' => true, 'message' => 'Draft submitted for review.']);
     }
 
     public function requestRemoval(Request $request, $id): JsonResponse
     {
-        $itinerary = Itinerary::where('creator_id', Auth::id())
-            ->where('approval_status', 'approved')
+        $itinerary = Itinerary::whereHas('meta', fn($q) => $q->where('creator_id', Auth::id()))
+            ->approved()
             ->find($id);
 
         if (!$itinerary) {
@@ -276,8 +291,15 @@ class CreatorItineraryController extends Controller
         ]);
 
         $creator = Auth::user();
-        Mail::to(config('mail.admin_address', 'khawla@fanaticcoders.com'))
-            ->send(new ItineraryRemovalRequestedMail($itinerary, $creator));
+        try {
+            Mail::to(config('mail.admin_address', 'khawla@fanaticcoders.com'))
+                ->send(new ItineraryRemovalRequestedMail($itinerary, $creator));
+        } catch (\Exception $e) {
+            Log::error('Failed to send removal request email', [
+                'itinerary_id' => $itinerary->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
 
         return response()->json(['success' => true, 'message' => 'Removal request submitted.']);
     }

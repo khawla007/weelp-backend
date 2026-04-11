@@ -22,6 +22,9 @@ use App\Models\ItineraryTag;
 use App\Models\ItineraryAvailability;
 use App\Models\Addon;
 use App\Models\ItineraryAddon;
+use App\Models\Media;
+use App\Models\ItineraryMeta;
+use Illuminate\Support\Arr;
 
 class ItinerarySeeder extends Seeder
 {
@@ -32,6 +35,7 @@ class ItinerarySeeder extends Seeder
         DB::statement('SET FOREIGN_KEY_CHECKS=0');
 
         // Tables ko truncate ki jagah delete karo
+        ItineraryMeta::query()->delete();
         Itinerary::query()->delete();
         ItinerarySchedule::query()->delete();
         ItineraryLocation::query()->delete();
@@ -49,6 +53,11 @@ class ItinerarySeeder extends Seeder
 
         // Foreign key checks ko wapas enable karo
         DB::statement('SET FOREIGN_KEY_CHECKS=1');
+
+        $mediaIds = Media::pluck('id')->toArray();
+        $cityIds = \App\Models\City::pluck('id')->toArray();
+        $activityIds = \App\Models\Activity::pluck('id')->toArray();
+        $transferIds = \App\Models\Transfer::pluck('id')->toArray();
 
         $itineraries = [
             [
@@ -303,7 +312,7 @@ class ItinerarySeeder extends Seeder
 
             ItineraryLocation::create([
                 'itinerary_id' => $itinerary->id,
-                'city_id'      => rand(382, 441),
+                'city_id'      => $cityIds[array_rand($cityIds)],
             ]);
 
             for ($day = 1; $day <= 3; $day++) {
@@ -314,7 +323,7 @@ class ItinerarySeeder extends Seeder
 
                 ItineraryActivity::create([
                     'schedule_id' => $schedule->id,
-                    'activity_id' => rand(1, 35),
+                    'activity_id' => $activityIds[array_rand($activityIds)],
                     'start_time'  => '09:00:00',
                     'end_time'    => '11:00:00',
                     'notes'       => 'Sample activity note',
@@ -324,7 +333,7 @@ class ItinerarySeeder extends Seeder
 
                 ItineraryTransfer::create([
                     'schedule_id'      => $schedule->id,
-                    'transfer_id'      => [1, 5, 6, 7][array_rand([1, 5, 6, 7])],
+                    'transfer_id'      => $transferIds[array_rand($transferIds)],
                     'start_time'       => '12:00:00',
                     'end_time'         => '14:00:00',
                     'notes'            => 'Sample transfer note',
@@ -367,12 +376,12 @@ class ItinerarySeeder extends Seeder
                 'included'     => true,
             ]);
 
-            // Assign 3-6 random media images per itinerary
-            $mediaCount = rand(3, 6);
-            for ($i = 0; $i < $mediaCount; $i++) {
+            // Media Gallery - 3-4 random images
+            $selectedMediaIds = Arr::random($mediaIds, rand(3, 4));
+            foreach ($selectedMediaIds as $mediaId) {
                 ItineraryMediaGallery::create([
                     'itinerary_id' => $itinerary->id,
-                    'media_id'     => rand(78, 548),
+                    'media_id'     => $mediaId,
                 ]);
             }
 

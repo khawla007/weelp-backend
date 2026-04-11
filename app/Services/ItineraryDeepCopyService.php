@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Itinerary;
 use App\Models\ItineraryActivity;
+use App\Models\ItineraryMeta;
 use App\Models\ItineraryAddon;
 use App\Models\ItineraryAttribute;
 use App\Models\ItineraryBasePricing;
@@ -62,19 +63,26 @@ class ItineraryDeepCopyService
         $suffix = $creatorId ? "-c{$creatorId}" : "-u{$userId}";
         $slug = $original->slug . $suffix . '-' . time();
 
-        return Itinerary::create([
+        $copy = Itinerary::create([
             'name' => $original->name,
             'description' => $original->description,
             'slug' => $slug,
             'featured_itinerary' => false,
             'private_itinerary' => (bool) $userId,
+        ]);
+
+        // Create meta row explicitly (not auto-created)
+        ItineraryMeta::create([
+            'itinerary_id' => $copy->id,
+            'status' => $creatorId ? 'pending' : null,
             'creator_id' => $creatorId,
             'user_id' => $userId,
             'parent_itinerary_id' => $original->id,
-            'approval_status' => $creatorId ? 'pending_approval' : null,
-            'views_count' => 0,
-            'likes_count' => 0,
         ]);
+
+        $copy->load('meta');
+
+        return $copy;
     }
 
     private function copyRelations(Itinerary $original, Itinerary $copy): void

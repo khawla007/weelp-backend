@@ -35,11 +35,12 @@ class CustomerItineraryController extends Controller
     {
         $userId = Auth::id();
 
-        $itineraries = Itinerary::where(function ($q) use ($userId) {
-                $q->where('user_id', $userId)
-                  ->orWhere('creator_id', $userId);
+        $itineraries = Itinerary::whereHas('meta', function ($q) use ($userId) {
+                $q->where(function ($q2) use ($userId) {
+                    $q2->where('user_id', $userId)
+                       ->orWhere('creator_id', $userId);
+                })->where('status', '!=', 'draft');
             })
-            ->where('approval_status', '!=', 'draft')
             ->with([
                 'parentItinerary',
                 'mediaGallery.media',

@@ -11,7 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::rename('blog_media', 'blog_media_gallery');
+        // Only rename if the source table exists (in case it was already created as blog_media_gallery)
+        if (Schema::hasTable('blog_media') && !Schema::hasTable('blog_media_gallery')) {
+            Schema::rename('blog_media', 'blog_media_gallery');
+        }
     }
 
     /**

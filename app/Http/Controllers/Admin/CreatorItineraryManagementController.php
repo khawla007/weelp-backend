@@ -15,6 +15,7 @@ use App\Services\ItineraryDraftService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
@@ -25,8 +26,8 @@ class CreatorItineraryManagementController extends Controller
         $query = Itinerary::creatorCopies()
             ->with(['creator', 'parentItinerary.locations.city', 'locations', 'mediaGallery.media']);
 
-        if ($request->has('approval_status')) {
-            $query->where('approval_status', $request->approval_status);
+        if ($request->has('status')) {
+            $query->whereHas('meta', fn($q) => $q->where('status', $request->status));
         }
 
         $itineraries = $query->latest()->paginate(15);
@@ -89,11 +90,13 @@ class CreatorItineraryManagementController extends Controller
 
                     return [
                         'id' => $activity->id,
+                        'activity_id' => $activity->activity_id,
                         'name' => $activityModel?->name,
                         'start_time' => $activity->start_time,
                         'end_time' => $activity->end_time,
                         'notes' => $activity->notes,
                         'price' => $activity->price,
+                        'included' => $activity->included,
                         'include_in_package' => $activity->include_in_package,
                         'main_location' => $primaryLocation?->city?->name,
                         'duration_minutes' => $primaryLocation?->duration,
@@ -104,6 +107,7 @@ class CreatorItineraryManagementController extends Controller
                 'transfers' => $schedule->transfers->map(function ($transfer) {
                     return [
                         'id' => $transfer->id,
+                        'transfer_id' => $transfer->transfer_id,
                         'name' => $transfer->transfer ? $transfer->transfer->name : null,
                         'start_time' => $transfer->start_time,
                         'end_time' => $transfer->end_time,
@@ -111,6 +115,7 @@ class CreatorItineraryManagementController extends Controller
                         'dropoff_location' => $transfer->dropoff_location,
                         'pax' => $transfer->pax,
                         'price' => $transfer->price,
+                        'included' => $transfer->included,
                         'include_in_package' => $transfer->include_in_package,
                     ];
                 }),
@@ -171,14 +176,14 @@ class CreatorItineraryManagementController extends Controller
             ], 404);
         }
 
-        if ($itinerary->approval_status !== 'pending_approval') {
+        if ($itinerary->status !== 'pending') {
             return response()->json([
                 'success' => false,
                 'message' => 'Only pending itineraries can be approved.',
             ], 422);
         }
 
-        $itinerary->update(['approval_status' => 'approved']);
+        $itinerary->update(['status' => 'approved']);
 
         Notification::create([
             'user_id' => $itinerary->creator_id,
@@ -189,7 +194,14 @@ class CreatorItineraryManagementController extends Controller
         ]);
 
         $itinerary->load('creator');
-        Mail::to($itinerary->creator->email)->send(new ItineraryApprovedMail($itinerary, $itinerary->creator));
+        try {
+            Mail::to($itinerary->creator->email)->send(new ItineraryApprovedMail($itinerary, $itinerary->creator));
+        } catch (\Exception $e) {
+            Log::error('Failed to send itinerary approved email', [
+                'itinerary_id' => $itinerary->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
 
         return response()->json([
             'success' => true,
@@ -209,14 +221,14 @@ class CreatorItineraryManagementController extends Controller
             ], 404);
         }
 
-        if ($itinerary->approval_status !== 'pending_approval') {
+        if ($itinerary->status !== 'pending') {
             return response()->json([
                 'success' => false,
                 'message' => 'Only pending itineraries can be rejected.',
             ], 422);
         }
 
-        $itinerary->update(['approval_status' => 'rejected']);
+        $itinerary->update(['status' => 'rejected']);
 
         Notification::create([
             'user_id' => $itinerary->creator_id,
@@ -227,7 +239,14 @@ class CreatorItineraryManagementController extends Controller
         ]);
 
         $itinerary->load('creator');
-        Mail::to($itinerary->creator->email)->send(new ItineraryRejectedMail($itinerary, $itinerary->creator));
+        try {
+            Mail::to($itinerary->creator->email)->send(new ItineraryRejectedMail($itinerary, $itinerary->creator));
+        } catch (\Exception $e) {
+            Log::error('Failed to send itinerary rejected email', [
+                'itinerary_id' => $itinerary->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
 
         return response()->json([
             'success' => true,
@@ -291,7 +310,7 @@ class CreatorItineraryManagementController extends Controller
         }
 
         $draft = Itinerary::find($itinerary->draft_itinerary_id);
-        if (!$draft || $draft->approval_status !== 'edit_pending_approval') {
+        if (!$draft || $draft->status !== 'edit_pending') {
             return response()->json(['success' => false, 'message' => 'Draft is not pending approval.'], 422);
         }
 
@@ -307,7 +326,14 @@ class CreatorItineraryManagementController extends Controller
         ]);
 
         $updated->load('creator');
-        Mail::to($updated->creator->email)->send(new ItineraryEditApprovedMail($updated, $updated->creator));
+        try {
+            Mail::to($updated->creator->email)->send(new ItineraryEditApprovedMail($updated, $updated->creator));
+        } catch (\Exception $e) {
+            Log::error('Failed to send edit approved email', [
+                'itinerary_id' => $updated->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
 
         return response()->json(['success' => true, 'message' => 'Edit approved and changes applied.', 'data' => $updated]);
     }
@@ -320,7 +346,7 @@ class CreatorItineraryManagementController extends Controller
         }
 
         $draft = Itinerary::find($itinerary->draft_itinerary_id);
-        if (!$draft || $draft->approval_status !== 'edit_pending_approval') {
+        if (!$draft || $draft->status !== 'edit_pending') {
             return response()->json(['success' => false, 'message' => 'Draft is not pending approval.'], 422);
         }
 
@@ -336,7 +362,14 @@ class CreatorItineraryManagementController extends Controller
         ]);
 
         $itinerary->load('creator');
-        Mail::to($itinerary->creator->email)->send(new ItineraryEditRejectedMail($itinerary, $itinerary->creator));
+        try {
+            Mail::to($itinerary->creator->email)->send(new ItineraryEditRejectedMail($itinerary, $itinerary->creator));
+        } catch (\Exception $e) {
+            Log::error('Failed to send edit rejected email', [
+                'itinerary_id' => $itinerary->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
 
         return response()->json(['success' => true, 'message' => 'Edit rejected.']);
     }
@@ -349,7 +382,7 @@ class CreatorItineraryManagementController extends Controller
         }
 
         $itinerary->update([
-            'approval_status' => 'removed',
+            'status' => 'deleted',
             'removal_status' => 'approved',
         ]);
 
@@ -362,7 +395,14 @@ class CreatorItineraryManagementController extends Controller
         ]);
 
         $itinerary->load('creator');
-        Mail::to($itinerary->creator->email)->send(new ItineraryRemovalApprovedMail($itinerary, $itinerary->creator));
+        try {
+            Mail::to($itinerary->creator->email)->send(new ItineraryRemovalApprovedMail($itinerary, $itinerary->creator));
+        } catch (\Exception $e) {
+            Log::error('Failed to send removal approved email', [
+                'itinerary_id' => $itinerary->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
 
         return response()->json(['success' => true, 'message' => 'Removal approved.']);
     }
@@ -388,7 +428,14 @@ class CreatorItineraryManagementController extends Controller
         ]);
 
         $itinerary->load('creator');
-        Mail::to($itinerary->creator->email)->send(new ItineraryRemovalRejectedMail($itinerary, $itinerary->creator));
+        try {
+            Mail::to($itinerary->creator->email)->send(new ItineraryRemovalRejectedMail($itinerary, $itinerary->creator));
+        } catch (\Exception $e) {
+            Log::error('Failed to send removal rejected email', [
+                'itinerary_id' => $itinerary->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
 
         return response()->json(['success' => true, 'message' => 'Removal rejected.']);
     }

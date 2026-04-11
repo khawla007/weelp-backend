@@ -19,53 +19,80 @@ class PlaceSeeder extends Seeder
         DB::statement('SET FOREIGN_KEY_CHECKS=1');
         echo "All existing places deleted.\n";
 
-        // 10 cities with 2 places each = 20 places
-        // Using existing city media IDs
-        $placesData = [
-            // Paris (city_id: 382)
-            ['city_id' => 382, 'name' => 'Eiffel Tower', 'code' => 'ET', 'slug' => 'eiffel-tower', 'description' => 'Iconic iron lattice tower and symbol of Paris.', 'media_ids' => [385]],
-            ['city_id' => 382, 'name' => 'Louvre Museum', 'code' => 'LM', 'slug' => 'louvre-museum', 'description' => 'World\'s largest art museum and historic monument.', 'media_ids' => [386]],
-
-            // Versailles (city_id: 383)
-            ['city_id' => 383, 'name' => 'Palace of Versailles', 'code' => 'PV', 'slug' => 'palace-of-versailles', 'description' => 'Opulent royal residence with Hall of Mirrors.', 'media_ids' => [389]],
-            ['city_id' => 383, 'name' => 'Versailles Gardens', 'code' => 'VG', 'slug' => 'versailles-gardens', 'description' => 'Stunning formal gardens and fountains.', 'media_ids' => [390]],
-
-            // Boulogne-Billancourt (city_id: 384)
-            ['city_id' => 384, 'name' => 'Albert Kahn Museum', 'code' => 'AK', 'slug' => 'albert-kahn-museum', 'description' => 'Beautiful gardens and museum of photography.', 'media_ids' => [393]],
-            ['city_id' => 384, 'name' => 'Parc de Billancourt', 'code' => 'PB', 'slug' => 'parc-de-billancourt', 'description' => 'Charming urban park for relaxation.', 'media_ids' => [394]],
-
-            // Marseille (city_id: 385)
-            ['city_id' => 385, 'name' => 'Notre-Dame de la Garde', 'code' => 'ND', 'slug' => 'notre-dame-de-la-garde', 'description' => 'Iconic basilica overlooking the city.', 'media_ids' => [397]],
-            ['city_id' => 385, 'name' => 'Old Port of Marseille', 'code' => 'OP', 'slug' => 'old-port-marseille', 'description' => 'Historic harbor with fresh seafood.', 'media_ids' => [398]],
-
-            // Nice (city_id: 386)
-            ['city_id' => 386, 'name' => 'Promenade des Anglais', 'code' => 'PA', 'slug' => 'promenade-des-anglais', 'description' => 'Famous waterfront promenade.', 'media_ids' => [401]],
-            ['city_id' => 386, 'name' => 'Vieille Ville', 'code' => 'VV', 'slug' => 'vieille-ville-nice', 'description' => 'Charming old town with colorful streets.', 'media_ids' => [401]],
-
-            // Cannes (city_id: 387)
-            ['city_id' => 387, 'name' => 'La Croisette', 'code' => 'LC', 'slug' => 'la-croisette', 'description' => 'Glamorous waterfront boulevard.', 'media_ids' => [402]],
-            ['city_id' => 387, 'name' => 'Palais des Festivals', 'code' => 'PF', 'slug' => 'palais-des-festivals', 'description' => 'Famous film festival venue.', 'media_ids' => [403]],
-
-            // Milan (city_id: 388)
-            ['city_id' => 388, 'name' => 'Milan Cathedral', 'code' => 'MC', 'slug' => 'milan-cathedral', 'description' => 'Gothic cathedral and city symbol.', 'media_ids' => [407]],
-            ['city_id' => 388, 'name' => 'Galleria Vittorio Emanuele II', 'code' => 'GV', 'slug' => 'galleria-vittorio', 'description' => 'Historic shopping arcade.', 'media_ids' => [408]],
-
-            // Bergamo (city_id: 389)
-            ['city_id' => 389, 'name' => 'Città Alta', 'code' => 'CA', 'slug' => 'cita-alta', 'description' => 'Historic upper town with medieval walls.', 'media_ids' => [409]],
-            ['city_id' => 389, 'name' => 'Piazza Vecchia', 'code' => 'PV', 'slug' => 'piazza-vecchia-bergamo', 'description' => 'Beautiful medieval square.', 'media_ids' => [409]],
-
-            // Brescia (city_id: 390)
-            ['city_id' => 390, 'name' => 'Brescia Castle', 'code' => 'BC', 'slug' => 'brescia-castle', 'description' => 'Medieval fortress with city views.', 'media_ids' => [410]],
-            ['city_id' => 390, 'name' => 'Piazza della Loggia', 'code' => 'PL', 'slug' => 'piazza-della-loggia', 'description' => 'Renaissance square in historic center.', 'media_ids' => [411]],
-
-            // Florence (city_id: 391)
-            ['city_id' => 391, 'name' => 'Duomo', 'code' => 'DU', 'slug' => 'duomo-florence', 'description' => 'Iconic cathedral with magnificent dome.', 'media_ids' => [413]],
-            ['city_id' => 391, 'name' => 'Ponte Vecchio', 'code' => 'PV', 'slug' => 'ponte-vecchio', 'description' => 'Medieval bridge with jewelry shops.', 'media_ids' => [414]],
+        // Get city IDs by slug (dynamic lookup instead of hardcoded)
+        $citySlugs = [
+            'paris', 'versailles', 'boulogne-billancourt', 'marseille', 'nice',
+            'cannes', 'milan', 'bergamo', 'brescia', 'florence', 'dubai'
         ];
 
+        $cityIds = [];
+        foreach ($citySlugs as $slug) {
+            $city = City::where('slug', $slug)->first();
+            if ($city) {
+                $cityIds[$slug] = $city->id;
+            }
+        }
+
+        // 10 cities with 2 places each = 20 places
+        $placesData = [
+            // Paris
+            ['city_slug' => 'paris', 'name' => 'Eiffel Tower', 'code' => 'ET', 'slug' => 'eiffel-tower', 'description' => 'Iconic iron lattice tower and symbol of Paris.'],
+            ['city_slug' => 'paris', 'name' => 'Louvre Museum', 'code' => 'LM', 'slug' => 'louvre-museum', 'description' => 'World\'s largest art museum and historic monument.'],
+
+            // Versailles
+            ['city_slug' => 'versailles', 'name' => 'Palace of Versailles', 'code' => 'PV', 'slug' => 'palace-of-versailles', 'description' => 'Opulent royal residence with Hall of Mirrors.'],
+            ['city_slug' => 'versailles', 'name' => 'Versailles Gardens', 'code' => 'VG', 'slug' => 'versailles-gardens', 'description' => 'Stunning formal gardens and fountains.'],
+
+            // Boulogne-Billancourt
+            ['city_slug' => 'boulogne-billancourt', 'name' => 'Albert Kahn Museum', 'code' => 'AK', 'slug' => 'albert-kahn-museum', 'description' => 'Beautiful gardens and museum of photography.'],
+            ['city_slug' => 'boulogne-billancourt', 'name' => 'Parc de Billancourt', 'code' => 'PB', 'slug' => 'parc-de-billancourt', 'description' => 'Charming urban park for relaxation.'],
+
+            // Marseille
+            ['city_slug' => 'marseille', 'name' => 'Notre-Dame de la Garde', 'code' => 'ND', 'slug' => 'notre-dame-de-la-garde', 'description' => 'Iconic basilica overlooking the city.'],
+            ['city_slug' => 'marseille', 'name' => 'Old Port of Marseille', 'code' => 'OP', 'slug' => 'old-port-marseille', 'description' => 'Historic harbor with fresh seafood.'],
+
+            // Nice
+            ['city_slug' => 'nice', 'name' => 'Promenade des Anglais', 'code' => 'PA', 'slug' => 'promenade-des-anglais', 'description' => 'Famous waterfront promenade.'],
+            ['city_slug' => 'nice', 'name' => 'Vieille Ville', 'code' => 'VV', 'slug' => 'vieille-ville-nice', 'description' => 'Charming old town with colorful streets.'],
+
+            // Cannes
+            ['city_slug' => 'cannes', 'name' => 'La Croisette', 'code' => 'LC', 'slug' => 'la-croisette', 'description' => 'Glamorous waterfront boulevard.'],
+            ['city_slug' => 'cannes', 'name' => 'Palais des Festivals', 'code' => 'PF', 'slug' => 'palais-des-festivals', 'description' => 'Famous film festival venue.'],
+
+            // Milan
+            ['city_slug' => 'milan', 'name' => 'Milan Cathedral', 'code' => 'MC', 'slug' => 'milan-cathedral', 'description' => 'Gothic cathedral and city symbol.'],
+            ['city_slug' => 'milan', 'name' => 'Galleria Vittorio Emanuele II', 'code' => 'GV', 'slug' => 'galleria-vittorio', 'description' => 'Historic shopping arcade.'],
+
+            // Bergamo
+            ['city_slug' => 'bergamo', 'name' => 'Città Alta', 'code' => 'CA', 'slug' => 'cita-alta', 'description' => 'Historic upper town with medieval walls.'],
+            ['city_slug' => 'bergamo', 'name' => 'Piazza Vecchia', 'code' => 'PV', 'slug' => 'piazza-vecchia-bergamo', 'description' => 'Beautiful medieval square.'],
+
+            // Brescia
+            ['city_slug' => 'brescia', 'name' => 'Brescia Castle', 'code' => 'BC', 'slug' => 'brescia-castle', 'description' => 'Medieval fortress with city views.'],
+            ['city_slug' => 'brescia', 'name' => 'Piazza della Loggia', 'code' => 'PL', 'slug' => 'piazza-della-loggia', 'description' => 'Renaissance square in historic center.'],
+
+            // Florence
+            ['city_slug' => 'florence', 'name' => 'Duomo', 'code' => 'DU', 'slug' => 'duomo-florence', 'description' => 'Iconic cathedral with magnificent dome.'],
+            ['city_slug' => 'florence', 'name' => 'Ponte Vecchio', 'code' => 'PV', 'slug' => 'ponte-vecchio', 'description' => 'Medieval bridge with jewelry shops.'],
+
+            // Dubai
+            ['city_slug' => 'dubai', 'name' => 'Burj Khalifa', 'code' => 'BK', 'slug' => 'burj-khalifa', 'description' => 'The world\'s tallest building at 828 meters, offering breathtaking observation decks on the 124th and 148th floors with panoramic views of the city, desert, and ocean.'],
+            ['city_slug' => 'dubai', 'name' => 'Dubai Mall', 'code' => 'DM', 'slug' => 'dubai-mall', 'description' => 'One of the world\'s largest shopping malls featuring over 1,200 stores, an indoor aquarium, ice rink, cinema complex, and the famous Dubai Fountain show outside.'],
+            ['city_slug' => 'dubai', 'name' => 'Palm Jumeirah', 'code' => 'PJ', 'slug' => 'palm-jumeirah', 'description' => 'Iconic man-made island shaped like a palm tree, home to luxury resorts, beachfront villas, fine dining restaurants, and the Atlantis Aquaventure waterpark.'],
+            ['city_slug' => 'dubai', 'name' => 'Dubai Marina', 'code' => 'DMR', 'slug' => 'dubai-marina', 'description' => 'Vibrant waterfront district lined with towering skyscrapers, a scenic promenade, luxury yachts, trendy cafes, and a bustling nightlife scene along the marina walk.'],
+            ['city_slug' => 'dubai', 'name' => 'Dubai Creek', 'code' => 'DC', 'slug' => 'dubai-creek', 'description' => 'Historic saltwater creek dividing the city into Deira and Bur Dubai, offering traditional abra boat rides, gold and spice souks, and a glimpse into old Dubai heritage.'],
+        ];
+
+        $createdCount = 0;
         foreach ($placesData as $data) {
-            $mediaIds = $data['media_ids'];
-            unset($data['media_ids']);
+            $citySlug = $data['city_slug'];
+            if (!isset($cityIds[$citySlug])) {
+                echo "Skipping place for missing city: {$citySlug}\n";
+                continue;
+            }
+
+            unset($data['city_slug']);
+            $data['city_id'] = $cityIds[$citySlug];
 
             $place = Place::create([
                 ...$data,
@@ -73,18 +100,10 @@ class PlaceSeeder extends Seeder
                 'featured_destination' => false,
             ]);
 
-            // Attach media (first as featured)
-            foreach ($mediaIds as $index => $mediaId) {
-                PlaceMediaGallery::create([
-                    'place_id' => $place->id,
-                    'media_id' => $mediaId,
-                    'is_featured' => $index === 0,
-                ]);
-            }
-
             echo "Created: {$place->name}\n";
+            $createdCount++;
         }
 
-        echo "\nTotal places created: " . count($placesData) . "\n";
+        echo "\nTotal places created: {$createdCount}\n";
     }
 }

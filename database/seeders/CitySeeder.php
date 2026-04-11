@@ -14,6 +14,8 @@ use App\Models\CityEvent;
 use App\Models\CityAdditionalInfo;
 use App\Models\CityFaq;
 use App\Models\CitySeo;
+use App\Models\Media;
+use Illuminate\Support\Arr;
 
 class CitySeeder extends Seeder
 {
@@ -44,6 +46,8 @@ class CitySeeder extends Seeder
         City::query()->delete();
         DB::statement('SET FOREIGN_KEY_CHECKS=1');
         echo "All existing cities and related data deleted.\n";
+
+        $mediaIds = Media::pluck('id')->toArray();
 
         // Cities array - 58 cities across 20 states
         $cities = [
@@ -258,6 +262,15 @@ class CitySeeder extends Seeder
                     'schema_type' => 'City',
                     'schema_data' => $this->getSchemaData($city->name, $city->slug),
                 ]);
+
+                // Media Gallery - 3-4 random images
+                $selectedMediaIds = Arr::random($mediaIds, rand(3, 4));
+                foreach ($selectedMediaIds as $mediaId) {
+                    CityMediaGallery::create([
+                        'city_id'  => $city->id,
+                        'media_id' => $mediaId,
+                    ]);
+                }
 
                 $createdCount++;
             } catch (\Exception $e) {

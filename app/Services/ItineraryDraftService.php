@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Itinerary;
 use App\Models\ItineraryActivity;
 use App\Models\ItineraryLocation;
+use App\Models\ItineraryMeta;
 use App\Models\ItinerarySchedule;
 use App\Models\ItineraryTransfer;
 use Illuminate\Support\Facades\DB;
@@ -23,12 +24,17 @@ class ItineraryDraftService
                 'description' => $approved->description,
                 'featured_itinerary' => false,
                 'private_itinerary' => true,
+            ]);
+
+            // Create meta row explicitly (not auto-created)
+            ItineraryMeta::create([
+                'itinerary_id' => $draft->id,
+                'status' => 'draft',
                 'creator_id' => $approved->creator_id,
                 'parent_itinerary_id' => $approved->parent_itinerary_id,
-                'approval_status' => 'draft',
-                'views_count' => 0,
-                'likes_count' => 0,
             ]);
+
+            $draft->load('meta');
 
             foreach ($approved->locations as $location) {
                 ItineraryLocation::create([
@@ -72,7 +78,7 @@ class ItineraryDraftService
                 }
             }
 
-            $approved->update(['draft_itinerary_id' => $draft->id]);
+            $approved->meta->update(['draft_itinerary_id' => $draft->id]);
 
             return $draft->load(['locations', 'schedules.activities', 'schedules.transfers']);
         });
@@ -98,8 +104,9 @@ class ItineraryDraftService
                 'name' => $draft->name,
                 'description' => $draft->description,
                 'slug' => $slug,
-                'draft_itinerary_id' => null,
             ]);
+
+            $approved->meta->update(['draft_itinerary_id' => null]);
 
             $approved->schedules()->each(function ($schedule) {
                 $schedule->activities()->delete();
@@ -150,7 +157,7 @@ class ItineraryDraftService
 
     public function deleteDraft(Itinerary $draft): void
     {
-        Itinerary::where('draft_itinerary_id', $draft->id)->update(['draft_itinerary_id' => null]);
+        ItineraryMeta::where('draft_itinerary_id', $draft->id)->update(['draft_itinerary_id' => null]);
 
         $draft->schedules()->each(function ($schedule) {
             $schedule->activities()->delete();

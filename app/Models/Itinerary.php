@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -14,6 +15,19 @@ use Illuminate\Database\Eloquent\Model;
  * @property bool $private_itinerary
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ *
+ * Delegated via itinerary_meta:
+ * @property int|null $creator_id
+ * @property int|null $user_id
+ * @property int|null $parent_itinerary_id
+ * @property int|null $draft_itinerary_id
+ * @property string|null $status
+ * @property int $views_count
+ * @property int $likes_count
+ * @property string|null $removal_status
+ * @property string|null $removal_reason
+ *
+ * @property-read \App\Models\ItineraryMeta|null $meta
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ItineraryAddon> $addons
  * @property-read int|null $addons_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ItineraryAttribute> $attributes
@@ -39,152 +53,227 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read \App\Models\ItinerarySeo|null $seo
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ItineraryTag> $tags
  * @property-read int|null $tags_count
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Itinerary newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Itinerary newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Itinerary query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Itinerary whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Itinerary whereDescription($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Itinerary whereFeaturedItinerary($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Itinerary whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Itinerary whereItemType($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Itinerary whereName($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Itinerary wherePrivateItinerary($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Itinerary whereSlug($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Itinerary whereUpdatedAt($value)
- * @property int|null $creator_id
- * @property int|null $user_id
- * @property int|null $parent_itinerary_id
- * @property string|null $approval_status
- * @property int $views_count
- * @property-read int|null $likes_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ItineraryLike> $likes
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Itinerary> $copies
  * @property-read int|null $copies_count
  * @property-read \App\Models\User|null $creator
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ItineraryLike> $likes
  * @property-read \App\Models\User|null $owner
  * @property-read Itinerary|null $parentItinerary
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Itinerary approved()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Itinerary creatorCopies()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Itinerary original()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Itinerary pendingApproval()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Itinerary userCopies($userId)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Itinerary whereApprovalStatus($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Itinerary whereCreatorId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Itinerary whereLikesCount($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Itinerary whereParentItineraryId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Itinerary whereUserId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Itinerary whereViewsCount($value)
- * @mixin \Eloquent
+ * @property-read Itinerary|null $draftItinerary
  */
 class Itinerary extends Model
 {
+    use HasFactory;
+
     protected $table = 'itineraries';
+
     protected $fillable = [
         'name', 'slug', 'description', 'featured_itinerary', 'private_itinerary',
-        'creator_id', 'user_id', 'parent_itinerary_id', 'draft_itinerary_id',
-        'approval_status', 'views_count', 'likes_count',
-        'removal_status', 'removal_reason',
     ];
+
+    protected $with = ['meta'];
 
     protected $casts = [
         'featured_itinerary' => 'boolean',
         'private_itinerary' => 'boolean',
-        'views_count' => 'integer',
-        'likes_count' => 'integer',
     ];
 
-    public function scopeOriginal($query)
+    // Delegated meta attributes
+    protected array $metaAttributes = [
+        'creator_id', 'user_id', 'parent_itinerary_id', 'draft_itinerary_id',
+        'status', 'views_count', 'likes_count', 'removal_status', 'removal_reason',
+    ];
+
+    // ─── Meta Relationship ───────────────────────────────────────────
+
+    public function meta()
     {
-        return $query->whereNull('creator_id')->whereNull('user_id');
+        return $this->hasOne(ItineraryMeta::class);
     }
 
-    public function scopeCreatorCopies($query)
+    // ─── Accessor / Mutator Delegation ───────────────────────────────
+
+    public function getAttribute($key)
     {
-        return $query->whereNotNull('creator_id');
+        if (in_array($key, $this->metaAttributes) && !parent::getAttribute($key)) {
+            return $this->meta?->$key;
+        }
+        return parent::getAttribute($key);
     }
 
-    public function scopeApproved($query)
+    public function fill(array $attributes)
     {
-        return $query->where('approval_status', 'approved');
+        $metaAttrs = array_intersect_key($attributes, array_flip($this->metaAttributes));
+        $itinAttrs = array_diff_key($attributes, array_flip($this->metaAttributes));
+
+        if (!empty($metaAttrs)) {
+            if (!$this->meta) {
+                $this->setRelation('meta', new ItineraryMeta(['itinerary_id' => $this->id]));
+            }
+            $this->meta->fill($metaAttrs);
+        }
+
+        return parent::fill($itinAttrs);
     }
 
-    public function scopeUserCopies($query, $userId)
+    public function setAttribute($key, $value)
     {
-        return $query->where('user_id', $userId);
+        if (in_array($key, $this->metaAttributes)) {
+            if (!$this->meta) {
+                $this->setRelation('meta', new ItineraryMeta(['itinerary_id' => $this->id]));
+            }
+            $this->meta->setAttribute($key, $value);
+            return $this;
+        }
+        return parent::setAttribute($key, $value);
     }
 
-    public function scopePendingApproval($query)
+    public function save(array $options = [])
     {
-        return $query->where('approval_status', 'pending_approval');
+        $saved = parent::save($options);
+
+        if ($this->meta && $this->meta->isDirty()) {
+            $this->meta->itinerary_id = $this->id;
+            $this->meta->save();
+        }
+
+        return $saved;
     }
 
-    public function scopeDraft($query)
+    // ─── Delegated Relationships ─────────────────────────────────────
+
+    public function creator()
     {
-        return $query->where('approval_status', 'draft');
+        return $this->hasOneThrough(
+            User::class,
+            ItineraryMeta::class,
+            'itinerary_id',
+            'id',
+            'id',
+            'creator_id'
+        );
     }
 
-    public function scopeEditPending($query)
+    public function owner()
     {
-        return $query->where('approval_status', 'edit_pending_approval');
+        return $this->hasOneThrough(
+            User::class,
+            ItineraryMeta::class,
+            'itinerary_id',
+            'id',
+            'id',
+            'user_id'
+        );
     }
 
-    public function scopeRemovalRequested($query)
+    public function parentItinerary()
     {
-        return $query->whereNotNull('removal_status')->where('removal_status', 'requested');
+        return $this->hasOneThrough(
+            Itinerary::class,
+            ItineraryMeta::class,
+            'itinerary_id',
+            'id',
+            'id',
+            'parent_itinerary_id'
+        );
     }
 
     public function draftItinerary()
     {
-        return $this->belongsTo(Itinerary::class, 'draft_itinerary_id');
+        return $this->hasOneThrough(
+            Itinerary::class,
+            ItineraryMeta::class,
+            'itinerary_id',
+            'id',
+            'id',
+            'draft_itinerary_id'
+        );
     }
 
-    public function locations() {
+    // ─── Scopes ──────────────────────────────────────────────────────
 
+    public function scopeOriginal($query)
+    {
+        return $query->whereDoesntHave('meta');
+    }
+
+    public function scopeCreatorCopies($query)
+    {
+        return $query->whereHas('meta', fn($q) => $q->whereNotNull('creator_id'));
+    }
+
+    public function scopeApproved($query)
+    {
+        return $query->whereHas('meta', fn($q) => $q->where('status', 'approved'));
+    }
+
+    public function scopeUserCopies($query, $userId)
+    {
+        return $query->whereHas('meta', fn($q) => $q->where('user_id', $userId));
+    }
+
+    public function scopePendingApproval($query)
+    {
+        return $query->whereHas('meta', fn($q) => $q->where('status', 'pending'));
+    }
+
+    public function scopeDraft($query)
+    {
+        return $query->whereHas('meta', fn($q) => $q->where('status', 'draft'));
+    }
+
+    public function scopeEditPending($query)
+    {
+        return $query->whereHas('meta', fn($q) => $q->where('status', 'edit_pending'));
+    }
+
+    public function scopeRemovalRequested($query)
+    {
+        return $query->whereHas('meta', fn($q) => $q->where('removal_status', 'requested'));
+    }
+
+    // ─── Content Relationships ───────────────────────────────────────
+
+    public function locations()
+    {
         return $this->hasMany(ItineraryLocation::class);
     }
 
-    // Schedule relation
     public function schedules()
     {
         return $this->hasMany(ItinerarySchedule::class);
     }
 
-    // Base pricing relation
     public function basePricing()
     {
         return $this->hasOne(ItineraryBasePricing::class, 'itinerary_id');
     }
 
-    // Inclusion/Exclusion relation
     public function inclusionsExclusions()
     {
         return $this->hasMany(ItineraryInclusionExclusion::class);
     }
 
-    // Media Gallery relation
     public function mediaGallery()
     {
         return $this->hasMany(ItineraryMediaGallery::class);
     }
 
-    // SEO relation
     public function seo()
     {
         return $this->hasOne(ItinerarySeo::class);
     }
 
-    // Category relation
-    public function categories() {
+    public function categories()
+    {
         return $this->hasMany(ItineraryCategory::class);
     }
 
-    // Attribute relation
     public function attributes()
     {
         return $this->hasMany(ItineraryAttribute::class);
     }
 
-    // Tag relation
     public function tags()
     {
         return $this->hasMany(ItineraryTag::class);
@@ -194,6 +283,7 @@ class Itinerary extends Model
     {
         return $this->hasOne(ItineraryAvailability::class);
     }
+
     public function orders()
     {
         return $this->morphMany(Order::class, 'orderable');
@@ -219,24 +309,16 @@ class Itinerary extends Model
         return $this->morphMany(PostItemTag::class, 'taggable');
     }
 
-    public function creator()
-    {
-        return $this->belongsTo(User::class, 'creator_id');
-    }
-
-    public function owner()
-    {
-        return $this->belongsTo(User::class, 'user_id');
-    }
-
-    public function parentItinerary()
-    {
-        return $this->belongsTo(Itinerary::class, 'parent_itinerary_id');
-    }
-
     public function copies()
     {
-        return $this->hasMany(Itinerary::class, 'parent_itinerary_id');
+        return $this->hasManyThrough(
+            Itinerary::class,
+            ItineraryMeta::class,
+            'itinerary_id',
+            'id',
+            'id',
+            'parent_itinerary_id'
+        );
     }
 
     public function likes()
@@ -248,4 +330,5 @@ class Itinerary extends Model
     {
         return $this->likes()->where('user_id', $userId)->exists();
     }
+
 }

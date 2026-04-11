@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -28,6 +29,8 @@ use Illuminate\Database\Eloquent\Model;
  */
 class ItinerarySchedule extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'itinerary_id', 'day', 'title'
     ];

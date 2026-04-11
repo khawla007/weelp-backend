@@ -13,6 +13,8 @@ use App\Models\StateEvent;
 use App\Models\StateAdditionalInfo;
 use App\Models\StateFaq;
 use App\Models\StateSeo;
+use App\Models\Media;
+use Illuminate\Support\Arr;
 
 class StateSeeder extends Seeder
 {
@@ -35,6 +37,8 @@ class StateSeeder extends Seeder
         State::query()->delete();
         DB::statement('SET FOREIGN_KEY_CHECKS=1');
         echo "All existing states deleted.\n";
+
+        $mediaIds = Media::pluck('id')->toArray();
 
         // Insert States
         $states = [
@@ -114,20 +118,17 @@ class StateSeeder extends Seeder
         }
         unset($stateData);
 
-        $mediaIds = range(1, 5);
-
         foreach ($states as $data) {
             $state = State::create($data);
 
-            // Country_Media (Array of Objects )
-            // DISABLED: Media will be imported via auto-import feature
-            // $randomMedias = collect($mediaIds)->random(3); // ek state ko 3 random media milega
-            // foreach ($randomMedias as $mediaId) {
-            //     StateMediaGallery::create([
-            //         'state_id' => $state->id,
-            //         'media_id'   => $mediaId,
-            //     ]);
-            // }
+            // Media Gallery - 3-4 random images
+            $selectedMediaIds = Arr::random($mediaIds, rand(3, 4));
+            foreach ($selectedMediaIds as $mediaId) {
+                StateMediaGallery::create([
+                    'state_id' => $state->id,
+                    'media_id' => $mediaId,
+                ]);
+            }
 
             // Insert State Details
             StateLocationDetail::create([

@@ -20,6 +20,8 @@ use App\Models\ActivityMediaGallery;
 use App\Models\ActivityAvailability;
 use App\Models\Addon;
 use App\Models\ActivityAddon;
+use App\Models\Media;
+use Illuminate\Support\Arr;
 
 class ActivitySeeder extends Seeder {
     public function run() {
@@ -44,6 +46,13 @@ class ActivitySeeder extends Seeder {
 
         // Re-enable foreign key checks
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+
+        $mediaIds = Media::pluck('id')->toArray();
+        $cityIds = \App\Models\City::pluck('id')->toArray();
+
+        // Dubai places for Dubai-specific activities
+        $dubai = \App\Models\City::where('slug', 'dubai')->first();
+        $dubaiPlaces = $dubai ? \App\Models\Place::where('city_id', $dubai->id)->pluck('id')->toArray() : [];
 
         $activities = [
             [
@@ -291,6 +300,50 @@ class ActivitySeeder extends Seeder {
                 'short_description' => 'Hands-on craft making experience.',
                 'featured_activity' => false,
             ],
+
+            // ── Dubai Activities ──
+            [
+                'name' => 'Burj Khalifa At The Top Experience',
+                'slug' => 'burj-khalifa-at-the-top',
+                'description' => 'Ascend to the 124th and 148th floors of the world\'s tallest building for breathtaking panoramic views of Dubai, the desert, and the Arabian Gulf. Includes skip-the-line access and multimedia presentation.',
+                'short_description' => 'Visit the observation decks of Burj Khalifa.',
+                'featured_activity' => true,
+            ],
+            [
+                'name' => 'Dubai Mall Aquarium & Underwater Zoo',
+                'slug' => 'dubai-mall-aquarium',
+                'description' => 'Explore one of the world\'s largest indoor aquariums inside Dubai Mall. Walk through the 48-meter tunnel, see over 33,000 marine animals, and enjoy the underwater zoo with penguins, crocodiles, and more.',
+                'short_description' => 'Walk through the giant aquarium tunnel.',
+                'featured_activity' => true,
+            ],
+            [
+                'name' => 'Palm Jumeirah Jet Ski Tour',
+                'slug' => 'palm-jumeirah-jet-ski',
+                'description' => 'Ride a jet ski around the iconic Palm Jumeirah island with stunning views of Atlantis, Burj Al Arab, and the Dubai skyline. Professional instructors guide you through 30 or 60-minute adrenaline-pumping sessions.',
+                'short_description' => 'Jet ski around Palm Jumeirah island.',
+                'featured_activity' => true,
+            ],
+            [
+                'name' => 'Dubai Marina Yacht Cruise',
+                'slug' => 'dubai-marina-yacht-cruise',
+                'description' => 'Sail through Dubai Marina on a luxury yacht, passing towering skyscrapers, Ain Dubai, and the Palm. Enjoy refreshments on board with options for morning, sunset, and evening cruises with BBQ dinner.',
+                'short_description' => 'Luxury yacht cruise through Dubai Marina.',
+                'featured_activity' => true,
+            ],
+            [
+                'name' => 'Dubai Creek Dhow Dinner Cruise',
+                'slug' => 'dubai-creek-dhow-cruise',
+                'description' => 'Board a traditional wooden dhow and cruise along historic Dubai Creek. Enjoy a buffet dinner with live entertainment while passing illuminated souks, heritage villages, and the old city skyline.',
+                'short_description' => 'Traditional dhow cruise with dinner on Dubai Creek.',
+                'featured_activity' => false,
+            ],
+            [
+                'name' => 'Dubai Desert Safari with BBQ',
+                'slug' => 'dubai-desert-safari-bbq',
+                'description' => 'Experience thrilling dune bashing in a 4x4, camel riding, sandboarding, and a traditional BBQ dinner under the stars at a desert camp with belly dancing and tanoura shows.',
+                'short_description' => 'Desert dune bashing, camel ride, and BBQ dinner.',
+                'featured_activity' => true,
+            ],
         ];
 
         foreach ($activities as $activityData) {
@@ -349,19 +402,54 @@ class ActivitySeeder extends Seeder {
                 'tag_id' => rand(3, 4),
             ]);
 
+            // Primary location — Dubai activities get Dubai city + place
+            $primaryCityId = $dubai && str_contains($activity->slug, 'burj-khalifa') || str_contains($activity->slug, 'dubai-mall') || str_contains($activity->slug, 'palm-jumeirah') || str_contains($activity->slug, 'dubai-marina') || str_contains($activity->slug, 'dubai-creek') || str_contains($activity->slug, 'dubai-desert')
+                ? $dubai->id
+                : $cityIds[array_rand($cityIds)];
+
+            $primaryPlaceId = null;
+            if ($dubai && $primaryCityId === $dubai->id && !empty($dubaiPlaces)) {
+                $placeMap = [
+                    'burj-khalifa' => 'burj-khalifa',
+                    'dubai-mall' => 'dubai-mall',
+                    'palm-jumeirah' => 'palm-jumeirah',
+                    'dubai-marina' => 'dubai-marina',
+                    'dubai-creek' => 'dubai-creek',
+                    'dubai-desert' => null,
+                ];
+                foreach ($placeMap as $slugPart => $placeSlug) {
+                    if (str_contains($activity->slug, $slugPart) && $placeSlug) {
+                        $place = \App\Models\Place::where('slug', $placeSlug)->first();
+                        $primaryPlaceId = $place?->id;
+                        break;
+                    }
+                }
+                if (!$primaryPlaceId) {
+                    $primaryPlaceId = $dubaiPlaces[array_rand($dubaiPlaces)];
+                }
+            }
+
             ActivityLocation::create([
                 'activity_id' => $activity->id,
-                'city_id' => rand(382, 441),
+                'city_id' => $primaryCityId,
+                'place_id' => $primaryPlaceId,
                 'location_type' => 'primary',
                 'location_label' => 'Main Location',
                 'duration' => null
             ]);
 
+            // Additional location
+            $addCityId = $dubai && $primaryCityId === $dubai->id ? $dubai->id : $cityIds[array_rand($cityIds)];
+            $addPlaceId = ($dubai && $addCityId === $dubai->id && !empty($dubaiPlaces))
+                ? $dubaiPlaces[array_rand($dubaiPlaces)]
+                : null;
+
             ActivityLocation::create([
                 'activity_id' => $activity->id,
-                'city_id' => rand(382, 441),
+                'city_id' => $addCityId,
+                'place_id' => $addPlaceId,
                 'location_type' => 'additional',
-                'location_label' => 'Highlight', // Custom value allowed
+                'location_label' => 'Highlight',
                 'duration' => rand(5, 20)
             ]);
 
@@ -440,12 +528,12 @@ class ActivitySeeder extends Seeder {
                 'valid_from' => '2025-06-01',
                 'valid_to' => '2025-08-31',
             ]);
-            // Media Gallery - 3 to 6 random images (media_id: 78-548)
-            $mediaCount = rand(3, 6);
-            for ($i = 0; $i < $mediaCount; $i++) {
+            // Media Gallery - 3-4 random images
+            $selectedMediaIds = Arr::random($mediaIds, rand(3, 4));
+            foreach ($selectedMediaIds as $mediaId) {
                 ActivityMediaGallery::create([
                     'activity_id' => $activity->id,
-                    'media_id' => rand(78, 548),
+                    'media_id'    => $mediaId,
                 ]);
             }
             ActivityAvailability::create([

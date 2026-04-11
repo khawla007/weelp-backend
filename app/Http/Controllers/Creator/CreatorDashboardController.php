@@ -20,9 +20,10 @@ class CreatorDashboardController extends Controller
             ->whereHas('order', fn($q) => $q->where('status', 'completed'));
         $totalSales = (clone $completedCommissions)->count();
         $totalEarnings = (clone $completedCommissions)->sum('commission_amount');
-        $totalViews = Itinerary::where('creator_id', $creatorId)
+        $totalViews = Itinerary::whereHas('meta', fn($q) => $q->where('creator_id', $creatorId))
             ->approved()
-            ->sum('views_count');
+            ->join('itinerary_meta', 'itineraries.id', '=', 'itinerary_meta.itinerary_id')
+            ->sum('itinerary_meta.views_count');
 
         return response()->json([
             'success' => true,

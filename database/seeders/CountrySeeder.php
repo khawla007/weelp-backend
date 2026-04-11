@@ -13,7 +13,9 @@ use App\Models\CountryAdditionalInfo;
 use App\Models\CountryFaq;
 use App\Models\CountrySeo;
 use App\Models\CountryMediaGallery;
+use App\Models\Media;
 use App\Models\Region;
+use Illuminate\Support\Arr;
 
 class CountrySeeder extends Seeder
 {
@@ -31,6 +33,8 @@ class CountrySeeder extends Seeder
         CountryMediaGallery::truncate();
         Country::truncate();
         DB::statement('SET FOREIGN_KEY_CHECKS=1');
+
+        $mediaIds = Media::pluck('id')->toArray();
 
         $countries = [
             // MIDDLE EAST
@@ -387,6 +391,15 @@ class CountrySeeder extends Seeder
                     'image' => 'https://example.com/' . $country->slug . '.jpg',
                 ],
             ]);
+
+            // Media Gallery - 3-4 random images
+            $selectedMediaIds = Arr::random($mediaIds, rand(3, 4));
+            foreach ($selectedMediaIds as $mediaId) {
+                CountryMediaGallery::create([
+                    'country_id' => $country->id,
+                    'media_id'   => $mediaId,
+                ]);
+            }
 
             // Attach region via relationship
             if ($regionName) {

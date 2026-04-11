@@ -22,7 +22,6 @@ class UserSeeder extends Seeder
             'email' => 'khawla@fanaticcoders.com',
             'password' => Hash::make('khawla@123#'),
             'role' => 'super_admin',
-            'avatar' => 1,
         ]);
 
         User::factory()->create([
@@ -30,7 +29,6 @@ class UserSeeder extends Seeder
             'email' => 'akshay@fanaticcoders.com',
             'password' => Hash::make('akshay@123#'),
             'role' => 'admin',
-            'avatar' => 2,
         ]);
 
         // Creating Multiple Customer Users
@@ -50,7 +48,6 @@ class UserSeeder extends Seeder
                 'email' => $customer['email'],
                 'password' => Hash::make($customer['password']),
                 'role' => 'customer',
-                'avatar' => rand(1, 5),
             ]);
         }
     }
