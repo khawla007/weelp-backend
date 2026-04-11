@@ -33,3 +33,6 @@ _ide_helper_models.php
 # OS
 .DS_Store
 Thumbs.db
+# Test/debug scripts (root level)
+set_*.php
+verify_*.php
