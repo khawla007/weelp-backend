@@ -15,6 +15,7 @@ use App\Services\ItineraryDraftService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
@@ -317,8 +318,8 @@ class CreatorItineraryController extends Controller
             'description' => 'required|string',
             'locations' => 'required|array|min:1',
             'locations.*' => 'exists:cities,id',
-            'featured_itinerary' => 'boolean',
-            'private_itinerary' => 'boolean',
+            'featured_itinerary' => 'nullable|boolean',
+            'private_itinerary' => 'nullable|boolean',
             'schedules' => 'required|array|min:1',
             'schedules.*.day' => 'required|integer',
             'schedules.*.title' => 'nullable|string|max:255',
@@ -345,97 +346,99 @@ class CreatorItineraryController extends Controller
 
         $creator = Auth::user();
 
-        // Create itinerary with pending status
-        $itinerary = Itinerary::create([
-            'name' => $validated['name'],
-            'slug' => $validated['slug'],
-            'description' => $validated['description'],
-            'featured_itinerary' => $validated['featured_itinerary'] ?? false,
-            'private_itinerary' => $validated['private_itinerary'] ?? false,
-        ]);
-
-        // Create itinerary_meta with creator_id and pending status
-        $itinerary->meta()->create([
-            'creator_id' => $creator->id,
-            'user_id' => $creator->id,
-            'status' => 'pending',
-        ]);
-
-        // Create locations
-        foreach ($validated['locations'] as $cityId) {
-            \App\Models\ItineraryLocation::create([
-                'itinerary_id' => $itinerary->id,
-                'city_id' => $cityId,
+        return DB::transaction(function () use ($validated, $creator) {
+            // Create itinerary with pending status
+            $itinerary = Itinerary::create([
+                'name' => $validated['name'],
+                'slug' => $validated['slug'],
+                'description' => $validated['description'],
+                'featured_itinerary' => $validated['featured_itinerary'] ?? false,
+                'private_itinerary' => $validated['private_itinerary'] ?? false,
             ]);
-        }
 
-        // Create schedules
-        $scheduleMap = [];
-        foreach ($validated['schedules'] as $scheduleData) {
-            $schedule = \App\Models\ItinerarySchedule::create([
-                'itinerary_id' => $itinerary->id,
-                'day' => $scheduleData['day'],
-                'title' => $scheduleData['title'] ?? null,
+            // Create itinerary_meta with creator_id and pending status
+            $itinerary->meta()->create([
+                'creator_id' => $creator->id,
+                'user_id' => $creator->id,
+                'status' => 'pending',
             ]);
-            $scheduleMap[$scheduleData['day']] = $schedule->id;
-        }
 
-        // Create activities with day mapping
-        if (!empty($validated['activities'])) {
-            foreach ($validated['activities'] as $activityData) {
-                if (!isset($scheduleMap[$activityData['day']])) {
-                    continue;
-                }
-
-                \App\Models\ItineraryActivity::create([
-                    'schedule_id' => $scheduleMap[$activityData['day']],
-                    'activity_id' => $activityData['activity_id'],
-                    'start_time' => $activityData['start_time'] ?? null,
-                    'end_time' => $activityData['end_time'] ?? null,
-                    'price' => $activityData['price'] ?? null,
-                    'included' => $activityData['included'] ?? true,
-                    'notes' => $activityData['notes'] ?? null,
+            // Create locations
+            foreach ($validated['locations'] as $cityId) {
+                \App\Models\ItineraryLocation::create([
+                    'itinerary_id' => $itinerary->id,
+                    'city_id' => $cityId,
                 ]);
             }
-        }
 
-        // Create transfers with day mapping
-        if (!empty($validated['transfers'])) {
-            foreach ($validated['transfers'] as $transferData) {
-                if (!isset($scheduleMap[$transferData['day']])) {
-                    continue;
+            // Create schedules
+            $scheduleMap = [];
+            foreach ($validated['schedules'] as $scheduleData) {
+                $schedule = \App\Models\ItinerarySchedule::create([
+                    'itinerary_id' => $itinerary->id,
+                    'day' => $scheduleData['day'],
+                    'title' => $scheduleData['title'] ?? null,
+                ]);
+                $scheduleMap[$scheduleData['day']] = $schedule->id;
+            }
+
+            // Create activities with day mapping
+            if (!empty($validated['activities'])) {
+                foreach ($validated['activities'] as $activityData) {
+                    if (!isset($scheduleMap[$activityData['day']])) {
+                        continue;
+                    }
+
+                    \App\Models\ItineraryActivity::create([
+                        'schedule_id' => $scheduleMap[$activityData['day']],
+                        'activity_id' => $activityData['activity_id'],
+                        'start_time' => $activityData['start_time'] ?? null,
+                        'end_time' => $activityData['end_time'] ?? null,
+                        'price' => $activityData['price'] ?? null,
+                        'included' => $activityData['included'] ?? true,
+                        'notes' => $activityData['notes'] ?? null,
+                    ]);
                 }
+            }
 
-                \App\Models\ItineraryTransfer::create([
-                    'schedule_id' => $scheduleMap[$transferData['day']],
-                    'transfer_id' => $transferData['transfer_id'],
-                    'start_time' => $transferData['start_time'] ?? null,
-                    'end_time' => $transferData['end_time'] ?? null,
-                    'pickup_location' => $transferData['pickup_location'] ?? null,
-                    'dropoff_location' => $transferData['dropoff_location'] ?? null,
-                    'pax' => $transferData['pax'] ?? null,
-                    'price' => $transferData['price'] ?? null,
-                    'included' => $transferData['included'] ?? true,
-                    'notes' => $transferData['notes'] ?? null,
+            // Create transfers with day mapping
+            if (!empty($validated['transfers'])) {
+                foreach ($validated['transfers'] as $transferData) {
+                    if (!isset($scheduleMap[$transferData['day']])) {
+                        continue;
+                    }
+
+                    \App\Models\ItineraryTransfer::create([
+                        'schedule_id' => $scheduleMap[$transferData['day']],
+                        'transfer_id' => $transferData['transfer_id'],
+                        'start_time' => $transferData['start_time'] ?? null,
+                        'end_time' => $transferData['end_time'] ?? null,
+                        'pickup_location' => $transferData['pickup_location'] ?? null,
+                        'dropoff_location' => $transferData['dropoff_location'] ?? null,
+                        'pax' => $transferData['pax'] ?? null,
+                        'price' => $transferData['price'] ?? null,
+                        'included' => $transferData['included'] ?? true,
+                        'notes' => $transferData['notes'] ?? null,
+                    ]);
+                }
+            }
+
+            // Send email to admin
+            try {
+                Mail::to(config('mail.admin_address', 'khawla@fanaticcoders.com'))
+                    ->send(new ItinerarySubmittedAdminMail($itinerary, $creator));
+            } catch (\Exception $e) {
+                Log::error('Failed to send itinerary submission email', [
+                    'itinerary_id' => $itinerary->id,
+                    'error' => $e->getMessage(),
                 ]);
             }
-        }
 
-        // Send email to admin
-        try {
-            Mail::to(config('mail.admin_address', 'khawla@fanaticcoders.com'))
-                ->send(new ItinerarySubmittedAdminMail($itinerary, $creator));
-        } catch (\Exception $e) {
-            Log::error('Failed to send itinerary submission email', [
-                'itinerary_id' => $itinerary->id,
-                'error' => $e->getMessage(),
-            ]);
-        }
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Itinerary submitted for approval.',
-            'data' => $itinerary,
-        ], 201);
+            return response()->json([
+                'success' => true,
+                'message' => 'Itinerary submitted for approval.',
+                'data' => $itinerary,
+            ], 201);
+        });
     }
 }
