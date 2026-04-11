@@ -56,6 +56,8 @@ return [
 
     'frontend_url' => env('FRONTEND_URL', 'https://weelp-frontend.vercel.app'),
 
+    'logo_path' => env('WEELP_LOGO_PATH', 'logos/weelp-logo-icon.png'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Timezone
