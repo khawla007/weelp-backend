@@ -168,6 +168,9 @@ Route::middleware(['auth:api', 'creator'])->prefix('creator')->group(function ()
     Route::put('/itineraries/drafts/{id}', [CreatorItineraryController::class, 'updateDraft']);
     Route::put('/itineraries/drafts/{id}/submit', [CreatorItineraryController::class, 'submitDraft']);
     Route::post('/itineraries/{id}/request-removal', [CreatorItineraryController::class, 'requestRemoval']);
+
+    // Creator Itineraries - Create new draft from Explore page
+    Route::post('/itineraries/create', [CreatorItineraryController::class, 'createDraft']);
 });
 
 // Stripe Payment api
