@@ -331,4 +331,97 @@ class Itinerary extends Model
         return $this->likes()->where('user_id', $userId)->exists();
     }
 
+    // ─── Image Accessors with Fallback Logic ───────────────────────────
+
+    /**
+     * Get the featured image URL with fallback logic
+     * Priority: itinerary featured → first activity → first transfer → null
+     */
+    public function getFeaturedImageAttribute(): ?string
+    {
+        // 1. Itinerary featured image
+        $featured = $this->mediaGallery->firstWhere('is_featured', true);
+        if ($featured?->media?->url) {
+            return $featured->media->url;
+        }
+
+        // 2. First activity's first image
+        $firstActivity = $this->schedules->first()?->activities->first();
+        if ($firstActivity) {
+            $activity = $firstActivity->activity;
+            $featured = $activity?->mediaGallery->firstWhere('is_featured', true);
+            if ($featured?->media?->url) {
+                return $featured->media->url;
+            }
+            if ($activity?->mediaGallery->first()?->media?->url) {
+                return $activity->mediaGallery->first()->media->url;
+            }
+        }
+
+        // 3. First transfer's image
+        $firstTransfer = $this->schedules->first()?->transfers->first();
+        if ($firstTransfer) {
+            $transfer = $firstTransfer->transfer;
+            $featured = $transfer?->mediaGallery->firstWhere('is_featured', true);
+            if ($featured?->media?->url) {
+                return $featured->media->url;
+            }
+            if ($transfer?->mediaGallery->first()?->media?->url) {
+                return $transfer->mediaGallery->first()->media->url;
+            }
+        }
+
+        return null; // No image available
+    }
+
+    /**
+     * Get all gallery images with fallback logic
+     * Priority: itinerary → all activities → all transfers
+     * Images are deduplicated preserving order
+     */
+    public function getGalleryImagesAttribute(): array
+    {
+        $images = [];
+        $seenUrls = [];
+
+        // Helper to add image without duplicates
+        $addImage = function ($media) use (&$images, &$seenUrls) {
+            if ($media?->url && !in_array($media->url, $seenUrls)) {
+                $images[] = [
+                    'id' => $media->id,
+                    'url' => $media->url,
+                    'alt_text' => $media->alt_text,
+                ];
+                $seenUrls[] = $media->url;
+            }
+        };
+
+        // 1. Itinerary images
+        foreach ($this->mediaGallery as $mg) {
+            $addImage($mg->media);
+        }
+
+        // 2. Activity images
+        foreach ($this->schedules as $schedule) {
+            foreach ($schedule->activities as $activity) {
+                $activityModel = $activity->activity;
+                foreach ($activityModel?->mediaGallery ?? [] as $mg) {
+                    $addImage($mg->media);
+                }
+            }
+        }
+
+        // 3. Transfer images
+        foreach ($this->schedules as $schedule) {
+            foreach ($schedule->transfers as $transfer) {
+                $transferModel = $transfer->transfer;
+                foreach ($transferModel?->mediaGallery ?? [] as $mg) {
+                    $addImage($mg->media);
+                }
+            }
+        }
+
+        return $images;
+    }
+
 }

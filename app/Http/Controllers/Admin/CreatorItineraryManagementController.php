@@ -67,6 +67,10 @@ class CreatorItineraryManagementController extends Controller
         // Transform to match the format expected by frontend components
         $data = $itinerary->toArray();
 
+        // Add computed image attributes with fallback
+        $data['featured_image'] = $itinerary->featured_image;
+        $data['gallery_images'] = $itinerary->gallery_images;
+
         // Flatten media_gallery: { media: { url } } → { url }
         $data['media_gallery'] = $itinerary->mediaGallery->map(function ($media) {
             return [
