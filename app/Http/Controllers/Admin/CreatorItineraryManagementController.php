@@ -210,6 +210,67 @@ class CreatorItineraryManagementController extends Controller
         ]);
     }
 
+    public function updateAndApprove(Request $request, $id): JsonResponse
+    {
+        $itinerary = Itinerary::creatorCopies()->find($id);
+        if (!$itinerary) {
+            return response()->json(['success' => false, 'message' => 'Creator itinerary not found'], 404);
+        }
+
+        if ($itinerary->status !== 'pending') {
+            return response()->json(['success' => false, 'message' => 'Only pending itineraries can be approved.'], 422);
+        }
+
+        // Wrap everything in a transaction for atomicity
+        $response = DB::transaction(function () use ($request, $id, $itinerary) {
+            // Update using existing ItineraryController logic
+            $adminController = app(\App\Http\Controllers\Admin\ItineraryController::class);
+            $updateResponse = $adminController->update($request, $id);
+
+            if ($updateResponse->getStatusCode() !== 200) {
+                // Transaction will rollback automatically
+                return $updateResponse;
+            }
+
+            // Reload to get fresh data after update
+            $itinerary->fresh();
+
+            // Approve the itinerary
+            $itinerary->update(['status' => 'approved']);
+
+            // Send notification (within transaction for consistency)
+            Notification::create([
+                'user_id' => $itinerary->creator_id,
+                'type' => 'itinerary_approved',
+                'title' => 'Itinerary Approved',
+                'message' => "Your itinerary \"{$itinerary->name}\" has been approved.",
+                'data' => ['itinerary_id' => $itinerary->id],
+            ]);
+
+            // Load creator before exiting transaction
+            $itinerary->load('creator');
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Itinerary updated and approved.',
+                'data' => $itinerary,
+            ]);
+        });
+
+        // Email is sent OUTSIDE transaction (after commit)
+        // We don't want email sending failure to rollback the database changes
+        try {
+            Mail::to($itinerary->creator->email)->send(new ItineraryApprovedMail($itinerary, $itinerary->creator));
+        } catch (\Exception $e) {
+            Log::error('Failed to send itinerary approved email', [
+                'itinerary_id' => $itinerary->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        return $response;
+    }
+
     public function reject(Request $request, $id): JsonResponse
     {
         $itinerary = Itinerary::creatorCopies()->find($id);
