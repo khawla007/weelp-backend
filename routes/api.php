@@ -67,7 +67,6 @@ use App\Http\Controllers\Creator\CreatorItineraryController;
 use App\Http\Controllers\Admin\CreatorApplicationManagementController;
 use App\Http\Controllers\Admin\CreatorItineraryManagementController;
 use App\Http\Controllers\Customer\CustomerItineraryController;
-use App\Http\Controllers\Explore\ExploreCreatorItineraryController;
 
 Route::get('/test', function () {
     return response()->json(['message' => 'Route Working!']);
@@ -142,9 +141,25 @@ Route::middleware(['auth:api', 'customer'])->prefix('customer')->group(function 
     // Customer Itinerary Submission
     Route::post('/itineraries', [CustomerItineraryController::class, 'store']);
     Route::get('/my-itineraries', [CustomerItineraryController::class, 'myItineraries']);
+
+    // Customer Resources
+    Route::get('/cities', [CustomerItineraryController::class, 'getCities']);
+    Route::get('/activities', [CustomerItineraryController::class, 'getActivities']);
+    Route::get('/transfers', [CustomerItineraryController::class, 'getTransfers']);
+
+    // Customer Itinerary Edit & Save
+    Route::get('/itineraries/edit/{slug}', [CustomerItineraryController::class, 'getEditData']);
+    Route::post('/itineraries/save', [CustomerItineraryController::class, 'saveCustomized']);
+    Route::post('/itineraries/book', [CustomerItineraryController::class, 'bookItinerary']);
 });
 
-// Creator routes
+// Public explore routes - accessible without authentication
+Route::prefix('creator')->group(function () {
+    Route::get('/explore', [CreatorItineraryController::class, 'exploreIndex']);
+    Route::get('/explore/{id}', [CreatorItineraryController::class, 'exploreShow']);
+});
+
+// Creator routes - require authentication and creator role
 Route::middleware(['auth:api', 'creator'])->prefix('creator')->group(function () {
     // DEPRECATED: Replaced by creator itinerary system
     // Route::prefix('posts')->group(function () {
@@ -171,6 +186,18 @@ Route::middleware(['auth:api', 'creator'])->prefix('creator')->group(function ()
 
     // Creator Itineraries - Create new draft from Explore page
     Route::post('/itineraries/create', [CreatorItineraryController::class, 'createDraft']);
+
+    // Creator Itineraries - Explore (write operations require auth)
+    Route::post('/explore/{id}/like', [CreatorItineraryController::class, 'toggleLike']);
+    Route::post('/explore/{id}/view', [CreatorItineraryController::class, 'recordView']);
+
+    // Creator Resources
+    Route::get('/cities', [CreatorItineraryController::class, 'getCities']);
+    Route::get('/activities', [CreatorItineraryController::class, 'getActivities']);
+    Route::get('/transfers', [CreatorItineraryController::class, 'getTransfers']);
+
+    // Creator Edit
+    Route::get('/itineraries/edit/{slug}', [CreatorItineraryController::class, 'getEditData']);
 });
 
 // Stripe Payment api
@@ -553,23 +580,6 @@ Route::prefix('reviews')->group(function () {
 //     Route::post('/posts/{id}/like', [PublicPostController::class, 'toggleLike']);
 //     Route::post('/posts/{id}/share', [PublicPostController::class, 'incrementShare']);
 // });
-
-// Explore Creator Itineraries (public)
-Route::get('/explore/creator-itineraries', [ExploreCreatorItineraryController::class, 'index']);
-Route::post('/explore/creator-itineraries/{id}/view', [ExploreCreatorItineraryController::class, 'recordView']);
-
-// Explore Creator Itineraries (authenticated)
-Route::middleware('auth:api')->group(function () {
-    Route::post('/explore/creator-itineraries/{id}/like', [ExploreCreatorItineraryController::class, 'toggleLike']);
-});
-
-// Itinerary edit data (edit-data requires auth, city lookups are public for guest editing)
-Route::middleware('auth:api')->group(function () {
-    Route::get('/itineraries/{slug}/edit-data', [PublicItineraryController::class, 'editData']);
-});
-Route::get('/itineraries/{slug}/city-activities', [PublicItineraryController::class, 'cityActivities']);
-Route::get('/itineraries/{slug}/city-transfers', [PublicItineraryController::class, 'cityTransfers']);
-Route::get('/itineraries/{slug}/city-places', [PublicItineraryController::class, 'cityPlaces']);
 
 // Notifications (all authenticated users)
 Route::middleware('auth:api')->group(function () {

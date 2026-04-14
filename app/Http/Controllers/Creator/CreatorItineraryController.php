@@ -441,4 +441,275 @@ class CreatorItineraryController extends Controller
             ], 201);
         });
     }
+
+    // ==================== EXPLORE METHODS (merged from ExploreCreatorItineraryController) ====================
+
+    public function exploreIndex(Request $request): JsonResponse
+    {
+        $query = \App\Models\Itinerary::creatorCopies()->approved()
+            ->with([
+                'creator:id,name,email',
+                'creator.profile:id,user_id,avatar',
+                'locations:id,itinerary_id,city_id',
+                'locations.city:id,name',
+                'mediaGallery' => fn($q) => $q->featured()->with('media:id,url')->limit(1),
+                'basePricing.variations' => fn($q) => $q->limit(1),
+                'schedules:id,itinerary_id',
+            ]);
+
+        if ($request->query('source') === 'mine') {
+            $user = Auth::guard('api')->user();
+            if ($user) {
+                $query->whereHas('meta', fn($q) => $q->where('creator_id', $user->id));
+            } else {
+                return response()->json([
+                    'success' => true,
+                    'data' => [],
+                    'current_page' => 1,
+                    'last_page' => 1,
+                ]);
+            }
+        }
+
+        switch ($request->query('sort', 'latest')) {
+            case 'oldest':
+                $query->orderBy('itineraries.created_at', 'asc');
+                break;
+            case 'top_rated':
+                $query->join('itinerary_meta', 'itineraries.id', '=', 'itinerary_meta.itinerary_id')
+                      ->orderBy('itinerary_meta.likes_count', 'desc')
+                      ->orderBy('itineraries.created_at', 'desc')
+                      ->select('itineraries.*');
+                break;
+            case 'most_viewed':
+                $query->join('itinerary_meta', 'itineraries.id', '=', 'itinerary_meta.itinerary_id')
+                      ->orderBy('itinerary_meta.views_count', 'desc')
+                      ->orderBy('itineraries.created_at', 'desc')
+                      ->select('itineraries.*');
+                break;
+            default:
+                $query->orderBy('itineraries.created_at', 'desc');
+                break;
+        }
+
+        $paginated = $query->paginate(15);
+        $userId = Auth::guard('api')->id();
+
+        $likedIds = $userId
+            ? \App\Models\ItineraryLike::where('user_id', $userId)
+                ->whereIn('itinerary_id', $paginated->pluck('id'))
+                ->pluck('itinerary_id')
+                ->toArray()
+            : [];
+
+        $collection = $paginated->getCollection()->map(function (\App\Models\Itinerary $itinerary) use ($userId, $likedIds) {
+            $featuredMedia = $itinerary->mediaGallery->first();
+            $variation = $itinerary->basePricing?->variations->first();
+
+            return [
+                'id' => $itinerary->id,
+                'name' => $itinerary->name,
+                'slug' => $itinerary->slug,
+                'description' => $itinerary->description,
+                'creator' => $itinerary->creator,
+                'locations' => $itinerary->locations,
+                'is_liked' => in_array($itinerary->id, $likedIds),
+                'day_count' => $itinerary->schedules->count(),
+                'featured_image' => $featuredMedia?->media?->url,
+                'display_price' => $variation?->sale_price ?? $variation?->regular_price,
+                'currency' => $itinerary->basePricing?->currency,
+                'likes_count' => $itinerary->likes_count,
+                'views_count' => $itinerary->views_count,
+                'created_at' => $itinerary->created_at,
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'data' => $collection,
+            'current_page' => $paginated->currentPage(),
+            'last_page' => $paginated->lastPage(),
+        ]);
+    }
+
+    public function exploreShow(int $id): JsonResponse
+    {
+        $itinerary = \App\Models\Itinerary::creatorCopies()->approved()
+            ->with([
+                'creator:id,name,email',
+                'creator.profile:id,user_id,avatar',
+                'locations.city',
+                'schedules.activities.activity',
+                'schedules.transfers.transfer',
+                'mediaGallery.media',
+                'basePricing.variations',
+                'inclusionsExclusions',
+                'categories.category',
+                'tags.tag',
+            ])
+            ->findOrFail($id);
+
+        return response()->json(['success' => true, 'data' => $itinerary]);
+    }
+
+    public function toggleLike(int $id): JsonResponse
+    {
+        $user = Auth::guard('api')->user();
+        $itinerary = \App\Models\Itinerary::creatorCopies()->approved()->findOrFail($id);
+
+        $existing = \App\Models\ItineraryLike::where('itinerary_id', $itinerary->id)
+            ->where('user_id', $user->id)
+            ->first();
+
+        if ($existing) {
+            $existing->delete();
+            $itinerary->meta?->decrement('likes_count');
+
+            return response()->json([
+                'success' => true,
+                'liked' => false,
+                'likes_count' => $itinerary->fresh()->likes_count,
+            ]);
+        }
+
+        \App\Models\ItineraryLike::create([
+            'itinerary_id' => $itinerary->id,
+            'user_id' => $user->id,
+        ]);
+        $itinerary->meta?->increment('likes_count');
+
+        return response()->json([
+            'success' => true,
+            'liked' => true,
+            'likes_count' => $itinerary->fresh()->likes_count,
+        ]);
+    }
+
+    public function recordView(int $id): JsonResponse
+    {
+        $itinerary = \App\Models\Itinerary::creatorCopies()->approved()->findOrFail($id);
+        $itinerary->meta?->increment('views_count');
+
+        return response()->json([
+            'success' => true,
+            'views_count' => $itinerary->fresh()->views_count,
+        ]);
+    }
+
+    // ==================== RESOURCE METHODS ====================
+
+    public function getCities(Request $request): JsonResponse
+    {
+        $query = \App\Models\City::with(['state.country'])
+            ->select('id', 'name', 'slug', 'state_id');
+
+        if ($request->has('search')) {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
+
+        $cities = $query->orderBy('name')
+            ->paginate($request->get('per_page', 100));
+
+        return response()->json([
+            'success' => true,
+            'data' => $cities->items(),
+            'total' => $cities->total(),
+        ]);
+    }
+
+    public function getActivities(Request $request): JsonResponse
+    {
+        $request->validate(['city_id' => 'required|integer|exists:cities,id']);
+
+        $query = \App\Models\Activity::whereHas('locations', function ($q) use ($request) {
+            $q->where('city_id', $request->city_id);
+        })
+            ->with(['tags.tag', 'mediaGallery' => function ($q) {
+                $q->where('is_featured', true);
+            }, 'mediaGallery.media', 'locations.city'])
+            ->select('id', 'name', 'slug', 'description', 'item_type', 'featured_activity');
+
+        if ($request->has('search')) {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
+
+        $activities = $query->get()->map(function ($activity) {
+            $primaryLocation = $activity->locations->where('location_type', 'primary')->first()
+                ?? $activity->locations->first();
+            $featuredMedia = $activity->mediaGallery->where('is_featured', true)->first();
+
+            return [
+                'id' => $activity->id,
+                'name' => $activity->name,
+                'slug' => $activity->slug,
+                'city_name' => $primaryLocation?->city?->name,
+                'place_name' => $primaryLocation?->place?->name,
+                'duration_minutes' => $primaryLocation?->duration,
+                'type' => $activity->item_type,
+                'featured_image' => $featuredMedia?->media?->url,
+                'tags' => $activity->tags->map(fn($t) => [
+                    'id' => $t->tag?->id,
+                    'name' => $t->tag?->name,
+                ]),
+            ];
+        });
+
+        return response()->json(['success' => true, 'data' => $activities]);
+    }
+
+    public function getTransfers(Request $request): JsonResponse
+    {
+        $request->validate(['city_id' => 'required|integer|exists:cities,id']);
+
+        $placeIds = \App\Models\Place::where('city_id', $request->city_id)->pluck('id');
+
+        $transfers = \App\Models\Transfer::whereHas('vendorRoutes', function ($query) use ($placeIds) {
+            $query->whereIn('pickup_place_id', $placeIds);
+        })
+            ->select('id', 'name', 'slug', 'transfer_type', 'description')
+            ->with(['vendorRoutes.pickupPlace.city', 'vendorRoutes.dropoffPlace.city', 'mediaGallery' => function ($q) {
+                $q->where('is_featured', true);
+            }, 'mediaGallery.media'])
+            ->get()
+            ->map(function ($transfer) {
+                $featuredMedia = $transfer->mediaGallery->where('is_featured', true)->first();
+                $route = $transfer->vendorRoutes?->first();
+
+                return [
+                    'id' => $transfer->id,
+                    'name' => $transfer->name,
+                    'slug' => $transfer->slug,
+                    'vehicle_type' => $route?->vehicle_type,
+                    'featured_image' => $featuredMedia?->media?->url,
+                    'pickup_city_name' => $route?->pickupPlace?->city?->name,
+                    'dropoff_city_name' => $route?->dropoffPlace?->city?->name,
+                ];
+            });
+
+        return response()->json(['success' => true, 'data' => $transfers]);
+    }
+
+    public function getEditData(string $slug): JsonResponse
+    {
+        $itinerary = \App\Models\Itinerary::with([
+            'locations',
+            'schedules.activities',
+            'schedules.transfers',
+            'basePricing',
+            'inclusionsExclusions',
+            'mediaGallery',
+        ])->original()->where('slug', $slug)->first();
+
+        if (!$itinerary) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Itinerary not found',
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $itinerary,
+        ]);
+    }
 }
