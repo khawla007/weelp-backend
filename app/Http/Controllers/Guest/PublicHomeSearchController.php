@@ -308,6 +308,8 @@ class PublicHomeSearchController extends Controller
             'locations.city',
             'basePricing.variations',
             'mediaGallery.media',
+            'schedules.activities:id,schedule_id,price',
+            'schedules.transfers:id,schedule_id,price',
         ])->whereHas('locations', function ($q) use ($cityIds) {
             $q->whereIn('city_id', $cityIds);
         });
@@ -404,6 +406,7 @@ class PublicHomeSearchController extends Controller
                     'slug' => $tag->slug,
                     'name' => $tag->name,
                 ])->toArray(),
+                'schedule_total_price' => $itinerary->schedule_total_price,
                 'base_pricing' => $itinerary->basePricing ? [
                     'currency' => $itinerary->basePricing->currency,
                     'availability' => $itinerary->basePricing->availability,

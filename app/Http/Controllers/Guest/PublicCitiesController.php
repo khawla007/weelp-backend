@@ -248,7 +248,14 @@ class PublicCitiesController extends Controller
 
         $itineraries = (!$itemType || $itemType === 'itinerary')
             ? Itinerary::whereHas('locations', fn($query) => $query->where('city_id', $city->id))
-                ->with(['basePricing.variations', 'mediaGallery.media', 'categories.category', 'tags'])
+                ->with([
+                    'basePricing.variations',
+                    'mediaGallery.media',
+                    'categories.category',
+                    'tags',
+                    'schedules.activities:id,schedule_id,price',
+                    'schedules.transfers:id,schedule_id,price',
+                ])
             : null;
 
         $packages = (!$itemType || $itemType === 'package')
@@ -302,6 +309,7 @@ class PublicCitiesController extends Controller
                 'featured' => $itinerary->featured_itinerary,
                 'featured_image' => $itinerary->mediaGallery->where('is_featured', true)->first()?->media?->url
                     ?? $itinerary->mediaGallery->first()?->media?->url,
+                'schedule_total_price' => $itinerary->schedule_total_price,
                 'base_pricing' => $itinerary->basePricing,
                 'categories' => $itinerary->categories->map(fn($category) => [
                     'slug' => $category->category->slug,

@@ -200,7 +200,9 @@ class PublicRegionController extends Controller
             'basePricing.variations',
             'mediaGallery.media',
             'categories.category',
-            'tags'
+            'tags',
+            'schedules.activities:id,schedule_id,price',
+            'schedules.transfers:id,schedule_id,price',
         ])->where('featured_itinerary', true)->get();
 
         if ($itineraries->isEmpty()) {
@@ -245,6 +247,7 @@ class PublicRegionController extends Controller
                         'name' => $tag->name,
                     ];
                 })->toArray(),
+                'schedule_total_price' => $itinerary->schedule_total_price,
                 'base_pricing' => $itinerary->basePricing,
                 'media_gallery' => $itinerary->mediaGallery,
             ];
@@ -413,7 +416,14 @@ class PublicRegionController extends Controller
         $itineraries = (!$itemType || $itemType === 'itinerary')
             ? Itinerary::whereHas('locations', fn ($query) =>
                 $query->where('city_id', $city->id)
-            )->with(['basePricing.variations', 'mediaGallery.media', 'categories.category', 'tags'])
+            )->with([
+                'basePricing.variations',
+                'mediaGallery.media',
+                'categories.category',
+                'tags',
+                'schedules.activities:id,schedule_id,price',
+                'schedules.transfers:id,schedule_id,price',
+            ])
             : null;
 
         $packages = (!$itemType || $itemType === 'package')
@@ -468,6 +478,7 @@ class PublicRegionController extends Controller
                 'featured' => $itinerary->featured_itinerary,
                 'featured_image' => $itinerary->mediaGallery->where('is_featured', true)->first()?->media?->url
                     ?? $itinerary->mediaGallery->first()?->media?->url,
+                'schedule_total_price' => $itinerary->schedule_total_price,
                 'base_pricing' => $itinerary->basePricing,
                 // 'rating' => $itinerary->rating,
                 'categories' => $itinerary->categories->map(fn ($category) => [
