@@ -168,11 +168,14 @@ class CustomerItineraryController extends Controller
                 'parentItinerary',
                 'mediaGallery.media',
                 'locations.city',
-                'schedules.activities',
-                'schedules.transfers',
+                'schedules' => fn($q) => $q->orderBy('day'),
+                'schedules.activities.activity.mediaGallery.media',
+                'schedules.transfers.transfer.mediaGallery.media',
             ])
             ->latest()
             ->paginate(15);
+
+        $itineraries->getCollection()->each->append(['featured_image', 'gallery_images']);
 
         return response()->json([
             'success' => true,

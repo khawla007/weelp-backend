@@ -22,6 +22,7 @@ class TransferController extends Controller
         $perPage = 3;
         $page = $request->get('page', 1);
         $sortBy = $request->get('sort_by', 'id_desc');
+        $fetchAll = $request->boolean('all');
     
         $search = $request->get('search');
         $vehicleType = $request->get('vehicle_type');
@@ -158,9 +159,14 @@ class TransferController extends Controller
                 break;
         }
     
-        $paginated = $query->paginate($perPage, ['*'], 'page', $page);
-    
-        $transformed = $paginated->getCollection()->map(function ($transfer) {
+        if ($fetchAll) {
+            $collection = $query->get();
+        } else {
+            $paginated = $query->paginate($perPage, ['*'], 'page', $page);
+            $collection = $paginated->getCollection();
+        }
+
+        $transformed = $collection->map(function ($transfer) {
             $data = $transfer->toArray();
 
             $data['media_gallery'] = collect($transfer->mediaGallery)->map(function ($media) {
@@ -194,6 +200,14 @@ class TransferController extends Controller
             return $data;
         });
     
+        if ($fetchAll) {
+            return response()->json([
+                'success' => true,
+                'data'    => $transformed,
+                'total'   => $transformed->count(),
+            ]);
+        }
+
         return response()->json([
             'success'      => true,
             'data'         => $transformed,
@@ -201,7 +215,7 @@ class TransferController extends Controller
             'per_page'     => $paginated->perPage(),
             'total'        => $paginated->total(),
         ]);
-    }    
+    }
 
     /**
      * Store a newly created transfers in storage.

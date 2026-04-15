@@ -850,7 +850,7 @@ class ItineraryController extends Controller
 
             // If pricing is present in request, create or update it
             if ($request->has('pricing')) {
-                $pricing = $itinerary->basePricing()->firstOrCreate([]);
+                $pricing = $itinerary->basePricing()->firstOrNew([]);
                 $pricing->fill($request->pricing)->save();
             }
 

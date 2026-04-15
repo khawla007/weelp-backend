@@ -80,7 +80,7 @@ class CreatorItineraryController extends Controller
                 'locations.city',
                 'schedules.activities.activity.mediaGallery.media',
                 'schedules.activities.activity.locations.city',
-                'schedules.transfers.transfer',
+                'schedules.transfers.transfer.mediaGallery.media',
             ])
             ->find($id);
 
@@ -88,36 +88,66 @@ class CreatorItineraryController extends Controller
             return response()->json(['success' => false, 'message' => 'Draft not found.'], 404);
         }
 
+        $shapeMediaGallery = function ($model) {
+            return collect($model?->mediaGallery ?? [])->map(function ($m) {
+                return [
+                    'id'          => $m->id,
+                    'media_id'    => $m->media_id,
+                    'name'        => $m->media->name ?? null,
+                    'alt_text'    => $m->media->alt_text ?? null,
+                    'url'         => $m->media->url ?? null,
+                    'is_featured' => $m->is_featured ?? false,
+                ];
+            })->values();
+        };
+
         $data = $draft->toArray();
-        $data['schedules'] = $draft->schedules->map(function ($schedule) {
+        $data['schedules'] = $draft->schedules->map(function ($schedule) use ($shapeMediaGallery) {
             return [
                 'day' => $schedule->day,
                 'title' => $schedule->title,
-                'activities' => $schedule->activities->map(function ($activity) {
+                'activities' => $schedule->activities->map(function ($activity) use ($shapeMediaGallery) {
                     $activityModel = $activity->activity;
+                    $activitydata = $activityModel ? [
+                        'id'            => $activityModel->id,
+                        'name'          => $activityModel->name,
+                        'slug'          => $activityModel->slug,
+                        'media_gallery' => $shapeMediaGallery($activityModel),
+                    ] : null;
+
                     return [
-                        'id' => $activity->id,
-                        'activity_id' => $activity->activity_id,
-                        'name' => $activityModel?->name,
-                        'start_time' => $activity->start_time,
-                        'end_time' => $activity->end_time,
-                        'notes' => $activity->notes,
-                        'price' => $activity->price,
-                        'included' => $activity->included,
+                        'id'           => $activity->id,
+                        'activity_id'  => $activity->activity_id,
+                        'name'         => $activityModel?->name,
+                        'start_time'   => $activity->start_time,
+                        'end_time'     => $activity->end_time,
+                        'notes'        => $activity->notes,
+                        'price'        => $activity->price,
+                        'included'     => $activity->included,
+                        'activitydata' => $activitydata,
                     ];
                 }),
-                'transfers' => $schedule->transfers->map(function ($transfer) {
+                'transfers' => $schedule->transfers->map(function ($transfer) use ($shapeMediaGallery) {
+                    $transferModel = $transfer->transfer;
+                    $transferData = $transferModel ? [
+                        'id'            => $transferModel->id,
+                        'name'          => $transferModel->name,
+                        'slug'          => $transferModel->slug,
+                        'media_gallery' => $shapeMediaGallery($transferModel),
+                    ] : null;
+
                     return [
-                        'id' => $transfer->id,
-                        'transfer_id' => $transfer->transfer_id,
-                        'name' => $transfer->transfer?->name,
-                        'start_time' => $transfer->start_time,
-                        'end_time' => $transfer->end_time,
-                        'pickup_location' => $transfer->pickup_location,
+                        'id'               => $transfer->id,
+                        'transfer_id'      => $transfer->transfer_id,
+                        'name'             => $transferModel?->name,
+                        'start_time'       => $transfer->start_time,
+                        'end_time'         => $transfer->end_time,
+                        'pickup_location'  => $transfer->pickup_location,
                         'dropoff_location' => $transfer->dropoff_location,
-                        'pax' => $transfer->pax,
-                        'price' => $transfer->price,
-                        'included' => $transfer->included,
+                        'pax'              => $transfer->pax,
+                        'price'            => $transfer->price,
+                        'included'         => $transfer->included,
+                        'transferData'     => $transferData,
                     ];
                 }),
             ];
@@ -160,82 +190,127 @@ class CreatorItineraryController extends Controller
             return response()->json(['success' => false, 'message' => 'Draft not found.'], 404);
         }
 
-        $request->validate([
+        $validated = $request->validate([
             'name' => 'sometimes|string|max:255',
+            'slug' => 'sometimes|string|max:255',
             'description' => 'nullable|string',
-            'schedules' => 'nullable|array',
+            'locations' => 'nullable|array',
+            'locations.*' => 'integer|exists:cities,id',
+            'schedules' => 'nullable|array|required_with:activities,transfers',
+            'schedules.*.day' => 'required|integer',
+            'schedules.*.title' => 'nullable|string|max:255',
+            'activities' => 'nullable|array',
+            'activities.*.day' => 'required|integer',
+            'activities.*.activity_id' => 'required|exists:activities,id',
+            'activities.*.start_time' => 'nullable|string',
+            'activities.*.end_time' => 'nullable|string',
+            'activities.*.price' => 'nullable|numeric',
+            'activities.*.included' => 'boolean',
+            'activities.*.notes' => 'nullable|string',
+            'transfers' => 'nullable|array',
+            'transfers.*.day' => 'required|integer',
+            'transfers.*.transfer_id' => 'required|exists:transfers,id',
+            'transfers.*.start_time' => 'nullable|string',
+            'transfers.*.end_time' => 'nullable|string',
+            'transfers.*.pickup_location' => 'nullable|string',
+            'transfers.*.dropoff_location' => 'nullable|string',
+            'transfers.*.pax' => 'nullable|integer',
+            'transfers.*.price' => 'nullable|numeric',
+            'transfers.*.included' => 'boolean',
+            'transfers.*.notes' => 'nullable|string',
         ]);
 
-        if ($request->has('name')) {
-            $name = $request->name;
-            $baseSlug = Str::slug($name);
-            $slug = $baseSlug . '-c' . Auth::id() . '-' . time();
+        return DB::transaction(function () use ($validated, $draft) {
+            if (array_key_exists('name', $validated)) {
+                $name = $validated['name'];
+                $baseSlug = $validated['slug'] ?? Str::slug($name);
+                $slug = $baseSlug;
 
-            while (Itinerary::where('slug', $slug)->where('id', '!=', $draft->id)->exists()) {
-                $slug = $baseSlug . '-c' . Auth::id() . '-' . time() . '-' . Str::random(4);
+                while (Itinerary::where('slug', $slug)->where('id', '!=', $draft->id)->exists()) {
+                    $slug = $baseSlug . '-' . Str::random(4);
+                }
+
+                $draft->update([
+                    'name' => $name,
+                    'slug' => $slug,
+                ]);
             }
 
-            $draft->update([
-                'name' => $name,
-                'slug' => $slug,
-                'description' => $request->description ?? $draft->description,
-            ]);
-        } elseif ($request->has('description')) {
-            $draft->update(['description' => $request->description]);
-        }
+            if (array_key_exists('description', $validated)) {
+                $draft->update(['description' => $validated['description']]);
+            }
 
-        if ($request->has('schedules')) {
-            $draft->schedules()->each(function ($schedule) {
-                $schedule->activities()->delete();
-                $schedule->transfers()->delete();
-                $schedule->delete();
-            });
+            if (array_key_exists('locations', $validated)) {
+                \App\Models\ItineraryLocation::where('itinerary_id', $draft->id)->delete();
+                foreach ($validated['locations'] as $cityId) {
+                    \App\Models\ItineraryLocation::create([
+                        'itinerary_id' => $draft->id,
+                        'city_id' => $cityId,
+                    ]);
+                }
+            }
 
-            foreach ($request->schedules as $scheduleData) {
-                $schedule = \App\Models\ItinerarySchedule::create([
-                    'itinerary_id' => $draft->id,
-                    'day' => $scheduleData['day'],
-                    'title' => $scheduleData['title'] ?? null,
-                ]);
+            if (array_key_exists('schedules', $validated)) {
+                $draft->schedules()->each(function ($schedule) {
+                    $schedule->activities()->delete();
+                    $schedule->transfers()->delete();
+                    $schedule->delete();
+                });
 
-                if (!empty($scheduleData['activities'])) {
-                    foreach ($scheduleData['activities'] as $activityData) {
+                $scheduleMap = [];
+                foreach ($validated['schedules'] as $scheduleData) {
+                    $schedule = \App\Models\ItinerarySchedule::create([
+                        'itinerary_id' => $draft->id,
+                        'day' => $scheduleData['day'],
+                        'title' => $scheduleData['title'] ?? null,
+                    ]);
+                    $scheduleMap[$scheduleData['day']] = $schedule->id;
+                }
+
+                if (!empty($validated['activities'])) {
+                    foreach ($validated['activities'] as $activityData) {
+                        if (!isset($scheduleMap[$activityData['day']])) {
+                            continue;
+                        }
                         \App\Models\ItineraryActivity::create([
-                            'schedule_id' => $schedule->id,
+                            'schedule_id' => $scheduleMap[$activityData['day']],
                             'activity_id' => $activityData['activity_id'],
                             'start_time' => $activityData['start_time'] ?? null,
                             'end_time' => $activityData['end_time'] ?? null,
-                            'notes' => $activityData['notes'] ?? null,
                             'price' => $activityData['price'] ?? null,
                             'included' => $activityData['included'] ?? true,
+                            'notes' => $activityData['notes'] ?? null,
                         ]);
                     }
                 }
 
-                if (!empty($scheduleData['transfers'])) {
-                    foreach ($scheduleData['transfers'] as $transferData) {
+                if (!empty($validated['transfers'])) {
+                    foreach ($validated['transfers'] as $transferData) {
+                        if (!isset($scheduleMap[$transferData['day']])) {
+                            continue;
+                        }
                         \App\Models\ItineraryTransfer::create([
-                            'schedule_id' => $schedule->id,
+                            'schedule_id' => $scheduleMap[$transferData['day']],
                             'transfer_id' => $transferData['transfer_id'],
-                            'pickup_location' => $transferData['pickup_location'] ?? null,
-                            'dropoff_location' => $transferData['dropoff_location'] ?? null,
                             'start_time' => $transferData['start_time'] ?? null,
                             'end_time' => $transferData['end_time'] ?? null,
-                            'notes' => $transferData['notes'] ?? null,
+                            'pickup_location' => $transferData['pickup_location'] ?? null,
+                            'dropoff_location' => $transferData['dropoff_location'] ?? null,
+                            'pax' => $transferData['pax'] ?? null,
                             'price' => $transferData['price'] ?? null,
                             'included' => $transferData['included'] ?? true,
-                            'pax' => $transferData['pax'] ?? null,
+                            'notes' => $transferData['notes'] ?? null,
                         ]);
                     }
                 }
             }
-        }
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Draft updated.',
-            'data' => $draft->fresh(['schedules.activities', 'schedules.transfers', 'locations']),
-        ]);
+            return response()->json([
+                'success' => true,
+                'message' => 'Draft updated.',
+                'data' => $draft->fresh(['locations.city', 'schedules.activities', 'schedules.transfers']),
+            ]);
+        });
     }
 
     public function submitDraft($id): JsonResponse
@@ -448,13 +523,15 @@ class CreatorItineraryController extends Controller
     {
         $query = \App\Models\Itinerary::creatorCopies()->approved()
             ->with([
-                'creator:id,name,email',
+                'creator:users.id,users.name,users.email',
                 'creator.profile:id,user_id,avatar',
                 'locations:id,itinerary_id,city_id',
                 'locations.city:id,name',
-                'mediaGallery' => fn($q) => $q->featured()->with('media:id,url')->limit(1),
+                'mediaGallery.media',
                 'basePricing.variations' => fn($q) => $q->limit(1),
-                'schedules:id,itinerary_id',
+                'schedules' => fn($q) => $q->orderBy('day'),
+                'schedules.activities.activity.mediaGallery.media',
+                'schedules.transfers.transfer.mediaGallery.media',
             ]);
 
         if ($request->query('source') === 'mine') {
@@ -503,7 +580,6 @@ class CreatorItineraryController extends Controller
             : [];
 
         $collection = $paginated->getCollection()->map(function (\App\Models\Itinerary $itinerary) use ($userId, $likedIds) {
-            $featuredMedia = $itinerary->mediaGallery->first();
             $variation = $itinerary->basePricing?->variations->first();
 
             return [
@@ -515,7 +591,7 @@ class CreatorItineraryController extends Controller
                 'locations' => $itinerary->locations,
                 'is_liked' => in_array($itinerary->id, $likedIds),
                 'day_count' => $itinerary->schedules->count(),
-                'featured_image' => $featuredMedia?->media?->url,
+                'featured_image' => $itinerary->featured_image,
                 'display_price' => $variation?->sale_price ?? $variation?->regular_price,
                 'currency' => $itinerary->basePricing?->currency,
                 'likes_count' => $itinerary->likes_count,
@@ -619,15 +695,26 @@ class CreatorItineraryController extends Controller
 
     public function getActivities(Request $request): JsonResponse
     {
-        $request->validate(['city_id' => 'required|integer|exists:cities,id']);
+        // Accept either city_id (single) or city_ids (comma-separated list)
+        $cityIds = $request->get('city_ids');
+        $cityId  = $request->get('city_id');
 
-        $query = \App\Models\Activity::whereHas('locations', function ($q) use ($request) {
-            $q->where('city_id', $request->city_id);
-        })
-            ->with(['tags.tag', 'mediaGallery' => function ($q) {
-                $q->where('is_featured', true);
-            }, 'mediaGallery.media', 'locations.city'])
+        $cityIdArray = [];
+        if ($cityIds) {
+            $cityIdArray = array_filter(array_map('intval', explode(',', $cityIds)));
+        } elseif ($cityId) {
+            $cityIdArray = [(int) $cityId];
+        }
+
+        $query = \App\Models\Activity::query()
+            ->with(['tags.tag', 'mediaGallery.media', 'locations.city', 'locations.place'])
             ->select('id', 'name', 'slug', 'description', 'item_type', 'featured_activity');
+
+        if (!empty($cityIdArray)) {
+            $query->whereHas('locations', function ($q) use ($cityIdArray) {
+                $q->whereIn('city_id', $cityIdArray);
+            });
+        }
 
         if ($request->has('search')) {
             $query->where('name', 'like', '%' . $request->search . '%');
@@ -636,19 +723,30 @@ class CreatorItineraryController extends Controller
         $activities = $query->get()->map(function ($activity) {
             $primaryLocation = $activity->locations->where('location_type', 'primary')->first()
                 ?? $activity->locations->first();
-            $featuredMedia = $activity->mediaGallery->where('is_featured', true)->first();
+
+            $mediaGallery = collect($activity->mediaGallery)->map(function ($m) {
+                return [
+                    'id'          => $m->id,
+                    'media_id'    => $m->media_id,
+                    'name'        => $m->media->name ?? null,
+                    'alt_text'    => $m->media->alt_text ?? null,
+                    'url'         => $m->media->url ?? null,
+                    'is_featured' => $m->is_featured ?? false,
+                ];
+            });
 
             return [
-                'id' => $activity->id,
-                'name' => $activity->name,
-                'slug' => $activity->slug,
-                'city_name' => $primaryLocation?->city?->name,
-                'place_name' => $primaryLocation?->place?->name,
+                'id'               => $activity->id,
+                'name'             => $activity->name,
+                'slug'             => $activity->slug,
+                'city_name'        => $primaryLocation?->city?->name,
+                'place_name'       => $primaryLocation?->place?->name,
                 'duration_minutes' => $primaryLocation?->duration,
-                'type' => $activity->item_type,
-                'featured_image' => $featuredMedia?->media?->url,
-                'tags' => $activity->tags->map(fn($t) => [
-                    'id' => $t->tag?->id,
+                'type'             => $activity->item_type,
+                'featured_image'   => $mediaGallery->firstWhere('is_featured', true)['url'] ?? $mediaGallery->first()['url'] ?? null,
+                'media_gallery'    => $mediaGallery->values(),
+                'tags'             => $activity->tags->map(fn($t) => [
+                    'id'   => $t->tag?->id,
                     'name' => $t->tag?->name,
                 ]),
             ];
@@ -659,32 +757,63 @@ class CreatorItineraryController extends Controller
 
     public function getTransfers(Request $request): JsonResponse
     {
-        $request->validate(['city_id' => 'required|integer|exists:cities,id']);
+        // Accept optional city_id (single) or city_ids (comma-separated list)
+        $cityIds = $request->get('city_ids');
+        $cityId  = $request->get('city_id');
 
-        $placeIds = \App\Models\Place::where('city_id', $request->city_id)->pluck('id');
+        $cityIdArray = [];
+        if ($cityIds) {
+            $cityIdArray = array_filter(array_map('intval', explode(',', $cityIds)));
+        } elseif ($cityId) {
+            $cityIdArray = [(int) $cityId];
+        }
 
-        $transfers = \App\Models\Transfer::whereHas('vendorRoutes', function ($query) use ($placeIds) {
-            $query->whereIn('pickup_place_id', $placeIds);
-        })
+        $query = \App\Models\Transfer::query()
             ->select('id', 'name', 'slug', 'transfer_type', 'description')
-            ->with(['vendorRoutes.pickupPlace.city', 'vendorRoutes.dropoffPlace.city', 'mediaGallery' => function ($q) {
-                $q->where('is_featured', true);
-            }, 'mediaGallery.media'])
-            ->get()
-            ->map(function ($transfer) {
-                $featuredMedia = $transfer->mediaGallery->where('is_featured', true)->first();
-                $route = $transfer->vendorRoutes?->first();
+            ->with([
+                'vendorRoutes.pickupPlace.city',
+                'vendorRoutes.dropoffPlace.city',
+                'mediaGallery.media',
+            ]);
 
+        if (!empty($cityIdArray)) {
+            $placeIds = \App\Models\Place::whereIn('city_id', $cityIdArray)->pluck('id');
+            $query->whereHas('vendorRoutes', function ($q) use ($placeIds) {
+                $q->whereIn('pickup_place_id', $placeIds);
+            });
+        }
+
+        $transfers = $query->get()->map(function ($transfer) {
+            $route = $transfer->vendorRoutes;
+
+            $mediaGallery = collect($transfer->mediaGallery)->map(function ($m) {
                 return [
-                    'id' => $transfer->id,
-                    'name' => $transfer->name,
-                    'slug' => $transfer->slug,
-                    'vehicle_type' => $route?->vehicle_type,
-                    'featured_image' => $featuredMedia?->media?->url,
-                    'pickup_city_name' => $route?->pickupPlace?->city?->name,
-                    'dropoff_city_name' => $route?->dropoffPlace?->city?->name,
+                    'id'          => $m->id,
+                    'media_id'    => $m->media_id,
+                    'name'        => $m->media->name ?? null,
+                    'alt_text'    => $m->media->alt_text ?? null,
+                    'url'         => $m->media->url ?? null,
+                    'is_featured' => $m->is_featured ?? false,
                 ];
             });
+
+            return [
+                'id'                => $transfer->id,
+                'name'              => $transfer->name,
+                'slug'              => $transfer->slug,
+                'vehicle_type'      => $route?->vehicle_type,
+                'featured_image'    => $mediaGallery->firstWhere('is_featured', true)['url'] ?? $mediaGallery->first()['url'] ?? null,
+                'media_gallery'     => $mediaGallery->values(),
+                'pickup_city_name'  => $route?->pickupPlace?->city?->name,
+                'dropoff_city_name' => $route?->dropoffPlace?->city?->name,
+                'vendor_routes'     => [
+                    'pickup_place_id'  => $route?->pickup_place_id,
+                    'dropoff_place_id' => $route?->dropoff_place_id,
+                    'pickup_city_id'   => $route?->pickupPlace?->city_id,
+                    'dropoff_city_id'  => $route?->dropoffPlace?->city_id,
+                ],
+            ];
+        });
 
         return response()->json(['success' => true, 'data' => $transfers]);
     }

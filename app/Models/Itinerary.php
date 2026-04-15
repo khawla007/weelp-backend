@@ -140,6 +140,15 @@ class Itinerary extends Model
         return $saved;
     }
 
+    public function toArray()
+    {
+        $array = parent::toArray();
+        foreach ($this->metaAttributes as $key) {
+            $array[$key] = $this->meta?->$key;
+        }
+        return $array;
+    }
+
     // ─── Delegated Relationships ─────────────────────────────────────
 
     public function creator()
@@ -335,43 +344,39 @@ class Itinerary extends Model
 
     /**
      * Get the featured image URL with fallback logic
-     * Priority: itinerary featured → first activity → first transfer → null
+     * Priority: itinerary (featured → first) → day 1 first activity (featured → first) → day 1 first transfer (featured → first) → null
      */
     public function getFeaturedImageAttribute(): ?string
     {
-        // 1. Itinerary featured image
-        $featured = $this->mediaGallery->firstWhere('is_featured', true);
-        if ($featured?->media?->url) {
-            return $featured->media->url;
+        $pickFromGallery = function ($gallery): ?string {
+            if (!$gallery) {
+                return null;
+            }
+            return $gallery->firstWhere('is_featured', true)?->media?->url
+                ?? $gallery->first()?->media?->url;
+        };
+
+        // 1. Itinerary gallery (featured → first)
+        if ($url = $pickFromGallery($this->mediaGallery)) {
+            return $url;
         }
 
-        // 2. First activity's first image
-        $firstActivity = $this->schedules->first()?->activities->first();
-        if ($firstActivity) {
-            $activity = $firstActivity->activity;
-            $featured = $activity?->mediaGallery->firstWhere('is_featured', true);
-            if ($featured?->media?->url) {
-                return $featured->media->url;
-            }
-            if ($activity?->mediaGallery->first()?->media?->url) {
-                return $activity->mediaGallery->first()->media->url;
-            }
+        // Day 1 = lowest `day` value
+        $firstDay = $this->schedules->sortBy('day')->first();
+
+        // 2. Day 1 → first activity (featured → first)
+        $firstActivity = $firstDay?->activities->first()?->activity;
+        if ($url = $pickFromGallery($firstActivity?->mediaGallery)) {
+            return $url;
         }
 
-        // 3. First transfer's image
-        $firstTransfer = $this->schedules->first()?->transfers->first();
-        if ($firstTransfer) {
-            $transfer = $firstTransfer->transfer;
-            $featured = $transfer?->mediaGallery->firstWhere('is_featured', true);
-            if ($featured?->media?->url) {
-                return $featured->media->url;
-            }
-            if ($transfer?->mediaGallery->first()?->media?->url) {
-                return $transfer->mediaGallery->first()->media->url;
-            }
+        // 3. Day 1 → first transfer (featured → first)
+        $firstTransfer = $firstDay?->transfers->first()?->transfer;
+        if ($url = $pickFromGallery($firstTransfer?->mediaGallery)) {
+            return $url;
         }
 
-        return null; // No image available
+        return null;
     }
 
     /**
