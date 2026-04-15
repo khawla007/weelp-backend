@@ -21,8 +21,8 @@ class PublicItineraryController extends Controller
     {
         $itineraries = Itinerary::with([
             'locations.city',
-            'schedules.activities',
-            'schedules.transfers',
+            'schedules.activities:id,schedule_id,price',
+            'schedules.transfers:id,schedule_id,price',
             'basePricing.variations',
             'basePricing.blackoutDates',
             'inclusionsExclusions',
@@ -38,6 +38,7 @@ class PublicItineraryController extends Controller
                 'slug' => $itinerary->slug,
                 'featured_itinerary' => $itinerary->featured_itinerary,
                 'description' => $itinerary->description,
+                'schedule_total_price' => $itinerary->schedule_total_price,
                 'item_type' => $itinerary->item_type,
                 'featured_image' => $itinerary->mediaGallery->where('is_featured', true)->first()?->media?->url
                     ?? $itinerary->mediaGallery->first()?->media?->url,
@@ -117,8 +118,8 @@ class PublicItineraryController extends Controller
 
         $query = Itinerary::with([
             'locations.city',
-            'schedules.activities',
-            'schedules.transfers',
+            'schedules.activities:id,schedule_id,price',
+            'schedules.transfers:id,schedule_id,price',
             'basePricing.variations',
             'basePricing.blackoutDates',
             'inclusionsExclusions',
@@ -147,6 +148,7 @@ class PublicItineraryController extends Controller
                 'slug' => $itinerary->slug,
                 'featured_itinerary' => $itinerary->featured_itinerary,
                 'description' => $itinerary->description,
+                'schedule_total_price' => $itinerary->schedule_total_price,
                 'item_type' => $itinerary->item_type,
                 'featured_image' => $itinerary->mediaGallery->where('is_featured', true)->first()?->media?->url
                     ?? $itinerary->mediaGallery->first()?->media?->url,
@@ -250,6 +252,7 @@ class PublicItineraryController extends Controller
             'slug' => $itinerary->slug,
             'featured_itinerary' => $itinerary->featured_itinerary,
             'description' => $itinerary->description,
+            'schedule_total_price' => $itinerary->schedule_total_price,
             'item_type' => $itinerary->item_type,
             'featured_image' => $itinerary->mediaGallery->where('is_featured', true)->first()?->media?->url
                 ?? $itinerary->mediaGallery->first()?->media?->url,
