@@ -101,4 +101,39 @@ class AdminItineraryOrderTest extends TestCase
         $this->assertSame(150.00, (float) $order->payment->total_amount,
             'Admin-created itinerary orders must use server-computed schedule_total_price');
     }
+
+    public function test_admin_order_store_404s_on_nonexistent_itinerary(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $customer = User::factory()->create();
+
+        $payload = [
+            'user_id' => $customer->id,
+            'orderable_type' => 'itinerary',
+            'orderable_id' => 999999, // does not exist
+            'travel_date' => now()->addDays(10)->toDateString(),
+            'preferred_time' => '10:00:00',
+            'number_of_adults' => 2,
+            'number_of_children' => 0,
+            'status' => 'pending',
+            'special_requirements' => null,
+            'payment' => [
+                'payment_status' => 'pending',
+                'payment_method' => 'credit_card',
+                'total_amount' => 5.00,
+                'is_custom_amount' => false,
+                'custom_amount' => 0,
+            ],
+            'emergency_contact' => [
+                'contact_name' => 'Jane Doe',
+                'contact_phone' => '+14155550199',
+                'relationship' => 'spouse',
+            ],
+        ];
+
+        $response = $this->actingAs($admin, 'api')->postJson('/api/admin/orders', $payload);
+
+        $response->assertStatus(404);
+        $this->assertSame(0, Order::count(), 'No order should be created for nonexistent itinerary');
+    }
 }

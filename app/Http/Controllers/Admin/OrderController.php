@@ -46,10 +46,8 @@ class OrderController extends Controller
         // ignoring any admin-supplied total. Mirrors StripeController@createOrder.
         if ($validated['orderable_type'] === 'itinerary') {
             $itinerary = \App\Models\Itinerary::with('schedules.activities', 'schedules.transfers')
-                ->find($validated['orderable_id']);
-            if ($itinerary) {
-                $validated['payment']['total_amount'] = (float) $itinerary->schedule_total_price;
-            }
+                ->findOrFail($validated['orderable_id']);
+            $validated['payment']['total_amount'] = (float) $itinerary->schedule_total_price;
         }
 
         DB::beginTransaction();
