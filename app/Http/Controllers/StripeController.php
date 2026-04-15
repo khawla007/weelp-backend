@@ -59,6 +59,13 @@ class StripeController extends Controller
         $orderable = $orderableClass::findOrFail($data['orderable_id']);
         $totalAmount = $data['is_custom_amount'] ? $data['custom_amount'] : $data['amount'];
 
+        // Server-side enforcement: itineraries charge the sum of their schedule items,
+        // ignoring any client-supplied amount. Prevents tampering.
+        if ($orderable instanceof \App\Models\Itinerary) {
+            $orderable->loadMissing('schedules.activities', 'schedules.transfers');
+            $totalAmount = (float) $orderable->schedule_total_price;
+        }
+
         // Validate creator if provided
         $creatorId = null;
         if (!empty($data['creator_id'])) {
@@ -593,9 +600,10 @@ class StripeController extends Controller
                     break;
             
                 case 'Itinerary':
-                    $itinerary = \App\Models\Itinerary::with('basePricing.variations')->where('id', $orderableId)->first();
+                    $itinerary = \App\Models\Itinerary::with('schedules.activities', 'schedules.transfers')
+                        ->where('id', $orderableId)->first();
                     $itemName = $itinerary?->name;
-                    $itemPrice = $itinerary?->basePricing?->priceVariations?->first()?->regular_price;
+                    $itemPrice = $itinerary?->schedule_total_price;
                     break;
             }
 
