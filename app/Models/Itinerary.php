@@ -78,6 +78,8 @@ class Itinerary extends Model
         'private_itinerary' => 'boolean',
     ];
 
+    protected $appends = ['schedule_total_price'];
+
     // Delegated meta attributes
     protected array $metaAttributes = [
         'creator_id', 'user_id', 'parent_itinerary_id', 'draft_itinerary_id',
@@ -427,6 +429,27 @@ class Itinerary extends Model
         }
 
         return $images;
+    }
+
+    /**
+     * Sum of all per-day activity prices + per-day transfer prices.
+     * This is the canonical "price" of the itinerary.
+     */
+    public function getScheduleTotalPriceAttribute(): float
+    {
+        if (!$this->relationLoaded('schedules')) {
+            $this->load('schedules.activities', 'schedules.transfers');
+        }
+
+        $activitiesSum = $this->schedules
+            ->flatMap(fn ($schedule) => $schedule->activities)
+            ->sum(fn ($row) => (float) ($row->price ?? 0));
+
+        $transfersSum = $this->schedules
+            ->flatMap(fn ($schedule) => $schedule->transfers)
+            ->sum(fn ($row) => (float) ($row->price ?? 0));
+
+        return round($activitiesSum + $transfersSum, 2);
     }
 
 }
