@@ -65,11 +65,13 @@ class ItineraryController extends Controller
             ->join('itinerary_base_pricing', 'itinerary_base_pricing.itinerary_id', '=', 'itineraries.id')
             ->join('itinerary_price_variations', 'itinerary_price_variations.base_pricing_id', '=', 'itinerary_base_pricing.id')
             ->with([
-                'categories.category', 
-                'locations.city', 
-                'basePricing.variations', 
+                'categories.category',
+                'locations.city',
+                'basePricing.variations',
                 'attributes.attribute:id,name',
-                'mediaGallery.media', 'addons.addon'
+                'mediaGallery.media', 'addons.addon',
+                'schedules.activities:id,schedule_id,price',
+                'schedules.transfers:id,schedule_id,price',
             ])
 
             ->when($search, fn($query) =>
