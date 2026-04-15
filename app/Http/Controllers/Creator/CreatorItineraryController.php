@@ -580,8 +580,6 @@ class CreatorItineraryController extends Controller
             : [];
 
         $collection = $paginated->getCollection()->map(function (\App\Models\Itinerary $itinerary) use ($userId, $likedIds) {
-            $variation = $itinerary->basePricing?->variations->first();
-
             return [
                 'id' => $itinerary->id,
                 'name' => $itinerary->name,
@@ -592,7 +590,7 @@ class CreatorItineraryController extends Controller
                 'is_liked' => in_array($itinerary->id, $likedIds),
                 'day_count' => $itinerary->schedules->count(),
                 'featured_image' => $itinerary->featured_image,
-                'display_price' => $variation?->sale_price ?? $variation?->regular_price,
+                'display_price' => $itinerary->schedule_total_price,
                 'currency' => $itinerary->basePricing?->currency,
                 'likes_count' => $itinerary->likes_count,
                 'views_count' => $itinerary->views_count,
