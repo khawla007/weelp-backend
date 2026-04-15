@@ -42,6 +42,16 @@ class OrderController extends Controller
 
         $validated = $request->validate($rules);
 
+        // Server-side enforcement: itineraries charge the sum of their schedule items,
+        // ignoring any admin-supplied total. Mirrors StripeController@createOrder.
+        if ($validated['orderable_type'] === 'itinerary') {
+            $itinerary = \App\Models\Itinerary::with('schedules.activities', 'schedules.transfers')
+                ->find($validated['orderable_id']);
+            if ($itinerary) {
+                $validated['payment']['total_amount'] = (float) $itinerary->schedule_total_price;
+            }
+        }
+
         DB::beginTransaction();
 
         try {
