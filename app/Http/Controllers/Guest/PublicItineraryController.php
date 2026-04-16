@@ -127,7 +127,7 @@ class PublicItineraryController extends Controller
             'seo',
             'categories.category',
             'attributes',
-            'tags'
+            'tags.tag'
         ])
         ->original()
         ->where('featured_itinerary', true);
@@ -140,8 +140,22 @@ class PublicItineraryController extends Controller
             $query->whereHas('locations', fn($q) => $q->where('city_id', $city->id));
         }
 
-        $itineraries = $query->get()
-        ->map(function ($itinerary) {
+        // Tag filter
+        $tagNames = request()->has('tags') ? array_filter(explode(',', request()->get('tags'))) : [];
+        if (!empty($tagNames)) {
+            $query->whereHas('tags.tag', fn($q) => $q->whereIn('name', $tagNames));
+        }
+
+        $itineraries = $query->get();
+
+        // Get all tags from result set (for filter UI)
+        $allTags = $itineraries->pluck('tags')->flatten()
+            ->filter(fn($pt) => $pt->tag !== null)
+            ->map(fn($pt) => ['id' => $pt->tag->id, 'name' => $pt->tag->name, 'is_featured' => (bool) $pt->tag->is_featured])
+            ->unique('id')
+            ->values();
+
+        $formattedItineraries = $itineraries->map(function ($itinerary) {
             return [
                 'id' => $itinerary->id,
                 'name' => $itinerary->name,
@@ -182,14 +196,12 @@ class PublicItineraryController extends Controller
                         'value' => $attribute->attribute_value,
                     ];
                 }),
-                // 'tags' => $itinerary->tags->pluck('name')->toArray(),
-                'tags' => $itinerary->tags->map(function ($tag) {
+                'tags' => $itinerary->tags->filter(fn($pt) => $pt->tag !== null)->map(function ($tag) {
                     return [
                         'id' => $tag->tag->id,
                         'name' => $tag->tag->name,
                     ];
-                })->toArray(),
-                // 'media_gallery' => $itinerary->mediaGallery->pluck('url')->toArray(),
+                })->values()->toArray(),
                 'media_gallery' => $itinerary->mediaGallery->map(function ($media) {
                     return [
                         'id' => $media->media->id,
@@ -204,19 +216,34 @@ class PublicItineraryController extends Controller
                     'meta_description' => $itinerary->seo->meta_description,
                     'keywords' => $itinerary->seo->keywords,
                 ] : null,
+                'base_pricing' => $itinerary->basePricing,
             ];
         });
 
-        if ($itineraries->isEmpty()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Itineraries not found'
-            ]);
-        }
+        // Sorting
+        $sortBy = request()->get('sort_by', 'id_desc');
+        $formattedItineraries = match ($sortBy) {
+            'name_asc' => $formattedItineraries->sortBy('name'),
+            'name_desc' => $formattedItineraries->sortByDesc('name'),
+            'price_asc' => $formattedItineraries->sortBy(fn($item) => $item['base_pricing']?->variations?->first()?->regular_price ?? 0),
+            'price_desc' => $formattedItineraries->sortByDesc(fn($item) => $item['base_pricing']?->variations?->first()?->regular_price ?? 0),
+            default => $formattedItineraries->sortByDesc('id'),
+        };
+
+        // Pagination
+        $perPage = (int) request()->get('per_page', 8);
+        $page = (int) request()->get('page', 1);
+        $total = $formattedItineraries->count();
+        $paginatedItems = $formattedItineraries->forPage($page, $perPage)->values();
 
         return response()->json([
             'success' => true,
-            'data' => $itineraries
+            'data' => $paginatedItems,
+            'all_tags' => $allTags,
+            'current_page' => $page,
+            'last_page' => (int) ceil($total / $perPage) ?: 1,
+            'per_page' => $perPage,
+            'total' => $total,
         ]);
     }
 

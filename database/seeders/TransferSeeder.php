@@ -196,8 +196,8 @@ class TransferSeeder extends Seeder
                 'inclusion'        => $data['inclusion'],
             ]);
 
-            // Media Gallery - 3-4 random images
-            foreach (Arr::random($mediaIds, rand(3, 4)) as $mediaId) {
+            // Media Gallery - 3-5 random images
+            foreach (Arr::random($mediaIds, rand(3, 5)) as $mediaId) {
                 TransferMediaGallery::create([
                     'transfer_id' => $transfer->id,
                     'media_id'    => $mediaId,

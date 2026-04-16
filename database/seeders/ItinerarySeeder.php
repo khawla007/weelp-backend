@@ -376,8 +376,8 @@ class ItinerarySeeder extends Seeder
                 'included'     => true,
             ]);
 
-            // Media Gallery - 3-4 random images
-            $selectedMediaIds = Arr::random($mediaIds, rand(3, 4));
+            // Media Gallery - 3-5 random images
+            $selectedMediaIds = Arr::random($mediaIds, rand(3, 5));
             foreach ($selectedMediaIds as $mediaId) {
                 ItineraryMediaGallery::create([
                     'itinerary_id' => $itinerary->id,
@@ -451,7 +451,7 @@ class ItinerarySeeder extends Seeder
             $addonIds = Addon::where('type', 'itinerary')
                 ->where('active_status', true)   // ✅ sirf active addons
                 ->inRandomOrder()
-                ->limit(rand(2, 4))              // 2 se 4 addons random select
+                ->limit(rand(3, 5))              // 3 to 5 addons random select
                 ->pluck('id');
 
             foreach ($addonIds as $addonId) {

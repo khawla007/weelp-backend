@@ -496,6 +496,8 @@ Route::prefix('menu')->group(function () {
     Route::get('/{region_slug}', [PublicMenuController::class, 'getAllRegionsWithCities']);
 });
 
+Route::get('/mega-menu', [PublicMenuController::class, 'getMegaMenuData']);
+
 Route::get('/categories', [PublicCategoryController::class, 'getAllCategories']);
 Route::get('/tags', [PublicTagController::class, 'getAllTags']);
 

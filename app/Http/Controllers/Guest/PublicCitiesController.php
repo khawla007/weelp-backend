@@ -32,8 +32,8 @@ class PublicCitiesController extends Controller
             ->where('state_id', $state->id)
             ->get()
             ->map(function ($city) {
-                // Get featured image from media_gallery
-                $featuredImage = $city->mediaGallery->firstWhere('is_featured', true);
+                $featuredImage = $city->mediaGallery->firstWhere('is_featured', true)
+                    ?? $city->mediaGallery->first();
                 $city->feature_image = $featuredImage?->media->url ?? null;
                 unset($city->mediaGallery);
                 return $city;
@@ -62,8 +62,8 @@ class PublicCitiesController extends Controller
         ->where('featured_destination', true)
         ->get()
         ->map(function ($city) {
-            // Get featured image from media_gallery
-            $featuredImage = $city->mediaGallery->firstWhere('is_featured', true);
+            $featuredImage = $city->mediaGallery->firstWhere('is_featured', true)
+                ?? $city->mediaGallery->first();
             $featureImageUrl = $featuredImage?->media->url ?? null;
             return [
                 'id' => $city->id,
@@ -117,7 +117,8 @@ class PublicCitiesController extends Controller
         ->paginate($perPage, ['*'], 'page', $request->input('page', 1));
 
         $mapped = $cities->getCollection()->map(function ($city) {
-            $featuredImage = $city->mediaGallery->firstWhere('is_featured', true);
+            $featuredImage = $city->mediaGallery->firstWhere('is_featured', true)
+                ?? $city->mediaGallery->first();
             $featureImageUrl = $featuredImage?->media->url ?? null;
             return [
                 'id' => $city->id,
@@ -176,7 +177,8 @@ class PublicCitiesController extends Controller
         $featureImageUrl = null;
         $mediaGallery = [];
         if ($city->mediaGallery && $city->mediaGallery->count()) {
-            $featuredImage = $city->mediaGallery->firstWhere('is_featured', true);
+            $featuredImage = $city->mediaGallery->firstWhere('is_featured', true)
+                ?? $city->mediaGallery->first();
             $featureImageUrl = $featuredImage?->media->url ?? null;
 
             $mediaGallery = $city->mediaGallery->map(function ($item) {

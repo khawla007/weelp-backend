@@ -122,7 +122,7 @@ class StateSeeder extends Seeder
             $state = State::create($data);
 
             // Media Gallery - 3-4 random images
-            $selectedMediaIds = Arr::random($mediaIds, rand(3, 4));
+            $selectedMediaIds = Arr::random($mediaIds, rand(3, 5));
             foreach ($selectedMediaIds as $mediaId) {
                 StateMediaGallery::create([
                     'state_id' => $state->id,

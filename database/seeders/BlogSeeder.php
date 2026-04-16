@@ -50,8 +50,8 @@ class BlogSeeder extends Seeder
                 $faker->randomElements($allTagIds, rand(1, 4))
             );
 
-            // ⭐ Random Media (3-4)
-            $selectedMediaIds = $faker->randomElements($allMediaIds, rand(3, 4));
+            // ⭐ Random Media (3-5)
+            $selectedMediaIds = $faker->randomElements($allMediaIds, rand(3, 5));
 
             // Attach media with pivot data, randomly selecting one as featured
             $mediaToAttach = [];

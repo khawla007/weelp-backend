@@ -528,8 +528,8 @@ class ActivitySeeder extends Seeder {
                 'valid_from' => '2025-06-01',
                 'valid_to' => '2025-08-31',
             ]);
-            // Media Gallery - 3-4 random images
-            $selectedMediaIds = Arr::random($mediaIds, rand(3, 4));
+            // Media Gallery - 3-5 random images
+            $selectedMediaIds = Arr::random($mediaIds, rand(3, 5));
             foreach ($selectedMediaIds as $mediaId) {
                 ActivityMediaGallery::create([
                     'activity_id' => $activity->id,
@@ -548,7 +548,7 @@ class ActivitySeeder extends Seeder {
             $addonIds = Addon::where('type', 'activity')
                 ->where('active_status', true)   // ✅ sirf active addons
                 ->inRandomOrder()
-                ->limit(rand(2, 4))   // 2 से 4 addons random select
+                ->limit(rand(3, 5))   // 3 से 5 addons random select
                 ->pluck('id');
         
             foreach ($addonIds as $addonId) {

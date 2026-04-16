@@ -264,7 +264,7 @@ class CitySeeder extends Seeder
                 ]);
 
                 // Media Gallery - 3-4 random images
-                $selectedMediaIds = Arr::random($mediaIds, rand(3, 4));
+                $selectedMediaIds = Arr::random($mediaIds, rand(3, 5));
                 foreach ($selectedMediaIds as $mediaId) {
                     CityMediaGallery::create([
                         'city_id'  => $city->id,

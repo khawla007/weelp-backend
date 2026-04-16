@@ -67,7 +67,7 @@ class City extends Model
 
     protected $fillable = [
         'name', 'code', 'slug', 'type', 'state_id', 'description',
-        'featured_city'
+        'featured_destination'
     ];
     protected $casts = [
         'featured_destination' => 'boolean'

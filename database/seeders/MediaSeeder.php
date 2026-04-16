@@ -3,6 +3,9 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 use App\Models\Media;
 
 class MediaSeeder extends Seeder
@@ -11,10 +14,22 @@ class MediaSeeder extends Seeder
      * Run the database seeds.
      * Stores relative paths (not full URLs) — the Media model's
      * getUrlAttribute accessor converts them to full URLs automatically.
+     *
+     * Paths are sourced dynamically from the MinIO bucket so newly uploaded
+     * files (e.g. via scripts/upload_designs_to_minio.php) get seeded without
+     * editing this file.
      */
     public function run(): void
     {
-        $paths = [
+        // Wipe media + cascade-dependent pivot rows so this seeder is idempotent.
+        Schema::disableForeignKeyConstraints();
+        DB::table('media')->truncate();
+        foreach (['country_media_gallery', 'state_media_gallery', 'city_media_gallery', 'place_media_gallery', 'blog_media_gallery', 'activity_media_gallery', 'itinerary_media_gallery', 'package_media_gallery', 'transfer_media_gallery'] as $pivot) {
+            if (Schema::hasTable($pivot)) DB::table($pivot)->truncate();
+        }
+        Schema::enableForeignKeyConstraints();
+
+        $hardcoded = [
             // ── Avatars ──
             'avatars/4.webp',
 
@@ -502,6 +517,13 @@ class MediaSeeder extends Seeder
             'states/tuscany_3_1773043987.jpg',
         ];
 
+        // Pull every file currently in the MinIO bucket (includes uploads under designs/).
+        // Merge with hardcoded list + dedupe so the seeder remains deterministic even if
+        // the bucket is empty in some environments.
+        $fromBucket = Storage::disk('minio')->allFiles();
+        $paths = array_values(array_unique(array_merge($hardcoded, $fromBucket)));
+        sort($paths);
+
         foreach ($paths as $path) {
             Media::create([
                 'name'     => self::generateName($path),
@@ -523,6 +545,16 @@ class MediaSeeder extends Seeder
         $filename = pathinfo($path, PATHINFO_FILENAME);
         $parts = explode('/', $path);
         $folder = ucfirst($parts[0]);
+
+        // designs: "image-import-10" → "Design Image 10"
+        if (str_starts_with($path, 'designs/') && preg_match('/^image-import-(\d+)$/i', $filename, $m)) {
+            return "Design Image {$m[1]}";
+        }
+
+        // designs fallback: anything else under designs/ → humanised filename
+        if (str_starts_with($path, 'designs/')) {
+            return ucwords(str_replace(['-', '_'], ' ', $filename));
+        }
 
         // countries/states: "france_1_1773038620" → extract "france" and "1"
         if (preg_match('/^(.+?)_(\d+)_\d+$/', $filename, $m)) {
@@ -551,6 +583,10 @@ class MediaSeeder extends Seeder
     private static function generateAltText(string $path): string
     {
         $filename = pathinfo($path, PATHINFO_FILENAME);
+
+        if (str_starts_with($path, 'designs/')) {
+            return 'Weelp design image';
+        }
 
         if (preg_match('/^(.+?)_(\d+)_\d+$/', $filename, $m)) {
             return ucwords(str_replace('-', ' ', $m[1])) . ' travel photo';

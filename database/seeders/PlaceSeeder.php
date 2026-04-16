@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Place;
 use App\Models\PlaceMediaGallery;
 use App\Models\City;
+use App\Models\Media;
+use Illuminate\Support\Arr;
 
 class PlaceSeeder extends Seeder
 {
@@ -83,6 +85,8 @@ class PlaceSeeder extends Seeder
             ['city_slug' => 'dubai', 'name' => 'Dubai Creek', 'code' => 'DC', 'slug' => 'dubai-creek', 'description' => 'Historic saltwater creek dividing the city into Deira and Bur Dubai, offering traditional abra boat rides, gold and spice souks, and a glimpse into old Dubai heritage.'],
         ];
 
+        $mediaIds = Media::pluck('id')->toArray();
+
         $createdCount = 0;
         foreach ($placesData as $data) {
             $citySlug = $data['city_slug'];
@@ -102,6 +106,18 @@ class PlaceSeeder extends Seeder
 
             echo "Created: {$place->name}\n";
             $createdCount++;
+
+            // Attach random media to place (3-5 random media items)
+            if (!empty($mediaIds)) {
+                $mediaCount = min(rand(3, 5), count($mediaIds));
+                $randomMediaIds = Arr::random($mediaIds, $mediaCount);
+                foreach ($randomMediaIds as $mediaId) {
+                    PlaceMediaGallery::create([
+                        'place_id' => $place->id,
+                        'media_id' => $mediaId,
+                    ]);
+                }
+            }
         }
 
         echo "\nTotal places created: {$createdCount}\n";
