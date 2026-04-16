@@ -52,6 +52,7 @@ use App\Http\Controllers\Guest\PublicItineraryController;
 use App\Http\Controllers\Guest\PublicPackageController;
 use App\Http\Controllers\Guest\PublicTransferController;
 use App\Http\Controllers\Guest\PublicHomeSearchController;
+use App\Http\Controllers\Guest\PublicToursSearchController;
 use App\Http\Controllers\Guest\PublicShopController;
 use App\Http\Controllers\Guest\PublicCategoryController;
 use App\Http\Controllers\Guest\PublicTagController;
@@ -554,6 +555,10 @@ Route::prefix('packages')->group(function () {
 // Search API
 Route::get('/regions-cities', [PublicHomeSearchController::class, 'getRegionsAndCities']);
 Route::get('/homesearch', [PublicHomeSearchController::class, 'homeSearch']);
+Route::get('/toursearch', [PublicToursSearchController::class, 'search']);
+
+// Featured Cities with Starting Price
+Route::get('/featured-cities/with-starting-price', [PublicCitiesController::class, 'getFeaturedCitiesWithStartingPrice']);
 
 // Filter API
 Route::get('/filter', [PublicFilterController::class, 'filter']);

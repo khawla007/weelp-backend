@@ -166,4 +166,37 @@ class City extends Model
     public function packages() {
         return $this->hasManyThrough(Package::class, PackageLocation::class, 'city_id', 'id', 'id', 'package_id');
     }
+
+    /**
+     * Lowest activity starting price for this city.
+     * Returns ['starting_price' => float|null, 'currency' => string|null].
+     */
+    public function lowestStartingPrice(): array
+    {
+        $price = \App\Models\ActivityPricing::query()
+            ->where(function ($q) {
+                $q->whereIn('activity_id', function ($sub) {
+                    $sub->select('activity_id')
+                        ->from('activity_locations')
+                        ->where('city_id', $this->id);
+                })
+                ->orWhereIn('activity_id', function ($sub) {
+                    $sub->select('activity_locations.activity_id')
+                        ->from('activity_locations')
+                        ->join('places', 'places.id', '=', 'activity_locations.place_id')
+                        ->where('places.city_id', $this->id);
+                });
+            })
+            ->orderBy('regular_price', 'asc')
+            ->first(['regular_price', 'currency']);
+
+        if ($price) {
+            return [
+                'starting_price' => (float) $price->regular_price,
+                'currency'       => $price->currency,
+            ];
+        }
+
+        return ['starting_price' => null, 'currency' => null];
+    }
 }

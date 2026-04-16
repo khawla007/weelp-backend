@@ -62,7 +62,13 @@ class PublicMenuController extends Controller
         $regions = Region::with('countries:id')->get()->map(function ($region) use ($mapCity) {
             $countryIds = $region->countries->pluck('id');
 
-            $cities = City::with(['mediaGallery.media', 'places:id,city_id,name,slug'])
+            $cities = City::with([
+                    'mediaGallery.media',
+                    'places' => fn ($q) => $q->select('id', 'city_id', 'name', 'slug')
+                        ->where('featured_destination', true)
+                        ->orderBy('id')
+                        ->limit(20),
+                ])
                 ->withCount('activities')
                 ->whereHas('state', fn ($q) => $q->whereIn('country_id', $countryIds))
                 ->orderByDesc('featured_destination')
@@ -80,7 +86,13 @@ class PublicMenuController extends Controller
             ];
         });
 
-        $trendingCities = City::with(['mediaGallery.media', 'places:id,city_id,name,slug'])
+        $trendingCities = City::with([
+                'mediaGallery.media',
+                'places' => fn ($q) => $q->select('id', 'city_id', 'name', 'slug')
+                    ->where('featured_destination', true)
+                    ->orderBy('id')
+                    ->limit(20),
+            ])
             ->withCount('activities')
             ->orderByDesc('featured_destination')
             ->orderByDesc('activities_count')

@@ -102,6 +102,63 @@ class PublicCitiesController extends Controller
         ]);
     }
 
+    // ---------------------------getting all featured city with starting price for tours & experiences page-------------------------
+    public function getFeaturedCitiesWithStartingPrice()
+    {
+        $cities = City::with([
+            'state.country.regions',
+            'mediaGallery.media'
+        ])
+        ->withCount('activities')
+        ->where('featured_destination', true)
+        ->get()
+        ->map(function ($city) {
+            $featuredImage = $city->mediaGallery->firstWhere('is_featured', true)
+                ?? $city->mediaGallery->first();
+            $featureImageUrl = $featuredImage?->media->url ?? null;
+
+            // Get the lowest starting price and currency for this city
+            $priceData = $city->lowestStartingPrice();
+
+            return [
+                'id' => $city->id,
+                'name' => $city->name,
+                'slug' => $city->slug,
+                'description' => $city->description,
+                'featured_image' => $featureImageUrl,
+                'activities_count' => $city->activities_count,
+                'state' => [
+                    'id' => $city->state->id ?? null,
+                    'name' => $city->state->name ?? null,
+                ],
+                'country' => [
+                    'id' => $city->state->country->id ?? null,
+                    'name' => $city->state->country->name ?? null,
+                ],
+                'region' => $city->state->country->regions->map(function ($region) {
+                    return [
+                        'id' => $region->id,
+                        'name' => $region->name,
+                    ];
+                }),
+                'starting_price' => $priceData['starting_price'],
+                'currency' => $priceData['currency'],
+            ];
+        });
+
+        if ($cities->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No featured cities found'
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $cities
+        ]);
+    }
+
     // ---------------------------getting all cities with pagination-------------------------
     public function index(Request $request)
     {
