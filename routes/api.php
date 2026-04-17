@@ -30,6 +30,11 @@ use App\Http\Controllers\Admin\RegionController;
 use App\Http\Controllers\Admin\CityController;
 use App\Http\Controllers\Admin\VendorController;
 use App\Http\Controllers\Admin\TransferController;
+use App\Http\Controllers\Admin\TransferZoneController;
+use App\Http\Controllers\Admin\TransferZoneLocationController;
+use App\Http\Controllers\Admin\TransferZonePriceController;
+use App\Http\Controllers\Admin\TransferRouteController;
+use App\Http\Controllers\Admin\AdminLocationSearchController;
 use App\Http\Controllers\Admin\ActivityController;
 use App\Http\Controllers\Admin\ItineraryController;
 use App\Http\Controllers\Admin\PackageController;
@@ -374,6 +379,43 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
         Route::delete('{id}', [TransferController::class, 'destroy']);
         Route::post('/bulk-delete', [TransferController::class, 'destroyMultiple']);
     });
+
+    // Admin Side Transfer Zones
+    Route::prefix('/transfer-zones')->group(function () {
+        Route::get('/', [TransferZoneController::class, 'index']);
+        Route::post('/', [TransferZoneController::class, 'store']);
+        Route::post('/bulk-delete', [TransferZoneController::class, 'bulkDelete']);
+        Route::get('{id}', [TransferZoneController::class, 'show']);
+        Route::put('{id}', [TransferZoneController::class, 'update']);
+        Route::delete('{id}', [TransferZoneController::class, 'destroy']);
+
+        // Zone ↔ Locations
+        Route::get('{id}/locations', [TransferZoneLocationController::class, 'index']);
+        Route::post('{id}/locations/assign', [TransferZoneLocationController::class, 'assign']);
+        Route::delete('{id}/locations/unassign', [TransferZoneLocationController::class, 'unassign']);
+    });
+
+    // Admin Side Transfer Zone Prices (matrix)
+    Route::prefix('/transfer-zone-prices')->group(function () {
+        Route::get('/', [TransferZonePriceController::class, 'index']);
+        Route::post('/upsert', [TransferZonePriceController::class, 'upsert']);
+        Route::post('/bulk-upsert', [TransferZonePriceController::class, 'bulkUpsert']);
+    });
+
+    // Admin Side Transfer Routes
+    Route::prefix('/transfer-routes')->group(function () {
+        Route::get('/', [TransferRouteController::class, 'index']);
+        Route::post('/', [TransferRouteController::class, 'store']);
+        Route::post('/bulk-delete', [TransferRouteController::class, 'bulkDelete']);
+        Route::get('{id}', [TransferRouteController::class, 'show']);
+        Route::put('{id}', [TransferRouteController::class, 'update']);
+        Route::delete('{id}', [TransferRouteController::class, 'destroy']);
+        Route::patch('{id}/toggle-status', [TransferRouteController::class, 'toggleStatus']);
+        Route::patch('{id}/toggle-popular', [TransferRouteController::class, 'togglePopular']);
+    });
+
+    // Admin Side unified Location search (cities + places)
+    Route::get('/locations/search', [AdminLocationSearchController::class, 'search']);
 
     // Admin Side activity route
     // Route::apiResource('activities', ActivityController::class);

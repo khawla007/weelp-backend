@@ -25,6 +25,8 @@ class AppServiceProvider extends ServiceProvider
             'package'   => \App\Models\Package::class,
             'itinerary' => \App\Models\Itinerary::class,
             'transfer'  => \App\Models\Transfer::class,
+            'city'      => \App\Models\City::class,
+            'place'     => \App\Models\Place::class,
         ]);
     }
 }

@@ -279,6 +279,17 @@ class CitySeeder extends Seeder
         }
 
         echo "Successfully created {$createdCount} cities with all related data.\n";
+
+        // Mark featured destinations for homepage "Top Destinations" section
+        $featuredCityNames = ['Dubai', 'Edinburgh', 'Florence', 'Paris', 'Manchester', 'Barcelona'];
+        foreach ($featuredCityNames as $featuredName) {
+            $updated = City::where('name', $featuredName)->update(['featured_destination' => true]);
+            if ($updated === 0) {
+                $this->command->warn("Featured city '{$featuredName}' not found - skipped.");
+            } else {
+                echo "Marked '{$featuredName}' as featured destination.\n";
+            }
+        }
     }
 
     /**

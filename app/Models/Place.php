@@ -99,4 +99,10 @@ class Place extends Model {
     public function seo() {
         return $this->hasOne(PlaceSeo::class);
     }
+
+    public function zones()
+    {
+        return $this->morphToMany(TransferZone::class, 'locatable', 'transfer_zone_locations')
+            ->withTimestamps();
+    }
 }

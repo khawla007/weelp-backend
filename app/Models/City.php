@@ -143,6 +143,12 @@ class City extends Model
         return $this->hasMany(Place::class);
     }
 
+    public function zones()
+    {
+        return $this->morphToMany(TransferZone::class, 'locatable', 'transfer_zone_locations')
+            ->withTimestamps();
+    }
+
     public function activityLocations() {
         return $this->hasMany(ActivityLocation::class, 'city_id');
     }

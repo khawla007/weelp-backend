@@ -54,7 +54,13 @@ class Transfer extends Model
         'description',
         'item_type', // Fixed value 'transfer'
         'transfer_type',
+        'transfer_route_id',
     ];
+
+    public function route()
+    {
+        return $this->belongsTo(TransferRoute::class, 'transfer_route_id');
+    }
 
     // Relationship with TransferVendorRoute
     public function vendorRoutes()

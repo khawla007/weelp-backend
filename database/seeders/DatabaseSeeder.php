@@ -32,6 +32,14 @@ class DatabaseSeeder extends Seeder
             AddonSeeder::class,
             ActivitySeeder::class,
             VendorSeeder::class,
+            // Transfer domain — strict dependency order:
+            // 1. Zones + locations + price matrix (no deps beyond City/Place)
+            // 2. Routes (depend on Zones + Places)
+            // 3. Admin transfers (depend on Routes + matrix cells for base_price)
+            // 4. Legacy vendor/demo transfers last
+            TransferZoneSeeder::class,
+            TransferRouteSeeder::class,
+            AdminTransferSeeder::class,
             TransferSeeder::class,
             ItinerarySeeder::class,
             PackageSeeder::class,

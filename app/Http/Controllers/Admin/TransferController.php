@@ -11,6 +11,9 @@ use App\Models\TransferSchedule;
 use App\Models\TransferMediaGallery;
 use App\Models\TransferSeo;
 use App\Models\TransferAddon;
+use App\Models\TransferRoute;
+use App\Models\TransferZonePrice;
+use App\Models\Place;
 
 class TransferController extends Controller
 {
@@ -233,6 +236,9 @@ class TransferController extends Controller
             // Vendor related
             'vendor_id' => 'nullable|integer|exists:vendors,id',
             'route_id' => 'nullable|integer|exists:vendor_routes,id',
+
+            // Admin route reference (new: zone-based pricing)
+            'transfer_route_id' => 'nullable|integer|exists:transfer_routes,id',
     
             // Non-vendor location fields
             'pickup_location'   => 'nullable|string|max:255',
@@ -305,12 +311,16 @@ class TransferController extends Controller
             ]);
         }
     
+        // Auto-resolve from transfer_route (non-vendor flow only)
+        $resolved = $this->resolveFromRoute($validatedData);
+
         // Create Transfer
         $transfer = Transfer::create([
             'name' => $validatedData['name'],
             'slug' => $validatedData['slug'],
             'description' => $validatedData['description'] ?? null,
             'transfer_type' => $validatedData['transfer_type'],
+            'transfer_route_id' => $validatedData['transfer_route_id'] ?? null,
         ]);
     
         // Create TransferVendorRoute
@@ -321,8 +331,8 @@ class TransferController extends Controller
             'route_id'          => $validatedData['is_vendor'] ? $validatedData['route_id'] : null,
             'pickup_location'   => !$validatedData['is_vendor'] ? ($validatedData['pickup_location'] ?? null) : null,
             'dropoff_location'  => !$validatedData['is_vendor'] ? ($validatedData['dropoff_location'] ?? null) : null,
-            'pickup_place_id'   => !$validatedData['is_vendor'] ? ($validatedData['pickup_place_id'] ?? null) : null,
-            'dropoff_place_id'  => !$validatedData['is_vendor'] ? ($validatedData['dropoff_place_id'] ?? null) : null,
+            'pickup_place_id'   => !$validatedData['is_vendor'] ? ($validatedData['pickup_place_id'] ?? $resolved['pickup_place_id'] ?? null) : null,
+            'dropoff_place_id'  => !$validatedData['is_vendor'] ? ($validatedData['dropoff_place_id'] ?? $resolved['dropoff_place_id'] ?? null) : null,
             'vehicle_type'      => !$validatedData['is_vendor'] ? $validatedData['vehicle_type'] : null,
             'inclusion'         => !$validatedData['is_vendor'] ? $validatedData['inclusion'] : null,
         ]);
@@ -333,8 +343,8 @@ class TransferController extends Controller
             'is_vendor'            => $validatedData['is_vendor'],
             'pricing_tier_id'      => $validatedData['is_vendor'] ? $validatedData['pricing_tier_id'] : null,
             'availability_id'      => $validatedData['is_vendor'] ? $validatedData['availability_id'] : null,
-            'base_price'           => !$validatedData['is_vendor'] ? $validatedData['base_price'] : null,
-            'currency'             => !$validatedData['is_vendor'] ? $validatedData['currency'] : null,
+            'base_price'           => !$validatedData['is_vendor'] ? ($validatedData['base_price'] ?? $resolved['base_price'] ?? null) : null,
+            'currency'             => !$validatedData['is_vendor'] ? ($validatedData['currency'] ?? $resolved['currency'] ?? null) : null,
             'price_type'           => !$validatedData['is_vendor'] ? $validatedData['price_type'] : null,
             'extra_luggage_charge' => !$validatedData['is_vendor'] ? $validatedData['extra_luggage_charge'] : null,
             'waiting_charge'       => !$validatedData['is_vendor'] ? $validatedData['waiting_charge'] : null,
@@ -519,7 +529,10 @@ class TransferController extends Controller
             // Vendor related
             'vendor_id' => 'sometimes|nullable|integer|exists:vendors,id',
             'route_id' => 'sometimes|nullable|integer|exists:vendor_routes,id',
-    
+
+            // Admin route reference (zone-based pricing)
+            'transfer_route_id' => 'sometimes|nullable|integer|exists:transfer_routes,id',
+
             // Non-vendor location fields
             'pickup_location'   => 'sometimes|nullable|string|max:255',
             'dropoff_location'  => 'sometimes|nullable|string|max:255',
@@ -569,12 +582,18 @@ class TransferController extends Controller
             'addons.*' => 'integer|exists:addons,id',
         ]);
     
+        // Auto-resolve pickup/dropoff/base_price from transfer_route if provided
+        $resolved = $this->resolveFromRoute($validatedData);
+
         // === Update Transfer ===
         $transfer->fill($validatedData);
+        if (array_key_exists('transfer_route_id', $validatedData)) {
+            $transfer->transfer_route_id = $validatedData['transfer_route_id'];
+        }
         $transfer->save();
-    
+
         // === Update TransferVendorRoute ===
-        if (!empty($validatedData['is_vendor']) || $request->hasAny(['vendor_id', 'route_id', 'pickup_location', 'dropoff_location', 'pickup_place_id', 'dropoff_place_id', 'vehicle_type', 'inclusion'])) {
+        if (!empty($validatedData['is_vendor']) || $request->hasAny(['vendor_id', 'route_id', 'transfer_route_id', 'pickup_location', 'dropoff_location', 'pickup_place_id', 'dropoff_place_id', 'vehicle_type', 'inclusion'])) {
             $vendorRoute = TransferVendorRoute::where('transfer_id', $transfer->id)->first();
             if ($vendorRoute) {
                 $vendorRoute->update([
@@ -583,23 +602,23 @@ class TransferController extends Controller
                     'route_id'         => $validatedData['route_id'] ?? $vendorRoute->route_id,
                     'pickup_location'  => $validatedData['pickup_location'] ?? $vendorRoute->pickup_location,
                     'dropoff_location' => $validatedData['dropoff_location'] ?? $vendorRoute->dropoff_location,
-                    'pickup_place_id'  => $validatedData['pickup_place_id'] ?? $vendorRoute->pickup_place_id,
-                    'dropoff_place_id' => $validatedData['dropoff_place_id'] ?? $vendorRoute->dropoff_place_id,
+                    'pickup_place_id'  => $validatedData['pickup_place_id'] ?? $resolved['pickup_place_id'] ?? $vendorRoute->pickup_place_id,
+                    'dropoff_place_id' => $validatedData['dropoff_place_id'] ?? $resolved['dropoff_place_id'] ?? $vendorRoute->dropoff_place_id,
                     'vehicle_type'     => $validatedData['vehicle_type'] ?? $vendorRoute->vehicle_type,
                     'inclusion'        => $validatedData['inclusion'] ?? $vendorRoute->inclusion,
                 ]);
             }
         }
-    
+
         // === Update TransferPricingAvailability ===
-        if ($request->hasAny(['pricing_tier_id', 'availability_id', 'base_price', 'currency', 'price_type', 'extra_luggage_charge', 'waiting_charge'])) {
+        if ($request->hasAny(['pricing_tier_id', 'availability_id', 'transfer_route_id', 'base_price', 'currency', 'price_type', 'extra_luggage_charge', 'waiting_charge'])) {
             $pricingAvailability = TransferPricingAvailability::where('transfer_id', $transfer->id)->first();
             if ($pricingAvailability) {
                 $pricingAvailability->update([
                     'pricing_tier_id'      => $validatedData['pricing_tier_id'] ?? $pricingAvailability->pricing_tier_id,
                     'availability_id'      => $validatedData['availability_id'] ?? $pricingAvailability->availability_id,
-                    'base_price'           => $validatedData['base_price'] ?? $pricingAvailability->base_price,
-                    'currency'             => $validatedData['currency'] ?? $pricingAvailability->currency,
+                    'base_price'           => $validatedData['base_price'] ?? $resolved['base_price'] ?? $pricingAvailability->base_price,
+                    'currency'             => $validatedData['currency'] ?? $resolved['currency'] ?? $pricingAvailability->currency,
                     'price_type'           => $validatedData['price_type'] ?? $pricingAvailability->price_type,
                     'extra_luggage_charge' => $validatedData['extra_luggage_charge'] ?? $pricingAvailability->extra_luggage_charge,
                     'waiting_charge'       => $validatedData['waiting_charge'] ?? $pricingAvailability->waiting_charge,
@@ -718,6 +737,50 @@ class TransferController extends Controller
 
         $transfer->delete();
         return response()->json(['message' => 'Transfer deleted successfully']);
+    }
+
+    /**
+     * Resolve pickup/dropoff place ids and base_price/currency from a transfer_route_id.
+     * Returns array with keys: pickup_place_id, dropoff_place_id, base_price, currency.
+     * Any missing element is null (caller coalesces against request input).
+     */
+    private function resolveFromRoute(array $data): array
+    {
+        $out = [
+            'pickup_place_id'  => null,
+            'dropoff_place_id' => null,
+            'base_price'       => null,
+            'currency'         => null,
+        ];
+
+        $routeId = $data['transfer_route_id'] ?? null;
+        if (! $routeId) {
+            return $out;
+        }
+
+        $route = TransferRoute::find($routeId);
+        if (! $route) {
+            return $out;
+        }
+
+        if ($route->origin_type === 'place') {
+            $out['pickup_place_id'] = (int) $route->origin_id;
+        }
+        if ($route->destination_type === 'place') {
+            $out['dropoff_place_id'] = (int) $route->destination_id;
+        }
+
+        if ($route->from_zone_id && $route->to_zone_id) {
+            $cell = TransferZonePrice::where('from_zone_id', $route->from_zone_id)
+                ->where('to_zone_id', $route->to_zone_id)
+                ->first();
+            if ($cell) {
+                $out['base_price'] = (float) $cell->price;
+                $out['currency']   = $cell->currency;
+            }
+        }
+
+        return $out;
     }
 
     public function destroyMultiple(Request $request)
