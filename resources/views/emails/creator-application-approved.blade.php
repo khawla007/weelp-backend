@@ -32,7 +32,7 @@
     <table border="0" cellpadding="0" cellspacing="0" width="100%">
         <tr>
             <td style="padding: 24px 0 0 0; text-align: center;">
-                <a href="{{ config('app.frontend_url') }}/explore" class="email-button" target="_blank">Go to Explore Page</a>
+                <a href="{{ config('app.frontend_url') }}/explore-creators" class="email-button" target="_blank">Go to Explore Page</a>
             </td>
         </tr>
     </table>
