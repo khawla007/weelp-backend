@@ -28,7 +28,7 @@ class TransferZonePriceTest extends TestCase
     public function test_index_returns_zones_and_cells(): void
     {
         [$a, $b] = $this->seedZones();
-        TransferZonePrice::create(['from_zone_id' => $a->id, 'to_zone_id' => $b->id, 'price' => 50, 'currency' => 'USD']);
+        TransferZonePrice::create(['from_zone_id' => $a->id, 'to_zone_id' => $b->id, 'base_price' => 50, 'currency' => 'USD']);
         $admin = $this->admin();
 
         $response = $this->actingAs($admin, 'api')->getJson('/api/admin/transfer-zone-prices');
@@ -45,16 +45,16 @@ class TransferZonePriceTest extends TestCase
 
         // create
         $this->actingAs($admin, 'api')->postJson('/api/admin/transfer-zone-prices/upsert', [
-            'from_zone_id' => $a->id, 'to_zone_id' => $b->id, 'price' => 42.5,
+            'from_zone_id' => $a->id, 'to_zone_id' => $b->id, 'base_price' => 42.5,
         ])->assertStatus(200);
 
         // update same pair
         $this->actingAs($admin, 'api')->postJson('/api/admin/transfer-zone-prices/upsert', [
-            'from_zone_id' => $a->id, 'to_zone_id' => $b->id, 'price' => 77,
+            'from_zone_id' => $a->id, 'to_zone_id' => $b->id, 'base_price' => 77,
         ])->assertStatus(200);
 
         $this->assertSame(1, TransferZonePrice::count());
-        $this->assertEquals(77, (float) TransferZonePrice::first()->price);
+        $this->assertEquals(77, (float) TransferZonePrice::first()->base_price);
     }
 
     public function test_diagonal_cell_allowed(): void
@@ -63,7 +63,7 @@ class TransferZonePriceTest extends TestCase
         $admin = $this->admin();
 
         $this->actingAs($admin, 'api')->postJson('/api/admin/transfer-zone-prices/upsert', [
-            'from_zone_id' => $a->id, 'to_zone_id' => $a->id, 'price' => 15,
+            'from_zone_id' => $a->id, 'to_zone_id' => $a->id, 'base_price' => 15,
         ])->assertStatus(200);
 
         $this->assertDatabaseHas('transfer_zone_prices', [

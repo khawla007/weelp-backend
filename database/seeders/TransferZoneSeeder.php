@@ -80,7 +80,7 @@ class TransferZoneSeeder extends Seeder
             foreach ($row as $toSlug => $price) {
                 TransferZonePrice::updateOrCreate(
                     ['from_zone_id' => $zones[$fromSlug]->id, 'to_zone_id' => $zones[$toSlug]->id],
-                    ['price' => $price, 'currency' => 'USD'],
+                    ['base_price' => $price, 'currency' => 'USD'],
                 );
             }
         }

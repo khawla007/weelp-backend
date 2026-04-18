@@ -12,12 +12,12 @@ class TransferZonePrice extends Model
     protected $fillable = [
         'from_zone_id',
         'to_zone_id',
-        'price',
+        'base_price',
         'currency',
     ];
 
     protected $casts = [
-        'price' => 'decimal:2',
+        'base_price' => 'decimal:2',
     ];
 
     public function fromZone()

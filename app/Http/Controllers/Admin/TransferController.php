@@ -86,11 +86,11 @@ class TransferController extends Controller
                         $q2->where('is_vendor', true)
                            ->whereHas('pricingTier', function ($q3) use ($minPrice, $maxPrice) {
                                if ($minPrice !== null && $maxPrice !== null) {
-                                   $q3->whereBetween('base_price', [$minPrice, $maxPrice]);
+                                   $q3->whereBetween('transfer_price', [$minPrice, $maxPrice]);
                                } elseif ($minPrice !== null) {
-                                   $q3->where('base_price', '>=', $minPrice);
+                                   $q3->where('transfer_price', '>=', $minPrice);
                                } elseif ($maxPrice !== null) {
-                                   $q3->where('base_price', '<=', $maxPrice);
+                                   $q3->where('transfer_price', '<=', $maxPrice);
                                }
                            });
                     })
@@ -98,11 +98,11 @@ class TransferController extends Controller
                         // Transfer side
                         $q2->where('is_vendor', false);
                         if ($minPrice !== null && $maxPrice !== null) {
-                            $q2->whereBetween('base_price', [$minPrice, $maxPrice]);
+                            $q2->whereBetween('transfer_price', [$minPrice, $maxPrice]);
                         } elseif ($minPrice !== null) {
-                            $q2->where('base_price', '>=', $minPrice);
+                            $q2->where('transfer_price', '>=', $minPrice);
                         } elseif ($maxPrice !== null) {
-                            $q2->where('base_price', '<=', $maxPrice);
+                            $q2->where('transfer_price', '<=', $maxPrice);
                         }
                     });
                 });
@@ -140,12 +140,12 @@ class TransferController extends Controller
         switch ($sortBy) {
             case 'price_asc':
                 $query->with(['pricingAvailability.pricingTier' => function ($q) {
-                    $q->orderBy('base_price', 'asc');
+                    $q->orderBy('transfer_price', 'asc');
                 }]);
                 break;
             case 'price_desc':
                 $query->with(['pricingAvailability.pricingTier' => function ($q) {
-                    $q->orderBy('base_price', 'desc');
+                    $q->orderBy('transfer_price', 'desc');
                 }]);
                 break;
             case 'name_asc':
@@ -253,12 +253,12 @@ class TransferController extends Controller
             'availability_id' => 'nullable|integer|exists:vendor_availability_time_slots,id',
     
             // Non-vendor pricing fields
-            'base_price'           => 'nullable|numeric',
+            'transfer_price'       => 'nullable|numeric',
             'currency'             => 'nullable|string|max:10',
             'price_type'           => 'nullable|string|max:255',
             'extra_luggage_charge' => 'nullable|numeric',
             'waiting_charge'       => 'nullable|numeric',
-    
+
             // Schedule fields
             'availability_type' => 'nullable|in:always_available,specific_date,custom_schedule',
             'available_days'    => 'nullable|array',
@@ -299,18 +299,25 @@ class TransferController extends Controller
             ]);
         } else {
             $request->validate([
-                'pickup_location'      => 'required|string|max:255',
-                'dropoff_location'     => 'required|string|max:255',
+                'transfer_route_id'    => 'required|integer|exists:transfer_routes,id',
                 'vehicle_type'         => 'required|string|max:255',
                 'inclusion'            => 'required|string',
-                'base_price'           => 'required|numeric',
+                'transfer_price'       => 'required|numeric',
                 'currency'             => 'required|string|max:10',
                 'price_type'           => 'required|string|max:255',
                 'extra_luggage_charge' => 'required|numeric',
-                'waiting_charge'       => 'required|numeric',      
+                'waiting_charge'       => 'required|numeric',
             ]);
+
+            $route = TransferRoute::find($request->input('transfer_route_id'));
+            if (! $route || $route->origin_type !== 'place' || $route->destination_type !== 'place') {
+                return response()->json([
+                    'message' => 'Selected route must have place endpoints for transfers.',
+                    'errors'  => ['transfer_route_id' => ['Selected route must have place endpoints for transfers.']],
+                ], 422);
+            }
         }
-    
+
         // Auto-resolve from transfer_route (non-vendor flow only)
         $resolved = $this->resolveFromRoute($validatedData);
 
@@ -329,23 +336,23 @@ class TransferController extends Controller
             'is_vendor'         => $validatedData['is_vendor'],
             'vendor_id'         => $validatedData['is_vendor'] ? $validatedData['vendor_id'] : null,
             'route_id'          => $validatedData['is_vendor'] ? $validatedData['route_id'] : null,
-            'pickup_location'   => !$validatedData['is_vendor'] ? ($validatedData['pickup_location'] ?? null) : null,
-            'dropoff_location'  => !$validatedData['is_vendor'] ? ($validatedData['dropoff_location'] ?? null) : null,
-            'pickup_place_id'   => !$validatedData['is_vendor'] ? ($validatedData['pickup_place_id'] ?? $resolved['pickup_place_id'] ?? null) : null,
-            'dropoff_place_id'  => !$validatedData['is_vendor'] ? ($validatedData['dropoff_place_id'] ?? $resolved['dropoff_place_id'] ?? null) : null,
+            'pickup_location'   => null,
+            'dropoff_location'  => null,
+            'pickup_place_id'   => !$validatedData['is_vendor'] ? ($resolved['pickup_place_id'] ?? null) : null,
+            'dropoff_place_id'  => !$validatedData['is_vendor'] ? ($resolved['dropoff_place_id'] ?? null) : null,
             'vehicle_type'      => !$validatedData['is_vendor'] ? $validatedData['vehicle_type'] : null,
             'inclusion'         => !$validatedData['is_vendor'] ? $validatedData['inclusion'] : null,
         ]);
-    
+
         // Create Pricing Availability
         TransferPricingAvailability::create([
             'transfer_id'          => $transfer->id,
             'is_vendor'            => $validatedData['is_vendor'],
             'pricing_tier_id'      => $validatedData['is_vendor'] ? $validatedData['pricing_tier_id'] : null,
             'availability_id'      => $validatedData['is_vendor'] ? $validatedData['availability_id'] : null,
-            'base_price'           => !$validatedData['is_vendor'] ? ($validatedData['base_price'] ?? $resolved['base_price'] ?? null) : null,
+            'transfer_price'       => !$validatedData['is_vendor'] ? ($validatedData['transfer_price'] ?? $resolved['base_price'] ?? null) : null,
             'currency'             => !$validatedData['is_vendor'] ? ($validatedData['currency'] ?? $resolved['currency'] ?? null) : null,
-            'price_type'           => !$validatedData['is_vendor'] ? $validatedData['price_type'] : null,
+            'price_type'           => !$validatedData['is_vendor'] ? ($validatedData['price_type'] ?? null) : null,
             'extra_luggage_charge' => !$validatedData['is_vendor'] ? $validatedData['extra_luggage_charge'] : null,
             'waiting_charge'       => !$validatedData['is_vendor'] ? $validatedData['waiting_charge'] : null,
         ]);
@@ -451,19 +458,10 @@ class TransferController extends Controller
             return response()->json(['message' => 'Transfer not found'], 404);
         }
     
-        // अगर schedule मौजूद है तो उसकी fields को array में बदलना
-        if ($transfer->schedule) {
-            if (!empty($transfer->schedule->available_days)) {
-                $transfer->schedule->available_days = explode(',', $transfer->schedule->available_days);
-            }
-    
-            if (!empty($transfer->schedule->time_slots)) {
-                $transfer->schedule->time_slots = json_decode($transfer->schedule->time_slots, true);
-            }
-    
-            if (!empty($transfer->schedule->blackout_dates)) {
-                $transfer->schedule->blackout_dates = json_decode($transfer->schedule->blackout_dates, true);
-            }
+        // Normalize schedule scalars/CSV to arrays.
+        // time_slots + blackout_dates are already array-cast by the model; only available_days is a CSV string.
+        if ($transfer->schedule && !empty($transfer->schedule->available_days) && is_string($transfer->schedule->available_days)) {
+            $transfer->schedule->available_days = explode(',', $transfer->schedule->available_days);
         }
 
         // media_gallery ko transform karna
@@ -546,7 +544,7 @@ class TransferController extends Controller
             'availability_id' => 'sometimes|nullable|integer|exists:vendor_availability_time_slots,id',
     
             // Non-vendor pricing fields
-            'base_price'           => 'sometimes|nullable|numeric',
+            'transfer_price'       => 'sometimes|nullable|numeric',
             'currency'             => 'sometimes|nullable|string|max:10',
             'price_type'           => 'sometimes|nullable|string|max:255',
             'extra_luggage_charge' => 'sometimes|nullable|numeric',
@@ -582,8 +580,29 @@ class TransferController extends Controller
             'addons.*' => 'integer|exists:addons,id',
         ]);
     
-        // Auto-resolve pickup/dropoff/base_price from transfer_route if provided
+        // Auto-resolve pickup/dropoff from transfer_route if provided
         $resolved = $this->resolveFromRoute($validatedData);
+
+        $isVendorFinal = array_key_exists('is_vendor', $validatedData)
+            ? (bool) $validatedData['is_vendor']
+            : (bool) optional(TransferVendorRoute::where('transfer_id', $transfer->id)->first())->is_vendor;
+
+        if (! $isVendorFinal && $request->has('transfer_route_id')) {
+            $routeId = $validatedData['transfer_route_id'] ?? null;
+            if (! $routeId) {
+                return response()->json([
+                    'message' => 'Selected route must have place endpoints for transfers.',
+                    'errors'  => ['transfer_route_id' => ['Selected route must have place endpoints for transfers.']],
+                ], 422);
+            }
+            $route = TransferRoute::find($routeId);
+            if (! $route || $route->origin_type !== 'place' || $route->destination_type !== 'place') {
+                return response()->json([
+                    'message' => 'Selected route must have place endpoints for transfers.',
+                    'errors'  => ['transfer_route_id' => ['Selected route must have place endpoints for transfers.']],
+                ], 422);
+            }
+        }
 
         // === Update Transfer ===
         $transfer->fill($validatedData);
@@ -600,10 +619,10 @@ class TransferController extends Controller
                     'is_vendor'        => $validatedData['is_vendor'] ?? $vendorRoute->is_vendor,
                     'vendor_id'        => $validatedData['vendor_id'] ?? $vendorRoute->vendor_id,
                     'route_id'         => $validatedData['route_id'] ?? $vendorRoute->route_id,
-                    'pickup_location'  => $validatedData['pickup_location'] ?? $vendorRoute->pickup_location,
-                    'dropoff_location' => $validatedData['dropoff_location'] ?? $vendorRoute->dropoff_location,
-                    'pickup_place_id'  => $validatedData['pickup_place_id'] ?? $resolved['pickup_place_id'] ?? $vendorRoute->pickup_place_id,
-                    'dropoff_place_id' => $validatedData['dropoff_place_id'] ?? $resolved['dropoff_place_id'] ?? $vendorRoute->dropoff_place_id,
+                    'pickup_location'  => $vendorRoute->pickup_location,
+                    'dropoff_location' => $vendorRoute->dropoff_location,
+                    'pickup_place_id'  => $resolved['pickup_place_id'] ?? $vendorRoute->pickup_place_id,
+                    'dropoff_place_id' => $resolved['dropoff_place_id'] ?? $vendorRoute->dropoff_place_id,
                     'vehicle_type'     => $validatedData['vehicle_type'] ?? $vendorRoute->vehicle_type,
                     'inclusion'        => $validatedData['inclusion'] ?? $vendorRoute->inclusion,
                 ]);
@@ -611,13 +630,13 @@ class TransferController extends Controller
         }
 
         // === Update TransferPricingAvailability ===
-        if ($request->hasAny(['pricing_tier_id', 'availability_id', 'transfer_route_id', 'base_price', 'currency', 'price_type', 'extra_luggage_charge', 'waiting_charge'])) {
+        if ($request->hasAny(['pricing_tier_id', 'availability_id', 'transfer_price', 'currency', 'price_type', 'extra_luggage_charge', 'waiting_charge'])) {
             $pricingAvailability = TransferPricingAvailability::where('transfer_id', $transfer->id)->first();
             if ($pricingAvailability) {
                 $pricingAvailability->update([
                     'pricing_tier_id'      => $validatedData['pricing_tier_id'] ?? $pricingAvailability->pricing_tier_id,
                     'availability_id'      => $validatedData['availability_id'] ?? $pricingAvailability->availability_id,
-                    'base_price'           => $validatedData['base_price'] ?? $resolved['base_price'] ?? $pricingAvailability->base_price,
+                    'transfer_price'       => $validatedData['transfer_price'] ?? $resolved['base_price'] ?? $pricingAvailability->transfer_price,
                     'currency'             => $validatedData['currency'] ?? $resolved['currency'] ?? $pricingAvailability->currency,
                     'price_type'           => $validatedData['price_type'] ?? $pricingAvailability->price_type,
                     'extra_luggage_charge' => $validatedData['extra_luggage_charge'] ?? $pricingAvailability->extra_luggage_charge,
@@ -770,14 +789,10 @@ class TransferController extends Controller
             $out['dropoff_place_id'] = (int) $route->destination_id;
         }
 
-        if ($route->from_zone_id && $route->to_zone_id) {
-            $cell = TransferZonePrice::where('from_zone_id', $route->from_zone_id)
-                ->where('to_zone_id', $route->to_zone_id)
-                ->first();
-            if ($cell) {
-                $out['base_price'] = (float) $cell->price;
-                $out['currency']   = $cell->currency;
-            }
+        $cell = $route->resolvedPrice();
+        if ($cell) {
+            $out['base_price'] = (float) $cell->base_price;
+            $out['currency']   = $cell->currency;
         }
 
         return $out;

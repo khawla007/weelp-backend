@@ -15,6 +15,17 @@ class TransferRouteController extends Controller
 {
     private const ALLOWED_ENDPOINT_TYPES = ['city', 'place'];
 
+    public function dropdown()
+    {
+        $routes = TransferRoute::query()
+            ->where('is_active', true)
+            ->with(['origin:id,name', 'destination:id,name'])
+            ->orderBy('name')
+            ->get(['id', 'name', 'slug', 'origin_type', 'origin_id', 'destination_type', 'destination_id', 'from_zone_id', 'to_zone_id']);
+
+        return response()->json(['data' => $routes]);
+    }
+
     public function index(Request $request)
     {
         $query = TransferRoute::query()

@@ -56,6 +56,7 @@ use App\Http\Controllers\Guest\PublicActivityController;
 use App\Http\Controllers\Guest\PublicItineraryController;
 use App\Http\Controllers\Guest\PublicPackageController;
 use App\Http\Controllers\Guest\PublicTransferController;
+use App\Http\Controllers\Guest\PublicLocationSearchController;
 use App\Http\Controllers\Guest\PublicHomeSearchController;
 use App\Http\Controllers\Guest\PublicToursSearchController;
 use App\Http\Controllers\Guest\PublicShopController;
@@ -404,6 +405,7 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
 
     // Admin Side Transfer Routes
     Route::prefix('/transfer-routes')->group(function () {
+        Route::get('/dropdown', [TransferRouteController::class, 'dropdown']);
         Route::get('/', [TransferRouteController::class, 'index']);
         Route::post('/', [TransferRouteController::class, 'store']);
         Route::post('/bulk-delete', [TransferRouteController::class, 'bulkDelete']);
@@ -577,6 +579,9 @@ Route::prefix('transfers')->group(function () {
     Route::get('/', [PublicTransferController::class, 'index']);
     Route::get('{id}', [PublicTransferController::class, 'show']);
 });
+
+// Public location search (used by transfers pickup/destination combobox)
+Route::get('/public/locations/search', [PublicLocationSearchController::class, 'search']);
 
 // itineraries api
 Route::prefix('itineraries')->group(function () {

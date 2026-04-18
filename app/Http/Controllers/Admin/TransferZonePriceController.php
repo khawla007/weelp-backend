@@ -16,7 +16,7 @@ class TransferZonePriceController extends Controller
             ->get(['id', 'name', 'slug', 'sort_order', 'is_active']);
 
         $cells = TransferZonePrice::query()
-            ->get(['id', 'from_zone_id', 'to_zone_id', 'price', 'currency']);
+            ->get(['id', 'from_zone_id', 'to_zone_id', 'base_price', 'currency']);
 
         return response()->json([
             'zones' => $zones,
@@ -29,7 +29,7 @@ class TransferZonePriceController extends Controller
         $data = $request->validate([
             'from_zone_id' => 'required|integer|exists:transfer_zones,id',
             'to_zone_id'   => 'required|integer|exists:transfer_zones,id',
-            'price'        => 'required|numeric|min:0',
+            'base_price'   => 'required|numeric|min:0',
             'currency'     => 'nullable|string|max:10',
         ]);
 
@@ -39,8 +39,8 @@ class TransferZonePriceController extends Controller
                 'to_zone_id'   => $data['to_zone_id'],
             ],
             [
-                'price'    => $data['price'],
-                'currency' => $data['currency'] ?? 'USD',
+                'base_price' => $data['base_price'],
+                'currency'   => $data['currency'] ?? 'USD',
             ]
         );
 
@@ -50,11 +50,11 @@ class TransferZonePriceController extends Controller
     public function bulkUpsert(Request $request)
     {
         $data = $request->validate([
-            'cells'                => 'required|array|min:1',
-            'cells.*.from_zone_id' => 'required|integer|exists:transfer_zones,id',
-            'cells.*.to_zone_id'   => 'required|integer|exists:transfer_zones,id',
-            'cells.*.price'        => 'required|numeric|min:0',
-            'cells.*.currency'     => 'nullable|string|max:10',
+            'cells'                 => 'required|array|min:1',
+            'cells.*.from_zone_id'  => 'required|integer|exists:transfer_zones,id',
+            'cells.*.to_zone_id'    => 'required|integer|exists:transfer_zones,id',
+            'cells.*.base_price'    => 'required|numeric|min:0',
+            'cells.*.currency'      => 'nullable|string|max:10',
         ]);
 
         $saved = 0;
@@ -65,8 +65,8 @@ class TransferZonePriceController extends Controller
                     'to_zone_id'   => $cell['to_zone_id'],
                 ],
                 [
-                    'price'    => $cell['price'],
-                    'currency' => $cell['currency'] ?? 'USD',
+                    'base_price' => $cell['base_price'],
+                    'currency'   => $cell['currency'] ?? 'USD',
                 ]
             );
             $saved++;

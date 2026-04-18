@@ -35,7 +35,7 @@ return new class extends Migration
                 ->onDelete('cascade');
     
             // New columns for non-vendor pricing
-            $table->decimal('base_price', 10, 2)->nullable();
+            $table->decimal('transfer_price', 10, 2)->nullable();
             $table->string('currency')->nullable();
             $table->enum('price_type', ['per_person', 'per_vehicle'])->nullable();
             $table->decimal('extra_luggage_charge', 10, 2)->nullable();

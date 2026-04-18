@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property bool $is_vendor
  * @property int|null $pricing_tier_id
  * @property int|null $availability_id
- * @property numeric|null $base_price
+ * @property numeric|null $transfer_price
  * @property string|null $currency
  * @property string|null $price_type
  * @property numeric|null $extra_luggage_charge
@@ -25,7 +25,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferPricingAvailability newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferPricingAvailability query()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferPricingAvailability whereAvailabilityId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferPricingAvailability whereBasePrice($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferPricingAvailability whereTransferPrice($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferPricingAvailability whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferPricingAvailability whereCurrency($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferPricingAvailability whereExtraLuggageCharge($value)
@@ -47,11 +47,11 @@ class TransferPricingAvailability extends Model
         'is_vendor',
         'pricing_tier_id',
         'availability_id',
-        'base_price',          
-        'currency',             
-        'price_type',           
-        'extra_luggage_charge', 
-        'waiting_charge', 
+        'transfer_price',
+        'currency',
+        'price_type',
+        'extra_luggage_charge',
+        'waiting_charge',
     ];
 
     protected $casts = [

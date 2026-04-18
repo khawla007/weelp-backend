@@ -56,7 +56,19 @@ class StripeController extends Controller
         ]);
 
         $orderableClass = 'App\\Models\\' . ucfirst($data['order_type']);
-        $orderable = $orderableClass::findOrFail($data['orderable_id']);
+        if (!class_exists($orderableClass)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid order type.',
+            ], 422);
+        }
+        $orderable = $orderableClass::find($data['orderable_id']);
+        if (!$orderable) {
+            return response()->json([
+                'success' => false,
+                'message' => 'The selected item is no longer available.',
+            ], 404);
+        }
         $totalAmount = $data['is_custom_amount'] ? $data['custom_amount'] : $data['amount'];
 
         // Server-side enforcement: itineraries charge the sum of their schedule items,
@@ -133,6 +145,28 @@ class StripeController extends Controller
                 }),
                 'schedules' => $orderable->schedules,
                 'pricing' => $orderable->basePricing->priceVariations ?? [],
+                'coupons_applied' => $order->applied_coupons ?? [],
+                'media' => $orderable->mediaGallery->map(function ($mg) {
+                    return [
+                        'url' => $mg->media?->url,
+                        'alt' => $mg->media?->alt_text,
+                    ];
+                }),
+            ];
+        } elseif ($orderable instanceof \App\Models\Transfer) {
+            $orderable->loadMissing('vendorRoutes.route.origin', 'vendorRoutes.route.destination', 'pricingAvailability', 'mediaGallery.media');
+            $route = $orderable->vendorRoutes?->route;
+            $snapshot = [
+                'name' => $orderable->name,
+                'slug' => $orderable->slug,
+                'item_type' => 'transfer',
+                'transfer_type' => $orderable->transfer_type,
+                'vehicle_type' => $orderable->vendorRoutes?->vehicle_type,
+                'inclusion' => $orderable->vendorRoutes?->inclusion,
+                'route_name' => $route?->name,
+                'origin_name' => $route?->origin?->name,
+                'destination_name' => $route?->destination?->name,
+                'pricing' => $orderable->pricingAvailability,
                 'coupons_applied' => $order->applied_coupons ?? [],
                 'media' => $orderable->mediaGallery->map(function ($mg) {
                     return [
@@ -342,9 +376,12 @@ class StripeController extends Controller
             ? \App\Models\Region::whereHas('countries', fn ($q) => $q->where('countries.id', $countryId))->first()
             : null;
     
+        $orderType = $order->orderable_type ? strtolower(class_basename($order->orderable_type)) : null;
+
         $response = [
             'id' => $order->id,
             'item_id' => $order->orderable_id,
+            'order_type' => $orderType,
             'status' => $order->status,
             'travel_date' => $order->travel_date,
             'preferred_time' => $order->preferred_time,
@@ -361,6 +398,13 @@ class StripeController extends Controller
                 'region' => $region?->name,
                 'locations' => $snapshot['location'] ?? null,
                 'media' => $media,
+                // Transfer-specific fields (null for other types)
+                'transfer_type' => $snapshot['transfer_type'] ?? null,
+                'vehicle_type' => $snapshot['vehicle_type'] ?? null,
+                'inclusion' => $snapshot['inclusion'] ?? null,
+                'route_name' => $snapshot['route_name'] ?? null,
+                'origin_name' => $snapshot['origin_name'] ?? null,
+                'destination_name' => $snapshot['destination_name'] ?? null,
             ],
             'addons' => $snapshot['addons'] ?? [],
             'base_amount' => $snapshot['base_amount'] ?? null,

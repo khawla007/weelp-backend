@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('to_zone_id')
                 ->constrained('transfer_zones')
                 ->cascadeOnDelete();
-            $table->decimal('price', 10, 2)->default(0);
+            $table->decimal('base_price', 10, 2)->default(0);
             $table->string('currency', 10)->default('USD');
             $table->timestamps();
 

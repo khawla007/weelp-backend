@@ -43,7 +43,7 @@ class TransferRouteIntegrationTest extends TestCase
         $z2 = TransferZone::create(['name' => 'Downtown', 'slug' => 'downtown']);
         TransferZonePrice::create([
             'from_zone_id' => $z1->id, 'to_zone_id' => $z2->id,
-            'price' => 55.0, 'currency' => 'USD',
+            'base_price' => 55.0, 'currency' => 'USD',
         ]);
 
         $route = TransferRoute::create([
@@ -69,19 +69,14 @@ class TransferRouteIntegrationTest extends TestCase
             'transfer_type'     => 'car',
             'is_vendor'         => false,
             'transfer_route_id' => $seed['route']->id,
-            'pickup_location'   => 'DXB',
-            'dropoff_location'  => 'Hotel',
             'vehicle_type'      => 'sedan',
             'inclusion'         => 'water',
             'currency'          => 'USD',
             'price_type'        => 'per_vehicle',
+            'transfer_price'    => 100,
             'extra_luggage_charge' => 0,
             'waiting_charge'       => 0,
-            // base_price intentionally omitted so resolver fills it
         ];
-
-        // resolver requires base_price via "required" validation currently; override by providing it explicitly and assert it's used if omitted would fail - the plan says validation still enforces base_price for non-vendor, so we verify pickup/dropoff resolution instead.
-        $payload['base_price'] = 100; // user-provided wins over matrix
 
         $response = $this->actingAs($admin, 'api')->postJson('/api/admin/transfers', $payload);
 
@@ -95,7 +90,7 @@ class TransferRouteIntegrationTest extends TestCase
         $this->assertSame($seed['dropoff']->id, $vendorRoute->dropoff_place_id, 'dropoff_place_id derived from route destination');
 
         $pricing = TransferPricingAvailability::where('transfer_id', $transfer->id)->first();
-        $this->assertEquals(100, (float) $pricing->base_price, 'user-provided base_price wins over matrix');
+        $this->assertEquals(100, (float) $pricing->transfer_price, 'user-provided transfer_price wins over matrix');
     }
 
     public function test_transfer_store_persists_transfer_route_id(): void
@@ -114,7 +109,7 @@ class TransferRouteIntegrationTest extends TestCase
             'dropoff_location'  => 'B',
             'vehicle_type'      => 'sedan',
             'inclusion'         => 'x',
-            'base_price'        => 10,
+            'transfer_price'    => 10,
             'currency'          => 'USD',
             'price_type'        => 'per_vehicle',
             'extra_luggage_charge' => 0,
@@ -144,7 +139,7 @@ class TransferRouteIntegrationTest extends TestCase
             'dropoff_location'  => 'B',
             'vehicle_type'      => 'sedan',
             'inclusion'         => 'x',
-            'base_price'        => 10,
+            'transfer_price'    => 10,
             'currency'          => 'USD',
             'price_type'        => 'per_vehicle',
             'extra_luggage_charge' => 0,
