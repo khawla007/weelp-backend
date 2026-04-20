@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -13,6 +14,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Activity $activity
  * @property-read \App\Models\Category $category
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityCategory newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityCategory newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityCategory query()
@@ -21,18 +23,22 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityCategory whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityCategory whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityCategory whereUpdatedAt($value)
- * @mixin \Eloquent
+ *
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
-class ActivityCategory extends Model {
+class ActivityCategory extends Model
+{
     use HasFactory;
 
     protected $fillable = ['activity_id', 'category_id'];
 
-    public function activity() {
+    public function activity(): BelongsTo
+    {
         return $this->belongsTo(Activity::class);
     }
 
-    public function category() {
+    public function category(): BelongsTo
+    {
         return $this->belongsTo(Category::class, 'category_id');
     }
 }

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -13,6 +14,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\City $city
  * @property-read \App\Models\Package $package
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageLocation newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageLocation newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageLocation query()
@@ -21,7 +23,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageLocation whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageLocation wherePackageId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageLocation whereUpdatedAt($value)
- * @mixin \Eloquent
+ *
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class PackageLocation extends Model
 {
@@ -32,13 +35,14 @@ class PackageLocation extends Model
         'city_id',
     ];
 
-    public function package()
+    public function package(): BelongsTo
     {
         return $this->belongsTo(Package::class);
     }
 
-    public function city() {
-        
+    public function city(): BelongsTo
+    {
+
         return $this->belongsTo(City::class, 'city_id');
     }
 }

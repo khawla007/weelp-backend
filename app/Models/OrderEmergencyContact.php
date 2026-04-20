@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -14,6 +15,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Order $order
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderEmergencyContact newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderEmergencyContact newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderEmergencyContact query()
@@ -24,19 +26,19 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderEmergencyContact whereOrderId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderEmergencyContact whereRelationship($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderEmergencyContact whereUpdatedAt($value)
- * @mixin \Eloquent
+ *
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class OrderEmergencyContact extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'order_id', 'contact_name', 'contact_phone', 'relationship'
+        'order_id', 'contact_name', 'contact_phone', 'relationship',
     ];
 
-    public function order()
+    public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
     }
 }
-

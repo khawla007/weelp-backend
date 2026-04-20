@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -16,6 +17,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\State $state
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StateEvent newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StateEvent newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StateEvent query()
@@ -28,7 +30,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StateEvent whereStateId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StateEvent whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StateEvent whereUpdatedAt($value)
- * @mixin \Eloquent
+ *
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class StateEvent extends Model
 {
@@ -44,13 +47,12 @@ class StateEvent extends Model
     ];
 
     protected $casts = [
-        'type'     => 'array',
+        'type' => 'array',
         // 'location' => 'array',
-        'date'=> 'date:Y-m-d', 
+        'date' => 'date:Y-m-d',
     ];
 
-
-    public function state()
+    public function state(): BelongsTo
     {
         return $this->belongsTo(State::class);
     }

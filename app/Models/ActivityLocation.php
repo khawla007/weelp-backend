@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -16,6 +17,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Activity $activity
  * @property-read \App\Models\City $city
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityLocation newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityLocation newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityLocation query()
@@ -27,18 +29,22 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityLocation whereLocationLabel($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityLocation whereLocationType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityLocation whereUpdatedAt($value)
- * @mixin \Eloquent
+ *
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
-class ActivityLocation extends Model {
+class ActivityLocation extends Model
+{
     use HasFactory;
 
     protected $fillable = ['activity_id', 'city_id', 'place_id', 'location_type', 'location_label', 'duration'];
 
-    public function activity() {
+    public function activity(): BelongsTo
+    {
         return $this->belongsTo(Activity::class);
     }
 
-    public function city() {
+    public function city(): BelongsTo
+    {
         return $this->belongsTo(City::class, 'city_id');
     }
 

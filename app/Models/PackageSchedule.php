@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property int $id
@@ -18,6 +20,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read \App\Models\Package $package
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\PackageTransfer> $transfers
  * @property-read int|null $transfers_count
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageSchedule newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageSchedule newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageSchedule query()
@@ -26,7 +29,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageSchedule whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageSchedule wherePackageId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageSchedule whereUpdatedAt($value)
- * @mixin \Eloquent
+ *
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class PackageSchedule extends Model
 {
@@ -37,24 +41,23 @@ class PackageSchedule extends Model
         'day',
     ];
 
-    public function package()
+    public function package(): BelongsTo
     {
         return $this->belongsTo(Package::class);
     }
 
-    public function activities()
+    public function activities(): HasMany
     {
         return $this->hasMany(PackageActivity::class, 'schedule_id');
     }
 
-    public function transfers()
+    public function transfers(): HasMany
     {
         return $this->hasMany(PackageTransfer::class, 'schedule_id');
     }
 
-    public function itineraries()
+    public function itineraries(): HasMany
     {
         return $this->hasMany(PackageItinerary::class, 'schedule_id');
     }
-
 }

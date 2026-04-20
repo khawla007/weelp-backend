@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -12,6 +13,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Itinerary $itinerary
  * @property-read \App\Models\Tag $tag
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryTag newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryTag newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryTag query()
@@ -20,20 +22,21 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryTag whereItineraryId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryTag whereTagId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryTag whereUpdatedAt($value)
- * @mixin \Eloquent
+ *
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class ItineraryTag extends Model
 {
     protected $fillable = [
-        'itinerary_id', 'tag_id'
+        'itinerary_id', 'tag_id',
     ];
 
-    public function itinerary()
+    public function itinerary(): BelongsTo
     {
         return $this->belongsTo(Itinerary::class);
     }
 
-    public function tag()
+    public function tag(): BelongsTo
     {
         return $this->belongsTo(Tag::class, 'tag_id');
     }

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -18,6 +19,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Itinerary $itinerary
  * @property-read \App\Models\PackageSchedule $schedule
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageItinerary newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageItinerary newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageItinerary query()
@@ -31,7 +33,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageItinerary whereScheduleId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageItinerary whereStartTime($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageItinerary whereUpdatedAt($value)
- * @mixin \Eloquent
+ *
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class PackageItinerary extends Model
 {
@@ -48,15 +51,15 @@ class PackageItinerary extends Model
     ];
 
     protected $casts = [
-        'included' => 'boolean'
+        'included' => 'boolean',
     ];
 
-    public function schedule()
+    public function schedule(): BelongsTo
     {
         return $this->belongsTo(PackageSchedule::class);
     }
 
-    public function itinerary()
+    public function itinerary(): BelongsTo
     {
         return $this->belongsTo(Itinerary::class);
     }

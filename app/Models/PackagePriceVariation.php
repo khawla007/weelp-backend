@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\PackageBasePricing $basePricing
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackagePriceVariation newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackagePriceVariation newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackagePriceVariation query()
@@ -28,16 +29,17 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackagePriceVariation whereRegularPrice($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackagePriceVariation whereSalePrice($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackagePriceVariation whereUpdatedAt($value)
- * @mixin \Eloquent
+ *
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class PackagePriceVariation extends Model
 {
     protected $fillable = [
-        'base_pricing_id', 'name', 'regular_price', 'sale_price', 
-        'max_guests', 'description'
+        'base_pricing_id', 'name', 'regular_price', 'sale_price',
+        'max_guests', 'description',
     ];
 
-    public function basePricing()
+    public function basePricing(): BelongsTo
     {
         return $this->belongsTo(PackageBasePricing::class, 'base_pricing_id');
     }

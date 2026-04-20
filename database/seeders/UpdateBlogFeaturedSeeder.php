@@ -16,6 +16,7 @@ class UpdateBlogFeaturedSeeder extends Seeder
         // Skip if no blogs
         if ($blogs->isEmpty()) {
             dump('⚠ No blogs found');
+
             return;
         }
 
@@ -31,6 +32,7 @@ class UpdateBlogFeaturedSeeder extends Seeder
             // Skip if already has featured image
             if ($existingFeatured) {
                 dump("Blog #{$blog->id} ({$blog->name}): Already has featured image");
+
                 continue;
             }
 

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -14,6 +15,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\State $state
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StateFaq newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StateFaq newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StateFaq query()
@@ -24,7 +26,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StateFaq whereQuestionNumber($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StateFaq whereStateId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StateFaq whereUpdatedAt($value)
- * @mixin \Eloquent
+ *
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class StateFaq extends Model
 {
@@ -37,7 +40,7 @@ class StateFaq extends Model
         'answer',
     ];
 
-    public function state()
+    public function state(): BelongsTo
     {
         return $this->belongsTo(State::class);
     }

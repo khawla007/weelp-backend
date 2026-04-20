@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -21,6 +22,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read \App\Models\VendorAvailabilityTimeSlot|null $availability
  * @property-read \App\Models\VendorPricingTier|null $pricingTier
  * @property-read \App\Models\Transfer $transfer
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferPricingAvailability newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferPricingAvailability newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferPricingAvailability query()
@@ -36,12 +38,13 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferPricingAvailability whereTransferId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferPricingAvailability whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferPricingAvailability whereWaitingCharge($value)
- * @mixin \Eloquent
+ *
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class TransferPricingAvailability extends Model
 {
-
     use HasFactory;
+
     protected $fillable = [
         'transfer_id',
         'is_vendor',
@@ -57,21 +60,21 @@ class TransferPricingAvailability extends Model
     protected $casts = [
         'is_vendor' => 'boolean',
     ];
-    
+
     // Relationship with Transfer
-    public function transfer()
+    public function transfer(): BelongsTo
     {
         return $this->belongsTo(Transfer::class);
     }
 
     // Relationship with VendorPricingTier
-    public function pricingTier()
+    public function pricingTier(): BelongsTo
     {
         return $this->belongsTo(VendorPricingTier::class);
     }
 
     // Relationship with VendorAvailabilityTimeSlot
-    public function availability()
+    public function availability(): BelongsTo
     {
         return $this->belongsTo(VendorAvailabilityTimeSlot::class);
     }

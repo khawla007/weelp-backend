@@ -4,6 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * @property int $id
@@ -16,6 +19,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property bool $featured_destination
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property string|null $feature_image
+ * @property array $media_gallery
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\StateAdditionalInfo> $additionalInfo
  * @property-read int|null $additional_info_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\City> $cities
@@ -32,6 +37,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read int|null $seasons_count
  * @property-read \App\Models\StateSeo|null $seo
  * @property-read \App\Models\StateTravelInfo|null $travelInfo
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|State newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|State newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|State query()
@@ -45,65 +51,68 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|State whereSlug($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|State whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|State whereUpdatedAt($value)
- * @mixin \Eloquent
+ *
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class State extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'name', 'code', 'slug', 'type', 'country_id', 'description', 'featured_destination'
+        'name', 'code', 'slug', 'type', 'country_id', 'description', 'featured_destination',
     ];
 
     protected $casts = [
-        'featured_destination' => 'boolean'
+        'featured_destination' => 'boolean',
     ];
-    
-    public function country() {
+
+    public function country(): BelongsTo
+    {
         return $this->belongsTo(Country::class);
     }
 
-    public function mediaGallery()
+    public function mediaGallery(): HasMany
     {
         return $this->hasMany(StateMediaGallery::class, 'state_id');
     }
-    
-    public function locationDetails()
+
+    public function locationDetails(): HasOne
     {
         return $this->hasOne(StateLocationDetail::class);
     }
 
-    public function travelInfo()
+    public function travelInfo(): HasOne
     {
         return $this->hasOne(StateTravelInfo::class);
     }
 
-    public function seasons()
+    public function seasons(): HasMany
     {
         return $this->hasMany(StateSeason::class);
     }
 
-    public function events()
+    public function events(): HasMany
     {
         return $this->hasMany(StateEvent::class);
     }
 
-    public function additionalInfo()
+    public function additionalInfo(): HasMany
     {
         return $this->hasMany(StateAdditionalInfo::class);
     }
 
-    public function faqs()
+    public function faqs(): HasMany
     {
         return $this->hasMany(StateFaq::class);
     }
 
-    public function seo()
+    public function seo(): HasOne
     {
         return $this->hasOne(StateSeo::class);
     }
 
-    public function cities() {
+    public function cities(): HasMany
+    {
         return $this->hasMany(City::class);
     }
 }

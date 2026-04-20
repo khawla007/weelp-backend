@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -15,6 +16,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Activity $activity
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityEarlyBirdDiscount newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityEarlyBirdDiscount newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityEarlyBirdDiscount query()
@@ -26,17 +28,21 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityEarlyBirdDiscount whereEnabled($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityEarlyBirdDiscount whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityEarlyBirdDiscount whereUpdatedAt($value)
- * @mixin \Eloquent
+ *
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
-class ActivityEarlyBirdDiscount extends Model {
+class ActivityEarlyBirdDiscount extends Model
+{
     use HasFactory;
 
     protected $fillable = ['activity_id', 'enabled', 'days_before_start', 'discount_amount', 'discount_type'];
 
     protected $casts = [
-        'enabled' => 'boolean'
+        'enabled' => 'boolean',
     ];
-    public function activity() {
+
+    public function activity(): BelongsTo
+    {
         return $this->belongsTo(Activity::class);
     }
 }

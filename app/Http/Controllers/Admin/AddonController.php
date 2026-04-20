@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Pagination\Paginator;
 use App\Models\Addon;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\Paginator;
 
 class AddonController extends Controller
 {
@@ -35,18 +35,18 @@ class AddonController extends Controller
             }
         }
 
-        if ($request->has('name') && !empty($request->name)) {
-            $query->where('name', 'like', '%' . $request->name . '%');
+        if ($request->has('name') && ! empty($request->name)) {
+            $query->where('name', 'like', '%'.$request->name.'%');
         }
 
         $addons = $query->paginate(5);
 
         // Custom clean response
         return response()->json([
-            'data'         => $addons->items(),
+            'data' => $addons->items(),
             'current_page' => $addons->currentPage(),
-            'per_page'     => $addons->perPage(),
-            'total'        => $addons->total(),
+            'per_page' => $addons->perPage(),
+            'total' => $addons->total(),
         ]);
     }
 
@@ -58,7 +58,7 @@ class AddonController extends Controller
             ->get();
 
         return response()->json([
-            'data' => $addons
+            'data' => $addons,
         ]);
     }
 
@@ -73,7 +73,7 @@ class AddonController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $addons
+            'data' => $addons,
         ]);
     }
 
@@ -87,7 +87,7 @@ class AddonController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $addons
+            'data' => $addons,
         ]);
     }
 
@@ -101,7 +101,7 @@ class AddonController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $addons
+            'data' => $addons,
         ]);
     }
 
@@ -115,7 +115,7 @@ class AddonController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $addons
+            'data' => $addons,
         ]);
     }
 
@@ -125,13 +125,13 @@ class AddonController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name'              => 'required|string|max:255',
-            'type'              => 'nullable|in:itinerary,activity,package,transfer',
-            'description'       => 'nullable|string',
-            'price'             => 'required|numeric|min:0',
-            'sale_price'        => 'nullable|numeric|min:0',
+            'name' => 'required|string|max:255',
+            'type' => 'nullable|in:itinerary,activity,package,transfer',
+            'description' => 'nullable|string',
+            'price' => 'required|numeric|min:0',
+            'sale_price' => 'nullable|numeric|min:0',
             'price_calculation' => 'required|string',
-            'active_status'     => 'sometimes|boolean',
+            'active_status' => 'sometimes|boolean',
         ]);
 
         $addon = Addon::create($validated);
@@ -139,7 +139,7 @@ class AddonController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Add-on created successfully',
-            'data'    => $addon
+            'data' => $addon,
         ], 201);
     }
 
@@ -149,12 +149,12 @@ class AddonController extends Controller
     public function show(string $id)
     {
         $addon = Addon::findOrFail($id);
-    
+
         return response()->json([
             'success' => true,
-            'data'    => $addon
+            'data' => $addon,
         ]);
-    }    
+    }
 
     /**
      * Update the specified resource in storage.
@@ -162,13 +162,13 @@ class AddonController extends Controller
     public function update(Request $request, string $id)
     {
         $validated = $request->validate([
-            'name'              => 'sometimes|string|max:255',
-            'type'              => 'nullable|in:itinerary,activity,package,transfer',
-            'description'       => 'nullable|string',
-            'price'             => 'sometimes|numeric|min:0',
-            'sale_price'        => 'nullable|numeric|min:0',
+            'name' => 'sometimes|string|max:255',
+            'type' => 'nullable|in:itinerary,activity,package,transfer',
+            'description' => 'nullable|string',
+            'price' => 'sometimes|numeric|min:0',
+            'sale_price' => 'nullable|numeric|min:0',
             'price_calculation' => 'required|string',
-            'active_status'     => 'sometimes|boolean',
+            'active_status' => 'sometimes|boolean',
         ]);
 
         $addon = Addon::findOrFail($id);
@@ -179,10 +179,9 @@ class AddonController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Add-on updated successfully',
-            'data'    => $addon->fresh()
+            'data' => $addon->fresh(),
         ]);
     }
-    
 
     /**
      * Destroy the specified resource from storage.
@@ -190,44 +189,42 @@ class AddonController extends Controller
     public function destroy(string $id)
     {
         $addon = Addon::findOrFail($id);
-    
+
         $addon->delete();
-    
+
         return response()->json([
             'success' => true,
-            'message' => 'Addon deleted successfully.'
+            'message' => 'Addon deleted successfully.',
         ]);
     }
-    
+
     /**
      * Bulk Destroy the specified resource from storage.
-    */
+     */
     public function bulkDelete(Request $request)   // 👈 यही नाम
     {
         $validated = $request->validate([
-            'addon_ids'   => 'required|array',
+            'addon_ids' => 'required|array',
             'addon_ids.*' => 'integer',
         ]);
-    
+
         // कितने IDs database में मौजूद हैं?
         $foundCount = Addon::whereIn('id', $validated['addon_ids'])->count();
-    
+
         if ($foundCount === 0) {
             return response()->json([
                 'success' => false,
                 'message' => 'ID(s) not exist',
             ], 404);
         }
-    
+
         // अब delete करो
         $deletedCount = Addon::whereIn('id', $validated['addon_ids'])->delete();
-    
+
         return response()->json([
             'success' => true,
             'message' => "{$deletedCount} addon(s) deleted successfully",
             // 'deleted_ids' => $validated['addon_ids'],
         ]);
     }
-    
-
 }

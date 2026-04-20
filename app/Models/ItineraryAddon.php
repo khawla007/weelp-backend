@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -12,6 +13,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Addon $addon
  * @property-read \App\Models\Itinerary $itinerary
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryAddon newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryAddon newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryAddon query()
@@ -20,7 +22,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryAddon whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryAddon whereItineraryId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryAddon whereUpdatedAt($value)
- * @mixin \Eloquent
+ *
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class ItineraryAddon extends Model
 {
@@ -32,12 +35,12 @@ class ItineraryAddon extends Model
     ];
 
     // Relations
-    public function itinerary()
+    public function itinerary(): BelongsTo
     {
         return $this->belongsTo(Itinerary::class, 'itinerary_id');
     }
 
-    public function addon()
+    public function addon(): BelongsTo
     {
         return $this->belongsTo(Addon::class, 'addon_id');
     }

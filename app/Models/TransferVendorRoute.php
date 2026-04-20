@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -20,6 +21,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read \App\Models\VendorRoute|null $route
  * @property-read \App\Models\Transfer $transfer
  * @property-read \App\Models\Vendor|null $vendor
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferVendorRoute newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferVendorRoute newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferVendorRoute query()
@@ -34,11 +36,13 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferVendorRoute whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferVendorRoute whereVehicleType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferVendorRoute whereVendorId($value)
- * @mixin \Eloquent
+ *
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class TransferVendorRoute extends Model
 {
     use HasFactory;
+
     protected $fillable = [
         'transfer_id',
         'is_vendor',
@@ -53,33 +57,33 @@ class TransferVendorRoute extends Model
     ];
 
     protected $casts = [
-        'is_vendor' => 'boolean'
+        'is_vendor' => 'boolean',
     ];
 
     // Relationship with Transfer
-    public function transfer()
+    public function transfer(): BelongsTo
     {
         return $this->belongsTo(Transfer::class);
     }
 
     // Relationship with Vendor
-    public function vendor()
+    public function vendor(): BelongsTo
     {
         return $this->belongsTo(Vendor::class);
     }
 
     // Relationship with Vendor Route
-    public function route()
+    public function route(): BelongsTo
     {
         return $this->belongsTo(VendorRoute::class);
     }
 
-    public function pickupPlace()
+    public function pickupPlace(): BelongsTo
     {
         return $this->belongsTo(Place::class, 'pickup_place_id');
     }
 
-    public function dropoffPlace()
+    public function dropoffPlace(): BelongsTo
     {
         return $this->belongsTo(Place::class, 'dropoff_place_id');
     }

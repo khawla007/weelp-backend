@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -13,6 +14,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Media $media
  * @property-read \App\Models\Review $review
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ReviewMediaGallery newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ReviewMediaGallery newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ReviewMediaGallery query()
@@ -22,7 +24,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ReviewMediaGallery whereReviewId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ReviewMediaGallery whereSortOrder($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ReviewMediaGallery whereUpdatedAt($value)
- * @mixin \Eloquent
+ *
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class ReviewMediaGallery extends Model
 {
@@ -30,12 +33,12 @@ class ReviewMediaGallery extends Model
 
     protected $fillable = ['review_id', 'media_id', 'sort_order'];
 
-    public function review()
+    public function review(): BelongsTo
     {
         return $this->belongsTo(Review::class);
     }
 
-    public function media()
+    public function media(): BelongsTo
     {
         return $this->belongsTo(Media::class);
     }

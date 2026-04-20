@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property int $id
@@ -22,6 +22,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read int|null $itineraries_addon_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\PackageAddon> $packagesAddon
  * @property-read int|null $packages_addon_count
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Addon newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Addon newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Addon query()
@@ -35,7 +36,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Addon whereSalePrice($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Addon whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Addon whereUpdatedAt($value)
- * @mixin \Eloquent
+ *
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class Addon extends Model
 {
@@ -57,17 +59,17 @@ class Addon extends Model
     // {
     //     return $this->belongsToMany(ActivityAddon::class, 'activity_addons', 'addon_id', 'activity_id')->withTimestamps();
     // }
-    public function activitiesAddon()
+    public function activitiesAddon(): HasMany
     {
         return $this->hasMany(ActivityAddon::class, 'addon_id');
     }
 
-    public function itinerariesAddon()
+    public function itinerariesAddon(): HasMany
     {
         return $this->hasMany(ItineraryAddon::class, 'addon_id');
     }
 
-    public function packagesAddon()
+    public function packagesAddon(): HasMany
     {
         return $this->hasMany(PackageAddon::class, 'addon_id');
     }

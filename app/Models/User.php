@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Tymon\JWTAuth\Contracts\JWTSubject;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-
+use Tymon\JWTAuth\Contracts\JWTSubject;
 
 /**
  * @property int $id
@@ -16,6 +18,7 @@ use Illuminate\Notifications\Notifiable;
  * @property string $role
  * @property string $status
  * @property int $is_creator
+ * @property int|null $avatar
  * @property \Illuminate\Support\Carbon|null $email_verified_at
  * @property string $password
  * @property string|null $remember_token
@@ -31,10 +34,20 @@ use Illuminate\Notifications\Notifiable;
  * @property-read \App\Models\UserProfile|null $profile
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Review> $reviews
  * @property-read int|null $reviews_count
+ * @property-read \App\Models\CreatorApplication|null $creatorApplication
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\CreatorApplication> $creatorApplications
+ * @property-read int|null $creator_applications_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Itinerary> $creatorItineraries
+ * @property-read int|null $creator_itineraries_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Itinerary> $userItineraries
+ * @property-read int|null $user_itineraries_count
+ * @property-read \App\Models\Media|null $avatarMedia
+ *
  * @method static \Database\Factories\UserFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereAvatar($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereEmail($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereEmailVerifiedAt($value)
@@ -46,14 +59,8 @@ use Illuminate\Notifications\Notifiable;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereRole($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereStatus($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereUpdatedAt($value)
- * @property-read \App\Models\CreatorApplication|null $creatorApplication
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\CreatorApplication> $creatorApplications
- * @property-read int|null $creator_applications_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Itinerary> $creatorItineraries
- * @property-read int|null $creator_itineraries_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Itinerary> $userItineraries
- * @property-read int|null $user_itineraries_count
- * @mixin \Eloquent
+ *
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class User extends Authenticatable implements JWTSubject
 {
@@ -61,14 +68,15 @@ class User extends Authenticatable implements JWTSubject
 
     // Role constants
     const ROLE_SUPER_ADMIN = 'super_admin';
-    const ROLE_ADMIN = 'admin';
-    const ROLE_CUSTOMER = 'customer';
 
+    const ROLE_ADMIN = 'admin';
+
+    const ROLE_CUSTOMER = 'customer';
 
     // Status constants
     const STATUS_ACTIVE = 'active';
-    const STATUS_INACTIVE = 'inactive';
 
+    const STATUS_INACTIVE = 'inactive';
 
     /**
      * The attributes that are mass assignable.
@@ -81,8 +89,9 @@ class User extends Authenticatable implements JWTSubject
         'password',
         'role', // Add role here
         'status',
-        'email_verified_at'
+        'email_verified_at',
     ];
+
     /**
      * The attributes that should be hidden for serialization.
      *
@@ -124,12 +133,10 @@ class User extends Authenticatable implements JWTSubject
                 $user->status = self::STATUS_ACTIVE; // Default status to 'active'
             }
         });
-        
-    }
-    
-    
 
-        /**
+    }
+
+    /**
      * Get the identifier that will be stored in the JWT claim.
      *
      * @return mixed
@@ -179,53 +186,57 @@ class User extends Authenticatable implements JWTSubject
         return $this->getKey(); // This will return the user id for JWT identification
     }
 
-
-    public function profile()
+    public function profile(): HasOne
     {
         return $this->hasOne(UserProfile::class, 'user_id', 'id');
     }
 
-    public function meta()
+    public function meta(): HasOne
     {
         return $this->hasOne(UserMeta::class, 'user_id', 'id');
     }
 
-    public function reviews()
+    public function avatarMedia(): BelongsTo
+    {
+        return $this->belongsTo(Media::class, 'avatar');
+    }
+
+    public function reviews(): HasMany
     {
         return $this->hasMany(Review::class, 'user_id');
     }
 
-    public function posts()
+    public function posts(): HasMany
     {
         return $this->hasMany(Post::class, 'creator_id');
     }
 
-    public function commissions()
+    public function commissions(): HasMany
     {
         return $this->hasMany(Commission::class, 'creator_id');
     }
 
-    public function postLikes()
+    public function postLikes(): HasMany
     {
         return $this->hasMany(PostLike::class);
     }
 
-    public function creatorApplication()
+    public function creatorApplication(): HasOne
     {
         return $this->hasOne(CreatorApplication::class)->latest();
     }
 
-    public function creatorApplications()
+    public function creatorApplications(): HasMany
     {
         return $this->hasMany(CreatorApplication::class);
     }
 
-    public function creatorItineraries()
+    public function creatorItineraries(): HasMany
     {
         return $this->hasMany(Itinerary::class, 'creator_id');
     }
 
-    public function userItineraries()
+    public function userItineraries(): HasMany
     {
         return $this->hasMany(Itinerary::class, 'user_id');
     }

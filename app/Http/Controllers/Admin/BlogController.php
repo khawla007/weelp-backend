@@ -3,13 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\DB;
 use App\Models\Blog;
 use App\Models\BlogMedia;
 use App\Models\Category;
 use App\Models\Tag;
-use App\Models\Activity;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 
@@ -18,21 +17,21 @@ class BlogController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name'           => 'required|string|max:255',
-            'content'        => 'required|string',
-            'publish'        => 'required|boolean',
+            'name' => 'required|string|max:255',
+            'content' => 'required|string',
+            'publish' => 'required|boolean',
 
-            'media_gallery'   => 'required|array',
+            'media_gallery' => 'required|array',
             'media_gallery.*.media_id' => 'required|exists:media,id',
             'media_gallery.*.is_featured' => 'sometimes|boolean',
 
-            'categories'     => 'required|array',
-            'categories.*'   => 'required|exists:categories,id',
+            'categories' => 'required|array',
+            'categories.*' => 'required|exists:categories,id',
 
-            'tags'           => 'required|array',
-            'tags.*'         => 'required|exists:tags,id',
+            'tags' => 'required|array',
+            'tags.*' => 'required|exists:tags,id',
 
-            'excerpt'        => 'required|string',
+            'excerpt' => 'required|string',
         ]);
 
         if ($validator->fails()) {
@@ -40,11 +39,11 @@ class BlogController extends Controller
         }
 
         $blog = Blog::create([
-            'name'          => $request->name,
-            'slug'           => Str::slug($request->name),
-            'content'        => $request->content,
-            'publish'        => $request->publish,
-            'excerpt'        => $request->excerpt,
+            'name' => $request->name,
+            'slug' => Str::slug($request->name),
+            'content' => $request->content,
+            'publish' => $request->publish,
+            'excerpt' => $request->excerpt,
         ]);
 
         $blog->categories()->sync($request->categories);
@@ -67,8 +66,8 @@ class BlogController extends Controller
                 }
 
                 BlogMedia::create([
-                    'blog_id'    => $blog->id,
-                    'media_id'   => $media['media_id'] ?? $media,
+                    'blog_id' => $blog->id,
+                    'media_id' => $media['media_id'] ?? $media,
                     'is_featured' => $isFeatured,
                 ]);
             }
@@ -76,7 +75,7 @@ class BlogController extends Controller
 
         return response()->json([
             'message' => 'Blog created successfully',
-            'Blog' => $blog
+            'Blog' => $blog,
         ], 201);
     }
 
@@ -84,22 +83,22 @@ class BlogController extends Controller
     public function update(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
-            'name'            => 'sometimes|string|max:255',
-            'slug'            => 'sometimes|string|max:255',
-            'content'         => 'sometimes|string',
-            'publish'         => 'sometimes|boolean',
+            'name' => 'sometimes|string|max:255',
+            'slug' => 'sometimes|string|max:255',
+            'content' => 'sometimes|string',
+            'publish' => 'sometimes|boolean',
 
-            'media_gallery'   => 'sometimes|array',
+            'media_gallery' => 'sometimes|array',
             'media_gallery.*.media_id' => 'required|exists:media,id',
             'media_gallery.*.is_featured' => 'sometimes|boolean',
 
-            'categories'     => 'sometimes|array',
-            'categories.*'   => 'required|exists:categories,id',
+            'categories' => 'sometimes|array',
+            'categories.*' => 'required|exists:categories,id',
 
-            'tags'           => 'sometimes|array',
-            'tags.*'         => 'required|exists:tags,id',
+            'tags' => 'sometimes|array',
+            'tags.*' => 'required|exists:tags,id',
 
-            'excerpt'         => 'sometimes|string',
+            'excerpt' => 'sometimes|string',
         ]);
 
         if ($validator->fails()) {
@@ -146,8 +145,8 @@ class BlogController extends Controller
                 }
 
                 BlogMedia::create([
-                    'blog_id'    => $blog->id,
-                    'media_id'   => $media['media_id'] ?? $media,
+                    'blog_id' => $blog->id,
+                    'media_id' => $media['media_id'] ?? $media,
                     'is_featured' => $isFeatured,
                 ]);
             }
@@ -155,21 +154,20 @@ class BlogController extends Controller
 
         return response()->json([
             'message' => 'Blog updated successfully',
-            'blog'    => $blog,
+            'blog' => $blog,
         ], 200);
     }
 
     // Get all blogs
     public function index(Request $request)
     {
-        $perPage        = 3;
-        $page           = $request->get('page', 1);
+        $perPage = 3;
+        $page = $request->get('page', 1);
 
-        $search         = $request->get('search'); // search name/slug/content
-        $categorySlug   = $request->get('category');
-        $tagSlug        = $request->get('tag');
-        $sortBy         = $request->get('sort_by', 'id_desc'); // Default: Newest First
-
+        $search = $request->get('search'); // search name/slug/content
+        $categorySlug = $request->get('category');
+        $tagSlug = $request->get('tag');
+        $sortBy = $request->get('sort_by', 'id_desc'); // Default: Newest First
 
         // Resolve category
         $category = $categorySlug
@@ -178,7 +176,6 @@ class BlogController extends Controller
 
         $categoryId = $category ? $category->id : null;
 
-
         // Resolve tag
         $tag = $tagSlug
             ? Tag::where('slug', $tagSlug)->first()
@@ -186,38 +183,28 @@ class BlogController extends Controller
 
         $tagId = $tag ? $tag->id : null;
 
-
         // Main Query
         $query = Blog::query()
             ->with(['media', 'categories', 'tags'])
 
-
             // SEARCH (same style)
-            ->when($search, fn($query) =>
-                $query->where(function ($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%")
-                      ->orWhere('slug', 'like', "%{$search}%")
-                      ->orWhere('excerpt', 'like', "%{$search}%")
-                      ->orWhere('content', 'like', "%{$search}%");
-                })
+            ->when($search, fn ($query) => $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('slug', 'like', "%{$search}%")
+                    ->orWhere('excerpt', 'like', "%{$search}%")
+                    ->orWhere('content', 'like', "%{$search}%");
+            })
             )
-
 
             // CATEGORY FILTER
-            ->when($categoryId, fn($query) =>
-                $query->whereHas('categories', fn($q) =>
-                    $q->where('category_id', $categoryId)
-                )
+            ->when($categoryId, fn ($query) => $query->whereHas('categories', fn ($q) => $q->where('category_id', $categoryId)
+            )
             )
 
-
             // TAG FILTER
-            ->when($tagId, fn($query) =>
-                $query->whereHas('tags', fn($q) =>
-                    $q->where('tag_id', $tagId)
-                )
+            ->when($tagId, fn ($query) => $query->whereHas('tags', fn ($q) => $q->where('tag_id', $tagId)
+            )
             );
-
 
         // SORTING — SAME STYLE
         switch ($sortBy) {
@@ -253,52 +240,49 @@ class BlogController extends Controller
                 break;
         }
 
-
         // Get all filtered blogs
         $allItems = $query->get();
-
 
         // Manual pagination
         $paginatedItems = $allItems->forPage($page, $perPage);
 
-
         // Transform response
-        $transformed = $paginatedItems->map(function ($blog) {
+        $transformed = $paginatedItems->map(function (Blog $blog, int $key) {
 
             // Get featured image from media_gallery
             $featuredImage = $blog->media->firstWhere('pivot.is_featured', true);
 
             return [
-                'id'        => $blog->id,
-                'name'      => $blog->name,
-                'slug'      => $blog->slug,
-                'excerpt'   => $blog->excerpt,
-                'publish'   => $blog->publish,
-                'feature_image' => $featuredImage?->url ?? null,
+                'id' => $blog->id,
+                'name' => $blog->name,
+                'slug' => $blog->slug,
+                'excerpt' => $blog->excerpt,
+                'publish' => $blog->publish,
+                'feature_image' => $featuredImage->url ?? null,
 
                 'media_gallery' => $blog->media->map(function ($m) {
                     return [
                         'media_id' => $m->id,
-                        'name'     => $m->name ?? null,
-                        'alt'      => $m->alt_text ?? null,
-                        'url'      => $m->url ?? null,
+                        'name' => $m->name ?? null,
+                        'alt' => $m->alt_text ?? null,
+                        'url' => $m->url ?? null,
                         'is_featured' => $m->pivot->is_featured ?? false,
                     ];
                 }),
 
                 'categories' => $blog->categories->map(function ($cat) {
                     return [
-                        'category_id'   => $cat->id,
+                        'category_id' => $cat->id,
                         'category_name' => $cat->name,
-                        'slug'          => $cat->slug ?? null,
+                        'slug' => $cat->slug ?? null,
                     ];
                 }),
 
                 'tags' => $blog->tags->map(function ($tag) {
                     return [
-                        'tag_id'   => $tag->id,
+                        'tag_id' => $tag->id,
                         'tag_name' => $tag->name,
-                        'slug'     => $tag->slug ?? null,
+                        'slug' => $tag->slug ?? null,
                     ];
                 }),
 
@@ -307,13 +291,12 @@ class BlogController extends Controller
             ];
         });
 
-
         return response()->json([
-            'success'      => true,
-            'data'         => $transformed->values(),
-            'current_page' => (int)$page,
-            'per_page'     => $perPage,
-            'total'        => $allItems->count(),
+            'success' => true,
+            'data' => $transformed->values(),
+            'current_page' => (int) $page,
+            'per_page' => $perPage,
+            'total' => $allItems->count(),
         ], 200);
     }
 
@@ -330,21 +313,21 @@ class BlogController extends Controller
         $featuredImage = $blog->media->firstWhere('pivot.is_featured', true);
 
         return response()->json([
-            'id'        => $blog->id,
-            'name'     => $blog->name,
-            'slug'      => $blog->slug,
-            'content'   => $blog->content,
-            'excerpt'   => $blog->excerpt,
-            'publish'   => $blog->publish,
-            'feature_image' => $featuredImage?->url ?? null,
+            'id' => $blog->id,
+            'name' => $blog->name,
+            'slug' => $blog->slug,
+            'content' => $blog->content,
+            'excerpt' => $blog->excerpt,
+            'publish' => $blog->publish,
+            'feature_image' => $featuredImage->url ?? null,
 
             // multiple media (gallery)
             'media_gallery' => $blog->media->map(function ($m) {
                 return [
-                    'media_id'   => $m->id,
+                    'media_id' => $m->id,
                     'name' => $m->name ?? null,
-                    'alt'  => $m->alt_text ?? null,
-                    'url'  => $m->url ?? null,
+                    'alt' => $m->alt_text ?? null,
+                    'url' => $m->url ?? null,
                     'is_featured' => $m->pivot->is_featured ?? false,
                 ];
             }),
@@ -352,7 +335,7 @@ class BlogController extends Controller
             // multiple categories
             'categories' => $blog->categories->map(function ($cat) {
                 return [
-                    'id'   => $cat->id,
+                    'id' => $cat->id,
                     'name' => $cat->name,
                     'slug' => $cat->slug ?? null,
                 ];
@@ -361,7 +344,7 @@ class BlogController extends Controller
             // multiple tags
             'tags' => $blog->tags->map(function ($tag) {
                 return [
-                    'id'   => $tag->id,
+                    'id' => $tag->id,
                     'name' => $tag->name,
                     'slug' => $tag->slug ?? null,
                 ];
@@ -372,19 +355,19 @@ class BlogController extends Controller
         ], 200);
     }
 
-
     // Delete a blog
     public function destroy($id)
     {
         $blog = Blog::findOrFail($id);
         $blog->delete();
+
         return response()->json(['message' => 'Blog deleted successfully'], 200);
     }
 
     public function bulkDestroy(Request $request)
     {
         $validated = $request->validate([
-            'blog_ids'   => 'required|array',
+            'blog_ids' => 'required|array',
             'blog_ids.*' => 'integer',
         ]);
 
@@ -396,17 +379,17 @@ class BlogController extends Controller
                 ->pluck('id')
                 ->toArray();
 
-            if (!empty($existingIds)) {
+            if (! empty($existingIds)) {
                 Blog::whereIn('id', $existingIds)->delete();
             }
 
             DB::commit();
 
             return response()->json([
-                'success'        => true,
-                'message'        => 'Blogs deleted successfully.',
-                'deleted_ids'    => $existingIds,
-                'ignored_ids'    => array_values(array_diff($validated['blog_ids'], $existingIds)),
+                'success' => true,
+                'message' => 'Blogs deleted successfully.',
+                'deleted_ids' => $existingIds,
+                'ignored_ids' => array_values(array_diff($validated['blog_ids'], $existingIds)),
             ], 200);
 
         } catch (\Exception $e) {
@@ -416,7 +399,7 @@ class BlogController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to delete blogs.',
-                'error'   => $e->getMessage(),
+                'error' => $e->getMessage(),
             ], 500);
         }
     }

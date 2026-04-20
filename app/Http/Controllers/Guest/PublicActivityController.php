@@ -3,17 +3,12 @@
 namespace App\Http\Controllers\Guest;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use App\Models\Activity;
-use App\Models\City;
 use App\Models\Category;
-use App\Models\Attribute;
-use App\Models\Tag;
+use App\Models\City;
 
 class PublicActivityController extends Controller
 {
-
     // ----------------------Code to get all activities with all location details----------------------
     public function getActivities()
     {
@@ -29,7 +24,7 @@ class PublicActivityController extends Controller
             'promoCodes',
             'availability',
             'mediaGallery.media',
-        ])->get()->map(function ($activity) {
+        ])->get()->map(function (Activity $activity, int $key) {
             return [
                 'id' => $activity->id,
                 'name' => $activity->name,
@@ -38,8 +33,8 @@ class PublicActivityController extends Controller
                 'description' => $activity->description,
                 'item_type' => $activity->item_type,
                 'short_description' => $activity->short_description,
-                'featured_image' => $activity->mediaGallery->where('is_featured', true)->first()?->media?->url
-                    ?? $activity->mediaGallery->first()?->media?->url,
+                'featured_image' => $activity->mediaGallery->where('is_featured', true)->first()?->media->url
+                    ?? $activity->mediaGallery->first()?->media->url,
                 // 'categories' => $activity->categories->pluck('category.name')->join(', '),
                 'categories' => $activity->categories->map(function ($category) {
                     return [
@@ -56,20 +51,21 @@ class PublicActivityController extends Controller
 
                 'locations' => $activity->locations->map(function ($location) {
                     $city = $location->city;
+
                     return [
                         'location_type' => $location->location_type,
                         'location_label' => $location->location_label,
                         'duration' => $location->duration,
                         'city_id' => $city->id,
                         'city' => $city->name,
-                        'state_id' => $city->state ? $city->state->id : null,
-                        'state' => $city->state ? $city->state->name : null,
-                        'country_id' => $city->state && $city->state->country ? $city->state->country->id : null,
-                        'country' => $city->state && $city->state->country ? $city->state->country->name : null,
-                        'region_id' => $city->state && $city->state->country && $city->state->country->regions->isNotEmpty()
+                        'state_id' => $city->state->id,
+                        'state' => $city->state->name,
+                        'country_id' => $city->state->country->id,
+                        'country' => $city->state->country->name,
+                        'region_id' => $city->state->country->regions->isNotEmpty()
                             ? $city->state->country->regions->first()->id
                             : null,
-                        'region' => $city->state && $city->state->country && $city->state->country->regions->isNotEmpty()
+                        'region' => $city->state->country->regions->isNotEmpty()
                             ? $city->state->country->regions->first()->name
                             : null,
 
@@ -105,13 +101,13 @@ class PublicActivityController extends Controller
         if ($activities->isEmpty()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Activities not found'
+                'message' => 'Activities not found',
             ]);
         }
-        
+
         return response()->json([
             'success' => true,
-            'data' => $activities
+            'data' => $activities,
         ]);
     }
 
@@ -133,99 +129,100 @@ class PublicActivityController extends Controller
             'availability',
             'mediaGallery.media',
         ])
-        ->where('featured_activity', true);
+            ->where('featured_activity', true);
 
         if ($citySlug) {
             $city = City::where('slug', $citySlug)->first();
-            if (!$city) {
+            if (! $city) {
                 return response()->json(['success' => false, 'message' => 'City not found'], 404);
             }
-            $query->whereHas('locations', fn($q) => $q->where('city_id', $city->id));
+            $query->whereHas('locations', fn ($q) => $q->where('city_id', $city->id));
         }
 
         $activities = $query->get()
-        ->map(function ($activity) {
-            return [
-                'id' => $activity->id,
-                'name' => $activity->name,
-                'slug' => $activity->slug,
-                'featured_activity' => $activity->featured_activity,
-                'description' => $activity->description,
-                'item_type' => $activity->item_type,
-                'short_description' => $activity->short_description,
-                'featured_image' => $activity->mediaGallery->where('is_featured', true)->first()?->media?->url
-                    ?? $activity->mediaGallery->first()?->media?->url,
-                'city_slug' => $activity->locations->first()?->city?->slug,
-                'categories' => $activity->categories->map(function ($category) {
-                    return [
-                        'id' => $category->category->id,
-                        'name' => $category->category->name,
-                    ];
-                })->toArray(),
-                'attributes' => $activity->attributes->map(function ($attribute) {
-                    return [
-                        'name' => $attribute->attribute->name,
-                        'attribute_value' => $attribute->attribute_value,
-                    ];
-                }),
-                'locations' => $activity->locations->map(function ($location) {
-                    $city = $location->city;
-                    return [
-                        'location_type' => $location->location_type,
-                        'location_label' => $location->location_label,
-                        'duration' => $location->duration,
-                        'city_id' => $city->id,
-                        'city' => $city->name,
-                        'city_slug' => $city->slug,
-                        'state_id' => $city->state ? $city->state->id : null,
-                        'state' => $city->state ? $city->state->name : null,
-                        'country_id' => $city->state && $city->state->country ? $city->state->country->id : null,
-                        'country' => $city->state && $city->state->country ? $city->state->country->name : null,
-                        'region_id' => $city->state && $city->state->country && $city->state->country->regions->isNotEmpty()
-                            ? $city->state->country->regions->first()->id
-                            : null,
-                        'region' => $city->state && $city->state->country && $city->state->country->regions->isNotEmpty()
-                            ? $city->state->country->regions->first()->name
-                            : null,
-                    ];
-                }),
-                'pricing' => $activity->pricing,
-                'seasonalPricing' => $activity->seasonalPricing,
-                'groupDiscounts' => $activity->groupDiscounts,
-                'earlyBirdDiscount' => $activity->earlyBirdDiscount,
-                'lastMinuteDiscount' => $activity->lastMinuteDiscount,
-                'promoCodes' => $activity->promoCodes,
-                'availability' => $activity->availability ? [
-                    'date_based_activity' => $activity->availability->date_based_activity,
-                    'start_date' => $activity->availability->start_date,
-                    'end_date' => $activity->availability->end_date,
-                    'quantity_based_activity' => $activity->availability->quantity_based_activity,
-                    'max_quantity' => $activity->availability->max_quantity,
-                ] : null,
+            ->map(function (Activity $activity, int $key) {
+                return [
+                    'id' => $activity->id,
+                    'name' => $activity->name,
+                    'slug' => $activity->slug,
+                    'featured_activity' => $activity->featured_activity,
+                    'description' => $activity->description,
+                    'item_type' => $activity->item_type,
+                    'short_description' => $activity->short_description,
+                    'featured_image' => $activity->mediaGallery->where('is_featured', true)->first()?->media->url
+                        ?? $activity->mediaGallery->first()?->media->url,
+                    'city_slug' => $activity->locations->first()?->city?->slug,
+                    'categories' => $activity->categories->map(function ($category) {
+                        return [
+                            'id' => $category->category->id,
+                            'name' => $category->category->name,
+                        ];
+                    })->toArray(),
+                    'attributes' => $activity->attributes->map(function ($attribute) {
+                        return [
+                            'name' => $attribute->attribute->name,
+                            'attribute_value' => $attribute->attribute_value,
+                        ];
+                    }),
+                    'locations' => $activity->locations->map(function ($location) {
+                        $city = $location->city;
 
-                'media_gallery' => $activity->mediaGallery->map(function ($media) {
-                    return [
-                        'id' => $media->media->id,
-                        'name' => $media->media->name,
-                        'alt_text' => $media->media->alt_text,
-                        'url' => $media->media->url,
-                        'is_featured' => (bool) $media->is_featured,
-                    ];
-                })->toArray(),
-            ];
-        });
+                        return [
+                            'location_type' => $location->location_type,
+                            'location_label' => $location->location_label,
+                            'duration' => $location->duration,
+                            'city_id' => $city->id,
+                            'city' => $city->name,
+                            'city_slug' => $city->slug,
+                            'state_id' => $city->state->id,
+                            'state' => $city->state->name,
+                            'country_id' => $city->state->country->id,
+                            'country' => $city->state->country->name,
+                            'region_id' => $city->state->country->regions->isNotEmpty()
+                                ? $city->state->country->regions->first()->id
+                                : null,
+                            'region' => $city->state->country->regions->isNotEmpty()
+                                ? $city->state->country->regions->first()->name
+                                : null,
+                        ];
+                    }),
+                    'pricing' => $activity->pricing,
+                    'seasonalPricing' => $activity->seasonalPricing,
+                    'groupDiscounts' => $activity->groupDiscounts,
+                    'earlyBirdDiscount' => $activity->earlyBirdDiscount,
+                    'lastMinuteDiscount' => $activity->lastMinuteDiscount,
+                    'promoCodes' => $activity->promoCodes,
+                    'availability' => $activity->availability ? [
+                        'date_based_activity' => $activity->availability->date_based_activity,
+                        'start_date' => $activity->availability->start_date,
+                        'end_date' => $activity->availability->end_date,
+                        'quantity_based_activity' => $activity->availability->quantity_based_activity,
+                        'max_quantity' => $activity->availability->max_quantity,
+                    ] : null,
+
+                    'media_gallery' => $activity->mediaGallery->map(function ($media) {
+                        return [
+                            'id' => $media->media->id,
+                            'name' => $media->media->name,
+                            'alt_text' => $media->media->alt_text,
+                            'url' => $media->media->url,
+                            'is_featured' => (bool) $media->is_featured,
+                        ];
+                    })->toArray(),
+                ];
+            });
 
         // return response()->json($activities);
         if ($activities->isEmpty()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Activities not found'
+                'message' => 'Activities not found',
             ]);
         }
 
         return response()->json([
             'success' => true,
-            'data' => $activities
+            'data' => $activities,
         ]);
     }
 
@@ -245,11 +242,11 @@ class PublicActivityController extends Controller
             'mediaGallery.media',
             'addons.addon',
         ])->where('slug', $activityslug)->first();
-    
-        if (!$activity) {
+
+        if (! $activity) {
             return response()->json(['message' => 'Activity not found'], 404);
         }
-    
+
         $formattedActivity = [
             'id' => $activity->id,
             'name' => $activity->name,
@@ -258,8 +255,8 @@ class PublicActivityController extends Controller
             'description' => $activity->description,
             'item_type' => $activity->item_type,
             'short_description' => $activity->short_description,
-            'featured_image' => $activity->mediaGallery->where('is_featured', true)->first()?->media?->url
-                ?? $activity->mediaGallery->first()?->media?->url,
+            'featured_image' => $activity->mediaGallery->where('is_featured', true)->first()?->media->url
+                ?? $activity->mediaGallery->first()?->media->url,
             // 'categories' => $activity->categories->pluck('category.name')->join(', '),
             'categories' => $activity->categories->map(function ($category) {
                 return [
@@ -276,27 +273,28 @@ class PublicActivityController extends Controller
 
             'locations' => $activity->locations->map(function ($location) {
                 $city = $location->city;
+
                 return [
-                    'location_type' => $location->location_type, 
-                    'location_label' => $location->location_label, 
-                    'duration' => $location->duration, 
+                    'location_type' => $location->location_type,
+                    'location_label' => $location->location_label,
+                    'duration' => $location->duration,
                     'city_id' => $city->id,
                     'city' => $city->name,
-                    'state_id' => $city->state ? $city->state->id : null,
-                    'state' => $city->state ? $city->state->name : null,
-                    'country_id' => $city->state && $city->state->country ? $city->state->country->id : null,
-                    'country' => $city->state && $city->state->country ? $city->state->country->name : null,
-                    'region_id' => $city->state && $city->state->country && $city->state->country->regions->isNotEmpty()
+                    'state_id' => $city->state->id,
+                    'state' => $city->state->name,
+                    'country_id' => $city->state->country->id,
+                    'country' => $city->state->country->name,
+                    'region_id' => $city->state->country->regions->isNotEmpty()
                         ? $city->state->country->regions->first()->id
                         : null,
-                    'region' => $city->state && $city->state->country && $city->state->country->regions->isNotEmpty()
+                    'region' => $city->state->country->regions->isNotEmpty()
                         ? $city->state->country->regions->first()->name
                         : null,
-                    
+
                 ];
             }),
 
-            'pricing' => $activity->pricing,  
+            'pricing' => $activity->pricing,
             'seasonalPricing' => $activity->seasonalPricing,
             'groupDiscounts' => $activity->groupDiscounts,
             'earlyBirdDiscount' => $activity->earlyBirdDiscount,
@@ -314,15 +312,15 @@ class PublicActivityController extends Controller
             })->toArray(),
 
             'addons' => $activity->addons
-                ->filter(fn($a) => $a->addon && $a->addon->active_status)
-                ->map(fn($a) => [
-                    'id'                      => $a->id,
-                    'addon_id'                => $a->addon_id,
-                    'addon_name'              => $a->addon->name,
-                    'addon_type'              => $a->addon->type,
-                    'addon_description'       => $a->addon->description,
-                    'addon_price'             => $a->addon->price,
-                    'addon_sale_price'        => $a->addon->sale_price,
+                ->filter(fn ($a) => $a->addon->active_status)
+                ->map(fn ($a) => [
+                    'id' => $a->id,
+                    'addon_id' => $a->addon_id,
+                    'addon_name' => $a->addon->name,
+                    'addon_type' => $a->addon->type,
+                    'addon_description' => $a->addon->description,
+                    'addon_price' => $a->addon->price,
+                    'addon_sale_price' => $a->addon->sale_price,
                     'addon_price_calculation' => $a->addon->price_calculation,
                 ])->values()->toArray(),
 
@@ -333,7 +331,7 @@ class PublicActivityController extends Controller
                 'total_reviews' => $activity->reviews()->where('status', 'approved')->count(),
                 'total_photos' => \App\Models\ReviewMediaGallery::whereIn(
                     'review_id',
-                    fn($q) => $q->select('id')->from('reviews')
+                    fn ($q) => $q->select('id')->from('reviews')
                         ->where('item_type', 'activity')
                         ->where('item_id', $activity->id)
                         ->where('status', 'approved')
@@ -341,21 +339,9 @@ class PublicActivityController extends Controller
             ],
         ];
 
-        // return response()->json($formattedActivity);
-        if (empty($formattedActivity)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Activity not found'
-            ]);
-        }
-        
         return response()->json([
             'success' => true,
-            'data' => $formattedActivity
+            'data' => $formattedActivity,
         ]);
     }
-
-
-
-    
 }

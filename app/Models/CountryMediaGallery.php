@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -14,6 +15,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Country $country
  * @property-read \App\Models\Media $media
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CountryMediaGallery featured()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CountryMediaGallery newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CountryMediaGallery newQuery()
@@ -24,7 +26,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CountryMediaGallery whereIsFeatured($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CountryMediaGallery whereMediaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CountryMediaGallery whereUpdatedAt($value)
- * @mixin \Eloquent
+ *
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class CountryMediaGallery extends Model
 {
@@ -39,12 +42,12 @@ class CountryMediaGallery extends Model
     ];
 
     // Relations
-    public function country()
+    public function country(): BelongsTo
     {
         return $this->belongsTo(Country::class);
     }
 
-    public function media()
+    public function media(): BelongsTo
     {
         return $this->belongsTo(Media::class, 'media_id');
     }

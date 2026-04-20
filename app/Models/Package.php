@@ -4,6 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 /**
  * @property int $id
@@ -44,6 +47,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read \App\Models\PackageSeo|null $seo
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\PackageTag> $tags
  * @property-read int|null $tags_count
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Package newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Package newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Package query()
@@ -56,7 +60,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Package wherePrivatePackage($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Package whereSlug($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Package whereUpdatedAt($value)
- * @mixin \Eloquent
+ *
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class Package extends Model
 {
@@ -73,78 +78,79 @@ class Package extends Model
 
     protected $casts = [
         'featured_package' => 'boolean',
-        'private_package' => 'boolean'
+        'private_package' => 'boolean',
     ];
 
-    public function locations() {
+    public function locations(): HasMany
+    {
 
         return $this->hasMany(PackageLocation::class);
     }
 
-    public function information()
+    public function information(): HasMany
     {
         return $this->hasMany(PackageInformation::class);
     }
 
-    public function schedules()
+    public function schedules(): HasMany
     {
         return $this->hasMany(PackageSchedule::class);
     }
 
-    public function basePricing()
+    public function basePricing(): HasOne
     {
         return $this->hasOne(PackageBasePricing::class, 'package_id');
     }
 
-    public function inclusionsExclusions()
+    public function inclusionsExclusions(): HasMany
     {
         return $this->hasMany(PackageInclusionExclusion::class);
     }
 
     // Category relation
-    public function categories()
+    public function categories(): HasMany
     {
         return $this->hasMany(PackageCategory::class);
     }
 
     // Attribute relation
-    public function attributes()
+    public function attributes(): HasMany
     {
         return $this->hasMany(PackageAttribute::class);
     }
 
     // Tag relation
-    public function tags()
+    public function tags(): HasMany
     {
-        return $this->hasMany(PackageTag::class,);
+        return $this->hasMany(PackageTag::class);
     }
 
-    public function faqs()
+    public function faqs(): HasMany
     {
         return $this->hasMany(PackageFaq::class);
     }
 
-    public function seo()
+    public function seo(): HasOne
     {
         return $this->hasOne(PackageSeo::class);
     }
 
-    public function availability()
+    public function availability(): HasOne
     {
         return $this->hasOne(PackageAvailability::class);
     }
 
-    public function mediaGallery()
+    public function mediaGallery(): HasMany
     {
         return $this->hasMany(PackageMediaGallery::class);
     }
 
-    public function orders()
+    public function orders(): MorphMany
     {
         return $this->morphMany(Order::class, 'orderable');
     }
 
-    public function reviews()
+    public function reviews(): MorphMany
     {
         return $this->morphMany(Review::class, 'item', 'item_type', 'item_id');
     }
@@ -154,12 +160,12 @@ class Package extends Model
         return $value ?? strtolower(class_basename($this));
     }
 
-    public function addons()
+    public function addons(): HasMany
     {
         return $this->hasMany(PackageAddon::class);
     }
 
-    public function postTags()
+    public function postTags(): MorphMany
     {
         return $this->morphMany(PostItemTag::class, 'taggable');
     }

@@ -24,6 +24,7 @@ echo "Current: $currentCount, Target: $targetCount, Needed: $needed\n";
 
 if ($needed <= 0) {
     echo "Already have enough media items!\n";
+
     return;
 }
 
@@ -37,15 +38,17 @@ foreach ($sourceImages as $img) {
 
 if (empty($validSources)) {
     echo "No source images found!\n";
+
     return;
 }
 
-echo "Found " . count($validSources) . " source images\n";
+echo 'Found '.count($validSources)." source images\n";
 
 // Get or create a user for the media
 $user = \App\Models\User::where('email', 'khawla@fanaticcoders.com')->first();
-if (!$user) {
+if (! $user) {
     echo "Admin user not found!\n";
+
     return;
 }
 
@@ -60,11 +63,11 @@ for ($i = 0; $i < $needed; $i++) {
     $originalName = $pathInfo['basename'];
 
     // Generate unique filename
-    $filename = 'test_' . uniqid() . '_' . $i . '.' . $extension;
+    $filename = 'test_'.uniqid().'_'.$i.'.'.$extension;
 
     // Create a copy
-    $targetPath = storage_path('app/temp/' . $filename);
-    if (!is_dir(dirname($targetPath))) {
+    $targetPath = storage_path('app/temp/'.$filename);
+    if (! is_dir(dirname($targetPath))) {
         mkdir(dirname($targetPath), 0755, true);
     }
     copy($sourceImg, $targetPath);
@@ -79,9 +82,9 @@ for ($i = 0; $i < $needed; $i++) {
 
     // Create media record
     $media = \App\Models\Media::create([
-        'name' => 'Test Image ' . ($currentCount + $i + 1),
+        'name' => 'Test Image '.($currentCount + $i + 1),
         'alt_text' => 'Test image for pagination testing',
-        'url' => '/storage/media/' . $filename,
+        'url' => '/storage/media/'.$filename,
         'file_size' => $fileSize,
         'width' => $width,
         'height' => $height,
@@ -89,8 +92,8 @@ for ($i = 0; $i < $needed; $i++) {
     ]);
 
     // Move file to storage (simulate MinIO storage location)
-    $storagePath = storage_path('app/public/media/' . $filename);
-    if (!is_dir(dirname($storagePath))) {
+    $storagePath = storage_path('app/public/media/'.$filename);
+    if (! is_dir(dirname($storagePath))) {
         mkdir(dirname($storagePath), 0755, true);
     }
     rename($targetPath, $storagePath);
@@ -103,4 +106,4 @@ for ($i = 0; $i < $needed; $i++) {
 }
 
 echo "\n✅ Successfully created $created media items!\n";
-echo "New total: " . \App\Models\Media::count() . "\n";
+echo 'New total: '.\App\Models\Media::count()."\n";

@@ -3,6 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 /**
  * @property int $id
@@ -18,11 +21,12 @@ use Illuminate\Database\Eloquent\Model;
  * @property bool $is_featured
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read Model|\Eloquent $item
+ * @property-read \Illuminate\Database\Eloquent\Model $item
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ReviewMediaGallery> $mediaGallery
  * @property-read int|null $media_gallery_count
  * @property-read \App\Models\Order|null $order
  * @property-read \App\Models\User $user
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Review newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Review newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Review query()
@@ -39,7 +43,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Review whereStatus($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Review whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Review whereUserId($value)
- * @mixin \Eloquent
+ *
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class Review extends Model
 {
@@ -60,23 +65,23 @@ class Review extends Model
         'is_featured' => 'boolean',
     ];
 
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public function order()
+    public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
     }
 
     // Polymorphic relation
-    public function item()
+    public function item(): MorphTo
     {
         return $this->morphTo(__FUNCTION__, 'item_type', 'item_id');
     }
 
-    public function mediaGallery()
+    public function mediaGallery(): HasMany
     {
         return $this->hasMany(ReviewMediaGallery::class)->orderBy('sort_order');
     }
@@ -86,7 +91,7 @@ class Review extends Model
      */
     public function getDisplayName(): string
     {
-        return $this->item?->name ?? $this->item_name_snapshot ?? 'Archived Item';
+        return $this->item->name ?? $this->item_name_snapshot ?? 'Archived Item';
     }
 
     /**
@@ -94,7 +99,7 @@ class Review extends Model
      */
     public function getDisplaySlug(): ?string
     {
-        return $this->item?->slug ?? $this->item_slug_snapshot;
+        return $this->item->slug ?? $this->item_slug_snapshot;
     }
 
     /**

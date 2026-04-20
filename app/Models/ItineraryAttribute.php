@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -13,6 +14,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Attribute $attribute
  * @property-read \App\Models\Itinerary $itinerary
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryAttribute newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryAttribute newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryAttribute query()
@@ -22,20 +24,22 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryAttribute whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryAttribute whereItineraryId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryAttribute whereUpdatedAt($value)
- * @mixin \Eloquent
+ *
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class ItineraryAttribute extends Model
 {
     protected $fillable = [
-        'itinerary_id', 'attribute_id', 'attribute_value'
+        'itinerary_id', 'attribute_id', 'attribute_value',
     ];
 
-    public function itinerary()
+    public function itinerary(): BelongsTo
     {
         return $this->belongsTo(Itinerary::class);
     }
 
-    public function attribute() {
+    public function attribute(): BelongsTo
+    {
         return $this->belongsTo(Attribute::class, 'attribute_id');
     }
 }

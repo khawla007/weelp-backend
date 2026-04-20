@@ -3,26 +3,25 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Pagination\Paginator;
 use App\Models\Activity;
-use App\Models\Package;
-use App\Models\Transfer;
 use App\Models\Itinerary;
+use App\Models\Package;
 use App\Models\Review;
+use App\Models\Transfer;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\Paginator;
 
 class ReviewController extends Controller
 {
-
     public function index(Request $request)
     {
-        $frontendBase = env('FRONTEND_URL', 'http://192.168.29.202:3000');
-    
+        $frontendBase = config('app.frontend_url');
+
         // Force current page
         Paginator::currentPageResolver(function () use ($request) {
             return (int) $request->input('page', 1);
         });
-    
+
         $query = Review::with(['user', 'item', 'mediaGallery.media', 'order']);
 
         if ($request->filled('item_type')) {
@@ -35,27 +34,27 @@ class ReviewController extends Controller
 
         if ($request->filled('customer_name')) {
             $query->whereHas('user', function ($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->customer_name . '%');
+                $q->where('name', 'like', '%'.$request->customer_name.'%');
             });
         }
-    
+
         $reviews = $query->orderBy('id', 'desc')
             ->paginate(5)
             ->appends($request->query());
-    
-        $reviews->getCollection()->transform(function ($review) use ($frontendBase) {
+
+        $reviews->getCollection()->transform(function (Review $review, int $key) use ($frontendBase) {
             $item = $review->item;
 
             $city = null;
             $region = null;
 
             // Agar item Transfer nahi hai tabhi locations load karo
-            if ($item && !($item instanceof \App\Models\Transfer)) {
+            if (! ($item instanceof \App\Models\Transfer)) {
                 $location = $item->locations()->with('city.state.country.regions')->first();
-                $city     = $location?->city;
-                $state    = $city?->state;
-                $country  = $state?->country;
-                $region   = $country?->regions?->first();
+                $city = $location?->city;
+                $state = $city?->state;
+                $country = $state?->country;
+                $region = $country?->regions?->first();
             }
 
             // Use helper methods
@@ -63,69 +62,67 @@ class ReviewController extends Controller
             $hasLiveItem = $review->hasLiveItem();
 
             return [
-                'id'            => $review->id,
-                'rating'        => $review->rating,
-                'review_text'   => $review->review_text,
-                'status'        => $review->status,
-                'is_featured'   => $review->is_featured,
-                'order_id'      => $review->order_id,          // NEW
-                'item'          => $item ? [
-                    'id'           => $item->id,
-                    'name'         => $displayName,            // Changed: use helper
-                    'type'         => $item->item_type,
-                    'has_live_item'=> $hasLiveItem,            // NEW
+                'id' => $review->id,
+                'rating' => $review->rating,
+                'review_text' => $review->review_text,
+                'status' => $review->status,
+                'is_featured' => $review->is_featured,
+                'order_id' => $review->order_id,          // NEW
+                'item' => [
+                    'id' => $item->id,
+                    'name' => $displayName,            // Changed: use helper
+                    'type' => $item->item_type,
+                    'has_live_item' => $hasLiveItem,            // NEW
                     'frontend_url' => ($item instanceof \App\Models\Transfer)
                         ? null
                         : (($city && $region)
                             ? "{$frontendBase}/{$region->slug}/{$city->slug}/{$item->slug}"
                             : null),
-                ] : null,
-                'user'          => $review->user ? [
-                    'id'   => $review->user->id,
+                ],
+                'user' => [
+                    'id' => $review->user->id,
                     'name' => $review->user->name,
-                ] : null,
-                'media_gallery' => $review->mediaGallery->map(fn($rmg) => [
-                    'id'   => $rmg->media->id,
+                ],
+                'media_gallery' => $review->mediaGallery->map(fn ($rmg) => [
+                    'id' => $rmg->media->id,
                     'name' => $rmg->media->name,
-                    'alt'  => $rmg->media->alt_text,
-                    'url'  => $rmg->media->url,
+                    'alt' => $rmg->media->alt_text,
+                    'url' => $rmg->media->url,
                 ]),
-                'created_at'    => $review->created_at ? $review->created_at->format('Y-m-d') : null,
-                'updated_at'    => $review->updated_at ? $review->updated_at->format('Y-m-d') : null,
+                'created_at' => $review->created_at ? $review->created_at->format('Y-m-d') : null,
+                'updated_at' => $review->updated_at ? $review->updated_at->format('Y-m-d') : null,
             ];
         });
-    
+
         return response()->json([
-            'data'         => $reviews->items(),
+            'data' => $reviews->items(),
             'current_page' => $reviews->currentPage(),
-            'per_page'     => $reviews->perPage(),
-            'total'        => $reviews->total(),
+            'per_page' => $reviews->perPage(),
+            'total' => $reviews->total(),
         ]);
         // return response()->json($reviews);
     }
-    
-     
 
     // public function index(Request $request)
     // {
     //     $frontendBase = env('FRONTEND_URL', 'http://192.168.29.202:3000');
-    
+
     //     // Base query
     //     $query = Review::with(['user', 'item']);
-    
+
     //     if ($request->has('item_type') && $request->has('item_id')) {
     //         $query->where('item_type', $request->item_type)
     //               ->where('item_id', $request->item_id);
     //     }
-    
+
     //     $reviews = $query->orderBy('id', 'desc')->paginate(10);
-    
+
     //     $reviews->getCollection()->transform(function ($review) use ($frontendBase) {
     //         $item = $review->item;
-    
+
     //         $city = null;
     //         $region = null;
-    
+
     //         // Agar item Transfer nahi hai tabhi locations load karo
     //         if ($item && !($item instanceof \App\Models\Transfer)) {
     //             $location = $item?->locations?->first();
@@ -134,7 +131,7 @@ class ReviewController extends Controller
     //             $country  = $state?->country;
     //             $region   = $country?->regions?->first();
     //         }
-    
+
     //         return [
     //             'id'          => $review->id,
     //             'rating'      => $review->rating,
@@ -167,7 +164,7 @@ class ReviewController extends Controller
     //             'updated_at'  => $review->updated_at,
     //         ];
     //     });
-    
+
     //     return response()->json([
     //         'data'         => $reviews->items(),
     //         'current_page' => $reviews->currentPage(),
@@ -175,7 +172,7 @@ class ReviewController extends Controller
     //         'total'        => $reviews->total(),
     //     ]);
     // }
-    
+
     // 2.1. Get item anme and by there type
     public function getItemsByType(Request $request)
     {
@@ -214,16 +211,16 @@ class ReviewController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'item_type'        => 'required|string',
-            'item_id'          => 'required|integer',
-            'user_id'          => 'required|integer|exists:users,id',
-            'order_id'         => 'nullable|integer|exists:orders,id',  // NEW
-            'rating'           => 'required|integer|min:1|max:5',
-            'review_text'      => 'nullable|string',
-            'media_gallery'    => 'nullable|array',
-            'media_gallery.*'  => 'integer|exists:media,id',
-            'status'           => 'nullable|in:approved,pending',
-            'is_featured'      => 'nullable|boolean',
+            'item_type' => 'required|string',
+            'item_id' => 'required|integer',
+            'user_id' => 'required|integer|exists:users,id',
+            'order_id' => 'nullable|integer|exists:orders,id',  // NEW
+            'rating' => 'required|integer|min:1|max:5',
+            'review_text' => 'nullable|string',
+            'media_gallery' => 'nullable|array',
+            'media_gallery.*' => 'integer|exists:media,id',
+            'status' => 'nullable|in:approved,pending',
+            'is_featured' => 'nullable|boolean',
         ]);
 
         // Remove media_gallery from validated data (not a column anymore)
@@ -253,16 +250,16 @@ class ReviewController extends Controller
         }
 
         $review = Review::create([
-            'user_id'            => $validated['user_id'],
-            'order_id'           => $validated['order_id'] ?? null,
-            'item_type'          => $validated['item_type'],
-            'item_id'            => $validated['item_id'],
+            'user_id' => $validated['user_id'],
+            'order_id' => $validated['order_id'] ?? null,
+            'item_type' => $validated['item_type'],
+            'item_id' => $validated['item_id'],
             'item_name_snapshot' => $itemName,
             'item_slug_snapshot' => $itemSlug,
-            'rating'             => $validated['rating'],
-            'review_text'        => $validated['review_text'] ?? null,
-            'status'             => $validated['status'] ?? 'pending',
-            'is_featured'        => $validated['is_featured'] ?? false,
+            'rating' => $validated['rating'],
+            'review_text' => $validated['review_text'] ?? null,
+            'status' => $validated['status'] ?? 'pending',
+            'is_featured' => $validated['is_featured'] ?? false,
         ]);
 
         // Sync media to review_media_gallery table
@@ -277,71 +274,69 @@ class ReviewController extends Controller
 
         return response()->json([
             'success' => true,
-            'data'    => $review
+            'data' => $review,
         ], 201);
     }
-    
 
     // 3. Show single review
     public function show($id)
     {
-        $frontendBase = env('FRONTEND_URL', 'http://localhost:3000');
-    
+        $frontendBase = config('app.frontend_url');
+
         // Review fetch karo, item aur user ke saath
         $review = Review::with(['user', 'item', 'mediaGallery.media', 'order'])->findOrFail($id);
-    
+
         $item = $review->item;
-    
+
         $city = null;
         $region = null;
-    
+
         // Agar item Transfer nahi hai tabhi locations load karo
-        if ($item && !($item instanceof \App\Models\Transfer)) {
+        if (! ($item instanceof \App\Models\Transfer)) {
             $location = $item->locations->first();
-            $city     = $location?->city;
-            $state    = $city?->state;
-            $country  = $state?->country;
-            $region   = $country?->regions->first();
+            $city = $location?->city;
+            $state = $city?->state;
+            $country = $state?->country;
+            $region = $country?->regions->first();
         }
-    
+
         $data = [
-            'id'            => $review->id,
-            'rating'        => $review->rating,
-            'review_text'   => $review->review_text,
-            'status'        => $review->status,
-            'is_featured'   => $review->is_featured,
-            'order_id'      => $review->order_id,          // NEW
-            'item'          => $item ? [
-                'id'           => $item->id,
-                'name'         => $review->getDisplayName(),  // Changed: use helper
-                'type'         => $item->item_type,
-                'has_live_item'=> $review->hasLiveItem(),     // NEW
+            'id' => $review->id,
+            'rating' => $review->rating,
+            'review_text' => $review->review_text,
+            'status' => $review->status,
+            'is_featured' => $review->is_featured,
+            'order_id' => $review->order_id,          // NEW
+            'item' => [
+                'id' => $item->id,
+                'name' => $review->getDisplayName(),  // Changed: use helper
+                'type' => $item->item_type,
+                'has_live_item' => $review->hasLiveItem(),     // NEW
                 'frontend_url' => ($item instanceof \App\Models\Transfer)
                     ? null
                     : (($city && $region)
                         ? "{$frontendBase}/{$region->slug}/{$city->slug}/{$item->slug}"
                         : null),
-            ] : null,
-            'user'          => $review->user ? [
-                'id'   => $review->user->id,
+            ],
+            'user' => [
+                'id' => $review->user->id,
                 'name' => $review->user->name,
-            ] : null,
-            'media_gallery' => $review->mediaGallery->map(fn($rmg) => [
-                'id'   => $rmg->media->id,
+            ],
+            'media_gallery' => $review->mediaGallery->map(fn ($rmg) => [
+                'id' => $rmg->media->id,
                 'name' => $rmg->media->name,
-                'alt'  => $rmg->media->alt_text,
-                'url'  => $rmg->media->url,
+                'alt' => $rmg->media->alt_text,
+                'url' => $rmg->media->url,
             ]),
-            'created_at'    => $review->created_at ? $review->created_at->format('Y-m-d') : null,
-            'updated_at'    => $review->updated_at ? $review->updated_at->format('Y-m-d') : null,
+            'created_at' => $review->created_at ? $review->created_at->format('Y-m-d') : null,
+            'updated_at' => $review->updated_at ? $review->updated_at->format('Y-m-d') : null,
         ];
-    
+
         return response()->json([
             'success' => true,
-            'data'    => $data,
+            'data' => $data,
         ]);
     }
-       
 
     // 4. Update review
     public function update(Request $request, $id)
@@ -349,16 +344,16 @@ class ReviewController extends Controller
         $review = Review::findOrFail($id);
 
         $validated = $request->validate([
-            'item_type'        => 'sometimes|string',
-            'item_id'          => 'sometimes|integer',
-            'user_id'          => 'sometimes|integer|exists:users,id',
-            'order_id'         => 'sometimes|integer|exists:orders,id',
-            'rating'           => 'sometimes|integer|min:1|max:5',
-            'review_text'      => 'nullable|string',
-            'media_gallery'    => 'nullable|array',
-            'media_gallery.*'  => 'integer|exists:media,id',
-            'status'           => 'nullable|in:approved,pending',
-            'is_featured'      => 'nullable|boolean',
+            'item_type' => 'sometimes|string',
+            'item_id' => 'sometimes|integer',
+            'user_id' => 'sometimes|integer|exists:users,id',
+            'order_id' => 'sometimes|integer|exists:orders,id',
+            'rating' => 'sometimes|integer|min:1|max:5',
+            'review_text' => 'nullable|string',
+            'media_gallery' => 'nullable|array',
+            'media_gallery.*' => 'integer|exists:media,id',
+            'status' => 'nullable|in:approved,pending',
+            'is_featured' => 'nullable|boolean',
         ]);
 
         // Remove media_gallery from validated data (not a column anymore)
@@ -389,7 +384,7 @@ class ReviewController extends Controller
 
         return response()->json([
             'success' => true,
-            'data'    => $review
+            'data' => $review,
         ]);
     }
 
@@ -401,7 +396,7 @@ class ReviewController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Review deleted successfully'
+            'message' => 'Review deleted successfully',
         ]);
     }
 
@@ -411,12 +406,12 @@ class ReviewController extends Controller
             'review_ids' => 'required|array',
             'review_ids.*' => 'integer|exists:reviews,id',
         ]);
-    
+
         $reviewIds = $request->review_ids;
-    
+
         // Delete reviews
         $deletedCount = Review::whereIn('id', $reviewIds)->delete();
-    
+
         return response()->json([
             'success' => true,
             'message' => "$deletedCount review(s) deleted successfully",

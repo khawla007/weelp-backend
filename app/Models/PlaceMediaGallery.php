@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -14,6 +15,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Media $media
  * @property-read \App\Models\Place $place
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PlaceMediaGallery featured()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PlaceMediaGallery newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PlaceMediaGallery newQuery()
@@ -24,7 +26,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PlaceMediaGallery whereMediaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PlaceMediaGallery wherePlaceId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PlaceMediaGallery whereUpdatedAt($value)
- * @mixin \Eloquent
+ *
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class PlaceMediaGallery extends Model
 {
@@ -39,12 +42,12 @@ class PlaceMediaGallery extends Model
     ];
 
     // Relations
-    public function place()
+    public function place(): BelongsTo
     {
         return $this->belongsTo(Place::class);
     }
 
-    public function media()
+    public function media(): BelongsTo
     {
         return $this->belongsTo(Media::class, 'media_id');
     }

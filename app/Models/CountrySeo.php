@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -18,6 +19,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Country $country
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CountrySeo newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CountrySeo newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CountrySeo query()
@@ -32,14 +34,15 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CountrySeo whereSchemaData($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CountrySeo whereSchemaType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CountrySeo whereUpdatedAt($value)
- * @mixin \Eloquent
+ *
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class CountrySeo extends Model
 {
     use HasFactory;
 
     protected $table = 'country_seo';
-    
+
     protected $fillable = [
         'country_id',
         'meta_title',
@@ -67,8 +70,8 @@ class CountrySeo extends Model
         return $value ? json_decode($value, true) : null;
     }
 
-    public function country() {
+    public function country(): BelongsTo
+    {
         return $this->belongsTo(Country::class);
     }
-
 }

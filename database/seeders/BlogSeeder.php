@@ -4,11 +4,11 @@ namespace Database\Seeders;
 
 use App\Models\Blog;
 use App\Models\Category;
-use App\Models\Tag;
 use App\Models\Media;
+use App\Models\Tag;
+use Faker\Factory as Faker;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
-use Faker\Factory as Faker;
 
 class BlogSeeder extends Seeder
 {
@@ -18,12 +18,13 @@ class BlogSeeder extends Seeder
 
         // Get all ids
         $allCategoryIds = Category::pluck('id')->toArray();
-        $allTagIds      = Tag::pluck('id')->toArray();
-        $allMediaIds    = Media::pluck('id')->toArray();
+        $allTagIds = Tag::pluck('id')->toArray();
+        $allMediaIds = Media::pluck('id')->toArray();
 
         // Safety check
-        if(empty($allCategoryIds) || empty($allTagIds) || empty($allMediaIds)) {
+        if (empty($allCategoryIds) || empty($allTagIds) || empty($allMediaIds)) {
             dump('⚠ Please seed categories / tags / media first');
+
             return;
         }
 
@@ -33,11 +34,11 @@ class BlogSeeder extends Seeder
             $title = $faker->sentence(4);
 
             $blog = Blog::create([
-                'name'           => $title,
-                'slug'           => Str::slug($title) . '-' . $i, // prevent duplicate slug
-                'content'        => $faker->paragraph(8),
-                'publish'        => $faker->boolean(80), // 80% published
-                'excerpt'        => $faker->sentence(12),
+                'name' => $title,
+                'slug' => Str::slug($title).'-'.$i, // prevent duplicate slug
+                'content' => $faker->paragraph(8),
+                'publish' => $faker->boolean(80), // 80% published
+                'excerpt' => $faker->sentence(12),
             ]);
 
             // ⭐ Random Categories (1–3)

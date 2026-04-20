@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Region;
 use App\Models\Country;
 use App\Models\City;
-use Illuminate\Http\Request;
 
 class PublicMenuController extends Controller
 {
@@ -37,7 +36,7 @@ class PublicMenuController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $menu
+            'data' => $menu,
         ], 200);
     }
 

@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Support\Str;
 
 /**
@@ -27,6 +29,7 @@ use Illuminate\Support\Str;
  * @property-read int|null $itineraries_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ItineraryAttribute> $itinerariesAttributes
  * @property-read int|null $itineraries_attributes_count
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Attribute newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Attribute newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Attribute query()
@@ -42,7 +45,8 @@ use Illuminate\Support\Str;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Attribute whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Attribute whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Attribute whereValues($value)
- * @mixin \Eloquent
+ *
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class Attribute extends Model
 {
@@ -86,19 +90,22 @@ class Attribute extends Model
         });
     }
 
-    public function activityAttributes() {
+    public function activityAttributes(): HasMany
+    {
         return $this->hasMany(ActivityAttribute::class, 'attribute_id');
     }
-    
-    public function activities() {
+
+    public function activities(): HasManyThrough
+    {
         return $this->hasManyThrough(Activity::class, ActivityAttribute::class, 'attribute_id', 'id', 'id', 'activity_id');
     }
 
-    public function itinerariesAttributes() {
+    public function itinerariesAttributes(): HasMany
+    {
         return $this->hasMany(ItineraryAttribute::class, 'attribute_id');
     }
 
-    public function itineraries()
+    public function itineraries(): HasManyThrough
     {
         return $this->hasManyThrough(Itinerary::class, ItineraryAttribute::class, 'attribute_id', 'id', 'id', 'activity_id');
     }

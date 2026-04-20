@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -12,6 +13,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Addon $addon
  * @property-read \App\Models\Package $package
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageAddon newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageAddon newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageAddon query()
@@ -20,7 +22,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageAddon whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageAddon wherePackageId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageAddon whereUpdatedAt($value)
- * @mixin \Eloquent
+ *
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class PackageAddon extends Model
 {
@@ -32,12 +35,12 @@ class PackageAddon extends Model
     ];
 
     // Relations
-    public function package()
+    public function package(): BelongsTo
     {
         return $this->belongsTo(Package::class, 'package_id');
     }
 
-    public function addon()
+    public function addon(): BelongsTo
     {
         return $this->belongsTo(Addon::class, 'addon_id');
     }

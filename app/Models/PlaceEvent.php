@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -16,6 +17,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Place $place
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PlaceEvent newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PlaceEvent newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PlaceEvent query()
@@ -28,9 +30,11 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PlaceEvent wherePlaceId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PlaceEvent whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PlaceEvent whereUpdatedAt($value)
- * @mixin \Eloquent
+ *
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
-class PlaceEvent extends Model {
+class PlaceEvent extends Model
+{
     use HasFactory;
 
     protected $fillable = [
@@ -43,12 +47,13 @@ class PlaceEvent extends Model {
     ];
 
     protected $casts = [
-        'type'     => 'array',
+        'type' => 'array',
         // 'location' => 'array',
-        'date'=> 'date:Y-m-d', 
+        'date' => 'date:Y-m-d',
     ];
 
-    public function place() {
+    public function place(): BelongsTo
+    {
         return $this->belongsTo(Place::class);
     }
 }

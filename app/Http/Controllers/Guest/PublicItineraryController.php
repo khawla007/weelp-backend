@@ -3,14 +3,9 @@
 namespace App\Http\Controllers\Guest;
 
 use App\Http\Controllers\Controller;
-use App\Models\Itinerary;
-use App\Models\Activity;
-use App\Models\Transfer;
-use App\Models\Place;
 use App\Models\City;
-use App\Models\Category;
-use App\Models\Attribute;
-use App\Models\Tag;
+use App\Models\Itinerary;
+use App\Models\ItinerarySchedule;
 use Illuminate\Http\JsonResponse;
 
 class PublicItineraryController extends Controller
@@ -21,8 +16,8 @@ class PublicItineraryController extends Controller
     {
         $itineraries = Itinerary::with([
             'locations.city',
-            'schedules.activities:id,schedule_id,price',
-            'schedules.transfers:id,schedule_id,price',
+            'schedules.activities',
+            'schedules.transfers',
             'basePricing.variations',
             'basePricing.blackoutDates',
             'inclusionsExclusions',
@@ -31,7 +26,7 @@ class PublicItineraryController extends Controller
             'categories.category',
             'attributes',
             'tags'
-        ])->original()->get()->map(function ($itinerary) {
+        ])->get()->map(function ($itinerary) {
             return [
                 'id' => $itinerary->id,
                 'name' => $itinerary->name,
@@ -118,8 +113,8 @@ class PublicItineraryController extends Controller
 
         $query = Itinerary::with([
             'locations.city',
-            'schedules.activities:id,schedule_id,price',
-            'schedules.transfers:id,schedule_id,price',
+            'schedules.activities',
+            'schedules.transfers',
             'basePricing.variations',
             'basePricing.blackoutDates',
             'inclusionsExclusions',
@@ -129,12 +124,11 @@ class PublicItineraryController extends Controller
             'attributes',
             'tags.tag'
         ])
-        ->original()
         ->where('featured_itinerary', true);
 
         if ($citySlug) {
             $city = City::where('slug', $citySlug)->first();
-            if (!$city) {
+            if (! $city) {
                 return response()->json(['success' => false, 'message' => 'City not found'], 404);
             }
             $query->whereHas('locations', fn($q) => $q->where('city_id', $city->id));
@@ -142,7 +136,7 @@ class PublicItineraryController extends Controller
 
         // Tag filter
         $tagNames = request()->has('tags') ? array_filter(explode(',', request()->get('tags'))) : [];
-        if (!empty($tagNames)) {
+        if (! empty($tagNames)) {
             $query->whereHas('tags.tag', fn($q) => $q->whereIn('name', $tagNames));
         }
 
@@ -266,7 +260,7 @@ class PublicItineraryController extends Controller
             'tags'
         ])->where('slug', $slug)->first();
 
-        if (!$itinerary) {
+        if (! $itinerary) {
             return response()->json([
                 'success' => false,
                 'message' => 'Itinerary not found'
@@ -298,7 +292,7 @@ class PublicItineraryController extends Controller
                         'region' => $city->state && $city->state->country && $city->state->country->regions->isNotEmpty()
                             ? $city->state->country->regions->first()->name
                             : null,
-                        
+
                     ];
             }),
             'schedules' => $itinerary->schedules->map(function ($schedule) {
@@ -367,16 +361,13 @@ class PublicItineraryController extends Controller
             'seo' => $itinerary->seo,
         ];
 
-        // return response()->json([
-        //     'data' => $formattedItinerary
-        // ]);
         if (empty($formattedItinerary)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Itinerary not found'
             ]);
         }
-        
+
         return response()->json([
             'success' => true,
             'data' => $formattedItinerary
@@ -391,7 +382,7 @@ class PublicItineraryController extends Controller
     {
         $itinerary = Itinerary::where('slug', $slug)->first();
 
-        if (!$itinerary) {
+        if (! $itinerary) {
             return response()->json([
                 'success' => false,
                 'message' => 'Itinerary not found'
@@ -440,7 +431,7 @@ class PublicItineraryController extends Controller
             ->values()
             ->toArray();
 
-        if (!empty($ownGallery)) {
+        if (! empty($ownGallery)) {
             return $ownGallery;
         }
 
@@ -449,7 +440,7 @@ class PublicItineraryController extends Controller
             $out = [];
             foreach ($items as $mg) {
                 $media = $mg->media ?? null;
-                if (!$media?->url || in_array($media->url, $seen, true)) {
+                if (! $media?->url || in_array($media->url, $seen, true)) {
                     continue;
                 }
                 $seen[] = $media->url;
@@ -470,7 +461,7 @@ class PublicItineraryController extends Controller
             )
         );
         $activityGallery = $collectFrom($activityMedia);
-        if (!empty($activityGallery)) {
+        if (! empty($activityGallery)) {
             return $activityGallery;
         }
 

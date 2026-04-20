@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
 
 /**
@@ -22,6 +24,7 @@ use Illuminate\Support\Facades\Storage;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\UserProfileUrl> $urls
  * @property-read int|null $urls_count
  * @property-read \App\Models\User $user
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|UserProfile newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|UserProfile newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|UserProfile query()
@@ -37,7 +40,8 @@ use Illuminate\Support\Facades\Storage;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|UserProfile whereState($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|UserProfile whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|UserProfile whereUserId($value)
- * @mixin \Eloquent
+ *
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class UserProfile extends Model
 {
@@ -63,7 +67,7 @@ class UserProfile extends Model
      */
     public function getAvatarAttribute($value)
     {
-        if (!$value) {
+        if (! $value) {
             return null;
         }
 
@@ -75,12 +79,12 @@ class UserProfile extends Model
         return Storage::disk('minio')->url($value);
     }
 
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public function urls()
+    public function urls(): HasMany
     {
         return $this->hasMany(UserProfileUrl::class, 'user_profile_id');
     }

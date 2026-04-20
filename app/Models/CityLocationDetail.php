@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -18,6 +19,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\City $city
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CityLocationDetail newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CityLocationDetail newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CityLocationDetail query()
@@ -32,15 +34,16 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CityLocationDetail wherePopulation($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CityLocationDetail whereTimezone($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CityLocationDetail whereUpdatedAt($value)
- * @mixin \Eloquent
+ *
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class CityLocationDetail extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'city_id', 'latitude', 'longitude', 'population', 'currency', 
-        'timezone', 'language', 'local_cuisine'
+        'city_id', 'latitude', 'longitude', 'population', 'currency',
+        'timezone', 'language', 'local_cuisine',
     ];
 
     protected $casts = [
@@ -48,7 +51,7 @@ class CityLocationDetail extends Model
         'local_cuisine' => 'array',
     ];
 
-    public function city()
+    public function city(): BelongsTo
     {
         return $this->belongsTo(City::class);
     }

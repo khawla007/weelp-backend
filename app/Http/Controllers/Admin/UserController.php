@@ -3,12 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\UserMeta;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
-
 
 class UserController extends Controller
 {
@@ -22,16 +21,16 @@ class UserController extends Controller
         $query = User::with(['meta', 'profile']);
 
         // Search by name or email
-        if ($request->has('search') && !empty($request->search)) {
+        if ($request->has('search') && ! empty($request->search)) {
             $searchTerm = $request->search;
             $query->where(function ($q) use ($searchTerm) {
-                $q->where('name', 'like', '%' . $searchTerm . '%')
-                  ->orWhere('email', 'like', '%' . $searchTerm . '%');
+                $q->where('name', 'like', '%'.$searchTerm.'%')
+                    ->orWhere('email', 'like', '%'.$searchTerm.'%');
             });
         }
 
         // Filter by status
-        if ($request->has('status') && !empty($request->status) && $request->status !== 'all') {
+        if ($request->has('status') && ! empty($request->status) && $request->status !== 'all') {
             $query->where('status', $request->status);
         }
 
@@ -47,14 +46,14 @@ class UserController extends Controller
 
         return response()->json([
             'data' => [
-                'users'         => $users->items(),
-                'current_page'  => $users->currentPage(),
-                'per_page'      => $users->perPage(),
-                'total'         => $users->total(),
+                'users' => $users->items(),
+                'current_page' => $users->currentPage(),
+                'per_page' => $users->perPage(),
+                'total' => $users->total(),
             ],
-            'total_users'       => $totalUsers,
-            'active_users'      => $activeUsers,
-            'inactive_users'    => $inactiveUsers,
+            'total_users' => $totalUsers,
+            'active_users' => $activeUsers,
+            'inactive_users' => $inactiveUsers,
         ], 200);
     }
 
@@ -102,14 +101,13 @@ class UserController extends Controller
                 'status' => $userWithMeta->status,
                 'avatar' => $userWithMeta->profile?->avatar,
                 'meta' => [
-                    'username' => $userWithMeta->meta->username ?? null
+                    'username' => $userWithMeta->meta->username ?? null,
                 ],
                 'created_at' => $userWithMeta->created_at,
                 'updated_at' => $userWithMeta->updated_at,
-            ]
+            ],
         ], 201);
     }
-
 
     public function show($id)
     {
@@ -127,17 +125,17 @@ class UserController extends Controller
                     'status' => $user->status,
                     'avatar' => $user->profile?->avatar,
                     'meta' => [
-                        'username' => $user->meta->username ?? null
+                        'username' => $user->meta->username ?? null,
                     ],
                     'created_at' => $user->created_at,
                     'updated_at' => $user->updated_at,
-                ]
+                ],
             ], 200);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'User not found'
+                'message' => 'User not found',
             ], 404);
         }
     }
@@ -146,14 +144,14 @@ class UserController extends Controller
     {
         // Find user
         $user = User::with('meta')->find($id);
-        if (!$user) {
+        if (! $user) {
             return response()->json(['message' => 'User not found'], 404);
         }
 
         // Validation (only for fields that can come in request)
         $validator = Validator::make($request->all(), [
             'name' => 'sometimes|string|max:255',
-            'email' => 'sometimes|email|unique:users,email,' . $id,
+            'email' => 'sometimes|email|unique:users,email,'.$id,
             'password' => 'sometimes|min:8',
             'confirm_password' => 'sometimes|same:password',
             'role' => 'sometimes|in:admin,customer',
@@ -208,11 +206,11 @@ class UserController extends Controller
                 'status' => $userWithMeta->status,
                 'avatar' => $userWithMeta->profile?->avatar,
                 'meta' => [
-                    'username' => $userWithMeta->meta->username ?? null
+                    'username' => $userWithMeta->meta->username ?? null,
                 ],
                 'created_at' => $userWithMeta->created_at,
                 'updated_at' => $userWithMeta->updated_at,
-            ]
+            ],
         ], 200);
     }
 
@@ -241,10 +239,10 @@ class UserController extends Controller
     {
         $user = User::find($id);
 
-        if (!$user) {
+        if (! $user) {
             return response()->json([
                 'success' => false,
-                'message' => 'User not found.'
+                'message' => 'User not found.',
             ], 404);
         }
 
@@ -252,7 +250,7 @@ class UserController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'User deleted successfully.'
+            'message' => 'User deleted successfully.',
         ]);
     }
 
@@ -272,5 +270,4 @@ class UserController extends Controller
             'message' => "$deletedCount user(s) deleted successfully",
         ]);
     }
-
 }

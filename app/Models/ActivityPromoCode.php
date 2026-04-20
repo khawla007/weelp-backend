@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -17,6 +18,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Activity $activity
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityPromoCode newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityPromoCode newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityPromoCode query()
@@ -30,14 +32,17 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityPromoCode whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityPromoCode whereValidFrom($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityPromoCode whereValidTo($value)
- * @mixin \Eloquent
+ *
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
-class ActivityPromoCode extends Model {
+class ActivityPromoCode extends Model
+{
     use HasFactory;
 
     protected $fillable = ['activity_id', 'promo_code', 'max_uses', 'discount_amount', 'discount_type', 'valid_from', 'valid_to'];
 
-    public function activity() {
+    public function activity(): BelongsTo
+    {
         return $this->belongsTo(Activity::class);
     }
 }

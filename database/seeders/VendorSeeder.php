@@ -2,12 +2,14 @@
 
 namespace Database\Seeders;
 
+use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 
-class VendorSeeder extends Seeder {
-    public function run() {
+class VendorSeeder extends Seeder
+{
+    public function run()
+    {
         DB::statement('SET FOREIGN_KEY_CHECKS=0;'); // Disable foreign key checks
 
         // Truncate Tables
@@ -206,9 +208,9 @@ class VendorSeeder extends Seeder {
                     'vehicle_type' => 'Sedan',
                     'capacity' => 4 + $v,
                     'make' => 'Toyota',
-                    'model' => 'Camry ' . $v,
+                    'model' => 'Camry '.$v,
                     'year' => 2020 + $v,
-                    'license_plate' => 'AB-123' . $v,
+                    'license_plate' => 'AB-123'.$v,
                     'features' => 'Air Conditioning, GPS, Bluetooth',
                     'status' => 'active',
                     'last_maintenance' => Carbon::now()->subMonths($v),
@@ -216,16 +218,16 @@ class VendorSeeder extends Seeder {
                     'created_at' => Carbon::now(),
                     'updated_at' => Carbon::now(),
                 ]);
-        
+
                 // Create 2 Drivers per Vehicle
                 for ($d = 1; $d <= 2; $d++) {
                     $driverId = DB::table('vendor_drivers')->insertGetId([
                         'vendor_id' => $vendorId,
-                        'first_name' => 'Driver' . $v . $d,
+                        'first_name' => 'Driver'.$v.$d,
                         'last_name' => 'Test',
-                        'email' => 'driver' . $vendorId . $v . $d . '@example.com',
-                        'phone' => '+555-555-' . $vendorId . $v . $d,
-                        'license_number' => 'LIC' . $vendorId . $v . $d,
+                        'email' => 'driver'.$vendorId.$v.$d.'@example.com',
+                        'phone' => '+555-555-'.$vendorId.$v.$d,
+                        'license_number' => 'LIC'.$vendorId.$v.$d,
                         'license_expiry' => Carbon::now()->addYears(2),
                         'status' => 'active',
                         'assigned_vehicle_id' => $vehicleId,
@@ -233,7 +235,7 @@ class VendorSeeder extends Seeder {
                         'created_at' => Carbon::now(),
                         'updated_at' => Carbon::now(),
                     ]);
-        
+
                     // Create 2 Schedules per Driver
                     for ($s = 1; $s <= 2; $s++) {
                         DB::table('vendor_driver_schedules')->insert([
@@ -248,15 +250,15 @@ class VendorSeeder extends Seeder {
                         ]);
                     }
                 }
-        
+
                 // Create 2 Availability Slots per Vehicle
                 for ($t = 1; $t <= 2; $t++) {
                     DB::table('vendor_availability_time_slots')->insert([
                         'vendor_id' => $vendorId,
                         'vehicle_id' => $vehicleId,
                         'date' => Carbon::now()->addDays($t)->format('Y-m-d'),
-                        'start_time' => '0' . (8 + $t) . ':00:00',
-                        'end_time' => (12 + $t) . ':00:00',
+                        'start_time' => '0'.(8 + $t).':00:00',
+                        'end_time' => (12 + $t).':00:00',
                         'max_bookings' => 5 + $t,
                         'price_multiplier' => 1.0 + ($t * 0.2),
                         'created_at' => Carbon::now(),
@@ -264,7 +266,7 @@ class VendorSeeder extends Seeder {
                     ]);
                 }
             }
-        }        
+        }
 
         // Insert Vehicles
         // foreach ($vendorIds as $vendorId) {
@@ -324,7 +326,6 @@ class VendorSeeder extends Seeder {
         //         'updated_at' => Carbon::now(),
         //     ]);
         // }
-
 
         echo "Vendor Seeder Successfully Executed!\n";
     }

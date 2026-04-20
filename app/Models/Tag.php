@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Str;
 
 /**
@@ -19,6 +20,7 @@ use Illuminate\Support\Str;
  * @property-read int|null $blogs_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Itinerary> $itineraries
  * @property-read int|null $itineraries_count
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Tag newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Tag newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Tag query()
@@ -31,7 +33,8 @@ use Illuminate\Support\Str;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Tag whereStatus($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Tag whereTaxonomy($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Tag whereUpdatedAt($value)
- * @mixin \Eloquent
+ *
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class Tag extends Model
 {
@@ -51,7 +54,7 @@ class Tag extends Model
         // });
     }
 
-    public function itineraries()
+    public function itineraries(): BelongsToMany
     {
         return $this->belongsToMany(Itinerary::class, 'itinerary_tags');
     }
@@ -60,7 +63,7 @@ class Tag extends Model
     // {
     //     return $this->hasMany(Blog::class);
     // }
-    public function blogs()
+    public function blogs(): BelongsToMany
     {
         return $this->belongsToMany(Blog::class, 'blog_tag');
     }

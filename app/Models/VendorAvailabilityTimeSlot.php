@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property int $id
@@ -20,6 +22,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read int|null $transfer_availability_count
  * @property-read \App\Models\VendorVehicle $vehicle
  * @property-read \App\Models\Vendor $vendor
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|VendorAvailabilityTimeSlot newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|VendorAvailabilityTimeSlot newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|VendorAvailabilityTimeSlot query()
@@ -33,26 +36,29 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|VendorAvailabilityTimeSlot whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|VendorAvailabilityTimeSlot whereVehicleId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|VendorAvailabilityTimeSlot whereVendorId($value)
- * @mixin \Eloquent
+ *
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
-class VendorAvailabilityTimeSlot extends Model {
+class VendorAvailabilityTimeSlot extends Model
+{
     use HasFactory;
 
     protected $table = 'vendor_availability_time_slots';
 
     protected $fillable = ['vendor_id', 'vehicle_id', 'date', 'start_time', 'end_time', 'max_bookings', 'price_multiplier'];
 
-    public function vendor() {
+    public function vendor(): BelongsTo
+    {
         return $this->belongsTo(Vendor::class);
     }
 
-    public function vehicle() {
+    public function vehicle(): BelongsTo
+    {
         return $this->belongsTo(VendorVehicle::class);
     }
 
-    public function transferAvailability()
+    public function transferAvailability(): HasMany
     {
         return $this->hasMany(TransferPricingAvailability::class, 'availability_id');
     }
-    
 }

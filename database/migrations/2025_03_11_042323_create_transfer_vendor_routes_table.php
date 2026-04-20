@@ -15,17 +15,17 @@ return new class extends Migration
             $table->id();
             $table->foreignId('transfer_id')->constrained('transfers')->onDelete('cascade');
             $table->boolean('is_vendor')->default(true);
-    
+
             // Vendor True Column
             $table->foreignId('vendor_id')->nullable()->constrained('vendors')->onDelete('cascade');
             $table->foreignId('route_id')->nullable()->constrained('vendor_routes')->onDelete('cascade');
-    
+
             // Vendor False Column
             $table->string('pickup_location')->nullable();
             $table->string('dropoff_location')->nullable();
             $table->string('vehicle_type')->nullable();
             $table->text('inclusion')->nullable();
-    
+
             $table->timestamps();
         });
     }

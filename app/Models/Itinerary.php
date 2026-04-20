@@ -4,6 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 /**
  * @property int $id
@@ -88,7 +91,7 @@ class Itinerary extends Model
 
     // ─── Meta Relationship ───────────────────────────────────────────
 
-    public function meta()
+    public function meta(): HasOne
     {
         return $this->hasOne(ItineraryMeta::class);
     }
@@ -245,62 +248,62 @@ class Itinerary extends Model
 
     // ─── Content Relationships ───────────────────────────────────────
 
-    public function locations()
+    public function locations(): HasMany
     {
         return $this->hasMany(ItineraryLocation::class);
     }
 
-    public function schedules()
+    public function schedules(): HasMany
     {
         return $this->hasMany(ItinerarySchedule::class);
     }
 
-    public function basePricing()
+    public function basePricing(): HasOne
     {
         return $this->hasOne(ItineraryBasePricing::class, 'itinerary_id');
     }
 
-    public function inclusionsExclusions()
+    public function inclusionsExclusions(): HasMany
     {
         return $this->hasMany(ItineraryInclusionExclusion::class);
     }
 
-    public function mediaGallery()
+    public function mediaGallery(): HasMany
     {
         return $this->hasMany(ItineraryMediaGallery::class);
     }
 
-    public function seo()
+    public function seo(): HasOne
     {
         return $this->hasOne(ItinerarySeo::class);
     }
 
-    public function categories()
+    public function categories(): HasMany
     {
         return $this->hasMany(ItineraryCategory::class);
     }
 
-    public function attributes()
+    public function attributes(): HasMany
     {
         return $this->hasMany(ItineraryAttribute::class);
     }
 
-    public function tags()
+    public function tags(): HasMany
     {
         return $this->hasMany(ItineraryTag::class);
     }
 
-    public function availability()
+    public function availability(): HasOne
     {
         return $this->hasOne(ItineraryAvailability::class);
     }
 
-    public function orders()
+    public function orders(): MorphMany
     {
         return $this->morphMany(Order::class, 'orderable');
     }
 
-    public function reviews()
+    public function reviews(): MorphMany
     {
         return $this->morphMany(Review::class, 'item', 'item_type', 'item_id');
     }
@@ -310,12 +313,12 @@ class Itinerary extends Model
         return $value ?? strtolower(class_basename($this));
     }
 
-    public function addons()
+    public function addons(): HasMany
     {
         return $this->hasMany(ItineraryAddon::class);
     }
 
-    public function postTags()
+    public function postTags(): MorphMany
     {
         return $this->morphMany(PostItemTag::class, 'taggable');
     }
@@ -451,5 +454,4 @@ class Itinerary extends Model
 
         return round($activitiesSum + $transfersSum, 2);
     }
-
 }

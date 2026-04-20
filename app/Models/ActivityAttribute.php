@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -14,6 +15,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Activity $activity
  * @property-read \App\Models\Attribute $attribute
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityAttribute newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityAttribute newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityAttribute query()
@@ -23,19 +25,24 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityAttribute whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityAttribute whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityAttribute whereUpdatedAt($value)
- * @mixin \Eloquent
+ *
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
-class ActivityAttribute extends Model {
+class ActivityAttribute extends Model
+{
     use HasFactory;
 
     protected $table = 'activity_attribute';
+
     protected $fillable = ['activity_id', 'attribute_id', 'attribute_value'];
 
-    public function activity() {
+    public function activity(): BelongsTo
+    {
         return $this->belongsTo(Activity::class);
     }
 
-    public function attribute() {
+    public function attribute(): BelongsTo
+    {
         return $this->belongsTo(Attribute::class, 'attribute_id');
     }
 }

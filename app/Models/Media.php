@@ -3,7 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Facades\Storage;
 
 /**
@@ -37,6 +39,7 @@ use Illuminate\Support\Facades\Storage;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\TransferMediaGallery> $transferMedia
  * @property-read int|null $transfer_media_count
  * @property-read \App\Models\User|null $userAvatar
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Media newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Media newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Media query()
@@ -49,7 +52,8 @@ use Illuminate\Support\Facades\Storage;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Media whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Media whereUrl($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Media whereWidth($value)
- * @mixin \Eloquent
+ *
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class Media extends Model
 {
@@ -65,7 +69,7 @@ class Media extends Model
      */
     public function getUrlAttribute($value)
     {
-        if (!$value) {
+        if (! $value) {
             return null;
         }
 
@@ -97,9 +101,6 @@ class Media extends Model
      *   "China - Image 1" -> (second) -> "China - Image 1-1"
      *   "China - Image 1" -> (third) -> "China - Image 1-2"
      *   "China - Image 1-1" -> (next) -> "China - Image 1-2"
-     *
-     * @param string $name
-     * @return string
      */
     private static function getUniqueName(string $name): string
     {
@@ -116,10 +117,10 @@ class Media extends Model
             if (preg_match($pattern, $originalName, $matches)) {
                 // Already has a counter (e.g., "China - Image 1-1")
                 $baseName = $matches[1];
-                $uniqueName = $baseName . '-' . $counter;
+                $uniqueName = $baseName.'-'.$counter;
             } else {
                 // No counter yet (e.g., "China - Image 1")
-                $uniqueName = $originalName . '-' . $counter;
+                $uniqueName = $originalName.'-'.$counter;
             }
         }
 
@@ -128,72 +129,68 @@ class Media extends Model
 
     /**
      * Check if a name already exists in the media table
-     *
-     * @param string $name
-     * @return bool
      */
     private static function nameExists(string $name): bool
     {
         return self::where('name', $name)->exists();
     }
 
-    public function userAvatar()
+    public function userAvatar(): HasOne
     {
         return $this->hasOne(User::class, 'avatar');
     }
 
-    public function countryMedia()
+    public function countryMedia(): HasMany
     {
         return $this->hasMany(CountryMediaGallery::class, 'media_id');
     }
 
-    public function stateMedia()
+    public function stateMedia(): HasMany
     {
         return $this->hasMany(StateMediaGallery::class, 'media_id');
     }
 
-    public function cityMedia()
+    public function cityMedia(): HasMany
     {
         return $this->hasMany(CityMediaGallery::class, 'media_id');
     }
 
-    public function placeMedia()
+    public function placeMedia(): HasMany
     {
         return $this->hasMany(PlaceMediaGallery::class, 'media_id');
     }
-    
+
     // public function blogs()
     // {
     //     return $this->hasMany(Blog::class, 'featured_image');
     // }
-    public function blogs()
+    public function blogs(): BelongsToMany
     {
         return $this->belongsToMany(Blog::class, 'blog_media_gallery');
     }
 
-    public function itineraryMedia()
+    public function itineraryMedia(): HasMany
     {
         return $this->hasMany(ItineraryMediaGallery::class, 'media_id');
     }
 
-    public function packageMedia()
+    public function packageMedia(): HasMany
     {
         return $this->hasMany(PackageMediaGallery::class, 'media_id');
     }
 
-    public function activityMedia()
+    public function activityMedia(): HasMany
     {
         return $this->hasMany(ActivityMediaGallery::class, 'media_id');
     }
 
-    public function transferMedia()
+    public function transferMedia(): HasMany
     {
         return $this->hasMany(TransferMediaGallery::class, 'media_id');
     }
 
-    public function reviews()
+    public function reviews(): BelongsToMany
     {
         return $this->belongsToMany(Review::class, 'review_media', 'media_id', 'review_id');
     }
-    
 }

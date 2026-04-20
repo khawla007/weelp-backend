@@ -147,14 +147,13 @@ return [
         Illuminate\Mail\MailServiceProvider::class,
     ],
     'aliases' => [
-        'Auth'      => Illuminate\Support\Facades\Auth::class,
-        'File'      => Illuminate\Support\Facades\File::class,
-        'Cache'     => Illuminate\Support\Facades\Cache::class,
-        'Cookie'    => Illuminate\Support\Facades\Cookie::class,
+        'Auth' => Illuminate\Support\Facades\Auth::class,
+        'File' => Illuminate\Support\Facades\File::class,
+        'Cache' => Illuminate\Support\Facades\Cache::class,
+        'Cookie' => Illuminate\Support\Facades\Cookie::class,
         'Validator' => Illuminate\Support\Facades\Validator::class,
-        'admin'     => \App\Http\Middleware\AdminMiddleware::class,
-        'customer'  => \App\Http\Middleware\CustomerMiddleware::class,
-    ]
-
+        'admin' => \App\Http\Middleware\AdminMiddleware::class,
+        'customer' => \App\Http\Middleware\CustomerMiddleware::class,
+    ],
 
 ];

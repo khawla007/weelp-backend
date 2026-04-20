@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -13,6 +14,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\UserProfile $profile
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|UserProfileUrl newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|UserProfileUrl newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|UserProfileUrl query()
@@ -22,7 +24,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|UserProfileUrl whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|UserProfileUrl whereUrl($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|UserProfileUrl whereUserProfileId($value)
- * @mixin \Eloquent
+ *
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class UserProfileUrl extends Model
 {
@@ -34,7 +37,7 @@ class UserProfileUrl extends Model
         'url',
     ];
 
-    public function profile()
+    public function profile(): BelongsTo
     {
         return $this->belongsTo(UserProfile::class, 'user_profile_id');
     }

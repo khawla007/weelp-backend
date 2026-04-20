@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property int $id
@@ -25,6 +27,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\VendorDriver> $drivers
  * @property-read int|null $drivers_count
  * @property-read \App\Models\Vendor $vendor
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|VendorVehicle newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|VendorVehicle newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|VendorVehicle query()
@@ -42,25 +45,29 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|VendorVehicle whereVehicleType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|VendorVehicle whereVendorId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|VendorVehicle whereYear($value)
- * @mixin \Eloquent
+ *
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
-class VendorVehicle extends Model {
+class VendorVehicle extends Model
+{
     use HasFactory;
 
     protected $table = 'vendor_vehicles';
 
     protected $fillable = ['vendor_id', 'vehicle_type', 'capacity', 'make', 'model', 'year', 'license_plate', 'features', 'status', 'last_maintenance', 'next_maintenance'];
 
-    public function vendor() {
+    public function vendor(): BelongsTo
+    {
         return $this->belongsTo(Vendor::class);
     }
 
-    public function availabilityTimeSlots()
+    public function availabilityTimeSlots(): HasMany
     {
         return $this->hasMany(VendorAvailabilityTimeSlot::class, 'vehicle_id');
     }
 
-    public function drivers() {
+    public function drivers(): HasMany
+    {
         return $this->hasMany(VendorDriver::class, 'assigned_vehicle_id');
     }
 }

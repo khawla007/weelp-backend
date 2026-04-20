@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Region;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
 class RegionSeeder extends Seeder
@@ -72,6 +72,6 @@ class RegionSeeder extends Seeder
             Region::create($regionData);
         }
 
-        $this->command->info('Seeded ' . count($regions) . ' regions.');
+        $this->command->info('Seeded '.count($regions).' regions.');
     }
 }

@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property int $id
@@ -19,6 +20,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read \App\Models\Package $package
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\PackagePriceVariation> $variations
  * @property-read int|null $variations_count
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageBasePricing newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageBasePricing newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageBasePricing query()
@@ -30,28 +32,29 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageBasePricing wherePackageId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageBasePricing whereStartDate($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageBasePricing whereUpdatedAt($value)
- * @mixin \Eloquent
+ *
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class PackageBasePricing extends Model
 {
     protected $table = 'package_base_pricing';
-    
+
     protected $fillable = [
-        'package_id', 'currency', 'availability', 
-        'start_date', 'end_date'
+        'package_id', 'currency', 'availability',
+        'start_date', 'end_date',
     ];
 
-    public function package()
+    public function package(): BelongsTo
     {
         return $this->belongsTo(Package::class);
     }
 
-    public function variations()
+    public function variations(): HasMany
     {
         return $this->hasMany(PackagePriceVariation::class, 'base_pricing_id');
     }
 
-    public function blackoutDates()
+    public function blackoutDates(): HasMany
     {
         return $this->hasMany(PackageBlackoutDate::class, 'base_pricing_id');
     }

@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Vendor;
 use App\Models\VendorAvailabilityTimeSlot;
 use App\Models\VendorDriver;
@@ -11,14 +10,13 @@ use App\Models\VendorDriverSchedule;
 use App\Models\VendorPricingTier;
 use App\Models\VendorRoute;
 use App\Models\VendorVehicle;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 
 class VendorController extends Controller
 {
     /**
      * Display a listing of the vendors.
-    */
-
+     */
     public function index(Request $request)
     {
         // Pagination
@@ -29,13 +27,13 @@ class VendorController extends Controller
         $search = $request->get('search');
 
         $query = Vendor::query()
-        ->with([
-                 'routes',
-                 'pricingTiers',
-                 'availabilityTimeSlots',
-                 'vehicles',
-                 'drivers.schedules'
-                ]);
+            ->with([
+                'routes',
+                'pricingTiers',
+                'availabilityTimeSlots',
+                'vehicles',
+                'drivers.schedules',
+            ]);
 
         if ($search) {
             $query->where('name', 'like', "%{$search}%");
@@ -68,7 +66,7 @@ class VendorController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $vendors
+            'data' => $vendors,
         ]);
     }
 
@@ -102,24 +100,24 @@ class VendorController extends Controller
         // Check if email already exists
         if (Vendor::where('email', $request->email)->exists()) {
             return response()->json([
-                'error' => 'The email address is already in use.'
+                'error' => 'The email address is already in use.',
             ], 409); // 409 Conflict
         }
-    
+
         // Optionally check phone
         if (Vendor::where('phone', $request->phone)->exists()) {
             return response()->json([
-                'error' => 'The phone number is already in use.'
+                'error' => 'The phone number is already in use.',
             ], 409);
         }
-    
+
         // Optionally check name
         if (Vendor::where('name', $request->name)->exists()) {
             return response()->json([
-                'error' => 'A vendor with this name already exists.'
+                'error' => 'A vendor with this name already exists.',
             ], 409);
         }
-    
+
         // If all clear, create vendor
         $vendor = Vendor::create([
             'name' => $request->name,
@@ -129,12 +127,12 @@ class VendorController extends Controller
             'address' => $request->address,
             'status' => $request->status ?? 'active',
         ]);
-    
+
         return response()->json([
             'message' => 'Vendor created successfully',
-            'data' => $vendor
+            'data' => $vendor,
         ], 201);
-    }    
+    }
 
     // Pricing Tier store
     private function storePricingTier($request)
@@ -154,7 +152,7 @@ class VendorController extends Controller
 
         return response()->json([
             'message' => 'Vendor Pricing Tier created successfully',
-            'data' => $vendorPricingTier
+            'data' => $vendorPricingTier,
         ], 201); // 201 = Created
     }
 
@@ -174,7 +172,7 @@ class VendorController extends Controller
 
         return response()->json([
             'message' => 'Vendor Route created successfully',
-            'data' => $vendorRoute
+            'data' => $vendorRoute,
         ], 201); // 201 = Created
     }
 
@@ -197,7 +195,7 @@ class VendorController extends Controller
 
         return response()->json([
             'message' => 'Vendor Vehicle created successfully',
-            'data' => $vendorVehicle
+            'data' => $vendorVehicle,
         ], 201);
     }
 
@@ -219,7 +217,7 @@ class VendorController extends Controller
 
         return response()->json([
             'message' => 'Vendor Driver created successfully',
-            'data' => $vendorDriver
+            'data' => $vendorDriver,
         ], 201); // 201 = Created
     }
 
@@ -237,7 +235,7 @@ class VendorController extends Controller
 
         return response()->json([
             'message' => 'Vendor Driver Schedule created successfully',
-            'data' => $vendorDriverSchedule
+            'data' => $vendorDriverSchedule,
         ], 201); // 201 = Created
     }
 
@@ -256,7 +254,7 @@ class VendorController extends Controller
 
         return response()->json([
             'message' => 'Vendor Availability Time Slot created successfully',
-            'data' => $vendorAvailabilityTimeSlot
+            'data' => $vendorAvailabilityTimeSlot,
         ], 201); // 201 = Created
     }
 
@@ -270,7 +268,7 @@ class VendorController extends Controller
             case 'route':
                 return $this->updateRoute($request, $id);
             case 'pricing_tier':
-                return $this->updatePricingTiers($request);
+                return $this->updatePricingTiers($request, $id);
             case 'vehicle':
                 return $this->updateVehicle($request, $id);
             case 'driver':
@@ -278,7 +276,7 @@ class VendorController extends Controller
             case 'schedule':
                 return $this->updateSchedule($request, $id);
             case 'availability_time_slot':
-                return $this->updateAvailabilityTimeSlot($request);
+                return $this->updateAvailabilityTimeSlot($request, $id);
             default:
                 return response()->json(['error' => 'Invalid type'], 400);
         }
@@ -301,7 +299,7 @@ class VendorController extends Controller
 
         return response()->json([
             'message' => 'Vendor updated successfully',
-            'data' => $vendor
+            'data' => $vendor,
         ]);
     }
 
@@ -322,14 +320,14 @@ class VendorController extends Controller
 
         return response()->json([
             'message' => 'Vendor Route updated successfully',
-            'data' => $route
+            'data' => $route,
         ]);
     }
 
     private function updatePricingTiers(Request $request, $id)
     {
         $tier = VendorPricingTier::findOrFail($id);
-    
+
         $tier->update([
             'vendor_id' => $request->vendor_id ?? $tier->vendor_id,
             'name' => $request->name ?? $tier->name,
@@ -342,17 +340,17 @@ class VendorController extends Controller
             'peak_hour_multiplier' => $request->peak_hour_multiplier ?? $tier->peak_hour_multiplier,
             'status' => $request->status ?? $tier->status,
         ]);
-    
+
         return response()->json([
             'message' => 'Vendor Pricing Tier updated successfully',
-            'data' => $tier
+            'data' => $tier,
         ]);
     }
-    
+
     private function updateVehicle(Request $request, $id)
     {
         $vehicle = VendorVehicle::findOrFail($id);
-    
+
         $vehicle->update([
             'vendor_id' => $request->vendor_id ?? $vehicle->vendor_id,
             'vehicle_type' => $request->vehicle_type ?? $vehicle->vehicle_type,
@@ -366,17 +364,17 @@ class VendorController extends Controller
             'last_maintenance' => $request->last_maintenance ?? $vehicle->last_maintenance,
             'next_maintenance' => $request->next_maintenance ?? $vehicle->next_maintenance,
         ]);
-    
+
         return response()->json([
             'message' => 'Vendor Vehicle updated successfully',
-            'data' => $vehicle
+            'data' => $vehicle,
         ]);
     }
 
     private function updateDriver(Request $request, $id)
     {
         $driver = VendorDriver::findOrFail($id);
-    
+
         $driver->update([
             'vendor_id' => $request->vendor_id ?? $driver->vendor_id,
             'first_name' => $request->first_name ?? $driver->first_name,
@@ -389,17 +387,17 @@ class VendorController extends Controller
             'assigned_vehicle_id' => $request->assigned_vehicle_id ?? $driver->assigned_vehicle_id,
             'languages' => $request->languages ?? $driver->languages,
         ]);
-    
+
         return response()->json([
             'message' => 'Vendor Driver updated successfully',
-            'data' => $driver
+            'data' => $driver,
         ]);
     }
 
     private function updateSchedule(Request $request, $id)
     {
         $schedule = VendorDriverSchedule::findOrFail($id);
-    
+
         $schedule->update([
             'vendor_id' => $request->vendor_id ?? $schedule->vendor_id,
             'driver_id' => $request->driver_id ?? $schedule->driver_id,
@@ -408,17 +406,17 @@ class VendorController extends Controller
             'shift' => $request->shift ?? $schedule->shift,
             'time' => $request->time ?? $schedule->time,
         ]);
-    
+
         return response()->json([
             'message' => 'Vendor Driver Schedule updated successfully',
-            'data' => $schedule
+            'data' => $schedule,
         ]);
     }
 
     private function updateAvailabilityTimeSlot(Request $request, $id)
     {
         $slot = VendorAvailabilityTimeSlot::findOrFail($id);
-    
+
         $slot->update([
             'vendor_id' => $request->vendor_id ?? $slot->vendor_id,
             'vehicle_id' => $request->vehicle_id ?? $slot->vehicle_id,
@@ -428,35 +426,32 @@ class VendorController extends Controller
             'max_bookings' => $request->max_bookings ?? $slot->max_bookings,
             'price_multiplier' => $request->price_multiplier ?? $slot->price_multiplier,
         ]);
-    
+
         return response()->json([
             'message' => 'Vendor Availability Time Slot updated successfully',
-            'data' => $slot
+            'data' => $slot,
         ]);
     }
-    
 
     /**
      * Get a single vendor detail.
      */
-
     public function show($vendorId)
     {
         $vendor = Vendor::with([
             'routes:id,vendor_id,name',
-            'vehicles:id,vendor_id,vehicle_type'
+            'vehicles:id,vendor_id,vehicle_type',
         ])->findOrFail($vendorId);
 
         return response()->json([
             'success' => true,
-            'data' => $vendor
+            'data' => $vendor,
         ]);
     }
 
     /**
      * Get all routes for a vendor.
      */
-
     public function getRoutes(Request $request, $vendorId)
     {
         // Pagination defaults
@@ -485,9 +480,10 @@ class VendorController extends Controller
             'data' => $routes,
             'current_page' => $page,
             'per_page' => $perPage,
-            'total' => $total
+            'total' => $total,
         ]);
     }
+
     public function getRoutesForSelect($vendorId)
     {
         // Fetch all routes for this vendor
@@ -497,15 +493,13 @@ class VendorController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $routes
+            'data' => $routes,
         ]);
     }
-
 
     /**
      * Get all pricing tiers for a vendor.
      */
-
     public function getPricingTiers(Request $request, $vendorId)
     {
         // Pagination defaults
@@ -534,9 +528,10 @@ class VendorController extends Controller
             'data' => $tiers,
             'current_page' => $page,
             'per_page' => $perPage,
-            'total' => $total
+            'total' => $total,
         ]);
     }
+
     public function getPricingTiersForSelect($vendorId)
     {
         // Get all pricing tiers for this vendor
@@ -546,14 +541,13 @@ class VendorController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $tiers
+            'data' => $tiers,
         ]);
     }
 
     /**
      * Get all vehicles for a vendor.
      */
-
     public function getVehicles(Request $request, $vendorId)
     {
         // Pagination defaults
@@ -582,7 +576,7 @@ class VendorController extends Controller
             'data' => $vehicles,
             'current_page' => $page,
             'per_page' => $perPage,
-            'total' => $total
+            'total' => $total,
         ]);
     }
 
@@ -594,7 +588,7 @@ class VendorController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $vehicles
+            'data' => $vehicles,
         ]);
     }
 
@@ -611,12 +605,12 @@ class VendorController extends Controller
         $search = $request->get('search');
 
         $query = VendorDriver::where('vendor_id', $vendorId)
-        ->with('assignedVehicle');
+            ->with('assignedVehicle');
 
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('first_name', 'like', "%{$search}%")
-                ->orWhere('last_name', 'like', "%{$search}%");
+                    ->orWhere('last_name', 'like', "%{$search}%");
             });
         }
 
@@ -628,7 +622,7 @@ class VendorController extends Controller
             ->take($perPage)
             ->get();
 
-        $data = $drivers->map(function($driver) {
+        $data = $drivers->map(function ($driver) {
             return [
                 'id' => $driver->id,
                 'vendor_id' => $driver->vendor_id,
@@ -647,12 +641,13 @@ class VendorController extends Controller
                 'updated_at' => $driver->updated_at,
             ];
         });
+
         return response()->json([
             'success' => true,
             'data' => $data,
             'current_page' => $page,
             'per_page' => $perPage,
-            'total' => $total
+            'total' => $total,
         ]);
     }
 
@@ -662,16 +657,16 @@ class VendorController extends Controller
             ->orderBy('first_name')
             ->get(['id', 'first_name', 'last_name']);
 
-        $data = $drivers->map(function($driver) {
+        $data = $drivers->map(function ($driver) {
             return [
                 'id' => $driver->id,
-                'name' => trim($driver->first_name . ' ' . $driver->last_name)
+                'name' => trim($driver->first_name.' '.$driver->last_name),
             ];
         });
 
         return response()->json([
             'success' => true,
-            'data' => $data
+            'data' => $data,
         ]);
     }
 
@@ -683,21 +678,21 @@ class VendorController extends Controller
         // Pagination
         $perPage = (int) $request->get('per_page', 3);
         $page = (int) $request->get('page', 1);
-    
+
         // Individual Filters
         $driverId = $request->get('driver_id'); // driver id
         $vehicleId = $request->get('vehicle_id'); // vehicle id
         $shift = $request->get('shift');        // shift text
         $date = $request->get('date');          // date text
-    
+
         // Base query: only schedules for drivers of this vendor
         $query = VendorDriverSchedule::whereIn('driver_id', function ($q) use ($vendorId) {
             $q->select('id')
-              ->from('vendor_drivers')
-              ->where('vendor_id', $vendorId);
+                ->from('vendor_drivers')
+                ->where('vendor_id', $vendorId);
         })
-        ->with(['driver', 'vehicle']); 
-    
+            ->with(['driver', 'vehicle']);
+
         // Filter by driver_id if provided
         if ($driverId) {
             $query->where('driver_id', $driverId);
@@ -707,33 +702,33 @@ class VendorController extends Controller
         if ($vehicleId) {
             $query->where('vehicle_id', $vehicleId);
         }
-    
+
         // Filter by shift if provided
         if ($shift) {
             $query->where('shift', 'like', "%{$shift}%");
         }
-    
+
         // Filter by date if provided
         if ($date) {
             $query->where('date', 'like', "%{$date}%");
         }
-    
+
         // Count total
         $total = $query->count();
-    
+
         // Fetch paginated data
         $schedules = $query
             ->orderBy('id', 'asc')
             ->skip(($page - 1) * $perPage)
             ->take($perPage)
             ->get();
-    
+
         // Format the data
-        $data = $schedules->map(function($schedule) {
+        $data = $schedules->map(function ($schedule) {
             return [
                 'id' => $schedule->id,
                 'driver_id' => $schedule->driver_id,
-                'driver_name' => optional($schedule->driver)->first_name . ' ' . optional($schedule->driver)->last_name,
+                'driver_name' => optional($schedule->driver)->first_name.' '.optional($schedule->driver)->last_name,
                 'vehicle_id' => $schedule->vehicle_id,
                 'vehicle_make' => optional($schedule->vehicle)->make,
                 'vehicle_model' => optional($schedule->vehicle)->model,
@@ -753,12 +748,11 @@ class VendorController extends Controller
             'per_page' => $perPage,
             'total' => $total,
         ]);
-    }    
+    }
 
     /**
      * Get all availability time slots for a vendor.
      */
-
     public function getAvailabilityTimeSlots(Request $request, $vendorId)
     {
         // Pagination defaults
@@ -807,6 +801,7 @@ class VendorController extends Controller
             'total' => $total,
         ]);
     }
+
     public function getAvailabilityTimeSlotsForSelect($vendorId)
     {
         // Get all slots for this vendor
@@ -818,7 +813,7 @@ class VendorController extends Controller
         // Response
         return response()->json([
             'success' => true,
-            'data' => $slots
+            'data' => $slots,
         ]);
     }
 
@@ -839,7 +834,7 @@ class VendorController extends Controller
     {
         $vendor = Vendor::find($id);
 
-        if (!$vendor) {
+        if (! $vendor) {
             return response()->json(['message' => 'Vendor not found'], 404);
         }
 

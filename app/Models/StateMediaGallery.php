@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -14,6 +15,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Media $media
  * @property-read \App\Models\State $state
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StateMediaGallery featured()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StateMediaGallery newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StateMediaGallery newQuery()
@@ -24,7 +26,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StateMediaGallery whereMediaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StateMediaGallery whereStateId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StateMediaGallery whereUpdatedAt($value)
- * @mixin \Eloquent
+ *
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class StateMediaGallery extends Model
 {
@@ -39,12 +42,12 @@ class StateMediaGallery extends Model
     ];
 
     // Relations
-    public function state()
+    public function state(): BelongsTo
     {
         return $this->belongsTo(State::class);
     }
 
-    public function media()
+    public function media(): BelongsTo
     {
         return $this->belongsTo(Media::class, 'media_id');
     }

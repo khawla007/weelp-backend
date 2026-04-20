@@ -4,16 +4,15 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Place;
-use App\Models\PlaceMediaGallery;
-use App\Models\PlaceLocationDetail;
-use App\Models\PlaceTravelInfo;
-use App\Models\PlaceSeason;
-use App\Models\PlaceEvent;
 use App\Models\PlaceAdditionalInfo;
+use App\Models\PlaceEvent;
 use App\Models\PlaceFaq;
+use App\Models\PlaceLocationDetail;
+use App\Models\PlaceMediaGallery;
+use App\Models\PlaceSeason;
 use App\Models\PlaceSeo;
+use App\Models\PlaceTravelInfo;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 
 class PlaceController extends Controller
 {
@@ -29,20 +28,21 @@ class PlaceController extends Controller
     {
         $query = Place::query()->with('mediaGallery.media')
             ->with(['city.state.country.regions']);
-    
+
         // Name search
-        if ($request->has('name') && !empty($request->name)) {
-            $query->where('name', 'like', '%' . $request->name . '%');
+        if ($request->has('name') && ! empty($request->name)) {
+            $query->where('name', 'like', '%'.$request->name.'%');
         }
-        
+
         // Pagination (perPage fix)
         $perPage = 4;
         $places = $query->orderBy('id', 'desc')->paginate($perPage, ['*'], 'page', $request->input('page', 1));
-    
+
         // Transform response
-        $data = $places->map(function ($place) {
+        $data = $places->map(function (Place $place, int $key) {
             // Get featured image from media_gallery
             $featuredImage = $place->mediaGallery->firstWhere('is_featured', true);
+
             return [
                 'id' => $place->id,
                 'name' => $place->name,
@@ -53,22 +53,22 @@ class PlaceController extends Controller
                 'feature_image' => $featuredImage?->media->url ?? null,
                 'featured_destination' => $place->featured_destination,
                 // Location data for badges
-                'city' => $place->city ? [
+                'city' => [
                     'id' => $place->city->id,
                     'name' => $place->city->name,
                     'slug' => $place->city->slug,
-                ] : null,
-                'state' => $place->city?->state ? [
+                ],
+                'state' => [
                     'id' => $place->city->state->id,
                     'name' => $place->city->state->name,
                     'slug' => $place->city->state->slug,
-                ] : null,
-                'country' => $place->city?->state?->country ? [
+                ],
+                'country' => [
                     'id' => $place->city->state->country->id,
                     'name' => $place->city->state->country->name,
                     'slug' => $place->city->state->country->slug,
-                ] : null,
-                'regions' => $place->city?->state?->country?->regions ?? [],
+                ],
+                'regions' => $place->city->state->country->regions ?? [],
                 // Custom Media format
                 'media_gallery' => $place->mediaGallery->map(function ($gallery) {
                     return [
@@ -83,6 +83,7 @@ class PlaceController extends Controller
                 }),
             ];
         });
+
         // 🎯 Custom response format
         return response()->json([
             'success' => true,
@@ -90,13 +91,13 @@ class PlaceController extends Controller
             'total' => $places->total(),
             'per_page' => $places->perPage(),
             'last_page' => $places->lastPage(),
-            'current_page' => $places->currentPage(), 
+            'current_page' => $places->currentPage(),
         ]);
     }
-    
+
     /**
      * List of Places dropdown
-    */
+     */
     public function placeList()
     {
         try {
@@ -105,39 +106,14 @@ class PlaceController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Place list fetched successfully',
-                'data' => $places
+                'data' => $places,
             ], 200);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Something went wrong while fetching Place list',
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
-    
-    /**
-     * List of Places filtered by City (for dropdowns)
-     */
-    public function placesByCity($cityId)
-    {
-        try {
-            $places = Place::select('id', 'name', 'type')
-                ->where('city_id', $cityId)
-                ->orderBy('name')
-                ->get();
-
-            return response()->json([
-                'success' => true,
-                'data' => $places
-            ], 200);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Something went wrong while fetching places',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -158,7 +134,7 @@ class PlaceController extends Controller
             'featured_destination' => 'boolean',
 
             // Media (array of objects)
-            'media_gallery'     => 'nullable|array',
+            'media_gallery' => 'nullable|array',
 
             // Location Details
             'location_details.latitude' => 'nullable|string',
@@ -225,22 +201,22 @@ class PlaceController extends Controller
 
         if ($exists) {
             return response()->json([
-                'message' => 'This Place already exists, please choose another name.'
+                'message' => 'This Place already exists, please choose another name.',
             ], 422); // 422 = Unprocessable Entity (validation error)
         }
         // Create Place
         $place = Place::create([
-            'name'                 => $validated['name'],
-            'code'                 => $validated['code'],
-            'slug'                 => $validated['slug'],
+            'name' => $validated['name'],
+            'code' => $validated['code'],
+            'slug' => $validated['slug'],
             // 'type'                 => $validated['type'],
-            'city_id'              => $validated['city_id'],
-            'description'          => $validated['description'] ?? null,
+            'city_id' => $validated['city_id'],
+            'description' => $validated['description'] ?? null,
             'featured_destination' => $validated['featured_destination'] ?? false,
         ]);
 
         // Media Details
-        if (!empty($validated['media_gallery'])) {
+        if (! empty($validated['media_gallery'])) {
             // Ensure only one featured image
             $hasFeatured = false;
             foreach ($validated['media_gallery'] as $media) {
@@ -262,14 +238,14 @@ class PlaceController extends Controller
             }
         }
 
-        // Location Details - only create if meaningful data exists
-        if (!empty($validated['location_details']) && array_filter($validated['location_details'], fn($v) => !is_null($v) && $v !== '' && $v !== [] && $v !== 0)) {
+        // Location Details
+        if (! empty($validated['location_details'])) {
             $validated['location_details']['place_id'] = $place->id;
             PlaceLocationDetail::create($validated['location_details']);
         }
 
-        // Travel Info - only create if meaningful data exists
-        if (!empty($validated['travel_info']) && array_filter($validated['travel_info'], fn($v) => !is_null($v) && $v !== '' && $v !== [] && $v !== false)) {
+        // Travel Info
+        if (! empty($validated['travel_info'])) {
             $validated['travel_info']['place_id'] = $place->id;
             PlaceTravelInfo::create($validated['travel_info']);
         }
@@ -289,7 +265,7 @@ class PlaceController extends Controller
         }
 
         // Additional Info
-        if (!empty($validated['additional_info'])) {
+        if (! empty($validated['additional_info'])) {
             foreach ($validated['additional_info'] as $additional) {
                 $additional['place_id'] = $place->id;
                 PlaceAdditionalInfo::create($additional);
@@ -297,27 +273,27 @@ class PlaceController extends Controller
         }
 
         // FAQs
-        if (!empty($validated['faqs'])) {
+        if (! empty($validated['faqs'])) {
             $questionNumber = 1;
             foreach ($validated['faqs'] as $faq) {
                 PlaceFaq::create([
-                    'place_id'        => $place->id,
+                    'place_id' => $place->id,
                     'question_number' => $questionNumber++,
-                    'question'        => $faq['question'],
-                    'answer'          => $faq['answer'],
+                    'question' => $faq['question'],
+                    'answer' => $faq['answer'],
                 ]);
             }
         }
 
         // SEO
-        if (!empty($validated['seo'])) {
+        if (! empty($validated['seo'])) {
             $validated['seo']['place_id'] = $place->id;
             PlaceSeo::create($validated['seo']);
         }
 
         return response()->json([
             'message' => 'Place created successfully',
-            'place' => $place
+            'place' => $place,
         ], 201);
     }
 
@@ -334,17 +310,17 @@ class PlaceController extends Controller
             'events',
             'additionalInfo',
             'faqs',
-            'seo'
+            'seo',
         ])->find($id);
 
         // Check if place exists FIRST (before accessing properties)
-        if (!$place) {
+        if (! $place) {
             return response()->json(['message' => 'Place not found'], 404);
         }
 
         // media_gallery ko transform karna
-        if ($place->mediaGallery && $place->mediaGallery->count()) {
-            $place->media_gallery = $place->mediaGallery->map(function ($gallery) {
+        if ($place->mediaGallery->count()) {
+            $mediaCollection = $place->mediaGallery->map(function ($gallery) {
                 return [
                     'id' => $gallery->id,
                     'place_id' => $gallery->place_id,
@@ -356,8 +332,9 @@ class PlaceController extends Controller
                 ];
             })->values();
             // Get featured image from media_gallery
-            $featuredImage = $place->media_gallery->firstWhere('is_featured', true);
+            $featuredImage = $mediaCollection->firstWhere('is_featured', true);
             $place->feature_image = $featuredImage['url'] ?? null;
+            $place->media_gallery = $mediaCollection->toArray();
             unset($place->mediaGallery); // nested relation hatane ke liye
         } else {
             $place->media_gallery = [];
@@ -373,7 +350,7 @@ class PlaceController extends Controller
     public function update(Request $request, $id)
     {
         $place = Place::findOrFail($id);
-    
+
         $validated = $request->validate([
             // Place fields
             'name' => 'nullable|string|max:255',
@@ -385,8 +362,8 @@ class PlaceController extends Controller
             'featured_destination' => 'boolean',
 
             // Media (array of objects)
-            'media_gallery'     => 'nullable|array',
-    
+            'media_gallery' => 'nullable|array',
+
             // Location Details
             'location_details.latitude' => 'nullable|string',
             'location_details.longitude' => 'nullable|string',
@@ -396,7 +373,7 @@ class PlaceController extends Controller
             'location_details.timezone' => 'nullable|string',
             'location_details.language' => 'nullable|array',
             'location_details.local_cuisine' => 'nullable|array',
-    
+
             // Travel Info
             'travel_info.airport' => 'nullable|string',
             'travel_info.public_transportation' => 'nullable|array',
@@ -410,7 +387,7 @@ class PlaceController extends Controller
             'travel_info.best_time_to_visit' => 'nullable|string',
             'travel_info.travel_tips' => 'nullable|string',
             'travel_info.safety_information' => 'nullable|string',
-    
+
             // Season (array of objects)
             'seasons' => 'nullable|array',
             'seasons.*.id' => 'nullable|integer|exists:place_seasons,id',
@@ -418,7 +395,7 @@ class PlaceController extends Controller
             'seasons.*.months' => 'nullable|array',
             'seasons.*.weather' => 'nullable|string',
             'seasons.*.activities' => 'nullable|array',
-    
+
             // Event (array of objects)
             'events' => 'nullable|array',
             'events.*.id' => 'nullable|integer|exists:place_events,id',
@@ -427,19 +404,19 @@ class PlaceController extends Controller
             'events.*.date' => 'nullable|date',
             'events.*.location' => 'nullable|string',
             'events.*.description' => 'nullable|string',
-    
+
             // Additional Info
             'additional_info' => 'nullable|array',
             'additional_info.*.id' => 'nullable|integer|exists:place_additional_infos,id',
             'additional_info.*.title' => 'required|string',
             'additional_info.*.content' => 'required|string',
-    
+
             // FAQs
             'faqs' => 'nullable|array',
             'faqs.*.id' => 'nullable|integer|exists:place_faqs,id',
             'faqs.*.question' => 'required|string',
             'faqs.*.answer' => 'required|string',
-    
+
             // SEO
             'seo.meta_title' => 'nullable|string',
             'seo.meta_description' => 'nullable|string',
@@ -449,7 +426,7 @@ class PlaceController extends Controller
             'seo.schema_type' => 'nullable|string',
             'seo.schema_data' => 'nullable|array',
         ]);
-    
+
         // === Place main fields update ===
         $place->update([
             'name' => $validated['name'] ?? $place->name,
@@ -480,71 +457,75 @@ class PlaceController extends Controller
 
                 PlaceMediaGallery::create([
                     'place_id' => $place->id,
-                    'media_id'    => $media['media_id'],
+                    'media_id' => $media['media_id'],
                     'is_featured' => $isFeatured,
                 ]);
             }
         }
-    
+
         // === Location Details (hasOne) ===
-        if (!empty($validated['location_details']) && array_filter($validated['location_details'], fn($v) => !is_null($v) && $v !== '' && $v !== [] && $v !== 0)) {
-            $place->locationDetails
-                ? $place->locationDetails->update($validated['location_details'])
-                : $place->locationDetails()->create($validated['location_details']);
+        if (! empty($validated['location_details'])) {
+            if ($place->locationDetails) {
+                $place->locationDetails->update($validated['location_details']);
+            } else {
+                $place->locationDetails()->create($validated['location_details']);
+            }
         }
 
         // === Travel Info (hasOne) ===
-        if (!empty($validated['travel_info']) && array_filter($validated['travel_info'], fn($v) => !is_null($v) && $v !== '' && $v !== [] && $v !== false)) {
-            $place->travelInfo
-                ? $place->travelInfo->update($validated['travel_info'])
-                : $place->travelInfo()->create($validated['travel_info']);
+        if (! empty($validated['travel_info'])) {
+            if ($place->travelInfo) {
+                $place->travelInfo->update($validated['travel_info']);
+            } else {
+                $place->travelInfo()->create($validated['travel_info']);
+            }
         }
-    
+
         // === Seasons (hasMany) ===
         if ($request->has('seasons')) {
             $sentIds = collect($request->seasons)->pluck('id')->filter()->toArray();
-    
+
             // delete missing
             PlaceSeason::where('place_id', $place->id)
                 ->whereNotIn('id', $sentIds)
                 ->delete();
-    
+
             foreach ($request->seasons as $season) {
-                if (!empty($season['id'])) {
+                if (! empty($season['id'])) {
                     PlaceSeason::where('id', $season['id'])->update($season);
                 } else {
                     $place->seasons()->create($season);
                 }
             }
         }
-    
+
         // === Events (hasMany) ===
         if ($request->has('events')) {
             $sentIds = collect($request->events)->pluck('id')->filter()->toArray();
-    
+
             PlaceEvent::where('place_id', $place->id)
                 ->whereNotIn('id', $sentIds)
                 ->delete();
-    
+
             foreach ($request->events as $event) {
-                if (!empty($event['id'])) {
+                if (! empty($event['id'])) {
                     PlaceEvent::where('id', $event['id'])->update($event);
                 } else {
                     $place->events()->create($event);
                 }
             }
         }
-    
+
         // === Additional Info (hasMany) ===
         if ($request->has('additional_info')) {
             $sentIds = collect($request->additional_info)->pluck('id')->filter()->toArray();
-    
+
             PlaceAdditionalInfo::where('place_id', $place->id)
                 ->whereNotIn('id', $sentIds)
                 ->delete();
-    
+
             foreach ($request->additional_info as $info) {
-                if (!empty($info['id'])) {
+                if (! empty($info['id'])) {
                     PlaceAdditionalInfo::where('id', $info['id'])->update($info);
                 } else {
                     $info['place_id'] = $place->id;
@@ -552,18 +533,18 @@ class PlaceController extends Controller
                 }
             }
         }
-    
+
         // === FAQs (hasMany) ===
         if ($request->has('faqs')) {
             $sentIds = collect($request->faqs)->pluck('id')->filter()->toArray();
-    
+
             PlaceFaq::where('place_id', $place->id)
                 ->whereNotIn('id', $sentIds)
                 ->delete();
-    
+
             $questionNumber = 1;
             foreach ($request->faqs as $faq) {
-                if (!empty($faq['id'])) {
+                if (! empty($faq['id'])) {
                     PlaceFaq::where('id', $faq['id'])->update([
                         'question_number' => $questionNumber++,
                         'question' => $faq['question'],
@@ -579,23 +560,25 @@ class PlaceController extends Controller
                 }
             }
         }
-    
+
         // === SEO (hasOne) ===
-        if (!empty($validated['seo'])) {
-            $place->seo
-                ? $place->seo->update($validated['seo'])
-                : $place->seo()->create($validated['seo']);
+        if (! empty($validated['seo'])) {
+            if ($place->seo) {
+                $place->seo->update($validated['seo']);
+            } else {
+                $place->seo()->create($validated['seo']);
+            }
         }
-    
+
         return response()->json([
             'message' => 'Place updated successfully',
-            'place' => $place->fresh()
+            'place' => $place->fresh(),
         ], 200);
-    }    
+    }
 
     /**
      * Remove the specified resource from array of object tables.
-    */
+     */
     public function partialRemove(Request $request, $placeId)
     {
         // Events delete
@@ -604,33 +587,33 @@ class PlaceController extends Controller
                 ->where('place_id', $placeId)
                 ->delete();
         }
-    
+
         // Seasons delete
         if ($request->has('deleted_season_ids')) {
             PlaceSeason::whereIn('id', $request->deleted_season_ids)
                 ->where('place_id', $placeId)
                 ->delete();
         }
-    
+
         // FAQs delete
         if ($request->has('deleted_faq_ids')) {
             PlaceFaq::whereIn('id', $request->deleted_faq_ids)
                 ->where('place_id', $placeId)
                 ->delete();
         }
-    
+
         // Additional Info delete
         if ($request->has('deleted_additional_info_ids')) {
             PlaceAdditionalInfo::whereIn('id', $request->deleted_additional_info_ids)
                 ->where('place_id', $placeId)
                 ->delete();
         }
-    
+
         return response()->json([
             'success' => true,
-            'message' => 'Selected records removed successfully'
+            'message' => 'Selected records removed successfully',
         ]);
-    } 
+    }
 
     /**
      * Remove the specified resource from storage.
@@ -638,6 +621,7 @@ class PlaceController extends Controller
     public function destroy(string $id)
     {
         Place::findOrFail($id)->delete();
+
         return response()->json(['message' => 'Place deleted successfully']);
     }
 
@@ -656,12 +640,12 @@ class PlaceController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => "{$count} places deleted successfully"
+                'message' => "{$count} places deleted successfully",
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'error' => 'Failed to delete places: ' . $e->getMessage()
+                'error' => 'Failed to delete places: '.$e->getMessage(),
             ], 500);
         }
     }

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -14,6 +15,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\City $city
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CityFaq newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CityFaq newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CityFaq query()
@@ -24,17 +26,18 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CityFaq whereQuestion($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CityFaq whereQuestionNumber($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CityFaq whereUpdatedAt($value)
- * @mixin \Eloquent
+ *
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class CityFaq extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'city_id', 'question_number', 'question', 'answer'
+        'city_id', 'question_number', 'question', 'answer',
     ];
 
-    public function city()
+    public function city(): BelongsTo
     {
         return $this->belongsTo(City::class);
     }

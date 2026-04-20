@@ -27,7 +27,7 @@ return new class extends Migration
             $table->string('available_days')->nullable();
 
             // time slots (JSON array)
-            $table->json('time_slots')->nullable(); 
+            $table->json('time_slots')->nullable();
 
             // Blackout dates (JSON array)
             $table->json('blackout_dates')->nullable();

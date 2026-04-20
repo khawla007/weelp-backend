@@ -3,61 +3,57 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Attribute;
+use App\Models\Category;
+use App\Models\City;
 use App\Models\Itinerary;
+use App\Models\ItineraryActivity;
+use App\Models\ItineraryAddon;
+use App\Models\ItineraryAttribute;
+use App\Models\ItineraryAvailability;
+use App\Models\ItineraryBasePricing;
+use App\Models\ItineraryBlackoutDate;
+use App\Models\ItineraryCategory;
+use App\Models\ItineraryFaq;
+use App\Models\ItineraryInclusionExclusion;
 use App\Models\ItineraryInformation;
 use App\Models\ItineraryLocation;
-use App\Models\ItinerarySchedule;
-use App\Models\ItineraryActivity;
-use App\Models\ItineraryTransfer;
-use App\Models\ItineraryBasePricing;
-use App\Models\ItineraryPriceVariation;
-use App\Models\ItineraryBlackoutDate;
-use App\Models\ItineraryInclusionExclusion;
 use App\Models\ItineraryMediaGallery;
-use App\Models\ItineraryCategory;
-use App\Models\ItineraryAttribute;
-use App\Models\ItineraryTag;
-use App\Models\ItineraryFaq;
+use App\Models\ItineraryPriceVariation;
+use App\Models\ItinerarySchedule;
 use App\Models\ItinerarySeo;
-use App\Models\ItineraryAvailability;
-use App\Models\ItineraryAddon;
-use App\Models\Category;
-use App\Models\Attribute;
-use App\Models\Tag;
-use App\Models\City;
+use App\Models\ItineraryTag;
+use App\Models\ItineraryTransfer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Validator;
-
 
 class ItineraryController extends Controller
 {
-
     /**
      * Display a listing of the itineraries.
-    */
+     */
     public function index(Request $request)
     {
-        $perPage        = 3; 
-        $page           = $request->get('page', 1); 
+        $perPage = 3;
+        $page = $request->get('page', 1);
 
-        $search           = $request->get('search'); // Search by activity name
-        $categorySlug   = $request->get('category');
-        $difficulty     = $request->get('difficulty_level');
-        $duration       = $request->get('duration');
-        $ageGroup       = $request->get('age_restriction');
-        $season         = $request->get('season');
-        $minPrice       = $request->get('min_price', 0);
-        $maxPrice       = $request->get('max_price');
-        $sortBy         = $request->get('sort_by', 'id_desc'); // Default: Newest First
+        $search = $request->get('search'); // Search by activity name
+        $categorySlug = $request->get('category');
+        $difficulty = $request->get('difficulty_level');
+        $duration = $request->get('duration');
+        $ageGroup = $request->get('age_restriction');
+        $season = $request->get('season');
+        $minPrice = $request->get('min_price', 0);
+        $maxPrice = $request->get('max_price');
+        $sortBy = $request->get('sort_by', 'id_desc'); // Default: Newest First
 
-        $category       = $categorySlug ? Category::where('slug', $categorySlug)->first() : null;
-        $categoryId     = $category ? $category->id : null;
+        $category = $categorySlug ? Category::where('slug', $categorySlug)->first() : null;
+        $categoryId = $category ? $category->id : null;
 
         $difficultyAttr = Attribute::where('slug', 'difficulty-level')->first();
-        $durationAttr   = Attribute::where('slug', 'duration')->first();
-        $ageGroupAttr   = Attribute::where('slug', 'age-restriction')->first();
+        $durationAttr = Attribute::where('slug', 'duration')->first();
+        $ageGroupAttr = Attribute::where('slug', 'age-restriction')->first();
 
         $query = Itinerary::query()
             ->original()
@@ -74,44 +70,30 @@ class ItineraryController extends Controller
                 'schedules.transfers:id,schedule_id,price',
             ])
 
-            ->when($search, fn($query) =>
-                $query->where('itineraries.name', 'like', "%{$search}%")
-            )   
-            
-            ->when($categoryId, fn($query) => 
-                $query->whereHas('categories', fn($q) => 
-                    $q->where('category_id', $categoryId)
-                )
+            ->when($search, fn ($query) => $query->where('itineraries.name', 'like', "%{$search}%")
             )
-            ->when($difficulty && $difficultyAttr, fn($query) => 
-                $query->whereHas('attributes', fn($q) => 
-                    $q->where('attribute_id', $difficultyAttr->id)
-                    ->where('attribute_value', $difficulty)
-                )
+
+            ->when($categoryId, fn ($query) => $query->whereHas('categories', fn ($q) => $q->where('category_id', $categoryId)
             )
-            ->when($duration && $durationAttr, fn($query) => 
-                $query->whereHas('attributes', fn($q) => 
-                    $q->where('attribute_id', $durationAttr->id)
-                    ->where('attribute_value', $duration)
-                )
             )
-            ->when($ageGroup && $ageGroupAttr, fn($query) => 
-                $query->whereHas('attributes', fn($q) => 
-                    $q->where('attribute_id', $ageGroupAttr->id)
-                    ->where('attribute_value', $ageGroup)
-                )
+            ->when($difficulty && $difficultyAttr, fn ($query) => $query->whereHas('attributes', fn ($q) => $q->where('attribute_id', $difficultyAttr->id)
+                ->where('attribute_value', $difficulty)
             )
-            ->when($season, fn($query) =>
-                $query->whereHas('locations.city.seasons', fn($q) =>
-                    $q->where('name', $season)
-                )
             )
-            ->when($maxPrice !== null, fn($query) => 
-                $query->whereHas('basePricing', fn($q) => 
-                    $q->whereHas('variations', fn($q2) => 
-                        $q2->whereBetween('sale_price', [$minPrice, $maxPrice])
-                    )
-                )
+            ->when($duration && $durationAttr, fn ($query) => $query->whereHas('attributes', fn ($q) => $q->where('attribute_id', $durationAttr->id)
+                ->where('attribute_value', $duration)
+            )
+            )
+            ->when($ageGroup && $ageGroupAttr, fn ($query) => $query->whereHas('attributes', fn ($q) => $q->where('attribute_id', $ageGroupAttr->id)
+                ->where('attribute_value', $ageGroup)
+            )
+            )
+            ->when($season, fn ($query) => $query->whereHas('locations.city.seasons', fn ($q) => $q->where('name', $season)
+            )
+            )
+            ->when($maxPrice !== null, fn ($query) => $query->whereHas('basePricing', fn ($q) => $q->whereHas('variations', fn ($q2) => $q2->whereBetween('sale_price', [$minPrice, $maxPrice])
+            )
+            )
             );
 
         // Sorting logic
@@ -142,82 +124,79 @@ class ItineraryController extends Controller
                 break;
         }
 
-        $allItems       = $query->get();
+        $allItems = $query->get();
         $paginatedItems = $allItems->forPage($page, $perPage);
 
-
-        $transformed = $paginatedItems->map(function ($itinerary) {
+        $transformed = $paginatedItems->map(function (Itinerary $itinerary, int $key) {
             $data = $itinerary->toArray(); // keep all original fields
-        
+
             // Replace transformed fields for addons
             $data['addons'] = collect($itinerary->addons)->map(function ($addon) {
                 return [
-                    'id'                      => $addon->id,
-                    'addon_id'                => $addon->addon_id,
-                    'addon_name'              => $addon->addon->name ?? null,
-                    'addon_type'              => $addon->addon->type ?? null,
-                    'addon_description'       => $addon->addon->description ?? null,
-                    'addon_price'             => $addon->addon->price ?? null,
-                    'addon_sale_price'        => $addon->addon->sale_price ?? null,
+                    'id' => $addon->id,
+                    'addon_id' => $addon->addon_id,
+                    'addon_name' => $addon->addon->name ?? null,
+                    'addon_type' => $addon->addon->type ?? null,
+                    'addon_description' => $addon->addon->description ?? null,
+                    'addon_price' => $addon->addon->price ?? null,
+                    'addon_sale_price' => $addon->addon->sale_price ?? null,
                     'addon_price_calculation' => $addon->addon->price_calculation ?? null,
-                    'addon_active_status'     => $addon->addon->active_status ?? null,
+                    'addon_active_status' => $addon->addon->active_status ?? null,
                 ];
             });
-            
+
             // Replace transformed fields
             $data['locations'] = collect($itinerary->locations)->map(function ($location) {
                 return [
-                    'id'         => $location->id,
-                    'city_id'    => $location->city_id,
-                    'city_name'  => $location->city->name ?? null,
+                    'id' => $location->id,
+                    'city_id' => $location->city_id,
+                    'city_name' => $location->city->name ?? null,
                 ];
             });
-        
+
             $data['media_gallery'] = collect($itinerary->mediaGallery)->map(function ($media) {
                 return [
-                    'id'         => $media->id,
-                    'media_id'   => $media->media_id,
-                    'name'       => $media->media->name ?? null,
-                    'alt_text'   => $media->media->alt_text ?? null,
-                    'url'        => $media->media->url ?? null,
-                    'is_featured'=> $media->is_featured ?? false,
+                    'id' => $media->id,
+                    'media_id' => $media->media_id,
+                    'name' => $media->media->name ?? null,
+                    'alt_text' => $media->media->alt_text ?? null,
+                    'url' => $media->media->url ?? null,
+                    'is_featured' => $media->is_featured ?? false,
                 ];
             });
 
             // Set feature_image from featured media
             $featuredImage = $itinerary->mediaGallery->firstWhere('is_featured', true);
             $data['feature_image'] = $featuredImage?->media->url ?? null;
-        
+
             $data['attributes'] = collect($itinerary->attributes)->map(function ($attribute) {
                 return [
-                    'id'              => $attribute->id,
-                    'attribute_id'    => $attribute->attribute_id,
-                    'attribute_name'  => $attribute->attribute->name ?? null,
+                    'id' => $attribute->id,
+                    'attribute_id' => $attribute->attribute_id,
+                    'attribute_name' => $attribute->attribute->name ?? null,
                     'attribute_value' => $attribute->attribute_value,
                 ];
             });
-        
+
             $data['categories'] = collect($itinerary->categories)->map(function ($category) {
                 return [
-                    'id'            => $category->id,
-                    'category_id'   => $category->category_id,
+                    'id' => $category->id,
+                    'category_id' => $category->category_id,
                     'category_name' => $category->category->name ?? null,
                 ];
             });
-        
+
             return $data;
         });
-        
 
         return response()->json([
-            'success'      => true,
-            'data'         => $transformed->values(),
+            'success' => true,
+            'data' => $transformed->values(),
             'current_page' => (int) $page,
-            'per_page'     => $perPage,
-            'total'        => $allItems->count(),
+            'per_page' => $perPage,
+            'total' => $allItems->count(),
         ], 200);
     }
-
 
     /**
      * Store a newly created Itinerary in storage.
@@ -225,168 +204,167 @@ class ItineraryController extends Controller
     public function store(Request $request)
     {
         $rules = [
-            'name'                  => 'required|string|max:255',
-            'slug'                  => 'required|string|unique:itineraries,slug',
-            'description'           => 'nullable|string',
-            'featured_itinerary'    => 'boolean',
-            'private_itinerary'     => 'boolean',
-            'locations'             => 'nullable|array',
-            'information'           => 'nullable|array',
-            'schedules'             => 'nullable|array',
-            'activities'            => 'nullable|array',
-            'transfers'             => 'nullable|array',
-            'pricing'               => 'nullable|array',
-            'price_variations'      => 'nullable|array',
-            'blackout_dates'        => 'nullable|array',
+            'name' => 'required|string|max:255',
+            'slug' => 'required|string|unique:itineraries,slug',
+            'description' => 'nullable|string',
+            'featured_itinerary' => 'boolean',
+            'private_itinerary' => 'boolean',
+            'locations' => 'nullable|array',
+            'information' => 'nullable|array',
+            'schedules' => 'nullable|array',
+            'activities' => 'nullable|array',
+            'transfers' => 'nullable|array',
+            'pricing' => 'nullable|array',
+            'price_variations' => 'nullable|array',
+            'blackout_dates' => 'nullable|array',
             'inclusions_exclusions' => 'nullable|array',
-            'media_gallery'         => 'nullable|array',
-            'faqs'                  => 'nullable|array',
-            'seo'                   => 'nullable|array',
-            'categories'            => 'nullable|array',
-            'attributes'            => 'nullable|array',
-            'tags'                  => 'nullable|array',
-            'addons'                => 'nullable|array',
-            'availability'          => 'nullable|array',
+            'media_gallery' => 'nullable|array',
+            'faqs' => 'nullable|array',
+            'seo' => 'nullable|array',
+            'categories' => 'nullable|array',
+            'attributes' => 'nullable|array',
+            'tags' => 'nullable|array',
+            'addons' => 'nullable|array',
+            'availability' => 'nullable|array',
         ];
-    
+
         $request->validate($rules);
-    
+
         try {
             DB::beginTransaction();
-    
+
             $itinerary = Itinerary::create([
-                'name'               => $request->name,
-                'slug'               => $request->slug,
-                'description'        => $request->description ?? null,
+                'name' => $request->name,
+                'slug' => $request->slug,
+                'description' => $request->description ?? null,
                 'featured_itinerary' => $request->boolean('featured_itinerary'),
-                'private_itinerary'  => $request->boolean('private_itinerary'),
+                'private_itinerary' => $request->boolean('private_itinerary'),
             ]);
-    
+
             // === Information ===
             if ($request->has('information')) {
                 foreach ($request->information as $info) {
                     ItineraryInformation::create([
-                        'itinerary_id'  => $itinerary->id,
+                        'itinerary_id' => $itinerary->id,
                         'section_title' => $info['section_title'] ?? '',
-                        'content'       => $info['content'] ?? '',
+                        'content' => $info['content'] ?? '',
                     ]);
                 }
             }
-    
+
             if ($request->has('locations')) {
                 foreach ($request->locations as $cityId) {
                     ItineraryLocation::create([
                         'itinerary_id' => $itinerary->id,
-                        'city_id'      => $cityId,
+                        'city_id' => $cityId,
                     ]);
                 }
             }
-    
+
             // === Schedules ===
             $scheduleMap = [];
             if ($request->has('schedules')) {
                 foreach ($request->schedules as $schedule) {
                     $record = ItinerarySchedule::create([
                         'itinerary_id' => $itinerary->id,
-                        'day'          => $schedule['day'],
-                        'title'        => $schedule['title'] ?? null,
+                        'day' => $schedule['day'],
                     ]);
                     $scheduleMap[$schedule['day']] = $record->id;
                 }
             }
-    
+
             // === Transfers ===
             if ($request->has('transfers')) {
                 foreach ($request->transfers as $transfer) {
                     $scheduleId = $scheduleMap[$transfer['day']] ?? null;
                     if ($scheduleId) {
                         ItineraryTransfer::create([
-                            'schedule_id'          => $scheduleId,
-                            'transfer_id'          => $transfer['transfer_id'],
-                            'start_time'           => $transfer['start_time'],
-                            'end_time'             => $transfer['end_time'],
-                            'notes'                => $transfer['notes'],
-                            'price'                => $transfer['price'],
-                            'included'             => $transfer['included'],
-                            'pickup_location'      => $transfer['pickup_location'] ?? null,
-                            'dropoff_location'     => $transfer['dropoff_location'] ?? null,
-                            'pax'                  => $transfer['pax'] ?? null,
+                            'schedule_id' => $scheduleId,
+                            'transfer_id' => $transfer['transfer_id'],
+                            'start_time' => $transfer['start_time'],
+                            'end_time' => $transfer['end_time'],
+                            'notes' => $transfer['notes'],
+                            'price' => $transfer['price'],
+                            'included' => $transfer['included'],
+                            'pickup_location' => $transfer['pickup_location'] ?? null,
+                            'dropoff_location' => $transfer['dropoff_location'] ?? null,
+                            'pax' => $transfer['pax'] ?? null,
                         ]);
                     }
                 }
             }
-    
+
             // === Activities ===
             if ($request->has('activities')) {
                 foreach ($request->activities as $activity) {
                     $scheduleId = $scheduleMap[$activity['day']] ?? null;
                     if ($scheduleId) {
                         ItineraryActivity::create([
-                            'schedule_id'          => $scheduleId,
-                            'activity_id'          => $activity['activity_id'],
-                            'start_time'           => $activity['start_time'],
-                            'end_time'             => $activity['end_time'],
-                            'notes'                => $activity['notes'],
-                            'price'                => $activity['price'],
-                            'included'             => $activity['included'],
+                            'schedule_id' => $scheduleId,
+                            'activity_id' => $activity['activity_id'],
+                            'start_time' => $activity['start_time'],
+                            'end_time' => $activity['end_time'],
+                            'notes' => $activity['notes'],
+                            'price' => $activity['price'],
+                            'included' => $activity['included'],
                         ]);
                     }
                 }
             }
-    
+
             // === Pricing ===
             if ($request->has('pricing')) {
                 $basePricing = ItineraryBasePricing::create([
                     'itinerary_id' => $itinerary->id,
-                    'currency'     => $request->pricing['currency'],
+                    'currency' => $request->pricing['currency'],
                     'availability' => $request->pricing['availability'],
-                    'start_date'   => $request->pricing['start_date'],
-                    'end_date'     => $request->pricing['end_date'],
+                    'start_date' => $request->pricing['start_date'],
+                    'end_date' => $request->pricing['end_date'],
                 ]);
-    
+
                 if ($request->has('price_variations')) {
                     foreach ($request->price_variations as $variation) {
                         ItineraryPriceVariation::create([
                             'base_pricing_id' => $basePricing->id,
-                            'name'            => $variation['name'],
-                            'regular_price'   => $variation['regular_price'],
-                            'sale_price'      => $variation['sale_price'],
-                            'max_guests'      => $variation['max_guests'],
-                            'description'     => $variation['description'],
+                            'name' => $variation['name'],
+                            'regular_price' => $variation['regular_price'],
+                            'sale_price' => $variation['sale_price'],
+                            'max_guests' => $variation['max_guests'],
+                            'description' => $variation['description'],
                         ]);
                     }
                 }
-    
+
                 if ($request->has('blackout_dates')) {
                     foreach ($request->blackout_dates as $date) {
                         ItineraryBlackoutDate::create([
                             'base_pricing_id' => $basePricing->id,
-                            'date'            => $date['date'],
-                            'reason'          => $date['reason'],
+                            'date' => $date['date'],
+                            'reason' => $date['reason'],
                         ]);
                     }
                 }
             }
-    
+
             // === Inclusions/Exclusions ===
             if ($request->has('inclusions_exclusions')) {
                 foreach ($request->inclusions_exclusions as $ie) {
                     ItineraryInclusionExclusion::create([
-                        'itinerary_id'    => $itinerary->id,
-                        'type'            => $ie['type'],
-                        'title'           => $ie['title'],
-                        'description'     => $ie['description'],
-                        'included'        => $ie['included'],
+                        'itinerary_id' => $itinerary->id,
+                        'type' => $ie['type'],
+                        'title' => $ie['title'],
+                        'description' => $ie['description'],
+                        'included' => $ie['included'],
                     ]);
                 }
             }
-    
+
             // === Media Gallery ===
             if ($request->has('media_gallery') && is_array($request->media_gallery)) {
                 $hasFeatured = false;
                 foreach ($request->media_gallery as $media) {
                     // Skip entries without valid media_id
-                    if (!isset($media['media_id']) || $media['media_id'] === null) {
+                    if (! isset($media['media_id']) || $media['media_id'] === null) {
                         continue;
                     }
 
@@ -402,46 +380,46 @@ class ItineraryController extends Controller
 
                     ItineraryMediaGallery::create([
                         'itinerary_id' => $itinerary->id,
-                        'media_id'     => $media['media_id'],
-                        'is_featured'  => $isFeatured,
+                        'media_id' => $media['media_id'],
+                        'is_featured' => $isFeatured,
                     ]);
                 }
             }
-    
+
             // === FAQs ===
             if ($request->has('faqs')) {
                 foreach ($request->faqs as $faq) {
                     ItineraryFaq::create([
-                        'itinerary_id'    => $itinerary->id,
+                        'itinerary_id' => $itinerary->id,
                         'question_number' => $faq['question_number'] ?? null,
-                        'question'        => $faq['question'],
-                        'answer'          => $faq['answer'],
+                        'question' => $faq['question'],
+                        'answer' => $faq['answer'],
                     ]);
                 }
             }
-    
+
             // === SEO ===
             if ($request->has('seo')) {
                 ItinerarySeo::create([
-                    'itinerary_id'     => $itinerary->id,
-                    'meta_title'       => $request->seo['meta_title'],
+                    'itinerary_id' => $itinerary->id,
+                    'meta_title' => $request->seo['meta_title'],
                     'meta_description' => $request->seo['meta_description'],
-                    'keywords'         => $request->seo['keywords'],
-                    'og_image_url'     => $request->seo['og_image_url'],
-                    'canonical_url'    => $request->seo['canonical_url'],
-                    'schema_type'      => $request->seo['schema_type'],
-                    'schema_data'      => is_array($request->seo['schema_data']) 
-                        ? json_encode($request->seo['schema_data']) 
+                    'keywords' => $request->seo['keywords'],
+                    'og_image_url' => $request->seo['og_image_url'],
+                    'canonical_url' => $request->seo['canonical_url'],
+                    'schema_type' => $request->seo['schema_type'],
+                    'schema_data' => is_array($request->seo['schema_data'])
+                        ? json_encode($request->seo['schema_data'])
                         : $request->seo['schema_data'],
                 ]);
             }
-    
+
             // === Categories ===
             if ($request->has('categories')) {
                 foreach ($request->categories as $category_id) {
                     ItineraryCategory::create([
                         'itinerary_id' => $itinerary->id,
-                        'category_id'  => $category_id,
+                        'category_id' => $category_id,
                     ]);
                 }
             }
@@ -451,68 +429,68 @@ class ItineraryController extends Controller
                 foreach ($request->addons as $addon_id) {
                     ItineraryAddon::create([
                         'itinerary_id' => $itinerary->id,
-                        'addon_id'    => $addon_id,
+                        'addon_id' => $addon_id,
                     ]);
                 }
             }
 
             if ($request->has('attributes')) {
-            
+
                 foreach ($request->input('attributes') as $attribute) {
                     ItineraryAttribute::create([
-                        'itinerary_id'    => $itinerary->id,
-                        'attribute_id'    => $attribute['attribute_id'],
+                        'itinerary_id' => $itinerary->id,
+                        'attribute_id' => $attribute['attribute_id'],
                         'attribute_value' => $attribute['attribute_value'],
                     ]);
                 }
             }
-    
+
             // === Tags ===
             if ($request->has('tags')) {
                 foreach ($request->tags as $tag_id) {
                     ItineraryTag::create([
                         'itinerary_id' => $itinerary->id,
-                        'tag_id'       => $tag_id,
+                        'tag_id' => $tag_id,
                     ]);
                 }
             }
-    
+
             // === Availability ===
             if ($request->has('availability')) {
                 ItineraryAvailability::create([
-                    'itinerary_id'             => $itinerary->id,
-                    'date_based_itinerary'     => $request->availability['date_based_itinerary'],
-                    'start_date'               => $request->availability['start_date'] ?? null,
-                    'end_date'                 => $request->availability['end_date'] ?? null,
+                    'itinerary_id' => $itinerary->id,
+                    'date_based_itinerary' => $request->availability['date_based_itinerary'],
+                    'start_date' => $request->availability['start_date'] ?? null,
+                    'end_date' => $request->availability['end_date'] ?? null,
                     'quantity_based_itinerary' => $request->availability['quantity_based_itinerary'],
-                    'max_quantity'             => $request->availability['max_quantity'] ?? null,
+                    'max_quantity' => $request->availability['max_quantity'] ?? null,
                 ]);
             }
-    
+
             DB::commit();
-    
+
             return response()->json([
-                'message'   => 'Itinerary created successfully',
-                'itinerary' => $itinerary
+                'message' => 'Itinerary created successfully',
+                'itinerary' => $itinerary,
             ], 201);
-    
+
         } catch (\Exception $e) {
             DB::rollBack();
+
             return response()->json([
-                'error'   => 'Something went wrong',
+                'error' => 'Something went wrong',
                 'details' => $e->getMessage(),
             ], 500);
         }
-    }     
-    
+    }
 
     /**
      * Display the specified Itinerary.
-    */
+     */
     public function show(string $id)
     {
         // $itinerary = Itinerary::find($id);
-        
+
         $itinerary = Itinerary::with([
             'locations.city',
             'categories.category',
@@ -526,108 +504,106 @@ class ItineraryController extends Controller
             'availability', 'addons.addon',
             'seo',
         ])->find($id);
-        
-        if (!$itinerary) {
+
+        if (! $itinerary) {
             return response()->json(['message' => 'Itinerary not found'], 404);
         }
 
-
         // Transform response
         $itineraryData = $itinerary->toArray();
-    
 
         // Separate base_pricing
         $basePricing = optional($itinerary->basePricing)->only([
-            'id', 'currency', 'availability', 'start_date', 'end_date'
+            'id', 'currency', 'availability', 'start_date', 'end_date',
         ]);
 
         // Separate variations
         $basePricingVariations = collect($itinerary->basePricing->variations ?? [])->map(function ($variation) {
             return [
-                'id'                => $variation->id,
-                'base_pricing_id'   => $variation->base_pricing_id,
-                'name'              => $variation->name,
-                'regular_price'     => $variation->regular_price,
-                'sale_price'        => $variation->sale_price,
-                'max_guests'        => $variation->max_guests,
-                'description'       => $variation->description,
+                'id' => $variation->id,
+                'base_pricing_id' => $variation->base_pricing_id,
+                'name' => $variation->name,
+                'regular_price' => $variation->regular_price,
+                'sale_price' => $variation->sale_price,
+                'max_guests' => $variation->max_guests,
+                'description' => $variation->description,
             ];
         })->values();
 
         $blackoutDates = collect($itinerary->basePricing->blackoutDates ?? [])->map(function ($blackoutDate) {
             return [
-                'id'                => $blackoutDate->id,
-                'base_pricing_id'   => $blackoutDate->base_pricing_id,
-                'date'              => $blackoutDate->date,
-                'reason'            => $blackoutDate->reason,
+                'id' => $blackoutDate->id,
+                'base_pricing_id' => $blackoutDate->base_pricing_id,
+                'date' => $blackoutDate->date,
+                'reason' => $blackoutDate->reason,
             ];
         })->values();
 
-        $itineraryData['base_pricing']       = $basePricing;
-        $itineraryData['price_variations']   = $basePricingVariations;
-        $itineraryData['blackout_dates']     = $blackoutDates;
-
+        $itineraryData['base_pricing'] = $basePricing;
+        $itineraryData['price_variations'] = $basePricingVariations;
+        $itineraryData['blackout_dates'] = $blackoutDates;
 
         // Schedules flat (only day)
         $itineraryData['schedules'] = collect($itinerary->schedules)->map(function ($schedule) {
             return [
-                'id'    => $schedule->id,
-                'day'   => $schedule->day,
-                'title' => $schedule->title,
+                'id' => $schedule->id,
+                'day' => $schedule->day,
             ];
         });
 
         // Flatten activities with day
-        $itineraryData['activities'] = collect($itinerary->schedules)->flatMap(function ($schedule) {
+        $itineraryData['activities'] = collect($itinerary->schedules)->flatMap(function (ItinerarySchedule $schedule, int $key) {
             return collect($schedule->activities)->map(function ($activity) use ($schedule) {
                 $mediaItems = collect($activity->activity->mediaGallery ?? [])->map(function ($media) {
                     return [
-                        'name'      => $media->media->name ?? null,
-                        'alt_text'  => $media->media->alt_text ?? null,
-                        'url'       => $media->media->url ?? null,
+                        'name' => $media->media->name ?? null,
+                        'alt_text' => $media->media->alt_text ?? null,
+                        'url' => $media->media->url ?? null,
                     ];
-                })->filter(fn($item) => $item['url'])->values();
+                })->filter(fn ($item) => $item['url'])->values();
+
                 return [
 
-                    'id'            => $activity->id,
-                    'activity_id'   => $activity->activity_id,
+                    'id' => $activity->id,
+                    'activity_id' => $activity->activity_id,
                     'activity_name' => $activity->activity->name ?? null,
-                    'media_url'     => $mediaItems,
-                    'day'           => $schedule->day,
-                    'start_time'    => $activity->start_time,
-                    'end_time'      => $activity->end_time,
-                    'notes'         => $activity->notes,
-                    'price'         => (float) $activity->price,
-                    'included'      => $activity->included,
+                    'media_url' => $mediaItems,
+                    'day' => $schedule->day,
+                    'start_time' => $activity->start_time,
+                    'end_time' => $activity->end_time,
+                    'notes' => $activity->notes,
+                    'price' => (float) $activity->price,
+                    'included' => $activity->included,
                 ];
             });
         })->values();
 
         // Flatten transfers with day
-        $itineraryData['transfers'] = collect($itinerary->schedules)->flatMap(function ($schedule) {
+        $itineraryData['transfers'] = collect($itinerary->schedules)->flatMap(function (ItinerarySchedule $schedule, int $key) {
             return collect($schedule->transfers)->map(function ($transfer) use ($schedule) {
                 $mediaItems = collect($transfer->transfer->mediaGallery ?? [])->map(function ($media) {
                     return [
-                        'name'      => $media->media->name ?? null,
-                        'alt_text'  => $media->media->alt_text ?? null,
-                        'url'       => $media->media->url ?? null,
+                        'name' => $media->media->name ?? null,
+                        'alt_text' => $media->media->alt_text ?? null,
+                        'url' => $media->media->url ?? null,
                     ];
-                })->filter(fn($item) => $item['url'])->values(); // null url वाले हटा दिए जाएं
+                })->filter(fn ($item) => $item['url'])->values(); // null url वाले हटा दिए जाएं
+
                 return [
 
-                    "id"                => $transfer->id,
-                    'transfer_id'       => $transfer->transfer_id,
-                    'transfer_name'     => $transfer->transfer->name ?? null,
-                    'media_url'         => $mediaItems,
-                    'day'               => $schedule->day,
-                    'start_time'        => $transfer->start_time,
-                    'end_time'          => $transfer->end_time,
-                    'notes'             => $transfer->notes,
-                    'price'             => (float) $transfer->price,
-                    'included'          => $transfer->included,
-                    'pickup_location'   => $transfer->pickup_location,
-                    'dropoff_location'  => $transfer->dropoff_location,
-                    'pax'               => $transfer->pax,
+                    'id' => $transfer->id,
+                    'transfer_id' => $transfer->transfer_id,
+                    'transfer_name' => $transfer->transfer->name ?? null,
+                    'media_url' => $mediaItems,
+                    'day' => $schedule->day,
+                    'start_time' => $transfer->start_time,
+                    'end_time' => $transfer->end_time,
+                    'notes' => $transfer->notes,
+                    'price' => (float) $transfer->price,
+                    'included' => $transfer->included,
+                    'pickup_location' => $transfer->pickup_location,
+                    'dropoff_location' => $transfer->dropoff_location,
+                    'pax' => $transfer->pax,
                 ];
             });
         })->values();
@@ -635,24 +611,24 @@ class ItineraryController extends Controller
         // Replace location city object with just `city_name`
         $itineraryData['locations'] = collect($itinerary->locations)->map(function ($location) {
             return [
-                'id'           => $location->id,
+                'id' => $location->id,
                 'itinerary_id' => $location->itinerary_id,
-                'city_id'      => $location->city_id,
-                'city_name'    => $location->city->name ?? null,
+                'city_id' => $location->city_id,
+                'city_name' => $location->city->name ?? null,
             ];
         });
 
         $itineraryData['addons'] = collect($itinerary->addons)->map(function ($addon) {
             return [
-                'id'                      => $addon->id,
-                'addon_id'                => $addon->addon_id,
-                'addon_name'              => $addon->addon->name ?? null,
-                'addon_type'              => $addon->addon->type ?? null,
-                'addon_description'       => $addon->addon->description ?? null,
-                'addon_price'             => $addon->addon->price ?? null,
-                'addon_sale_price'        => $addon->addon->sale_price ?? null,
+                'id' => $addon->id,
+                'addon_id' => $addon->addon_id,
+                'addon_name' => $addon->addon->name ?? null,
+                'addon_type' => $addon->addon->type ?? null,
+                'addon_description' => $addon->addon->description ?? null,
+                'addon_price' => $addon->addon->price ?? null,
+                'addon_sale_price' => $addon->addon->sale_price ?? null,
                 'addon_price_calculation' => $addon->addon->price_calculation ?? null,
-                'addon_active_status'     => $addon->addon->active_status ?? null,
+                'addon_active_status' => $addon->addon->active_status ?? null,
             ];
         });
 
@@ -660,41 +636,41 @@ class ItineraryController extends Controller
         $itineraryData['media_gallery'] = collect($itinerary->mediaGallery)->map(function ($media) {
             return [
                 'id' => $media->id,
-                'itinerary_id'  => $media->itinerary_id,
-                'media_id'      => $media->media_id,
-                'name'          => $media->media->name,
-                'alt_text'      => $media->media->alt_text,
-                'url'           => $media->media->url ?? null,
-                'is_featured'   => $media->is_featured ?? false,
+                'itinerary_id' => $media->itinerary_id,
+                'media_id' => $media->media_id,
+                'name' => $media->media->name,
+                'alt_text' => $media->media->alt_text,
+                'url' => $media->media->url ?? null,
+                'is_featured' => $media->is_featured ?? false,
             ];
         });
 
         // Set feature_image from featured media
         $featuredImage = $itinerary->mediaGallery->firstWhere('is_featured', true);
         $itineraryData['feature_image'] = $featuredImage?->media->url ?? null;
-    
+
         // Replace attributes with just `attribute_name`
         $itineraryData['attributes'] = collect($itinerary->attributes)->map(function ($attribute) {
             return [
                 'id' => $attribute->id,
-                'attribute_id'    => $attribute->attribute_id,
-                'attribute_name'  => $attribute->attribute->name ?? null,
+                'attribute_id' => $attribute->attribute_id,
+                'attribute_name' => $attribute->attribute->name ?? null,
                 'attribute_value' => $attribute->attribute_value,
             ];
         });
-    
+
         // Replace categories with just `category_name`
         $itineraryData['categories'] = collect($itinerary->categories)->map(function ($category) {
             return [
                 'id' => $category->id,
-                'category_id'   => $category->category_id,
+                'category_id' => $category->category_id,
                 'category_name' => $category->category->name ?? null,
             ];
         });
         $itineraryData['tags'] = collect($itinerary->tags)->map(function ($tag) {
             return [
-                'id'       => $tag->id,
-                'tag_id'   => $tag->tag_id,
+                'id' => $tag->id,
+                'tag_id' => $tag->tag_id,
                 'tag_name' => $tag->tag->name ?? null,
             ];
         });
@@ -708,50 +684,50 @@ class ItineraryController extends Controller
     public function update(Request $request, $id)
     {
         $itinerary = Itinerary::findOrFail($id);
-    
+
         $rules = [
-            'name'                  => 'sometimes|string|max:255',
-            'slug'                  => 'sometimes|string|unique:itineraries,slug,' . $itinerary->id,
-            'description'           => 'nullable|string',
-            'featured_itinerary'    => 'boolean',
-            'private_itinerary'     => 'boolean',
-            'locations'             => 'nullable|array',
-            'information'           => 'nullable|array',
-            'schedules'             => 'nullable|array',
-            'activities'            => 'nullable|array',
-            'transfers'             => 'nullable|array',
-            'itineraries'           => 'nullable|array',
-            'pricing'               => 'nullable|array',
-            'price_variations'      => 'nullable|array',
-            'blackout_dates'        => 'nullable|array',
+            'name' => 'sometimes|string|max:255',
+            'slug' => 'sometimes|string|unique:itineraries,slug,'.$itinerary->id,
+            'description' => 'nullable|string',
+            'featured_itinerary' => 'boolean',
+            'private_itinerary' => 'boolean',
+            'locations' => 'nullable|array',
+            'information' => 'nullable|array',
+            'schedules' => 'nullable|array',
+            'activities' => 'nullable|array',
+            'transfers' => 'nullable|array',
+            'itineraries' => 'nullable|array',
+            'pricing' => 'nullable|array',
+            'price_variations' => 'nullable|array',
+            'blackout_dates' => 'nullable|array',
             'inclusions_exclusions' => 'nullable|array',
-            'media_gallery'         => 'nullable|array',
-            'faqs'                  => 'nullable|array',
-            'seo'                   => 'nullable|array',
-            'categories'            => 'nullable|array',
-            'attributes'            => 'nullable|array',
-            'tags'                  => 'nullable|array',
-            'addons'                => 'nullable|array',
-            'availability'          => 'nullable|array',
+            'media_gallery' => 'nullable|array',
+            'faqs' => 'nullable|array',
+            'seo' => 'nullable|array',
+            'categories' => 'nullable|array',
+            'attributes' => 'nullable|array',
+            'tags' => 'nullable|array',
+            'addons' => 'nullable|array',
+            'availability' => 'nullable|array',
         ];
-    
+
         $request->validate($rules);
-    
+
         try {
             DB::beginTransaction();
-    
+
             $itinerary->fill($request->only([
-                'name', 'slug', 'description', 'featured_itinerary', 'private_itinerary'
+                'name', 'slug', 'description', 'featured_itinerary', 'private_itinerary',
             ]));
             $itinerary->save();
-    
+
             $scheduleMap = [];
 
             // $updateOrCreateRelation = function ($relationName, $data, $extra = []) use ($itinerary) {
             //     $relation = $itinerary->$relationName();
             //     $modelClass = get_class($relation->getRelated());
             //     $itineraryKey = $relation->getForeignKeyName(); // e.g., itinerary_id
-            
+
             //     foreach ($data as $item) {
             //         $attributes = array_merge($item, $extra);
             //         if (!empty($item['id'])) {
@@ -768,26 +744,26 @@ class ItineraryController extends Controller
 
             $updateOrCreateRelation = function ($relationName, $data, $extra = []) use ($itinerary) {
 
-                $relation      = $itinerary->$relationName();
-                $modelClass    = get_class($relation->getRelated());
-                $itineraryKey  = $relation->getForeignKeyName();
-            
+                $relation = $itinerary->$relationName();
+                $modelClass = get_class($relation->getRelated());
+                $itineraryKey = $relation->getForeignKeyName();
+
                 // 🔥 NEW: existing & incoming IDs
                 $existingIds = $relation->pluck('id')->toArray();
                 $incomingIds = collect($data)->pluck('id')->filter()->toArray();
-            
+
                 // 🔥 NEW: delete missing records
                 $deleteIds = array_diff($existingIds, $incomingIds);
-                if (!empty($deleteIds)) {
+                if (! empty($deleteIds)) {
                     $relation->whereIn('id', $deleteIds)->delete();
                 }
-            
+
                 // 🔁 update / create (same as before)
                 foreach ($data as $item) {
-            
+
                     $attributes = array_merge($item, $extra);
-            
-                    if (!empty($item['id'])) {
+
+                    if (! empty($item['id']) && $modelClass) {
                         $model = $modelClass::find($item['id']);
                         if ($model) {
                             $model->fill($attributes)->save();
@@ -797,16 +773,15 @@ class ItineraryController extends Controller
                         $relation->create($attributes);
                     }
                 }
-            };            
-            
-    
+            };
+
             // foreach (['information', 'locations', 'faqs', 'inclusionsExclusions', 'mediaGallery'] as $relation) {
             foreach (['information', 'faqs', 'inclusionsExclusions', 'mediaGallery'] as $relation) {
                 if ($request->has(Str::snake($relation))) {
                     $updateOrCreateRelation($relation, $request->{Str::snake($relation)});
                 }
             }
-    
+
             if ($request->has('schedules')) {
                 $updateOrCreateRelation('schedules', $request->schedules);
                 foreach ($itinerary->schedules as $schedule) {
@@ -818,7 +793,7 @@ class ItineraryController extends Controller
 
             $updateOrCreateSimple = function ($modelClass, $data, $scheduleMap = []) {
                 foreach ($data as $item) {
-                    if (!empty($item['id'])) {
+                    if (! empty($item['id'])) {
                         $model = $modelClass::find($item['id']);
                         if ($model) {
                             if (isset($item['day']) && empty($item['schedule_id'])) {
@@ -835,14 +810,12 @@ class ItineraryController extends Controller
                     }
                 }
             };
-   
-            
-            
+
             if ($request->has('activities')) {
                 $updateOrCreateSimple(\App\Models\ItineraryActivity::class, $request->activities, $scheduleMap);
 
             }
-            
+
             if ($request->has('transfers')) {
                 $updateOrCreateSimple(\App\Models\ItineraryTransfer::class, $request->transfers, $scheduleMap);
 
@@ -852,13 +825,13 @@ class ItineraryController extends Controller
 
             // If pricing is present in request, create or update it
             if ($request->has('pricing')) {
-                $pricing = $itinerary->basePricing()->firstOrNew([]);
+                $pricing = $itinerary->basePricing()->firstOrCreate([]);
                 $pricing->fill($request->pricing)->save();
             }
 
             $updateOrCreateChild = function ($relation, $data, $modelClass, $foreignKey) use ($pricing) {
                 foreach ($data as $item) {
-                    if (!empty($item['id'])) {
+                    if (! empty($item['id'])) {
                         $model = $modelClass::find($item['id']);
                         if ($model) {
                             $model->fill($item);
@@ -870,11 +843,11 @@ class ItineraryController extends Controller
                     }
                 }
             };
-            
+
             if ($request->has('price_variations')) {
                 $updateOrCreateChild('priceVariations', $request->price_variations, \App\Models\ItineraryPriceVariation::class, 'base_pricing_id');
             }
-            
+
             if ($request->has('blackout_dates')) {
                 $updateOrCreateChild('blackoutDates', $request->blackout_dates, \App\Models\ItineraryBlackoutDate::class, 'base_pricing_id');
             }
@@ -884,7 +857,7 @@ class ItineraryController extends Controller
                 $itinerary->locations()->delete();
                 foreach ($request->locations as $locationId) {
                     $itinerary->locations()->create([
-                        'city_id' => $locationId
+                        'city_id' => $locationId,
                     ]);
                 }
             }
@@ -894,7 +867,7 @@ class ItineraryController extends Controller
                 $itinerary->categories()->delete();
                 foreach ($request->categories as $categoryId) {
                     $itinerary->categories()->create([
-                        'category_id' => $categoryId
+                        'category_id' => $categoryId,
                     ]);
                 }
             }
@@ -903,7 +876,7 @@ class ItineraryController extends Controller
                 $itinerary->addons()->delete();
                 foreach ($request->addons as $addonId) {
                     $itinerary->addons()->create([
-                        'addon_id' => $addonId
+                        'addon_id' => $addonId,
                     ]);
                 }
             }
@@ -913,21 +886,21 @@ class ItineraryController extends Controller
                 $itinerary->tags()->delete();
                 foreach ($request->tags as $tagId) {
                     $itinerary->tags()->create([
-                        'tag_id' => $tagId
+                        'tag_id' => $tagId,
                     ]);
                 }
             }
 
             if ($request->has('attributes')) {
                 $itinerary->attributes()->delete();
-            
+
                 $attributes = collect($request->input('attributes'))->map(function ($attr) use ($itinerary) {
                     return array_merge($attr, ['activity_id' => $itinerary->id]);
                 })->toArray();
-            
+
                 $itinerary->attributes()->createMany($attributes);
-            } 
-    
+            }
+
             // === Media Gallery ===
             if ($request->has('media_gallery') && is_array($request->media_gallery)) {
                 $itinerary->mediaGallery()->delete();
@@ -950,12 +923,12 @@ class ItineraryController extends Controller
 
                         return [
                             'itinerary_id' => $itinerary->id,
-                            'media_id'     => $item['media_id'],
-                            'is_featured'  => $isFeatured,
+                            'media_id' => $item['media_id'],
+                            'is_featured' => $isFeatured,
                         ];
                     })->toArray();
 
-                if (!empty($mediaGallery)) {
+                if (! empty($mediaGallery)) {
                     ItineraryMediaGallery::insert($mediaGallery);
                 }
             }
@@ -963,7 +936,7 @@ class ItineraryController extends Controller
             if ($request->has('availability')) {
                 $itinerary->availability()->updateOrCreate([], $request->availability);
             }
-    
+
             if ($request->has('seo')) {
                 $seoData = $request->seo;
                 if (isset($seoData['schema_data']) && is_array($seoData['schema_data'])) {
@@ -971,33 +944,34 @@ class ItineraryController extends Controller
                 }
                 $itinerary->seo()->updateOrCreate([], $seoData);
             }
-    
+
             DB::commit();
-    
+
             return response()->json([
-                'message'   => 'itinerary updated successfully',
-                'itinerary' => $itinerary->fresh()
+                'message' => 'itinerary updated successfully',
+                'itinerary' => $itinerary->fresh(),
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
+
             return response()->json([
-                'error'   => 'Something went wrong',
+                'error' => 'Something went wrong',
                 'details' => $e->getMessage(),
             ], 500);
         }
-    }    
+    }
 
     /**
      * Remove the specified Itinerary from storage.
-    */
+     */
     public function destroy(string $id)
     {
         $itinerary = Itinerary::find($id);
-        
-        if (!$itinerary) {
+
+        if (! $itinerary) {
             return response()->json(['message' => 'Itinerary not found'], 404);
         }
-        
+
         $itinerary->delete();
 
         return response()->json(['message' => 'Itinerary deleted successfully']);
@@ -1010,7 +984,7 @@ class ItineraryController extends Controller
     {
         $itinerary = Itinerary::with('schedules.activities', 'schedules.transfers', 'basePricing.variations', 'basePricing.blackoutDates')->find($id);
 
-        if (!$itinerary) {
+        if (! $itinerary) {
             return response()->json(['message' => 'Itinerary not found'], 404);
         }
 
@@ -1081,16 +1055,16 @@ class ItineraryController extends Controller
             DB::commit();
 
             return response()->json([
-                'message' => 'Selected itineraries deleted successfully.'
+                'message' => 'Selected itineraries deleted successfully.',
             ], 200);
 
         } catch (\Exception $e) {
             DB::rollBack();
+
             return response()->json([
                 'error' => 'Failed to delete selected itineraries.',
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 500);
         }
     }
-
 }

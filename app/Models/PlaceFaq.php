@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -14,6 +15,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Place $place
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PlaceFaq newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PlaceFaq newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PlaceFaq query()
@@ -24,9 +26,11 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PlaceFaq whereQuestion($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PlaceFaq whereQuestionNumber($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PlaceFaq whereUpdatedAt($value)
- * @mixin \Eloquent
+ *
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
-class PlaceFaq extends Model {
+class PlaceFaq extends Model
+{
     use HasFactory;
 
     protected $fillable = [
@@ -36,7 +40,8 @@ class PlaceFaq extends Model {
         'answer',
     ];
 
-    public function place() {
+    public function place(): BelongsTo
+    {
         return $this->belongsTo(Place::class);
     }
 }

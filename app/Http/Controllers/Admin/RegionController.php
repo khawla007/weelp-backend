@@ -16,8 +16,8 @@ class RegionController extends Controller
         $query = Region::query()->with('countries');
 
         // Name search
-        if ($request->has('name') && !empty($request->name)) {
-            $query->where('name', 'like', '%' . $request->name . '%');
+        if ($request->has('name') && ! empty($request->name)) {
+            $query->where('name', 'like', '%'.$request->name.'%');
         }
 
         // Pagination
@@ -66,21 +66,21 @@ class RegionController extends Controller
                 return response()->json([
                     'success' => false,
                     'message' => 'No Region found',
-                    'data' => []
+                    'data' => [],
                 ], 404);
             }
 
             return response()->json([
                 'success' => true,
                 'message' => 'Region list fetched successfully',
-                'data' => $regions
+                'data' => $regions,
             ], 200);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Error fetching region list',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -93,10 +93,10 @@ class RegionController extends Controller
         try {
             $region = Region::with('countries')->find($id);
 
-            if (!$region) {
+            if (! $region) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Region not found'
+                    'message' => 'Region not found',
                 ], 404);
             }
 
@@ -117,14 +117,14 @@ class RegionController extends Controller
                         ];
                     }),
                     'country_ids' => $region->countries->pluck('id')->toArray(),
-                ]
+                ],
             ], 200);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Error fetching region',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -152,7 +152,7 @@ class RegionController extends Controller
             ]);
 
             // Attach countries
-            if (!empty($validated['countries'])) {
+            if (! empty($validated['countries'])) {
                 $region->countries()->attach($validated['countries']);
             }
 
@@ -163,21 +163,21 @@ class RegionController extends Controller
                     'id' => $region->id,
                     'name' => $region->name,
                     'slug' => $region->slug,
-                ]
+                ],
             ], 201);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Validation error',
-                'errors' => $e->errors()
+                'errors' => $e->errors(),
             ], 422);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Error creating region',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -190,10 +190,10 @@ class RegionController extends Controller
         try {
             $region = Region::find($id);
 
-            if (!$region) {
+            if (! $region) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Region not found'
+                    'message' => 'Region not found',
                 ], 404);
             }
 
@@ -225,21 +225,21 @@ class RegionController extends Controller
                     'id' => $region->id,
                     'name' => $region->name,
                     'slug' => $region->slug,
-                ]
+                ],
             ], 200);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Validation error',
-                'errors' => $e->errors()
+                'errors' => $e->errors(),
             ], 422);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Error updating region',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -252,10 +252,10 @@ class RegionController extends Controller
         try {
             $region = Region::find($id);
 
-            if (!$region) {
+            if (! $region) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Region not found'
+                    'message' => 'Region not found',
                 ], 404);
             }
 
@@ -267,14 +267,14 @@ class RegionController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Region deleted successfully'
+                'message' => 'Region deleted successfully',
             ], 200);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Error deleting region',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }

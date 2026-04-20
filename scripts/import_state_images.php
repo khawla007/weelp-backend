@@ -43,9 +43,10 @@ foreach ($statesToProcess as $stateName) {
 
     $state = \App\Models\State::where('name', $stateName)->first();
 
-    if (!$state) {
+    if (! $state) {
         echo "  ERROR: State not found\n";
         $stats['errors'][] = "{$stateName}: State not found";
+
         continue;
     }
 
@@ -53,6 +54,7 @@ foreach ($statesToProcess as $stateName) {
     $existingCount = \App\Models\StateMediaGallery::where('state_id', $state->id)->count();
     if ($existingCount > 0) {
         echo "  SKIP: State already has {$existingCount} images\n";
+
         continue;
     }
 
@@ -63,7 +65,7 @@ foreach ($statesToProcess as $stateName) {
             echo "  Image {$i}: Downloading...\n";
 
             // Generate seed for unique images
-            $seed = \Illuminate\Support\Str::slug($stateName) . $i;
+            $seed = \Illuminate\Support\Str::slug($stateName).$i;
             $imageUrl = "https://picsum.photos/seed/{$seed}/1200/800";
 
             // Download image with timeout
@@ -71,13 +73,13 @@ foreach ($statesToProcess as $stateName) {
             $imageContent = @file_get_contents($imageUrl, false, $context);
 
             if ($imageContent === false || empty($imageContent)) {
-                throw new \Exception("Failed to download or empty content");
+                throw new \Exception('Failed to download or empty content');
             }
 
             // Generate filename
             $extension = '.jpg';
-            $fileName = \Illuminate\Support\Str::slug($stateName) . '_' . $i . '_' . time() . $extension;
-            $path = 'states/' . $fileName;
+            $fileName = \Illuminate\Support\Str::slug($stateName).'_'.$i.'_'.time().$extension;
+            $path = 'states/'.$fileName;
 
             // Upload to MinIO
             \Illuminate\Support\Facades\Storage::disk('minio')->put($path, $imageContent);
@@ -87,8 +89,8 @@ foreach ($statesToProcess as $stateName) {
 
             // Create Media record
             $media = \App\Models\Media::create([
-                'name' => $stateName . ' - Image ' . $i,
-                'alt_text' => $stateName . ' travel image',
+                'name' => $stateName.' - Image '.$i,
+                'alt_text' => $stateName.' travel image',
                 'url' => $url,
                 'file_name' => $fileName,
                 'file_size' => strlen($imageContent),
@@ -102,7 +104,7 @@ foreach ($statesToProcess as $stateName) {
                 'is_featured' => $isFirst,
             ]);
 
-            echo "  Image {$i}: ✓ Added to " . ($isFirst ? 'FEATURED' : 'gallery') . "\n";
+            echo "  Image {$i}: ✓ Added to ".($isFirst ? 'FEATURED' : 'gallery')."\n";
 
             $stats['images']++;
             $isFirst = false;
@@ -121,8 +123,8 @@ echo "\n=== Import Summary ===\n";
 echo "States processed: {$stats['states']}\n";
 echo "Images uploaded: {$stats['images']}\n";
 
-if (!empty($stats['errors'])) {
-    echo "Errors: " . count($stats['errors']) . "\n";
+if (! empty($stats['errors'])) {
+    echo 'Errors: '.count($stats['errors'])."\n";
 }
 
 echo "=== Done ===\n";

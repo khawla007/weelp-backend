@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Package $package
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageSeo newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageSeo newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageSeo query()
@@ -32,24 +33,24 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageSeo whereSchemaData($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageSeo whereSchemaType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageSeo whereUpdatedAt($value)
- * @mixin \Eloquent
+ *
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class PackageSeo extends Model
 {
-
     protected $table = 'package_seo';
 
     protected $fillable = [
-        'package_id', 'meta_title', 'meta_description', 
-        'keywords', 'og_image_url', 'canonical_url', 
-        'schema_type', 'schema_data'
+        'package_id', 'meta_title', 'meta_description',
+        'keywords', 'og_image_url', 'canonical_url',
+        'schema_type', 'schema_data',
     ];
 
     protected $casts = [
-        'schema_data' => 'array'
+        'schema_data' => 'array',
     ];
 
-    public function package()
+    public function package(): BelongsTo
     {
         return $this->belongsTo(Package::class);
     }

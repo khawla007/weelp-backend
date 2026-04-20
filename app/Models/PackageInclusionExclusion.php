@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Package $package
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageInclusionExclusion newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageInclusionExclusion newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageInclusionExclusion query()
@@ -26,23 +27,23 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageInclusionExclusion whereTitle($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageInclusionExclusion whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageInclusionExclusion whereUpdatedAt($value)
- * @mixin \Eloquent
+ *
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class PackageInclusionExclusion extends Model
 {
-
     protected $table = 'package_inclusions_exclusions';
 
     protected $fillable = [
-        'package_id', 'type', 'title', 
-        'description', 'included'
+        'package_id', 'type', 'title',
+        'description', 'included',
     ];
 
     protected $casts = [
-        'included' => 'boolean'
+        'included' => 'boolean',
     ];
-    
-    public function package()
+
+    public function package(): BelongsTo
     {
         return $this->belongsTo(Package::class);
     }

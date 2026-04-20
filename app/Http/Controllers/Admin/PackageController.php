@@ -3,114 +3,95 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Package;
-use App\Models\PackageInformation;
-use App\Models\PackageLocation;
-use App\Models\PackageSchedule;
-use App\Models\PackageTransfer;
-use App\Models\PackageActivity;
-use App\Models\PackageItinerary;
-use App\Models\PackageBasePricing;
-use App\Models\PackagePriceVariation;
-use App\Models\PackageBlackoutDate;
-use App\Models\PackageInclusionExclusion;
-use App\Models\PackageMediaGallery;
-use App\Models\PackageCategory;
-use App\Models\PackageAttribute;
-use App\Models\PackageTag;
-use App\Models\PackageFaq;
-use App\Models\PackageSeo;
-use App\Models\PackageAvailability;
-use App\Models\PackageAddon;
-use App\Models\Category;
 use App\Models\Attribute;
-use App\Models\Tag;
+use App\Models\Category;
 use App\Models\City;
+use App\Models\Package;
+use App\Models\PackageActivity;
+use App\Models\PackageAddon;
+use App\Models\PackageAttribute;
+use App\Models\PackageAvailability;
+use App\Models\PackageBasePricing;
+use App\Models\PackageBlackoutDate;
+use App\Models\PackageCategory;
+use App\Models\PackageFaq;
+use App\Models\PackageInclusionExclusion;
+use App\Models\PackageInformation;
+use App\Models\PackageItinerary;
+use App\Models\PackageLocation;
+use App\Models\PackageMediaGallery;
+use App\Models\PackagePriceVariation;
+use App\Models\PackageSchedule;
+use App\Models\PackageSeo;
+use App\Models\PackageTag;
+use App\Models\PackageTransfer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Validator;
-
 
 class PackageController extends Controller
 {
-
     /**
      * Display a listing of the itineraries.
-    */
+     */
     public function index(Request $request)
     {
-        $perPage        = 3; 
-        $page           = $request->get('page', 1); 
+        $perPage = 3;
+        $page = $request->get('page', 1);
 
-        $search         = $request->get('search'); // Search by package name
-        $categorySlug   = $request->get('category');
-        $difficulty     = $request->get('difficulty_level');
-        $duration       = $request->get('duration');
-        $ageGroup       = $request->get('age_restriction');
-        $season         = $request->get('season');
-        $minPrice       = $request->get('min_price', 0);
-        $maxPrice       = $request->get('max_price');
-        $sortBy         = $request->get('sort_by', 'id_desc'); // Default: Newest First
+        $search = $request->get('search'); // Search by package name
+        $categorySlug = $request->get('category');
+        $difficulty = $request->get('difficulty_level');
+        $duration = $request->get('duration');
+        $ageGroup = $request->get('age_restriction');
+        $season = $request->get('season');
+        $minPrice = $request->get('min_price', 0);
+        $maxPrice = $request->get('max_price');
+        $sortBy = $request->get('sort_by', 'id_desc'); // Default: Newest First
 
-        $category       = $categorySlug ? Category::where('slug', $categorySlug)->first() : null;
-        $categoryId     = $category ? $category->id : null;
+        $category = $categorySlug ? Category::where('slug', $categorySlug)->first() : null;
+        $categoryId = $category ? $category->id : null;
 
         $difficultyAttr = Attribute::where('slug', 'difficulty-level')->first();
-        $durationAttr   = Attribute::where('slug', 'duration')->first();
-        $ageGroupAttr   = Attribute::where('slug', 'age-restriction')->first();
+        $durationAttr = Attribute::where('slug', 'duration')->first();
+        $ageGroupAttr = Attribute::where('slug', 'age-restriction')->first();
 
         $query = Package::query()
-            ->select('packages.*')  
-            ->join('package_base_pricing', 'package_base_pricing.package_id', '=', 'packages.id') 
+            ->select('packages.*')
+            ->join('package_base_pricing', 'package_base_pricing.package_id', '=', 'packages.id')
             ->join('package_price_variations', 'package_price_variations.base_pricing_id', '=', 'package_base_pricing.id')
             ->with([
-                'categories.category', 
-                'locations.city', 
-                'basePricing.variations', 
+                'categories.category',
+                'locations.city',
+                'basePricing.variations',
                 'attributes.attribute:id,name',
-                'mediaGallery.media', 'addons.addon'
+                'mediaGallery.media', 'addons.addon',
             ])
 
-            ->when($search, fn($query) =>
-                $query->where('packages.name', 'like', "%{$search}%")
-            )   
+            ->when($search, fn ($query) => $query->where('packages.name', 'like', "%{$search}%")
+            )
 
-            ->when($categoryId, fn($query) => 
-                $query->whereHas('categories', fn($q) => 
-                    $q->where('category_id', $categoryId)
-                )
+            ->when($categoryId, fn ($query) => $query->whereHas('categories', fn ($q) => $q->where('category_id', $categoryId)
             )
-            ->when($difficulty && $difficultyAttr, fn($query) => 
-                $query->whereHas('attributes', fn($q) => 
-                    $q->where('attribute_id', $difficultyAttr->id)
-                    ->where('attribute_value', $difficulty)
-                )
             )
-            ->when($duration && $durationAttr, fn($query) => 
-                $query->whereHas('attributes', fn($q) => 
-                    $q->where('attribute_id', $durationAttr->id)
-                    ->where('attribute_value', $duration)
-                )
+            ->when($difficulty && $difficultyAttr, fn ($query) => $query->whereHas('attributes', fn ($q) => $q->where('attribute_id', $difficultyAttr->id)
+                ->where('attribute_value', $difficulty)
             )
-            ->when($ageGroup && $ageGroupAttr, fn($query) => 
-                $query->whereHas('attributes', fn($q) => 
-                    $q->where('attribute_id', $ageGroupAttr->id)
-                    ->where('attribute_value', $ageGroup)
-                )
             )
-            ->when($season, fn($query) =>
-                $query->whereHas('locations.city.seasons', fn($q) =>
-                    $q->where('name', $season)
-                )
+            ->when($duration && $durationAttr, fn ($query) => $query->whereHas('attributes', fn ($q) => $q->where('attribute_id', $durationAttr->id)
+                ->where('attribute_value', $duration)
             )
-            ->when($maxPrice !== null, fn($query) => 
-                $query->whereHas('basePricing', fn($q) => 
-                    $q->whereHas('variations', fn($q2) => 
-                        $q2->whereBetween('sale_price', [$minPrice, $maxPrice])
-                    )
-                )
+            )
+            ->when($ageGroup && $ageGroupAttr, fn ($query) => $query->whereHas('attributes', fn ($q) => $q->where('attribute_id', $ageGroupAttr->id)
+                ->where('attribute_value', $ageGroup)
+            )
+            )
+            ->when($season, fn ($query) => $query->whereHas('locations.city.seasons', fn ($q) => $q->where('name', $season)
+            )
+            )
+            ->when($maxPrice !== null, fn ($query) => $query->whereHas('basePricing', fn ($q) => $q->whereHas('variations', fn ($q2) => $q2->whereBetween('sale_price', [$minPrice, $maxPrice])
+            )
+            )
             );
 
         // Sorting logic
@@ -144,75 +125,75 @@ class PackageController extends Controller
         $allItems = $query->get();
         $paginatedItems = $allItems->forPage($page, $perPage);
 
-        $transformed = $paginatedItems->map(function ($package) {
-            
+        $transformed = $paginatedItems->map(function (Package $package) {
+
             $data = $package->toArray(); // keep all original fields
-        
+
             // Replace transformed fields for addons
             $data['addons'] = collect($package->addons)->map(function ($addon) {
                 return [
-                    'id'                      => $addon->id,
-                    'addon_id'                => $addon->addon_id,
-                    'addon_name'              => $addon->addon->name ?? null,
-                    'addon_type'              => $addon->addon->type ?? null,
-                    'addon_description'       => $addon->addon->description ?? null,
-                    'addon_price'             => $addon->addon->price ?? null,
-                    'addon_sale_price'        => $addon->addon->sale_price ?? null,
+                    'id' => $addon->id,
+                    'addon_id' => $addon->addon_id,
+                    'addon_name' => $addon->addon->name ?? null,
+                    'addon_type' => $addon->addon->type ?? null,
+                    'addon_description' => $addon->addon->description ?? null,
+                    'addon_price' => $addon->addon->price ?? null,
+                    'addon_sale_price' => $addon->addon->sale_price ?? null,
                     'addon_price_calculation' => $addon->addon->price_calculation ?? null,
-                    'addon_active_status'     => $addon->addon->active_status ?? null,
+                    'addon_active_status' => $addon->addon->active_status ?? null,
                 ];
             });
-        
+
             // Replace transformed fields
             $data['locations'] = collect($package->locations)->map(function ($location) {
                 return [
-                    'id'         => $location->id,
-                    'city_id'    => $location->city_id,
-                    'city_name'  => $location->city->name ?? null,
+                    'id' => $location->id,
+                    'city_id' => $location->city_id,
+                    'city_name' => $location->city->name ?? null,
                 ];
             });
-        
+
             $data['media_gallery'] = collect($package->mediaGallery)->map(function ($media) {
                 return [
-                    'id'         => $media->id,
-                    'media_id'   => $media->media_id,
-                    'name'       => $media->media->name ?? null,
-                    'alt_text'   => $media->media->alt_text ?? null,
-                    'url'        => $media->media->url ?? null,
-                    'is_featured'=> $media->is_featured ?? false,
+                    'id' => $media->id,
+                    'media_id' => $media->media_id,
+                    'name' => $media->media->name ?? null,
+                    'alt_text' => $media->media->alt_text ?? null,
+                    'url' => $media->media->url ?? null,
+                    'is_featured' => $media->is_featured ?? false,
                 ];
             });
 
             // Get featured image from media_gallery
             $featuredImage = $package->mediaGallery->firstWhere('is_featured', true);
             $data['feature_image'] = $featuredImage?->media->url ?? null;
-        
+
             $data['attributes'] = collect($package->attributes)->map(function ($attribute) {
                 return [
-                    'id'              => $attribute->id,
-                    'attribute_id'    => $attribute->attribute_id,
-                    'attribute_name'  => $attribute->attribute->name ?? null,
+                    'id' => $attribute->id,
+                    'attribute_id' => $attribute->attribute_id,
+                    'attribute_name' => $attribute->attribute->name ?? null,
                     'attribute_value' => $attribute->attribute_value,
                 ];
             });
-        
+
             $data['categories'] = collect($package->categories)->map(function ($category) {
                 return [
-                    'id'            => $category->id,
-                    'category_id'   => $category->category_id,
+                    'id' => $category->id,
+                    'category_id' => $category->category_id,
                     'category_name' => $category->category->name ?? null,
                 ];
             });
-        
+
             return $data;
         });
 
         return response()->json([
-            'success'      => true,
-            'data'         => $transformed->values(),
+            'success' => true,
+            'data' => $transformed->values(),
             'current_page' => (int) $page,
-            'per_page'     => $perPage,
-            'total'        => $allItems->count(),
+            'per_page' => $perPage,
+            'total' => $allItems->count(),
         ], 200);
     }
 
@@ -222,51 +203,51 @@ class PackageController extends Controller
     public function store(Request $request)
     {
         $rules = [
-            'name'                  => 'required|string|max:255',
-            'slug'                  => 'required|string|unique:packages,slug',
-            'description'           => 'nullable|string',
-            'featured_package'      => 'boolean',
-            'private_package'       => 'boolean',
-            'locations'             => 'nullable|array',
-            'information'           => 'nullable|array',
-            'schedules'             => 'nullable|array',
-            'activities'            => 'nullable|array',
-            'transfers'             => 'nullable|array',
-            'itineraries'           => 'nullable|array',
-            'pricing'               => 'nullable|array',
-            'price_variations'      => 'nullable|array',
-            'blackout_dates'        => 'nullable|array',
+            'name' => 'required|string|max:255',
+            'slug' => 'required|string|unique:packages,slug',
+            'description' => 'nullable|string',
+            'featured_package' => 'boolean',
+            'private_package' => 'boolean',
+            'locations' => 'nullable|array',
+            'information' => 'nullable|array',
+            'schedules' => 'nullable|array',
+            'activities' => 'nullable|array',
+            'transfers' => 'nullable|array',
+            'itineraries' => 'nullable|array',
+            'pricing' => 'nullable|array',
+            'price_variations' => 'nullable|array',
+            'blackout_dates' => 'nullable|array',
             'inclusions_exclusions' => 'nullable|array',
-            'media_gallery'         => 'nullable|array',
-            'faqs'                  => 'nullable|array',
-            'seo'                   => 'nullable|array',
-            'categories'            => 'nullable|array',
-            'attributes'            => 'nullable|array',
-            'tags'                  => 'nullable|array',
-            'addons'                => 'nullable|array',
-            'availability'          => 'nullable|array',
+            'media_gallery' => 'nullable|array',
+            'faqs' => 'nullable|array',
+            'seo' => 'nullable|array',
+            'categories' => 'nullable|array',
+            'attributes' => 'nullable|array',
+            'tags' => 'nullable|array',
+            'addons' => 'nullable|array',
+            'availability' => 'nullable|array',
         ];
-    
+
         $request->validate($rules);
-    
+
         try {
             DB::beginTransaction();
-    
+
             $package = Package::create([
-                'name'             => $request->name,
-                'slug'             => $request->slug,
-                'description'      => $request->description ?? null,
+                'name' => $request->name,
+                'slug' => $request->slug,
+                'description' => $request->description ?? null,
                 'featured_package' => $request->boolean('featured_package'),
-                'private_package'  => $request->boolean('private_package'),
+                'private_package' => $request->boolean('private_package'),
             ]);
-    
+
             // === Information ===
             if ($request->has('information')) {
                 foreach ($request->information as $info) {
                     PackageInformation::create([
-                        'package_id'    => $package->id,
+                        'package_id' => $package->id,
                         'section_title' => $info['section_title'] ?? '',
-                        'content'       => $info['content'] ?? '',
+                        'content' => $info['content'] ?? '',
                     ]);
                 }
             }
@@ -276,136 +257,136 @@ class PackageController extends Controller
                 foreach ($request->locations as $cityId) {
                     PackageLocation::create([
                         'package_id' => $package->id,
-                        'city_id'    => $cityId,
+                        'city_id' => $cityId,
                     ]);
                 }
             }
-    
+
             // === Schedules ===
             $scheduleMap = [];
             if ($request->has('schedules')) {
                 foreach ($request->schedules as $schedule) {
                     $record = PackageSchedule::create([
                         'package_id' => $package->id,
-                        'day'        => $schedule['day'],
+                        'day' => $schedule['day'],
                     ]);
                     $scheduleMap[$schedule['day']] = $record->id;
                 }
             }
-    
+
             // === Transfers ===
             if ($request->has('transfers')) {
                 foreach ($request->transfers as $transfer) {
                     $scheduleId = $scheduleMap[$transfer['day']] ?? null;
                     if ($scheduleId) {
                         PackageTransfer::create([
-                            'schedule_id'        => $scheduleId,
-                            'transfer_id'        => $transfer['transfer_id'],
-                            'start_time'         => $transfer['start_time'],
-                            'end_time'           => $transfer['end_time'],
-                            'notes'              => $transfer['notes'],
-                            'price'              => $transfer['price'],
-                            'included'           => $transfer['included'],
-                            'pickup_location'    => $transfer['pickup_location'] ?? null,
-                            'dropoff_location'   => $transfer['dropoff_location'] ?? null,
-                            'pax'                => $transfer['pax'] ?? null,
+                            'schedule_id' => $scheduleId,
+                            'transfer_id' => $transfer['transfer_id'],
+                            'start_time' => $transfer['start_time'],
+                            'end_time' => $transfer['end_time'],
+                            'notes' => $transfer['notes'],
+                            'price' => $transfer['price'],
+                            'included' => $transfer['included'],
+                            'pickup_location' => $transfer['pickup_location'] ?? null,
+                            'dropoff_location' => $transfer['dropoff_location'] ?? null,
+                            'pax' => $transfer['pax'] ?? null,
                         ]);
                     }
                 }
             }
-    
+
             // === Activities ===
             if ($request->has('activities')) {
                 foreach ($request->activities as $activity) {
                     $scheduleId = $scheduleMap[$activity['day']] ?? null;
                     if ($scheduleId) {
                         PackageActivity::create([
-                            'schedule_id'        => $scheduleId,
-                            'activity_id'        => $activity['activity_id'],
-                            'start_time'         => $activity['start_time'],
-                            'end_time'           => $activity['end_time'],
-                            'notes'              => $activity['notes'],
-                            'price'              => $activity['price'],
-                            'included'           => $activity['included'],
+                            'schedule_id' => $scheduleId,
+                            'activity_id' => $activity['activity_id'],
+                            'start_time' => $activity['start_time'],
+                            'end_time' => $activity['end_time'],
+                            'notes' => $activity['notes'],
+                            'price' => $activity['price'],
+                            'included' => $activity['included'],
                         ]);
                     }
                 }
             }
-    
+
             // === Itineraries ===
             if ($request->has('itineraries')) {
                 foreach ($request->itineraries as $itinerary) {
                     $scheduleId = $scheduleMap[$itinerary['day']] ?? null;
                     if ($scheduleId) {
                         PackageItinerary::create([
-                            'schedule_id'        => $scheduleId,
-                            'itinerary_id'       => $itinerary['itinerary_id'],
-                            'start_time'         => $itinerary['start_time'],
-                            'end_time'           => $itinerary['end_time'],
-                            'notes'              => $itinerary['notes'],
-                            'price'              => $itinerary['price'],
-                            'included'           => $itinerary['included'],
-                            'pickup_location'    => $itinerary['pickup_location'] ?? null,
-                            'dropoff_location'   => $itinerary['dropoff_location'] ?? null,
-                            'pax'                => $itinerary['pax'] ?? null,
+                            'schedule_id' => $scheduleId,
+                            'itinerary_id' => $itinerary['itinerary_id'],
+                            'start_time' => $itinerary['start_time'],
+                            'end_time' => $itinerary['end_time'],
+                            'notes' => $itinerary['notes'],
+                            'price' => $itinerary['price'],
+                            'included' => $itinerary['included'],
+                            'pickup_location' => $itinerary['pickup_location'] ?? null,
+                            'dropoff_location' => $itinerary['dropoff_location'] ?? null,
+                            'pax' => $itinerary['pax'] ?? null,
                         ]);
                     }
                 }
             }
-    
+
             // === Pricing ===
             if ($request->has('pricing')) {
                 $basePricing = PackageBasePricing::create([
-                    'package_id'   => $package->id,
-                    'currency'     => $request->pricing['currency'],
+                    'package_id' => $package->id,
+                    'currency' => $request->pricing['currency'],
                     'availability' => $request->pricing['availability'],
-                    'start_date'   => $request->pricing['start_date'],
-                    'end_date'     => $request->pricing['end_date'],
+                    'start_date' => $request->pricing['start_date'],
+                    'end_date' => $request->pricing['end_date'],
                 ]);
-    
+
                 if ($request->has('price_variations')) {
                     foreach ($request->price_variations as $variation) {
                         PackagePriceVariation::create([
                             'base_pricing_id' => $basePricing->id,
-                            'name'            => $variation['name'],
-                            'regular_price'   => $variation['regular_price'],
-                            'sale_price'      => $variation['sale_price'],
-                            'max_guests'      => $variation['max_guests'],
-                            'description'     => $variation['description'],
+                            'name' => $variation['name'],
+                            'regular_price' => $variation['regular_price'],
+                            'sale_price' => $variation['sale_price'],
+                            'max_guests' => $variation['max_guests'],
+                            'description' => $variation['description'],
                         ]);
                     }
                 }
-    
+
                 if ($request->has('blackout_dates')) {
                     foreach ($request->blackout_dates as $date) {
                         PackageBlackoutDate::create([
                             'base_pricing_id' => $basePricing->id,
-                            'date'   => $date['date'],
+                            'date' => $date['date'],
                             'reason' => $date['reason'],
                         ]);
                     }
                 }
             }
-    
+
             // === Inclusions/Exclusions ===
             if ($request->has('inclusions_exclusions')) {
                 foreach ($request->inclusions_exclusions as $ie) {
                     PackageInclusionExclusion::create([
-                        'package_id'      => $package->id,
-                        'type'            => $ie['type'],
-                        'title'           => $ie['title'],
-                        'description'     => $ie['description'],
-                        'included'        => $ie['included'],
+                        'package_id' => $package->id,
+                        'type' => $ie['type'],
+                        'title' => $ie['title'],
+                        'description' => $ie['description'],
+                        'included' => $ie['included'],
                     ]);
                 }
             }
-    
+
             // === Media Gallery ===
             $hasFeatured = false;
             if ($request->has('media_gallery') && is_array($request->media_gallery)) {
                 foreach ($request->media_gallery as $media) {
                     // Skip null media_id
-                    if (!isset($media['media_id']) || $media['media_id'] === null) {
+                    if (! isset($media['media_id']) || $media['media_id'] === null) {
                         continue;
                     }
 
@@ -421,45 +402,45 @@ class PackageController extends Controller
 
                     PackageMediaGallery::create([
                         'package_id' => $package->id,
-                        'media_id'   => $media['media_id'],
-                        'is_featured'=> $isFeatured,
+                        'media_id' => $media['media_id'],
+                        'is_featured' => $isFeatured,
                     ]);
                 }
             }
-    
+
             // === FAQs ===
             if ($request->has('faqs')) {
                 foreach ($request->faqs as $faq) {
                     PackageFaq::create([
-                        'package_id'      => $package->id,
+                        'package_id' => $package->id,
                         // 'question_number' => $faq['question_number'] ?? null,
-                        'question'        => $faq['question'],
-                        'answer'          => $faq['answer'],
+                        'question' => $faq['question'],
+                        'answer' => $faq['answer'],
                     ]);
                 }
             }
-    
+
             // === SEO ===
             if ($request->has('seo')) {
                 PackageSeo::create([
-                    'package_id'       => $package->id,
-                    'meta_title'       => $request->seo['meta_title'],
+                    'package_id' => $package->id,
+                    'meta_title' => $request->seo['meta_title'],
                     'meta_description' => $request->seo['meta_description'],
-                    'keywords'         => $request->seo['keywords'],
-                    'og_image_url'     => $request->seo['og_image_url'],
-                    'canonical_url'    => $request->seo['canonical_url'],
-                    'schema_type'      => $request->seo['schema_type'],
-                    'schema_data'      => is_array($request->seo['schema_data']) 
-                        ? json_encode($request->seo['schema_data']) 
+                    'keywords' => $request->seo['keywords'],
+                    'og_image_url' => $request->seo['og_image_url'],
+                    'canonical_url' => $request->seo['canonical_url'],
+                    'schema_type' => $request->seo['schema_type'],
+                    'schema_data' => is_array($request->seo['schema_data'])
+                        ? json_encode($request->seo['schema_data'])
                         : $request->seo['schema_data'],
                 ]);
             }
-    
+
             // === Categories ===
             if ($request->has('categories')) {
                 foreach ($request->categories as $category_id) {
                     PackageCategory::create([
-                        'package_id'  => $package->id,
+                        'package_id' => $package->id,
                         'category_id' => $category_id,
                     ]);
                 }
@@ -470,59 +451,60 @@ class PackageController extends Controller
                 foreach ($request->addons as $addon_id) {
                     PackageAddon::create([
                         'package_id' => $package->id,
-                        'addon_id'   => $addon_id,
+                        'addon_id' => $addon_id,
                     ]);
                 }
             }
 
             if ($request->has('attributes')) {
-            
+
                 foreach ($request->input('attributes') as $attribute) {
                     PackageAttribute::create([
-                        'package_id'      => $package->id,
-                        'attribute_id'    => $attribute['attribute_id'],
+                        'package_id' => $package->id,
+                        'attribute_id' => $attribute['attribute_id'],
                         'attribute_value' => $attribute['attribute_value'],
                     ]);
                 }
             }
-    
+
             // === Tags ===
             if ($request->has('tags')) {
                 foreach ($request->tags as $tag_id) {
                     PackageTag::create([
                         'package_id' => $package->id,
-                        'tag_id'     => $tag_id,
+                        'tag_id' => $tag_id,
                     ]);
                 }
             }
-    
+
             // === Availability ===
             if ($request->has('availability')) {
                 PackageAvailability::create([
-                    'package_id'             => $package->id,
-                    'date_based_package'     => $request->availability['date_based_package'],
-                    'start_date'             => $request->availability['start_date'] ?? null,
-                    'end_date'               => $request->availability['end_date'] ?? null,
+                    'package_id' => $package->id,
+                    'date_based_package' => $request->availability['date_based_package'],
+                    'start_date' => $request->availability['start_date'] ?? null,
+                    'end_date' => $request->availability['end_date'] ?? null,
                     'quantity_based_package' => $request->availability['quantity_based_package'],
-                    'max_quantity'           => $request->availability['max_quantity'] ?? null,
+                    'max_quantity' => $request->availability['max_quantity'] ?? null,
                 ]);
             }
-    
+
             DB::commit();
-    
+
             return response()->json([
                 'message' => 'Package created successfully',
-                'package' => $package
+                'package' => $package,
             ], 201);
-    
+
         } catch (\Exception $e) {
             DB::rollBack();
+
             return response()->json([
-                'error'   => 'Something went wrong',
+                'error' => 'Something went wrong',
                 'details' => $e->getMessage(),
             ], 500);
         }
-    }    
+    }
 
     /**
      * Display the specified Package.
@@ -547,8 +529,8 @@ class PackageController extends Controller
             'seo',
             'faqs',
         ])->find($id);
-        
-        if (!$package) {
+
+        if (! $package) {
             return response()->json(['message' => 'Package not found'], 404);
         }
 
@@ -557,159 +539,161 @@ class PackageController extends Controller
 
         // Separate base_pricing
         $basePricing = optional($package->basePricing)->only([
-            'id', 'currency', 'availability', 'start_date', 'end_date'
+            'id', 'currency', 'availability', 'start_date', 'end_date',
         ]);
 
         // Separate variations
         $basePricingVariations = collect($package->basePricing->variations ?? [])->map(function ($variation) {
             return [
-                'id'                => $variation->id,
-                'base_pricing_id'   => $variation->base_pricing_id,
-                'name'              => $variation->name,
-                'regular_price'     => $variation->regular_price,
-                'sale_price'        => $variation->sale_price,
-                'max_guests'        => $variation->max_guests,
-                'description'       => $variation->description,
+                'id' => $variation->id,
+                'base_pricing_id' => $variation->base_pricing_id,
+                'name' => $variation->name,
+                'regular_price' => $variation->regular_price,
+                'sale_price' => $variation->sale_price,
+                'max_guests' => $variation->max_guests,
+                'description' => $variation->description,
             ];
         })->values();
 
         $blackoutDates = collect($package->basePricing->blackoutDates ?? [])->map(function ($blackoutDate) {
             return [
-                'id'                => $blackoutDate->id,
-                'base_pricing_id'   => $blackoutDate->base_pricing_id,
-                'date'              => $blackoutDate->date,
-                'reason'            => $blackoutDate->reason,
+                'id' => $blackoutDate->id,
+                'base_pricing_id' => $blackoutDate->base_pricing_id,
+                'date' => $blackoutDate->date,
+                'reason' => $blackoutDate->reason,
             ];
         })->values();
 
-        $packageData['base_pricing']       = $basePricing;
-        $packageData['price_variations']   = $basePricingVariations;
-        $packageData['blackout_dates']     = $blackoutDates;
-
+        $packageData['base_pricing'] = $basePricing;
+        $packageData['price_variations'] = $basePricingVariations;
+        $packageData['blackout_dates'] = $blackoutDates;
 
         // Schedules flat (only day)
         $packageData['schedules'] = collect($package->schedules)->map(function ($schedule) {
             return [
-                'id'  => $schedule->id,
+                'id' => $schedule->id,
                 'day' => $schedule->day,
             ];
         });
 
         // Flatten activities with day
-        $packageData['activities'] = collect($package->schedules)->flatMap(function ($schedule) {
+        $packageData['activities'] = collect($package->schedules)->flatMap(function (PackageSchedule $schedule, int $key) {
             return collect($schedule->activities)->map(function ($activity) use ($schedule) {
                 $mediaItems = collect($activity->activity->mediaGallery ?? [])->map(function ($media) {
                     return [
-                        'name'      => $media->media->name ?? null,
-                        'alt_text'  => $media->media->alt_text ?? null,
-                        'url'       => $media->media->url ?? null,
+                        'name' => $media->media->name ?? null,
+                        'alt_text' => $media->media->alt_text ?? null,
+                        'url' => $media->media->url ?? null,
                     ];
-                })->filter(fn($item) => $item['url'])->values();
+                })->filter(fn ($item) => $item['url'])->values();
+
                 return [
 
-                    'id'            => $activity->id,
-                    'activity_id'   => $activity->activity_id,
+                    'id' => $activity->id,
+                    'activity_id' => $activity->activity_id,
                     'activity_name' => $activity->activity->name ?? null,
-                    'media_url'     => $mediaItems,
-                    'day'           => $schedule->day,
-                    'start_time'    => $activity->start_time,
-                    'end_time'      => $activity->end_time,
-                    'notes'         => $activity->notes,
-                    'price'         => (float) $activity->price,
-                    'included'      => $activity->included,
+                    'media_url' => $mediaItems,
+                    'day' => $schedule->day,
+                    'start_time' => $activity->start_time,
+                    'end_time' => $activity->end_time,
+                    'notes' => $activity->notes,
+                    'price' => (float) $activity->price,
+                    'included' => $activity->included,
                 ];
             });
         })->values();
 
         // Flatten transfers with day
-        $packageData['transfers'] = collect($package->schedules)->flatMap(function ($schedule) {
+        $packageData['transfers'] = collect($package->schedules)->flatMap(function (PackageSchedule $schedule, int $key) {
             return collect($schedule->transfers)->map(function ($transfer) use ($schedule) {
                 $mediaItems = collect($transfer->transfer->mediaGallery ?? [])->map(function ($media) {
                     return [
-                        'name'      => $media->media->name ?? null,
-                        'alt_text'  => $media->media->alt_text ?? null,
-                        'url'       => $media->media->url ?? null,
+                        'name' => $media->media->name ?? null,
+                        'alt_text' => $media->media->alt_text ?? null,
+                        'url' => $media->media->url ?? null,
                     ];
-                })->filter(fn($item) => $item['url'])->values(); // null url वाले हटा दिए जाएं
+                })->filter(fn ($item) => $item['url'])->values(); // null url वाले हटा दिए जाएं
+
                 return [
 
-                    "id"                => $transfer->id,
-                    'transfer_id'       => $transfer->transfer_id,
-                    'transfer_name'     => $transfer->transfer->name ?? null,
-                    'media_url'         => $mediaItems,
-                    'day'               => $schedule->day,
-                    'start_time'        => $transfer->start_time,
-                    'end_time'          => $transfer->end_time,
-                    'notes'             => $transfer->notes,
-                    'price'             => (float) $transfer->price,
-                    'included'          => $transfer->included,
-                    'pickup_location'   => $transfer->pickup_location,
-                    'dropoff_location'  => $transfer->dropoff_location,
-                    'pax'               => $transfer->pax,
+                    'id' => $transfer->id,
+                    'transfer_id' => $transfer->transfer_id,
+                    'transfer_name' => $transfer->transfer->name ?? null,
+                    'media_url' => $mediaItems,
+                    'day' => $schedule->day,
+                    'start_time' => $transfer->start_time,
+                    'end_time' => $transfer->end_time,
+                    'notes' => $transfer->notes,
+                    'price' => (float) $transfer->price,
+                    'included' => $transfer->included,
+                    'pickup_location' => $transfer->pickup_location,
+                    'dropoff_location' => $transfer->dropoff_location,
+                    'pax' => $transfer->pax,
                 ];
             });
         })->values();
 
         // Flatten itineraries with day
-        $packageData['itineraries'] = collect($package->schedules)->flatMap(function ($schedule) {
+        $packageData['itineraries'] = collect($package->schedules)->flatMap(function (PackageSchedule $schedule, int $key) {
             return collect($schedule->itineraries)->map(function ($itinerary) use ($schedule) {
                 $mediaItems = collect($itinerary->itinerary->mediaGallery ?? [])->map(function ($media) {
                     return [
-                        'name'      => $media->media->name ?? null,
-                        'alt_text'  => $media->media->alt_text ?? null,
-                        'url'       => $media->media->url ?? null,
+                        'name' => $media->media->name ?? null,
+                        'alt_text' => $media->media->alt_text ?? null,
+                        'url' => $media->media->url ?? null,
                     ];
-                })->filter(fn($item) => $item['url'])->values();
+                })->filter(fn ($item) => $item['url'])->values();
+
                 return [
 
-                    'id'             => $itinerary->id,
-                    'itinerary_id'   => $itinerary->itinerary_id,
+                    'id' => $itinerary->id,
+                    'itinerary_id' => $itinerary->itinerary_id,
                     'itinerary_name' => $itinerary->itinerary->name ?? null,
-                    'media_url'      => $mediaItems,
-                    'day'            => $schedule->day,
-                    'start_time'     => $itinerary->start_time,
-                    'end_time'       => $itinerary->end_time,
-                    'notes'          => $itinerary->notes,
-                    'price'          => (float) $itinerary->price,
-                    'included'       => $itinerary->included,
+                    'media_url' => $mediaItems,
+                    'day' => $schedule->day,
+                    'start_time' => $itinerary->start_time,
+                    'end_time' => $itinerary->end_time,
+                    'notes' => $itinerary->notes,
+                    'price' => (float) $itinerary->price,
+                    'included' => $itinerary->included,
                 ];
             });
         })->values();
-        
+
         // Replace location city object with just `city_name`
         $packageData['locations'] = collect($package->locations)->map(function ($location) {
             return [
-                'id'         => $location->id,
+                'id' => $location->id,
                 'package_id' => $location->package_id,
-                'city_id'    => $location->city_id,
-                'city_name'  => $location->city->name ?? null,
+                'city_id' => $location->city_id,
+                'city_name' => $location->city->name ?? null,
             ];
         });
 
         $packageData['addons'] = collect($package->addons)->map(function ($addon) {
             return [
-                'id'                      => $addon->id,
-                'addon_id'                => $addon->addon_id,
-                'addon_name'              => $addon->addon->name ?? null,
-                'addon_type'              => $addon->addon->type ?? null,
-                'addon_description'       => $addon->addon->description ?? null,
-                'addon_price'             => $addon->addon->price ?? null,
-                'addon_sale_price'        => $addon->addon->sale_price ?? null,
+                'id' => $addon->id,
+                'addon_id' => $addon->addon_id,
+                'addon_name' => $addon->addon->name ?? null,
+                'addon_type' => $addon->addon->type ?? null,
+                'addon_description' => $addon->addon->description ?? null,
+                'addon_price' => $addon->addon->price ?? null,
+                'addon_sale_price' => $addon->addon->sale_price ?? null,
                 'addon_price_calculation' => $addon->addon->price_calculation ?? null,
-                'addon_active_status'     => $addon->addon->active_status ?? null,
+                'addon_active_status' => $addon->addon->active_status ?? null,
             ];
         });
-    
+
         // Replace mediaobject with just `media data`
         $packageData['media_gallery'] = collect($package->mediaGallery)->map(function ($media) {
             return [
-                'id'            => $media->id,
-                'package_id'    => $media->package_id,
-                'media_id'      => $media->media_id,
-                'name'          => $media->media->name,
-                'alt_text'      => $media->media->alt_text,
-                'url'           => $media->media->url ?? null,
-                'is_featured'   => $media->is_featured ?? false,
+                'id' => $media->id,
+                'package_id' => $media->package_id,
+                'media_id' => $media->media_id,
+                'name' => $media->media->name,
+                'alt_text' => $media->media->alt_text,
+                'url' => $media->media->url ?? null,
+                'is_featured' => $media->is_featured ?? false,
             ];
         });
 
@@ -720,25 +704,25 @@ class PackageController extends Controller
         // Replace attributes with just `attribute_name`
         $packageData['attributes'] = collect($package->attributes)->map(function ($attribute) {
             return [
-                'id'              => $attribute->id,
-                'attribute_id'    => $attribute->attribute_id,
-                'attribute_name'  => $attribute->attribute->name ?? null,
+                'id' => $attribute->id,
+                'attribute_id' => $attribute->attribute_id,
+                'attribute_name' => $attribute->attribute->name ?? null,
                 'attribute_value' => $attribute->attribute_value,
             ];
         });
-    
+
         // Replace categories with just `category_name`
         $packageData['categories'] = collect($package->categories)->map(function ($category) {
             return [
-                'id'            => $category->id,
-                'category_id'   => $category->category_id,
+                'id' => $category->id,
+                'category_id' => $category->category_id,
                 'category_name' => $category->category->name ?? null,
             ];
         });
         $packageData['tags'] = collect($package->tags)->map(function ($tag) {
             return [
-                'id'       => $tag->id,
-                'tag_id'   => $tag->tag_id,
+                'id' => $tag->id,
+                'tag_id' => $tag->tag_id,
                 'tag_name' => $tag->tag->name ?? null,
             ];
         });
@@ -752,50 +736,50 @@ class PackageController extends Controller
     public function update(Request $request, $id)
     {
         $package = Package::findOrFail($id);
-    
+
         $rules = [
-            'name'                  => 'sometimes|string|max:255',
-            'slug'                  => 'sometimes|string|unique:packages,slug,' . $package->id,
-            'description'           => 'nullable|string',
-            'featured_package'      => 'boolean',
-            'private_package'       => 'boolean',
-            'locations'             => 'nullable|array',
-            'information'           => 'nullable|array',
-            'schedules'             => 'nullable|array',
-            'activities'            => 'nullable|array',
-            'transfers'             => 'nullable|array',
-            'itineraries'           => 'nullable|array',
-            'pricing'               => 'nullable|array',
-            'price_variations'      => 'nullable|array',
-            'blackout_dates'        => 'nullable|array',
+            'name' => 'sometimes|string|max:255',
+            'slug' => 'sometimes|string|unique:packages,slug,'.$package->id,
+            'description' => 'nullable|string',
+            'featured_package' => 'boolean',
+            'private_package' => 'boolean',
+            'locations' => 'nullable|array',
+            'information' => 'nullable|array',
+            'schedules' => 'nullable|array',
+            'activities' => 'nullable|array',
+            'transfers' => 'nullable|array',
+            'itineraries' => 'nullable|array',
+            'pricing' => 'nullable|array',
+            'price_variations' => 'nullable|array',
+            'blackout_dates' => 'nullable|array',
             'inclusions_exclusions' => 'nullable|array',
-            'media_gallery'         => 'nullable|array',
-            'faqs'                  => 'nullable|array',
-            'seo'                   => 'nullable|array',
-            'categories'            => 'nullable|array',
-            'attributes'            => 'nullable|array',
-            'tags'                  => 'nullable|array',
-            'addons'                => 'nullable|array',
-            'availability'          => 'nullable|array',
+            'media_gallery' => 'nullable|array',
+            'faqs' => 'nullable|array',
+            'seo' => 'nullable|array',
+            'categories' => 'nullable|array',
+            'attributes' => 'nullable|array',
+            'tags' => 'nullable|array',
+            'addons' => 'nullable|array',
+            'availability' => 'nullable|array',
         ];
-    
+
         $request->validate($rules);
-    
+
         try {
             DB::beginTransaction();
-    
+
             $package->fill($request->only([
-                'name', 'slug', 'description', 'featured_package', 'private_package'
+                'name', 'slug', 'description', 'featured_package', 'private_package',
             ]));
             $package->save();
-    
+
             $scheduleMap = [];
 
             // $updateOrCreateRelation = function ($relationName, $data, $extra = []) use ($package) {
             //     $relation = $package->$relationName();
             //     $modelClass = get_class($relation->getRelated());
             //     $packageKey = $relation->getForeignKeyName(); // e.g., package_id
-            
+
             //     foreach ($data as $item) {
             //         $attributes = array_merge($item, $extra);
             //         if (!empty($item['id'])) {
@@ -812,26 +796,26 @@ class PackageController extends Controller
 
             $updateOrCreateRelation = function ($relationName, $data, $extra = []) use ($package) {
 
-                $relation      = $package->$relationName();
-                $modelClass    = get_class($relation->getRelated());
-                $packageKey  = $relation->getForeignKeyName();
-            
+                $relation = $package->$relationName();
+                $modelClass = get_class($relation->getRelated());
+                $packageKey = $relation->getForeignKeyName();
+
                 // 🔥 NEW: existing & incoming IDs
                 $existingIds = $relation->pluck('id')->toArray();
                 $incomingIds = collect($data)->pluck('id')->filter()->toArray();
-            
+
                 // 🔥 NEW: delete missing records
                 $deleteIds = array_diff($existingIds, $incomingIds);
-                if (!empty($deleteIds)) {
+                if (! empty($deleteIds)) {
                     $relation->whereIn('id', $deleteIds)->delete();
                 }
-            
+
                 // 🔁 update / create (same as before)
                 foreach ($data as $item) {
-            
+
                     $attributes = array_merge($item, $extra);
-            
-                    if (!empty($item['id'])) {
+
+                    if (! empty($item['id']) && $modelClass) {
                         $model = $modelClass::find($item['id']);
                         if ($model) {
                             $model->fill($attributes)->save();
@@ -841,8 +825,8 @@ class PackageController extends Controller
                         $relation->create($attributes);
                     }
                 }
-            }; 
-    
+            };
+
             foreach (['information', 'faqs', 'inclusionsExclusions'] as $relation) {
                 if ($request->has(Str::snake($relation))) {
                     $updateOrCreateRelation($relation, $request->{Str::snake($relation)});
@@ -867,11 +851,12 @@ class PackageController extends Controller
                                 $hasFeatured = true;
                             }
                         }
+
                         return [
-                            'id'         => $item['id'] ?? null,
+                            'id' => $item['id'] ?? null,
                             'package_id' => $package->id,
-                            'media_id'   => $item['media_id'],
-                            'is_featured'=> $isFeatured,
+                            'media_id' => $item['media_id'],
+                            'is_featured' => $isFeatured,
                         ];
                     })->toArray();
 
@@ -880,12 +865,12 @@ class PackageController extends Controller
                 $incomingIds = collect($mediaGallery)->pluck('id')->filter()->toArray();
                 $deleteIds = array_diff($existingIds, $incomingIds);
 
-                if (!empty($deleteIds)) {
+                if (! empty($deleteIds)) {
                     $package->mediaGallery()->whereIn('id', $deleteIds)->delete();
                 }
 
                 foreach ($mediaGallery as $item) {
-                    if (!empty($item['id'])) {
+                    if (! empty($item['id'])) {
                         $model = PackageMediaGallery::find($item['id']);
                         if ($model) {
                             $model->fill($item)->save();
@@ -895,7 +880,7 @@ class PackageController extends Controller
                     }
                 }
             }
-    
+
             if ($request->has('schedules')) {
                 $updateOrCreateRelation('schedules', $request->schedules);
                 foreach ($package->schedules as $schedule) {
@@ -907,7 +892,7 @@ class PackageController extends Controller
 
             $updateOrCreateSimple = function ($modelClass, $data, $scheduleMap = []) {
                 foreach ($data as $item) {
-                    if (!empty($item['id'])) {
+                    if (! empty($item['id'])) {
                         $model = $modelClass::find($item['id']);
                         if ($model) {
                             if (isset($item['day']) && empty($item['schedule_id'])) {
@@ -924,19 +909,17 @@ class PackageController extends Controller
                     }
                 }
             };
-   
-            
-            
+
             if ($request->has('activities')) {
                 $updateOrCreateSimple(\App\Models\PackageActivity::class, $request->activities, $scheduleMap);
 
             }
-            
+
             if ($request->has('transfers')) {
                 $updateOrCreateSimple(\App\Models\PackageTransfer::class, $request->transfers, $scheduleMap);
 
             }
-            
+
             if ($request->has('itineraries')) {
                 $updateOrCreateSimple(\App\Models\PackageItinerary::class, $request->itineraries, $scheduleMap);
 
@@ -952,7 +935,7 @@ class PackageController extends Controller
 
             $updateOrCreateChild = function ($relation, $data, $modelClass, $foreignKey) use ($pricing) {
                 foreach ($data as $item) {
-                    if (!empty($item['id'])) {
+                    if (! empty($item['id'])) {
                         $model = $modelClass::find($item['id']);
                         if ($model) {
                             $model->fill($item);
@@ -964,11 +947,11 @@ class PackageController extends Controller
                     }
                 }
             };
-            
+
             if ($request->has('price_variations')) {
                 $updateOrCreateChild('priceVariations', $request->price_variations, \App\Models\PackagePriceVariation::class, 'base_pricing_id');
             }
-            
+
             if ($request->has('blackout_dates')) {
                 $updateOrCreateChild('blackoutDates', $request->blackout_dates, \App\Models\PackageBlackoutDate::class, 'base_pricing_id');
             }
@@ -978,7 +961,7 @@ class PackageController extends Controller
                 $package->locations()->delete();
                 foreach ($request->locations as $locationId) {
                     $package->locations()->create([
-                        'city_id' => $locationId
+                        'city_id' => $locationId,
                     ]);
                 }
             }
@@ -988,7 +971,7 @@ class PackageController extends Controller
                 $package->categories()->delete();
                 foreach ($request->categories as $categoryId) {
                     $package->categories()->create([
-                        'category_id' => $categoryId
+                        'category_id' => $categoryId,
                     ]);
                 }
             }
@@ -997,7 +980,7 @@ class PackageController extends Controller
                 $package->addons()->delete();
                 foreach ($request->addons as $addonId) {
                     $package->addons()->create([
-                        'addon_id' => $addonId
+                        'addon_id' => $addonId,
                     ]);
                 }
             }
@@ -1007,7 +990,7 @@ class PackageController extends Controller
                 $package->tags()->delete();
                 foreach ($request->tags as $tagId) {
                     $package->tags()->create([
-                        'tag_id' => $tagId
+                        'tag_id' => $tagId,
                     ]);
                 }
             }
@@ -1025,18 +1008,18 @@ class PackageController extends Controller
             // }
             if ($request->has('attributes')) {
                 $package->attributes()->delete();
-            
+
                 $attributes = collect($request->input('attributes'))->map(function ($attr) use ($package) {
                     return array_merge($attr, ['activity_id' => $package->id]);
                 })->toArray();
-            
+
                 $package->attributes()->createMany($attributes);
-            } 
-    
+            }
+
             if ($request->has('availability')) {
                 $package->availability()->updateOrCreate([], $request->availability);
             }
-    
+
             if ($request->has('seo')) {
                 $seoData = $request->seo;
                 if (isset($seoData['schema_data']) && is_array($seoData['schema_data'])) {
@@ -1044,22 +1027,22 @@ class PackageController extends Controller
                 }
                 $package->seo()->updateOrCreate([], $seoData);
             }
-    
+
             DB::commit();
-    
+
             return response()->json([
                 'message' => 'Package updated successfully',
-                'package' => $package->fresh()
+                'package' => $package->fresh(),
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
+
             return response()->json([
-                'error'   => 'Something went wrong',
+                'error' => 'Something went wrong',
                 'details' => $e->getMessage(),
             ], 500);
         }
-    }    
-
+    }
 
     /**
      * Remove the specified Package from storage.
@@ -1067,11 +1050,11 @@ class PackageController extends Controller
     public function destroy(string $id)
     {
         $package = Package::find($id);
-        
-        if (!$package) {
+
+        if (! $package) {
             return response()->json(['message' => 'Package not found'], 404);
         }
-        
+
         $package->delete();
 
         return response()->json(['message' => 'Package deleted successfully']);
@@ -1084,7 +1067,7 @@ class PackageController extends Controller
     {
         $package = Package::with('information', 'schedules.activities', 'schedules.transfers', 'basePricing.variations', 'basePricing.blackoutDates')->find($id);
 
-        if (!$package) {
+        if (! $package) {
             return response()->json(['message' => 'Package not found'], 404);
         }
 
@@ -1178,14 +1161,15 @@ class PackageController extends Controller
             DB::commit();
 
             return response()->json([
-                'message' => 'Selected packages deleted successfully.'
+                'message' => 'Selected packages deleted successfully.',
             ], 200);
 
         } catch (\Exception $e) {
             DB::rollBack();
+
             return response()->json([
                 'error' => 'Failed to delete selected packages.',
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 500);
         }
     }

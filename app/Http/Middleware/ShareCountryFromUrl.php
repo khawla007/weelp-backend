@@ -19,12 +19,12 @@ class ShareCountryFromUrl
         $country = $request->route('country');
 
         // If not in URL, try to get from session
-        if (!$country) {
+        if (! $country) {
             $country = session('country');
         }
 
         // If still no country, try to detect from IP
-        if (!$country) {
+        if (! $country) {
             $position = \Stevebauman\Location\Facades\Location::get();
             $country = strtolower($position->countryCode ?? 'us');
             session(['country' => $country]);

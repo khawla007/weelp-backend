@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -18,6 +19,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\State $state
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StateSeo newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StateSeo newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StateSeo query()
@@ -32,13 +34,15 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StateSeo whereSchemaType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StateSeo whereStateId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|StateSeo whereUpdatedAt($value)
- * @mixin \Eloquent
+ *
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class StateSeo extends Model
 {
     use HasFactory;
 
     protected $table = 'state_seo';
+
     protected $fillable = [
         'state_id',
         'meta_title',
@@ -54,7 +58,6 @@ class StateSeo extends Model
     //     'schema_data' => 'array',
     // ];
 
-
     // Store JSON as raw JSON (Not as escaped string)
     public function setSchemaDataAttribute($value)
     {
@@ -67,7 +70,7 @@ class StateSeo extends Model
         return $value ? json_decode($value, true) : null;
     }
 
-    public function state()
+    public function state(): BelongsTo
     {
         return $this->belongsTo(State::class);
     }

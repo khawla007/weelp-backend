@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Creator;
 
 use App\Http\Controllers\Controller;
@@ -87,7 +88,7 @@ class CreatorDashboardController extends Controller
         ]);
 
         $path = parse_url($request->url, PHP_URL_PATH);
-        if (!$path) {
+        if (! $path) {
             return response()->json(['success' => false, 'message' => 'Invalid URL.'], 422);
         }
 
@@ -106,14 +107,14 @@ class CreatorDashboardController extends Controller
             'itineraries' => Itinerary::class,
         ];
 
-        if (!isset($modelMap[$typeSegment])) {
+        if (! isset($modelMap[$typeSegment])) {
             return response()->json(['success' => false, 'message' => 'Unsupported item type. Only activities, packages, and itineraries links are accepted.'], 422);
         }
 
         $modelClass = $modelMap[$typeSegment];
         $item = $modelClass::where('slug', $slug)->with('mediaGallery.media')->first();
 
-        if (!$item) {
+        if (! $item) {
             return response()->json(['success' => false, 'message' => 'Item not found.'], 404);
         }
 

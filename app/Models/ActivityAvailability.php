@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -15,6 +16,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Activity $activity
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityAvailability newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityAvailability newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityAvailability query()
@@ -27,7 +29,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityAvailability whereQuantityBasedActivity($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityAvailability whereStartDate($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ActivityAvailability whereUpdatedAt($value)
- * @mixin \Eloquent
+ *
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class ActivityAvailability extends Model
 {
@@ -41,7 +44,7 @@ class ActivityAvailability extends Model
         'max_quantity',
     ];
 
-    public function activity()
+    public function activity(): BelongsTo
     {
         return $this->belongsTo(Activity::class);
     }

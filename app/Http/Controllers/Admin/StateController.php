@@ -4,16 +4,15 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\State;
-use App\Models\StateMediaGallery;
-use App\Models\StateLocationDetail;
-use App\Models\StateTravelInfo;
-use App\Models\StateSeason;
-use App\Models\StateEvent;
 use App\Models\StateAdditionalInfo;
+use App\Models\StateEvent;
 use App\Models\StateFaq;
+use App\Models\StateLocationDetail;
+use App\Models\StateMediaGallery;
+use App\Models\StateSeason;
 use App\Models\StateSeo;
+use App\Models\StateTravelInfo;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 
 class StateController extends Controller
 {
@@ -30,8 +29,8 @@ class StateController extends Controller
         $query = State::query()->with('mediaGallery.media', 'country.regions');
 
         // Name search
-        if ($request->has('name') && !empty($request->name)) {
-            $query->where('name', 'like', '%' . $request->name . '%');
+        if ($request->has('name') && ! empty($request->name)) {
+            $query->where('name', 'like', '%'.$request->name.'%');
         }
 
         // Pagination (perPage fix)
@@ -39,9 +38,10 @@ class StateController extends Controller
         $states = $query->orderBy('id', 'desc')->paginate($perPage, ['*'], 'page', $request->input('page', 1));
 
         // Transform response
-        $data = $states->map(function ($state) {
+        $data = $states->map(function (State $state, int $key) {
             // Get featured image from media_gallery
             $featuredImage = $state->mediaGallery->firstWhere('is_featured', true);
+
             return [
                 'id' => $state->id,
                 'name' => $state->name,
@@ -51,17 +51,17 @@ class StateController extends Controller
                 'description' => $state->description,
                 'feature_image' => $featuredImage?->media->url ?? null, // Featured from media_gallery
                 'featured_destination' => $state->featured_destination,
-                'country' => $state->country ? [
+                'country' => [
                     'id' => $state->country->id,
                     'name' => $state->country->name,
-                ] : null,
-                'regions' => $state->country && $state->country->regions ? $state->country->regions->map(function ($region) {
+                ],
+                'regions' => $state->country->regions->map(function ($region) {
                     return [
                         'id' => $region->id,
                         'name' => $region->name,
                         'slug' => $region->slug,
                     ];
-                })->toArray() : [],
+                })->toArray(),
                 // Custom Media format
                 'media_gallery' => $state->mediaGallery->map(function ($gallery) {
                     return [
@@ -76,6 +76,7 @@ class StateController extends Controller
                 }),
             ];
         });
+
         // 🎯 Custom response format
         return response()->json([
             'success' => true,
@@ -86,10 +87,10 @@ class StateController extends Controller
             'current_page' => $states->currentPage(),
         ]);
     }
-    
+
     /**
      * List of states dropdown
-    */
+     */
     public function stateList()
     {
         try {
@@ -99,25 +100,25 @@ class StateController extends Controller
                 return response()->json([
                     'success' => false,
                     'message' => 'No State found',
-                    'data' => []
+                    'data' => [],
                 ], 404);
             }
 
             return response()->json([
                 'success' => true,
                 'message' => 'State list fetched successfully',
-                'data' => $states
+                'data' => $states,
             ], 200);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Something went wrong while fetching State list',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
-    
+
     /**
      * Store a newly created resource in storage.
      */
@@ -134,7 +135,7 @@ class StateController extends Controller
             'featured_destination' => 'boolean',
 
             // Media (array of objects)
-            'media_gallery'     => 'nullable|array',
+            'media_gallery' => 'nullable|array',
 
             // Location Details
             'location_details.latitude' => 'nullable|string',
@@ -201,7 +202,7 @@ class StateController extends Controller
 
         if ($exists) {
             return response()->json([
-                'message' => 'This State already exists, please choose another name.'
+                'message' => 'This State already exists, please choose another name.',
             ], 422); // 422 = Unprocessable Entity (validation error)
         }
         // Create State
@@ -216,7 +217,7 @@ class StateController extends Controller
         ]);
 
         // Media Details
-        if (!empty($validated['media_gallery'])) {
+        if (! empty($validated['media_gallery'])) {
             // Ensure only one featured image
             $hasFeatured = false;
             foreach ($validated['media_gallery'] as $media) {
@@ -232,20 +233,20 @@ class StateController extends Controller
 
                 StateMediaGallery::create([
                     'state_id' => $state->id,
-                    'media_id'    => $media['media_id'],
+                    'media_id' => $media['media_id'],
                     'is_featured' => $isFeatured,
                 ]);
             }
         }
 
         // Location Details
-        if (!empty($validated['location_details'])) {
+        if (! empty($validated['location_details'])) {
             $validated['location_details']['state_id'] = $state->id;
             StateLocationDetail::create($validated['location_details']);
         }
 
         // Travel Info
-        if (!empty($validated['travel_info'])) {
+        if (! empty($validated['travel_info'])) {
             $validated['travel_info']['state_id'] = $state->id;
             StateTravelInfo::create($validated['travel_info']);
         }
@@ -253,7 +254,9 @@ class StateController extends Controller
         // Season
         if ($request->has('seasons')) {
             foreach ($request->seasons as $season) {
-                if (empty($season['name'])) continue;
+                if (empty($season['name'])) {
+                    continue;
+                }
                 $state->seasons()->create($season);
             }
         }
@@ -261,25 +264,31 @@ class StateController extends Controller
         // Event
         if ($request->has('events')) {
             foreach ($request->events as $event) {
-                if (empty($event['name'])) continue;
+                if (empty($event['name'])) {
+                    continue;
+                }
                 $state->events()->create($event);
             }
         }
 
         // Additional Info
-        if (!empty($validated['additional_info'])) {
+        if (! empty($validated['additional_info'])) {
             foreach ($validated['additional_info'] as $additional) {
-                if (empty($additional['title'])) continue;
+                if (empty($additional['title'])) {
+                    continue;
+                }
                 $additional['state_id'] = $state->id;
                 StateAdditionalInfo::create($additional);
             }
         }
 
         // FAQs
-        if (!empty($validated['faqs'])) {
+        if (! empty($validated['faqs'])) {
             $questionNumber = 1;
             foreach ($validated['faqs'] as $faq) {
-                if (empty($faq['question'])) continue;
+                if (empty($faq['question'])) {
+                    continue;
+                }
                 StateFaq::create([
                     'state_id' => $state->id,
                     'question_number' => $questionNumber++,
@@ -290,14 +299,14 @@ class StateController extends Controller
         }
 
         // SEO
-        if (!empty($validated['seo'])) {
+        if (! empty($validated['seo'])) {
             $validated['seo']['state_id'] = $state->id;
             StateSeo::create($validated['seo']);
         }
 
         return response()->json([
             'message' => 'State created successfully',
-            'state' => $state
+            'state' => $state,
         ], 201);
     }
 
@@ -314,17 +323,17 @@ class StateController extends Controller
             'events',
             'additionalInfo',
             'faqs',
-            'seo'
+            'seo',
         ])->find($id);
 
         // Check if state exists FIRST (before accessing properties)
-        if (!$state) {
+        if (! $state) {
             return response()->json(['message' => 'State not found'], 404);
         }
 
         // media_gallery ko transform karna
-        if ($state->mediaGallery && $state->mediaGallery->count()) {
-            $state->media_gallery = $state->mediaGallery->map(function ($gallery) {
+        if ($state->mediaGallery->count()) {
+            $mediaCollection = $state->mediaGallery->map(function ($gallery) {
                 return [
                     'id' => $gallery->id,
                     'state_id' => $gallery->state_id,
@@ -336,8 +345,9 @@ class StateController extends Controller
                 ];
             })->values();
             // Get featured image from media_gallery
-            $featuredImage = $state->media_gallery->firstWhere('is_featured', true);
+            $featuredImage = $mediaCollection->firstWhere('is_featured', true);
             $state->feature_image = $featuredImage['url'] ?? null;
+            $state->media_gallery = $mediaCollection->toArray();
             unset($state->mediaGallery); // nested relation hatane ke liye
         } else {
             $state->media_gallery = [];
@@ -353,7 +363,7 @@ class StateController extends Controller
     public function update(Request $request, $id)
     {
         $state = State::findOrFail($id);
-    
+
         $validated = $request->validate([
             // State fields
             'name' => 'nullable|string|max:255',
@@ -365,8 +375,8 @@ class StateController extends Controller
             'featured_destination' => 'boolean',
 
             // Media (array of objects)
-            'media_gallery'     => 'nullable|array',
-    
+            'media_gallery' => 'nullable|array',
+
             // Location Details
             'location_details.latitude' => 'nullable|string',
             'location_details.longitude' => 'nullable|string',
@@ -376,7 +386,7 @@ class StateController extends Controller
             'location_details.timezone' => 'nullable|string',
             'location_details.language' => 'nullable|array',
             'location_details.local_cuisine' => 'nullable|array',
-    
+
             // Travel Info
             'travel_info.airport' => 'nullable|string',
             'travel_info.public_transportation' => 'nullable|array',
@@ -390,7 +400,7 @@ class StateController extends Controller
             'travel_info.best_time_to_visit' => 'nullable|string',
             'travel_info.travel_tips' => 'nullable|string',
             'travel_info.safety_information' => 'nullable|string',
-    
+
             // Season (array of objects)
             'seasons' => 'nullable|array',
             'seasons.*.id' => 'nullable|integer|exists:state_seasons,id',
@@ -398,7 +408,7 @@ class StateController extends Controller
             'seasons.*.months' => 'nullable|array',
             'seasons.*.weather' => 'nullable|string',
             'seasons.*.activities' => 'nullable|array',
-    
+
             // Event (array of objects)
             'events' => 'nullable|array',
             'events.*.id' => 'nullable|integer|exists:state_events,id',
@@ -407,19 +417,19 @@ class StateController extends Controller
             'events.*.date' => 'nullable|date',
             'events.*.location' => 'nullable|string',
             'events.*.description' => 'nullable|string',
-    
+
             // Additional Info
             'additional_info' => 'nullable|array',
             'additional_info.*.id' => 'nullable|integer|exists:state_additional_infos,id',
             'additional_info.*.title' => 'required|string',
             'additional_info.*.content' => 'required|string',
-    
+
             // FAQs
             'faqs' => 'nullable|array',
             'faqs.*.id' => 'nullable|integer|exists:state_faqs,id',
             'faqs.*.question' => 'required|string',
             'faqs.*.answer' => 'required|string',
-    
+
             // SEO
             'seo.meta_title' => 'nullable|string',
             'seo.meta_description' => 'nullable|string',
@@ -429,7 +439,7 @@ class StateController extends Controller
             'seo.schema_type' => 'nullable|string',
             'seo.schema_data' => 'nullable|array',
         ]);
-    
+
         // === State main fields update ===
         $state->update([
             'name' => $validated['name'] ?? $state->name,
@@ -460,74 +470,84 @@ class StateController extends Controller
 
                 StateMediaGallery::create([
                     'state_id' => $state->id,
-                    'media_id'    => $media['media_id'],
+                    'media_id' => $media['media_id'],
                     'is_featured' => $isFeatured,
                 ]);
             }
         }
-    
+
         // === Location Details (hasOne) ===
-        if (!empty($validated['location_details'])) {
-            $state->locationDetails
-                ? $state->locationDetails->update($validated['location_details'])
-                : $state->locationDetails()->create($validated['location_details']);
+        if (! empty($validated['location_details'])) {
+            if ($state->locationDetails) {
+                $state->locationDetails->update($validated['location_details']);
+            } else {
+                $state->locationDetails()->create($validated['location_details']);
+            }
         }
-    
+
         // === Travel Info (hasOne) ===
-        if (!empty($validated['travel_info'])) {
-            $state->travelInfo
-                ? $state->travelInfo->update($validated['travel_info'])
-                : $state->travelInfo()->create($validated['travel_info']);
+        if (! empty($validated['travel_info'])) {
+            if ($state->travelInfo) {
+                $state->travelInfo->update($validated['travel_info']);
+            } else {
+                $state->travelInfo()->create($validated['travel_info']);
+            }
         }
-    
+
         // === Seasons (hasMany) ===
         if ($request->has('seasons')) {
             $sentIds = collect($request->seasons)->pluck('id')->filter()->toArray();
-    
+
             // delete missing
             StateSeason::where('state_id', $state->id)
                 ->whereNotIn('id', $sentIds)
                 ->delete();
-    
+
             foreach ($request->seasons as $season) {
-                if (empty($season['name'])) continue;
-                if (!empty($season['id'])) {
+                if (empty($season['name'])) {
+                    continue;
+                }
+                if (! empty($season['id'])) {
                     StateSeason::where('id', $season['id'])->update($season);
                 } else {
                     $state->seasons()->create($season);
                 }
             }
         }
-    
+
         // === Events (hasMany) ===
         if ($request->has('events')) {
             $sentIds = collect($request->events)->pluck('id')->filter()->toArray();
-    
+
             StateEvent::where('state_id', $state->id)
                 ->whereNotIn('id', $sentIds)
                 ->delete();
-    
+
             foreach ($request->events as $event) {
-                if (empty($event['name'])) continue;
-                if (!empty($event['id'])) {
+                if (empty($event['name'])) {
+                    continue;
+                }
+                if (! empty($event['id'])) {
                     StateEvent::where('id', $event['id'])->update($event);
                 } else {
                     $state->events()->create($event);
                 }
             }
         }
-    
+
         // === Additional Info (hasMany) ===
         if ($request->has('additional_info')) {
             $sentIds = collect($request->additional_info)->pluck('id')->filter()->toArray();
-    
+
             StateAdditionalInfo::where('state_id', $state->id)
                 ->whereNotIn('id', $sentIds)
                 ->delete();
-    
+
             foreach ($request->additional_info as $info) {
-                if (empty($info['title'])) continue;
-                if (!empty($info['id'])) {
+                if (empty($info['title'])) {
+                    continue;
+                }
+                if (! empty($info['id'])) {
                     StateAdditionalInfo::where('id', $info['id'])->update($info);
                 } else {
                     $info['state_id'] = $state->id;
@@ -535,19 +555,21 @@ class StateController extends Controller
                 }
             }
         }
-    
+
         // === FAQs (hasMany) ===
         if ($request->has('faqs')) {
             $sentIds = collect($request->faqs)->pluck('id')->filter()->toArray();
-    
+
             StateFaq::where('state_id', $state->id)
                 ->whereNotIn('id', $sentIds)
                 ->delete();
-    
+
             $questionNumber = 1;
             foreach ($request->faqs as $faq) {
-                if (empty($faq['question'])) continue;
-                if (!empty($faq['id'])) {
+                if (empty($faq['question'])) {
+                    continue;
+                }
+                if (! empty($faq['id'])) {
                     StateFaq::where('id', $faq['id'])->update([
                         'question_number' => $questionNumber++,
                         'question' => $faq['question'],
@@ -563,23 +585,25 @@ class StateController extends Controller
                 }
             }
         }
-    
+
         // === SEO (hasOne) ===
-        if (!empty($validated['seo'])) {
-            $state->seo
-                ? $state->seo->update($validated['seo'])
-                : $state->seo()->create($validated['seo']);
+        if (! empty($validated['seo'])) {
+            if ($state->seo) {
+                $state->seo->update($validated['seo']);
+            } else {
+                $state->seo()->create($validated['seo']);
+            }
         }
-    
+
         return response()->json([
             'message' => 'State updated successfully',
-            'state' => $state->fresh()
+            'state' => $state->fresh(),
         ], 200);
-    }    
+    }
 
     /**
      * Remove the specified resource from array of object tables.
-    */
+     */
     public function partialRemove(Request $request, $stateId)
     {
         // Events delete
@@ -588,33 +612,33 @@ class StateController extends Controller
                 ->where('state_id', $stateId)
                 ->delete();
         }
-    
+
         // Seasons delete
         if ($request->has('deleted_season_ids')) {
             StateSeason::whereIn('id', $request->deleted_season_ids)
                 ->where('state_id', $stateId)
                 ->delete();
         }
-    
+
         // FAQs delete
         if ($request->has('deleted_faq_ids')) {
             StateFaq::whereIn('id', $request->deleted_faq_ids)
                 ->where('state_id', $stateId)
                 ->delete();
         }
-    
+
         // Additional Info delete
         if ($request->has('deleted_additional_info_ids')) {
             StateAdditionalInfo::whereIn('id', $request->deleted_additional_info_ids)
                 ->where('state_id', $stateId)
                 ->delete();
         }
-    
+
         return response()->json([
             'success' => true,
-            'message' => 'Selected records removed successfully'
+            'message' => 'Selected records removed successfully',
         ]);
-    } 
+    }
 
     /**
      * Remove the specified resource from storage.
@@ -622,6 +646,7 @@ class StateController extends Controller
     public function destroy(string $id)
     {
         State::findOrFail($id)->delete();
+
         return response()->json(['message' => 'State deleted successfully']);
     }
 
@@ -640,12 +665,12 @@ class StateController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => "{$count} states deleted successfully"
+                'message' => "{$count} states deleted successfully",
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'error' => 'Failed to delete states: ' . $e->getMessage()
+                'error' => 'Failed to delete states: '.$e->getMessage(),
             ], 500);
         }
     }

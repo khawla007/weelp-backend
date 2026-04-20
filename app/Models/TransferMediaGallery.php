@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -14,6 +15,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Media $media
  * @property-read \App\Models\Transfer $transfer
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferMediaGallery featured()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferMediaGallery newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferMediaGallery newQuery()
@@ -24,7 +26,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferMediaGallery whereMediaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferMediaGallery whereTransferId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferMediaGallery whereUpdatedAt($value)
- * @mixin \Eloquent
+ *
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class TransferMediaGallery extends Model
 {
@@ -47,12 +50,12 @@ class TransferMediaGallery extends Model
     }
 
     // Relationship with Transfer
-    public function transfer()
+    public function transfer(): BelongsTo
     {
         return $this->belongsTo(Transfer::class);
     }
 
-    public function media()
+    public function media(): BelongsTo
     {
         return $this->belongsTo(Media::class, 'media_id');
     }

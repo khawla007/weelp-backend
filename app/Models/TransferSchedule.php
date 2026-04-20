@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -18,6 +19,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Transfer $transfer
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferSchedule newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferSchedule newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferSchedule query()
@@ -32,7 +34,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferSchedule whereTimeSlots($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferSchedule whereTransferId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferSchedule whereUpdatedAt($value)
- * @mixin \Eloquent
+ *
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class TransferSchedule extends Model
 {
@@ -60,7 +63,7 @@ class TransferSchedule extends Model
         'maximum_passengers' => 'integer',
     ];
 
-    public function transfer()
+    public function transfer(): BelongsTo
     {
         return $this->belongsTo(Transfer::class);
     }

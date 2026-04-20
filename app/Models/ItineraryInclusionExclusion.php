@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -14,6 +15,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Itinerary $itinerary
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryInclusionExclusion newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryInclusionExclusion newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryInclusionExclusion query()
@@ -25,23 +27,23 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryInclusionExclusion whereTitle($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryInclusionExclusion whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryInclusionExclusion whereUpdatedAt($value)
- * @mixin \Eloquent
+ *
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class ItineraryInclusionExclusion extends Model
 {
-
     protected $table = 'itinerary_inclusions_exclusions';
 
     protected $fillable = [
-        'itinerary_id', 'type', 'title', 
-        'description', 'included'
+        'itinerary_id', 'type', 'title',
+        'description', 'included',
     ];
 
     protected $casts = [
-        'included' => 'boolean'
+        'included' => 'boolean',
     ];
 
-    public function itinerary()
+    public function itinerary(): BelongsTo
     {
         return $this->belongsTo(Itinerary::class);
     }

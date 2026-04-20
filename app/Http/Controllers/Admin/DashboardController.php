@@ -9,16 +9,14 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * Dashboard Controller
- * 
+ *
  * Provides dashboard metrics and statistics for the admin dashboard
  */
 class DashboardController extends Controller
 {
     /**
      * Get dashboard metrics
-     * Returns monthly revenue, bookings, new users, pending orders with growth percentage
-     *
-     * @return JsonResponse
+     * Returns total revenue, total bookings, active users, and growth percentage
      */
     public function getMetrics(): JsonResponse
     {
@@ -84,75 +82,60 @@ class DashboardController extends Controller
                 $bookingsGrowth = 0;
             }
 
-            // New Users (current month) - all users registered this month
-            $newUsers = DB::table('users')
+            // Active Users (current month) - users with status = 'active' who registered this month
+            $activeUsers = DB::table('users')
+                ->where('status', 'active')
                 ->whereMonth('created_at', $currentMonth)
                 ->whereYear('created_at', $currentYear)
                 ->count();
 
-            // New Users (last month) - for growth comparison
-            $lastMonthNewUsers = DB::table('users')
+            // Active Users (last month) - for growth comparison
+            $lastMonthActiveUsers = DB::table('users')
+                ->where('status', 'active')
                 ->whereMonth('created_at', $lastMonthNum)
                 ->whereYear('created_at', $lastMonthYear)
                 ->count();
 
             // Calculate users growth percentage
-            if ($lastMonthNewUsers > 0) {
-                $usersGrowth = round((($newUsers - $lastMonthNewUsers) / $lastMonthNewUsers) * 100, 1);
-            } elseif ($newUsers > 0) {
+            if ($lastMonthActiveUsers > 0) {
+                $usersGrowth = round((($activeUsers - $lastMonthActiveUsers) / $lastMonthActiveUsers) * 100, 1);
+            } elseif ($activeUsers > 0) {
+                // Last month was 0, current month has users - show 100% growth
                 $usersGrowth = 100;
             } else {
+                // Both months are 0
                 $usersGrowth = 0;
             }
 
-            // Pending Orders (current month) - orders needing attention
-            $pendingOrders = DB::table('orders')
-                ->whereMonth('created_at', $currentMonth)
-                ->whereYear('created_at', $currentYear)
-                ->whereIn('status', ['pending', 'processing'])
-                ->count();
+            // Total Activities count
+            $totalActivities = DB::table('activities')->count();
 
-            // Pending Orders (last month) - for growth comparison
-            $lastMonthPendingOrders = DB::table('orders')
-                ->whereMonth('created_at', $lastMonthNum)
-                ->whereYear('created_at', $lastMonthYear)
-                ->whereIn('status', ['pending', 'processing'])
-                ->count();
-
-            // Calculate pending orders growth percentage
-            if ($lastMonthPendingOrders > 0) {
-                $pendingGrowth = round((($pendingOrders - $lastMonthPendingOrders) / $lastMonthPendingOrders) * 100, 1);
-            } elseif ($pendingOrders > 0) {
-                $pendingGrowth = 100;
-            } else {
-                $pendingGrowth = 0;
-            }
-
-            $monthName = $now->format('F'); // e.g. "April", "May", etc.
+            // Total Packages count
+            $totalPackages = DB::table('packages')->count();
 
             return response()->json([
                 'success' => true,
                 'data' => [
                     'metrics' => [
                         [
-                            'title' => $monthName . ' Revenue',
-                            'total' => $totalRevenue ?? 0,
+                            'title' => 'Total Revenue',
+                            'total' => $totalRevenue,
                             'change' => $revenueGrowth,
                         ],
                         [
-                            'title' => $monthName . ' Bookings',
-                            'total' => $totalBookings ?? 0,
+                            'title' => 'Bookings',
+                            'total' => $totalBookings,
                             'change' => $bookingsGrowth,
                         ],
                         [
-                            'title' => $monthName . ' New Users',
-                            'total' => $newUsers ?? 0,
+                            'title' => 'Active Users',
+                            'total' => $activeUsers,
                             'change' => $usersGrowth,
                         ],
                         [
-                            'title' => $monthName . ' Orders In Process',
-                            'total' => $pendingOrders ?? 0,
-                            'change' => $pendingGrowth,
+                            'title' => 'Total Activities',
+                            'total' => $totalActivities,
+                            'change' => 0, // No growth calculation for activities count
                         ],
                     ],
                 ],
@@ -169,8 +152,6 @@ class DashboardController extends Controller
     /**
      * Get overview chart data
      * Returns monthly revenue data for the current year
-     *
-     * @return JsonResponse
      */
     public function getOverviewChart(): JsonResponse
     {
@@ -219,14 +200,12 @@ class DashboardController extends Controller
     /**
      * Get recent sales
      * Returns recent pending/confirmed orders with user details and monthly total from completed orders
-     *
-     * @return JsonResponse
      */
     public function getRecentSales(): JsonResponse
     {
         try {
             // Fetch recent 5 orders regardless of status (pending, processing, completed)
-            $recentOrders = \App\Models\Order::with(['user.profile', 'payment'])
+            $recentOrders = \App\Models\Order::with(['user.avatarMedia', 'payment'])
                 ->orderBy('orders.created_at', 'desc')
                 ->limit(5)
                 ->get();
@@ -243,9 +222,10 @@ class DashboardController extends Controller
 
             $monthlyTotal = $completedOrders->sum(function ($order) {
                 $payment = $order->payment;
-                if (!$payment) {
+                if (! $payment) {
                     return 0;
                 }
+
                 return ($payment->total_amount ?? 0) + ($payment->custom_amount ?? 0);
             });
 
@@ -253,13 +233,15 @@ class DashboardController extends Controller
             $formattedOrders = $recentOrders->map(function ($order) {
                 $user = $order->user;
                 $payment = $order->payment;
+                $avatarMedia = $user->avatarMedia;
 
                 // Handle orders without users
-                if (!$user) {
+                if (! $user) {
                     $amount = 0;
                     if ($payment) {
                         $amount = ($payment->total_amount ?? 0) + ($payment->custom_amount ?? 0);
                     }
+
                     return [
                         'username' => 'Unknown',
                         'email' => '',
@@ -269,8 +251,10 @@ class DashboardController extends Controller
                 }
 
                 // Generate avatar URL
-                $avatarUrl = $user->profile?->avatar;
-                if (empty($avatarUrl)) {
+                $avatarUrl = null;
+                if ($avatarMedia && ! empty($avatarMedia->url)) {
+                    $avatarUrl = $avatarMedia->url;
+                } else {
                     // Fallback to UI Avatars API
                     $name = urlencode($user->name ?? 'User');
                     $avatarUrl = "https://ui-avatars.com/api/?name={$name}&background=random";
@@ -307,9 +291,6 @@ class DashboardController extends Controller
     /**
      * Search dashboard content
      * Searches across orders, users, activities, packages, and blogs
-     *
-     * @param \Illuminate\Http\Request $request
-     * @return JsonResponse
      */
     public function search(Request $request): JsonResponse
     {
@@ -325,7 +306,7 @@ class DashboardController extends Controller
                 ], 200);
             }
 
-            $searchTerm = '%' . $query . '%';
+            $searchTerm = '%'.$query.'%';
             $results = [];
 
             // Search Orders

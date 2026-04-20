@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -14,6 +15,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Country $country
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CountryFaq newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CountryFaq newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CountryFaq query()
@@ -24,7 +26,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CountryFaq whereQuestion($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CountryFaq whereQuestionNumber($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CountryFaq whereUpdatedAt($value)
- * @mixin \Eloquent
+ *
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class CountryFaq extends Model
 {
@@ -37,7 +40,7 @@ class CountryFaq extends Model
         'answer',
     ];
 
-    public function country()
+    public function country(): BelongsTo
     {
         return $this->belongsTo(Country::class);
     }

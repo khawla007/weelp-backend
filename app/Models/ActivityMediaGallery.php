@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -14,6 +15,7 @@ use Illuminate\Database\Eloquent\Builder;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Activity $activity
  * @property-read \App\Models\Media $media
+ *
  * @method static Builder<static>|ActivityMediaGallery featured()
  * @method static Builder<static>|ActivityMediaGallery newModelQuery()
  * @method static Builder<static>|ActivityMediaGallery newQuery()
@@ -24,14 +26,15 @@ use Illuminate\Database\Eloquent\Builder;
  * @method static Builder<static>|ActivityMediaGallery whereIsFeatured($value)
  * @method static Builder<static>|ActivityMediaGallery whereMediaId($value)
  * @method static Builder<static>|ActivityMediaGallery whereUpdatedAt($value)
- * @mixin \Eloquent
+ *
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class ActivityMediaGallery extends Model
 {
     protected $table = 'activity_media_gallery';
 
     protected $fillable = [
-        'activity_id', 'media_id', 'is_featured'
+        'activity_id', 'media_id', 'is_featured',
     ];
 
     /**
@@ -42,12 +45,12 @@ class ActivityMediaGallery extends Model
         return $query->where('is_featured', true);
     }
 
-    public function activity()
+    public function activity(): BelongsTo
     {
         return $this->belongsTo(Activity::class);
     }
 
-    public function media()
+    public function media(): BelongsTo
     {
         return $this->belongsTo(Media::class, 'media_id');
     }

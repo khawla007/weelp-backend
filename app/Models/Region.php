@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Str;
 
 /**
@@ -17,6 +18,7 @@ use Illuminate\Support\Str;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Country> $countries
  * @property-read int|null $countries_count
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Region newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Region newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Region query()
@@ -28,7 +30,8 @@ use Illuminate\Support\Str;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Region whereSlug($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Region whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Region whereUpdatedAt($value)
- * @mixin \Eloquent
+ *
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class Region extends Model
 {
@@ -42,7 +45,7 @@ class Region extends Model
         $this->attributes['slug'] = Str::slug($value);
     }
 
-    public function countries()
+    public function countries(): BelongsToMany
     {
         // return $this->belongsToMany(Country::class, 'region_country');
         return $this->belongsToMany(Country::class, 'region_country', 'region_id', 'country_id');

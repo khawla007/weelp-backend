@@ -3,13 +3,13 @@
 namespace App\Http\Controllers\Guest;
 
 use App\Http\Controllers\Controller;
-use App\Models\City;
-use App\Models\State;
-use App\Models\Country;
 use App\Models\Activity;
+use App\Models\Category;
+use App\Models\City;
+use App\Models\Country;
 use App\Models\Itinerary;
 use App\Models\Package;
-use App\Models\Category;
+use App\Models\State;
 use App\Models\Tag;
 use Illuminate\Http\Request;
 
@@ -19,12 +19,12 @@ class PublicCitiesController extends Controller
     public function getCitiesByState($country_slug, $state_slug)
     {
         $country = Country::where('slug', $country_slug)->first();
-        if (!$country) {
+        if (! $country) {
             return response()->json(['success' => false, 'message' => 'Country not found'], 404);
         }
 
         $state = State::where('slug', $state_slug)->where('country_id', $country->id)->first();
-        if (!$state) {
+        if (! $state) {
             return response()->json(['success' => false, 'message' => 'State not found'], 404);
         }
 
@@ -32,22 +32,25 @@ class PublicCitiesController extends Controller
             ->where('state_id', $state->id)
             ->get()
             ->map(function ($city) {
+                // Get featured image from media_gallery
                 $featuredImage = $city->mediaGallery->firstWhere('is_featured', true)
                     ?? $city->mediaGallery->first();
                 $city->feature_image = $featuredImage?->media->url ?? null;
                 unset($city->mediaGallery);
+
                 return $city;
             });
 
-        if (empty($cities)) {
+        if ($cities->isEmpty()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Cities not found'
+                'message' => 'Cities not found',
             ]);
         }
+
         return response()->json([
             'success' => true,
-            'data' => $cities
+            'data' => $cities,
         ]);
     }
 
@@ -56,38 +59,39 @@ class PublicCitiesController extends Controller
     {
         $cities = City::with([
             'state.country.regions',
-            'mediaGallery.media'
+            'mediaGallery.media',
         ])
-        ->withCount('activities')
-        ->where('featured_destination', true)
-        ->get()
-        ->map(function ($city) {
-            $featuredImage = $city->mediaGallery->firstWhere('is_featured', true)
-                ?? $city->mediaGallery->first();
-            $featureImageUrl = $featuredImage?->media->url ?? null;
-            return [
-                'id' => $city->id,
-                'name' => $city->name,
-                'slug' => $city->slug,
-                'description' => $city->description,
-                'featured_image' => $featureImageUrl,
-                'activities_count' => $city->activities_count,
-                'state' => [
-                    'id' => $city->state->id ?? null,
-                    'name' => $city->state->name ?? null,
-                ],
-                'country' => [
-                    'id' => $city->state->country->id ?? null,
-                    'name' => $city->state->country->name ?? null,
-                ],
-                'region' => $city->state->country->regions->map(function ($region) {
-                    return [
-                        'id' => $region->id,
-                        'name' => $region->name,
-                    ];
-                })
-            ];
-        });
+            ->withCount('activities')
+            ->where('featured_destination', true)
+            ->get()
+            ->map(function ($city) {
+                // Get featured image from media_gallery
+                $featuredImage = $city->mediaGallery->firstWhere('is_featured', true)
+                    ?? $city->mediaGallery->first();
+                $featureImageUrl = $featuredImage?->media->url ?? null;
+                return [
+                    'id' => $city->id,
+                    'name' => $city->name,
+                    'slug' => $city->slug,
+                    'description' => $city->description,
+                    'featured_image' => $featureImageUrl,
+                    'activities_count' => $city->activities_count,
+                    'state' => [
+                        'id' => $city->state->id ?? null,
+                        'name' => $city->state->name ?? null,
+                    ],
+                    'country' => [
+                        'id' => $city->state->country->id ?? null,
+                        'name' => $city->state->country->name ?? null,
+                    ],
+                    'region' => $city->state->country->regions->map(function ($region) {
+                        return [
+                            'id' => $region->id,
+                            'name' => $region->name,
+                        ];
+                    })
+                ];
+            });
 
         if ($cities->isEmpty()) {
             return response()->json([
@@ -98,7 +102,7 @@ class PublicCitiesController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $cities
+            'data' => $cities,
         ]);
     }
 
@@ -155,7 +159,7 @@ class PublicCitiesController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $cities
+            'data' => $cities,
         ]);
     }
 
@@ -223,7 +227,7 @@ class PublicCitiesController extends Controller
             'seo'
         ])->where('slug', $slug)->first();
 
-        if (!$city) {
+        if (! $city) {
             return response()->json([
                 'success' => false,
                 'message' => 'City not found'
@@ -233,7 +237,7 @@ class PublicCitiesController extends Controller
         // Get featured image and full gallery from media_gallery
         $featureImageUrl = null;
         $mediaGallery = [];
-        if ($city->mediaGallery && $city->mediaGallery->count()) {
+        if ($city->mediaGallery->count()) {
             $featuredImage = $city->mediaGallery->firstWhere('is_featured', true)
                 ?? $city->mediaGallery->first();
             $featureImageUrl = $featuredImage?->media->url ?? null;
@@ -284,9 +288,18 @@ class PublicCitiesController extends Controller
     // ----------------------------getting all items (activity, itinerary, package) by city---------------------------------
     public function getAllItemsByCity($city_slug)
     {
+        request()->validate([
+            'categories' => 'nullable|string',
+            'tags' => 'nullable|string',
+            'min_price' => 'nullable|numeric|min:0',
+            'max_price' => 'nullable|numeric|min:0',
+            'sort_by' => 'nullable|in:name_asc,name_desc,price_asc,price_desc,id_asc,id_desc',
+            'item_type' => 'nullable|in:activity,itinerary,package',
+        ]);
+
         $city = City::with('state.country.regions')->where('slug', $city_slug)->first();
 
-        if (!$city) {
+        if (! $city) {
             return response()->json(['success' => false, 'message' => 'City not found.'], 404);
         }
 
@@ -297,46 +310,44 @@ class PublicCitiesController extends Controller
         $sortBy = request()->get('sort_by', 'id_desc');
         $itemType = request()->get('item_type', null);
 
-        $categoryIds = !empty($categorySlugs) ? Category::whereIn('slug', $categorySlugs)->pluck('id')->toArray() : [];
-        $tagIds = !empty($tagSlugs) ? Tag::whereIn('slug', $tagSlugs)->pluck('id')->toArray() : [];
+        $categoryIds = ! empty($categorySlugs) ? Category::whereIn('slug', $categorySlugs)->pluck('id')->toArray() : [];
+        $tagIds = ! empty($tagSlugs) ? Tag::whereIn('slug', $tagSlugs)->pluck('id')->toArray() : [];
 
-        $activities = (!$itemType || $itemType === 'activity')
-            ? Activity::whereHas('locations', fn($query) => $query->where('city_id', $city->id))
+        $activities = (! $itemType || $itemType === 'activity')
+            ? Activity::whereHas('locations', fn ($query) => $query->where('city_id', $city->id))
                 ->with(['pricing', 'groupDiscounts', 'categories.category', 'locations.city.state.country.regions', 'mediaGallery.media'])
             : null;
 
-        $itineraries = (!$itemType || $itemType === 'itinerary')
-            ? Itinerary::whereHas('locations', fn($query) => $query->where('city_id', $city->id))
+        $itineraries = (! $itemType || $itemType === 'itinerary')
+            ? Itinerary::whereHas('locations', fn ($query) => $query->where('city_id', $city->id))
                 ->with([
                     'basePricing.variations',
                     'mediaGallery.media',
                     'categories.category',
                     'tags',
-                    'schedules.activities:id,schedule_id,price',
-                    'schedules.transfers:id,schedule_id,price',
                 ])
             : null;
 
-        $packages = (!$itemType || $itemType === 'package')
-            ? Package::whereHas('locations', fn($query) => $query->where('city_id', $city->id))
+        $packages = (! $itemType || $itemType === 'package')
+            ? Package::whereHas('locations', fn ($query) => $query->where('city_id', $city->id))
                 ->with(['basePricing.variations', 'mediaGallery.media', 'categories.category', 'tags'])
             : null;
 
-        if (!empty($categoryIds)) {
-            $activities?->whereHas('categories', fn($q) => $q->whereIn('category_id', $categoryIds));
-            $itineraries?->whereHas('categories', fn($q) => $q->whereIn('category_id', $categoryIds));
-            $packages?->whereHas('categories', fn($q) => $q->whereIn('category_id', $categoryIds));
+        if (! empty($categoryIds)) {
+            $activities?->whereHas('categories', fn ($q) => $q->whereIn('category_id', $categoryIds));
+            $itineraries?->whereHas('categories', fn ($q) => $q->whereIn('category_id', $categoryIds));
+            $packages?->whereHas('categories', fn ($q) => $q->whereIn('category_id', $categoryIds));
         }
 
-        if (!empty($tagIds)) {
-            $itineraries?->whereHas('tags', fn($q) => $q->whereIn('tags.id', $tagIds));
-            $packages?->whereHas('tags', fn($q) => $q->whereIn('tags.id', $tagIds));
+        if (! empty($tagIds)) {
+            $itineraries?->whereHas('tags', fn ($q) => $q->whereIn('tags.id', $tagIds));
+            $packages?->whereHas('tags', fn ($q) => $q->whereIn('tags.id', $tagIds));
         }
 
         if ($maxPrice !== null) {
-            $activities?->whereHas('pricing', fn($q) => $q->whereBetween('regular_price', [$minPrice, $maxPrice]));
-            $itineraries?->whereHas('basePricing.variations', fn($q) => $q->whereBetween('regular_price', [$minPrice, $maxPrice]));
-            $packages?->whereHas('basePricing.variations', fn($q) => $q->whereBetween('regular_price', [$minPrice, $maxPrice]));
+            $activities?->whereHas('pricing', fn ($q) => $q->whereBetween('regular_price', [$minPrice, $maxPrice]));
+            $itineraries?->whereHas('basePricing.variations', fn ($q) => $q->whereBetween('regular_price', [$minPrice, $maxPrice]));
+            $packages?->whereHas('basePricing.variations', fn ($q) => $q->whereBetween('regular_price', [$minPrice, $maxPrice]));
         }
 
         $activities = $activities?->get() ?? collect();
@@ -344,7 +355,7 @@ class PublicCitiesController extends Controller
         $packages = $packages?->get() ?? collect();
 
         $allItems = collect()
-            ->merge($activities->map(fn($activity) => [
+            ->merge($activities->map(fn ($activity) => [
                 'id' => $activity->id,
                 'name' => $activity->name,
                 'slug' => $activity->slug,
@@ -354,12 +365,12 @@ class PublicCitiesController extends Controller
                 'featured_image' => $activity->mediaGallery->where('is_featured', true)->first()?->media?->url
                     ?? $activity->mediaGallery->first()?->media?->url,
                 'pricing' => $activity->pricing,
-                'categories' => $activity->categories->map(fn($category) => [
+                'categories' => $activity->categories->map(fn ($category) => [
                     'slug' => $category->category->slug,
                     'name' => $category->category->name,
                 ])->toArray(),
             ]))
-            ->merge($itineraries->map(fn($itinerary) => [
+            ->merge($itineraries->map(fn ($itinerary) => [
                 'id' => $itinerary->id,
                 'name' => $itinerary->name,
                 'slug' => $itinerary->slug,
@@ -368,18 +379,17 @@ class PublicCitiesController extends Controller
                 'featured' => $itinerary->featured_itinerary,
                 'featured_image' => $itinerary->mediaGallery->where('is_featured', true)->first()?->media?->url
                     ?? $itinerary->mediaGallery->first()?->media?->url,
-                'schedule_total_price' => $itinerary->schedule_total_price,
                 'base_pricing' => $itinerary->basePricing,
-                'categories' => $itinerary->categories->map(fn($category) => [
+                'categories' => $itinerary->categories->map(fn ($category) => [
                     'slug' => $category->category->slug,
                     'name' => $category->category->name,
                 ])->toArray(),
-                'tags' => $itinerary->tags->map(fn($tag) => [
+                'tags' => $itinerary->tags->map(fn ($tag) => [
                     'slug' => $tag->slug,
                     'name' => $tag->name,
                 ])->toArray(),
             ]))
-            ->merge($packages->map(fn($package) => [
+            ->merge($packages->map(fn ($package) => [
                 'id' => $package->id,
                 'name' => $package->name,
                 'slug' => $package->slug,
@@ -389,11 +399,11 @@ class PublicCitiesController extends Controller
                 'featured_image' => $package->mediaGallery->where('is_featured', true)->first()?->media?->url
                     ?? $package->mediaGallery->first()?->media?->url,
                 'base_pricing' => $package->basePricing,
-                'categories' => $package->categories->map(fn($category) => [
+                'categories' => $package->categories->map(fn ($category) => [
                     'slug' => $category->category->slug,
                     'name' => $category->category->name,
                 ])->toArray(),
-                'tags' => $package->tags->map(fn($tag) => [
+                'tags' => $package->tags->map(fn ($tag) => [
                     'slug' => $tag->slug,
                     'name' => $tag->name,
                 ])->toArray(),
@@ -403,8 +413,8 @@ class PublicCitiesController extends Controller
         $allItems = match ($sortBy) {
             'name_asc' => $allItems->sortBy('name'),
             'name_desc' => $allItems->sortByDesc('name'),
-            'price_asc' => $allItems->sortBy(fn($item) => $item['base_pricing']['regular_price'] ?? $item['pricing']['regular_price'] ?? 0),
-            'price_desc' => $allItems->sortByDesc(fn($item) => $item['base_pricing']['regular_price'] ?? $item['pricing']['regular_price'] ?? 0),
+            'price_asc' => $allItems->sortBy(fn ($item) => $item['base_pricing']['regular_price'] ?? $item['pricing']['regular_price'] ?? 0),
+            'price_desc' => $allItems->sortByDesc(fn ($item) => $item['base_pricing']['regular_price'] ?? $item['pricing']['regular_price'] ?? 0),
             'rating_desc' => $allItems->sortByDesc('rating'),
             'id_asc' => $allItems->sortBy('id'),
             default => $allItems->sortByDesc('id'),
@@ -425,6 +435,4 @@ class PublicCitiesController extends Controller
             'total' => $total,
         ], 200);
     }
-
 }
-

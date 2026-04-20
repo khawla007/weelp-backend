@@ -1,8 +1,10 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -15,6 +17,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\User $creator
  * @property-read \App\Models\Order $order
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Commission newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Commission newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Commission query()
@@ -26,7 +29,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Commission whereOrderId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Commission whereStatus($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Commission whereUpdatedAt($value)
- * @mixin \Eloquent
+ *
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class Commission extends Model
 {
@@ -44,12 +48,12 @@ class Commission extends Model
         ];
     }
 
-    public function creator()
+    public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'creator_id');
     }
 
-    public function order()
+    public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
     }

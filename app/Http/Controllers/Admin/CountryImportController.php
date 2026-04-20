@@ -24,40 +24,40 @@
 //         $validator = Validator::make($request->all(), [
 //             'file' => 'required|url',
 //         ]);
-    
+
 //         if ($validator->fails()) {
 //             return response()->json(['error' => $validator->errors()], 400);
 //         }
-    
+
 //         // Get the file URL from the request
 //         $fileUrl = $request->input('file');
-    
+
 //         // Download the file
 //         $response = Http::get($fileUrl);
-    
+
 //         if (!$response->successful()) {
 //             return response()->json(['error' => 'Failed to download the file.'], 400);
 //         }
-    
+
 //         // Save the file temporarily
 //         $tempFilePath = tempnam(sys_get_temp_dir(), 'csv');
 //         file_put_contents($tempFilePath, $response->body());
-    
+
 //         // Process the file
 //         $file = fopen($tempFilePath, 'r');
 //         $header = fgetcsv($file); // Skip the header row
-    
+
 //         while ($row = fgetcsv($file)) {
 //             // Skip rows with insufficient columns
 //             if (count($row) < 46) { // Ensure there are at least 46 columns
 //                 continue;
 //             }
-    
+
 //             // Skip rows with malformed data (e.g., JavaScript or HTML)
 //             if ($this->isRowMalformed($row)) {
 //                 continue;
 //             }
-    
+
 //             // Insert into the `countries` table
 //             $country = Country::create([
 //                 'name' => $this->sanitizeInput($row[0]),
@@ -67,7 +67,7 @@
 //                 'feature_image' => $this->sanitizeInput($row[4]),
 //                 'featured_destination' => filter_var($this->sanitizeInput($row[5]), FILTER_VALIDATE_BOOLEAN) ? 1 : 0,
 //             ]);
-    
+
 //             // Insert into the `country_details` table
 //             CountryLocationDetail::create([
 //                 'country_id' => $country->id,
@@ -80,7 +80,7 @@
 //                 'language' => $this->sanitizeInput($row[12]),
 //                 'local_cuisine' => $this->sanitizeInput($row[13]),
 //             ]);
-    
+
 //             // Insert into the `country_travel_info` table
 //             CountryTravelInfo::create([
 //                 'country_id' => $country->id,
@@ -99,7 +99,7 @@
 //                 'travel_tips' => $this->sanitizeInput($row[24]),
 //                 'safety_information' => $this->sanitizeInput($row[25]),
 //             ]);
-    
+
 //             // Insert into the `country_seasons` table
 //             // CountrySeason::create([
 //             //     'country_id' => $country->id,
@@ -124,7 +124,7 @@
 //                     'activities' => $activities[$index] ?? '',
 //                 ]);
 //             }
-    
+
 //             // Insert into the `country_events` table
 //             // CountryEvent::create([
 //             //     'country_id' => $country->id,
@@ -152,7 +152,7 @@
 //                     'description' => $eventDescriptions[$index] ?? '',
 //                 ]);
 //             }
-    
+
 //             // Insert into the `country_additional_info` table
 //             // CountryAdditionalInfo::create([
 //             //     'country_id' => $country->id,
@@ -171,7 +171,7 @@
 //                     'content' => $additionalContents[$index] ?? '',
 //                 ]);
 //             }
-    
+
 //             // Insert into the `country_faqs` table
 //             // CountryFaq::create([
 //             //     'country_id' => $country->id,
@@ -190,7 +190,7 @@
 //                     'answer' => $faqAnswers[$index] ?? '',
 //                 ]);
 //             }
-    
+
 //             // Insert into the `country_seo` table
 //             CountrySeo::create([
 //                 'country_id' => $country->id,
@@ -203,15 +203,15 @@
 //                 'schema_data' => json_decode($this->sanitizeInput($row[45]), true),
 //             ]);
 //         }
-    
+
 //         fclose($file);
-    
+
 //         // Delete the temporary file
 //         unlink($tempFilePath);
-    
+
 //         return response()->json(['message' => 'Countries imported successfully!'], 200);
 //     }
-    
+
 //     /**
 //      * Check if a row contains malformed data (e.g., JavaScript or HTML).
 //      */
@@ -224,7 +224,7 @@
 //         }
 //         return false;
 //     }
-    
+
 //     private function sanitizeInput(?string $value): ?string
 //     {
 //         return $value ? trim(strip_tags($value)) : null;
@@ -234,17 +234,17 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Http;
 use App\Models\Country;
-use App\Models\CountryLocationDetail;
-use App\Models\CountryTravelInfo;
-use App\Models\CountrySeason;
-use App\Models\CountryEvent;
 use App\Models\CountryAdditionalInfo;
+use App\Models\CountryEvent;
 use App\Models\CountryFaq;
+use App\Models\CountryLocationDetail;
+use App\Models\CountrySeason;
 use App\Models\CountrySeo;
+use App\Models\CountryTravelInfo;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Validator;
 
 class CountryImportController extends Controller
 {
@@ -265,7 +265,7 @@ class CountryImportController extends Controller
         // Download the file
         $response = Http::get($fileUrl);
 
-        if (!$response->successful()) {
+        if (! $response->successful()) {
             return response()->json(['error' => 'Failed to download the file.'], 400);
         }
 
@@ -487,7 +487,7 @@ class CountryImportController extends Controller
             // Insert multiple FAQs
             $faqQuestions = explode('|', $this->sanitizeInput($row[37]));
             $faqAnswers = explode('|', $this->sanitizeInput($row[38]));
-            
+
             // Fetch the last question number from the database
             $lastQuestion = CountryFaq::where('country_id', $country->id)->orderBy('question_number', 'desc')->first();
             $questionNumber = $lastQuestion ? $lastQuestion->question_number + 1 : 1;
@@ -497,7 +497,7 @@ class CountryImportController extends Controller
                 if (empty($question)) {
                     continue;
                 }
-                
+
                 CountryFaq::updateOrCreate(
                     [
                         'country_id' => $country->id,
@@ -512,7 +512,7 @@ class CountryImportController extends Controller
             }
 
             // Insert into the `country_seo` table (only once per country)
-            if (!in_array($country->id, $processedCountries)) {
+            if (! in_array($country->id, $processedCountries)) {
                 $metaTitle = $this->sanitizeInput($row[39]);
                 $metaDescription = $this->sanitizeInput($row[40]);
                 $keywords = $this->sanitizeInput($row[41]);
@@ -560,6 +560,7 @@ class CountryImportController extends Controller
                 return true;
             }
         }
+
         return false;
     }
 

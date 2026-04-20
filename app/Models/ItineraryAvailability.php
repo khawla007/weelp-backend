@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -16,6 +17,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Itinerary $itinerary
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryAvailability newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryAvailability newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryAvailability query()
@@ -28,7 +30,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryAvailability whereQuantityBasedItinerary($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryAvailability whereStartDate($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryAvailability whereUpdatedAt($value)
- * @mixin \Eloquent
+ *
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class ItineraryAvailability extends Model
 {
@@ -43,7 +46,7 @@ class ItineraryAvailability extends Model
         'max_quantity',
     ];
 
-    public function itinerary()
+    public function itinerary(): BelongsTo
     {
         return $this->belongsTo(Itinerary::class);
     }

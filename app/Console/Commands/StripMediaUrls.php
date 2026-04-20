@@ -2,9 +2,9 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Models\Media;
 use App\Models\UserProfile;
+use Illuminate\Console\Command;
 
 class StripMediaUrls extends Command
 {
@@ -17,8 +17,9 @@ class StripMediaUrls extends Command
         $dryRun = $this->option('dry-run');
         $bucket = config('filesystems.disks.minio.bucket');
 
-        if (!$bucket) {
+        if (! $bucket) {
             $this->error('MINIO_BUCKET is not configured. Check your .env file.');
+
             return 1;
         }
 
@@ -31,9 +32,9 @@ class StripMediaUrls extends Command
         $avatarCount = $this->processAvatarTable($bucket, $dryRun);
 
         $this->newLine();
-        $this->info("Summary:");
-        $this->info("  Media records " . ($dryRun ? 'to update' : 'updated') . ": {$mediaCount}");
-        $this->info("  Avatar records " . ($dryRun ? 'to update' : 'updated') . ": {$avatarCount}");
+        $this->info('Summary:');
+        $this->info('  Media records '.($dryRun ? 'to update' : 'updated').": {$mediaCount}");
+        $this->info('  Avatar records '.($dryRun ? 'to update' : 'updated').": {$avatarCount}");
 
         if ($dryRun && ($mediaCount > 0 || $avatarCount > 0)) {
             $this->newLine();
@@ -55,6 +56,7 @@ class StripMediaUrls extends Command
 
                 if ($path === null) {
                     $this->warn("  Skipping media #{$record->id}: could not parse URL '{$originalUrl}'");
+
                     continue;
                 }
 
@@ -71,10 +73,11 @@ class StripMediaUrls extends Command
         });
 
         if ($dryRun && $count > 5) {
-            $this->line("  ... and " . ($count - 5) . " more");
+            $this->line('  ... and '.($count - 5).' more');
         }
 
         $this->info("  Found {$count} media records with full URLs.");
+
         return $count;
     }
 
@@ -90,6 +93,7 @@ class StripMediaUrls extends Command
 
                 if ($path === null) {
                     $this->warn("  Skipping profile #{$record->id}: could not parse URL '{$originalUrl}'");
+
                     continue;
                 }
 
@@ -106,10 +110,11 @@ class StripMediaUrls extends Command
         });
 
         if ($dryRun && $count > 5) {
-            $this->line("  ... and " . ($count - 5) . " more");
+            $this->line('  ... and '.($count - 5).' more');
         }
 
         $this->info("  Found {$count} avatar records with full URLs.");
+
         return $count;
     }
 
@@ -124,7 +129,7 @@ class StripMediaUrls extends Command
         $path = ltrim($parsedPath, '/');
 
         // Remove bucket prefix if present
-        $path = preg_replace('#^' . preg_quote($bucket, '#') . '/#', '', $path);
+        $path = preg_replace('#^'.preg_quote($bucket, '#').'/#', '', $path);
 
         return $path ?: null;
     }

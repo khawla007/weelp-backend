@@ -2,10 +2,8 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Models\Activity;
-use App\Models\ActivityMediaGallery;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Console\Command;
 
 class SetFeaturedActivityImages extends Command
 {
@@ -41,6 +39,7 @@ class SetFeaturedActivityImages extends Command
             if ($mediaGallery->isEmpty()) {
                 $this->warn("Activity ID {$activity->id} ({$activity->name}) has no media gallery items. Skipping.");
                 $skippedCount++;
+
                 continue;
             }
 
@@ -50,6 +49,7 @@ class SetFeaturedActivityImages extends Command
             if ($hasFeatured) {
                 $this->line("Activity ID {$activity->id} ({$activity->name}) already has a featured image. Skipping.");
                 $skippedCount++;
+
                 continue;
             }
 
@@ -65,7 +65,7 @@ class SetFeaturedActivityImages extends Command
 
         $this->newLine();
         $this->info('--------------------------------------------------');
-        $this->info("Completed!");
+        $this->info('Completed!');
         $this->info("Updated: {$updatedCount} activities");
         $this->info("Skipped: {$skippedCount} activities");
         $this->info('--------------------------------------------------');

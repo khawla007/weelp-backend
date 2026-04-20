@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
  * @property int $id
@@ -21,6 +22,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read int|null $media_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Tag> $tags
  * @property-read int|null $tags_count
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Blog newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Blog newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Blog query()
@@ -32,7 +34,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Blog wherePublish($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Blog whereSlug($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Blog whereUpdatedAt($value)
- * @mixin \Eloquent
+ *
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class Blog extends Model
 {
@@ -46,19 +49,19 @@ class Blog extends Model
         'publish' => 'boolean',
     ];
 
-    public function media()
+    public function media(): BelongsToMany
     {
         return $this->belongsToMany(Media::class, 'blog_media_gallery')
             ->using(BlogMedia::class)
             ->withPivot('is_featured');
     }
 
-    public function categories()
+    public function categories(): BelongsToMany
     {
         return $this->belongsToMany(Category::class, 'blog_category');
     }
 
-    public function tags()
+    public function tags(): BelongsToMany
     {
         return $this->belongsToMany(Tag::class, 'blog_tag');
     }

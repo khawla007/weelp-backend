@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -13,6 +14,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Itinerary $itinerary
  * @property-read \App\Models\Media $media
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryMediaGallery featured()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryMediaGallery newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryMediaGallery newQuery()
@@ -23,15 +25,15 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryMediaGallery whereItineraryId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryMediaGallery whereMediaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ItineraryMediaGallery whereUpdatedAt($value)
- * @mixin \Eloquent
+ *
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class ItineraryMediaGallery extends Model
 {
-
     protected $table = 'itinerary_media_gallery';
 
     protected $fillable = [
-        'itinerary_id', 'media_id', 'is_featured'
+        'itinerary_id', 'media_id', 'is_featured',
     ];
 
     /**
@@ -42,12 +44,12 @@ class ItineraryMediaGallery extends Model
         return $query->where('is_featured', true);
     }
 
-    public function itinerary()
+    public function itinerary(): BelongsTo
     {
         return $this->belongsTo(Itinerary::class);
     }
 
-    public function media()
+    public function media(): BelongsTo
     {
         return $this->belongsTo(Media::class, 'media_id');
     }

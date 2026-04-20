@@ -4,8 +4,6 @@ namespace App\Http\Controllers\Guest;
 
 use App\Http\Controllers\Controller;
 use App\Models\Country;
-use App\Models\CountryMediaGallery;
-use Illuminate\Http\Request;
 
 class PublicCountryController extends Controller
 {
@@ -20,6 +18,7 @@ class PublicCountryController extends Controller
             ->map(function ($country) {
                 // Get featured image from media_gallery
                 $featuredImage = $country->mediaGallery->firstWhere('is_featured', true);
+
                 return [
                     'id' => $country->id,
                     'name' => $country->name,
@@ -40,7 +39,7 @@ class PublicCountryController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $countries
+            'data' => $countries,
         ]);
     }
 
@@ -56,6 +55,7 @@ class PublicCountryController extends Controller
             ->map(function ($country) {
                 // Get featured image from media_gallery
                 $featuredImage = $country->mediaGallery->firstWhere('is_featured', true);
+
                 return [
                     'id' => $country->id,
                     'name' => $country->name,
@@ -69,13 +69,13 @@ class PublicCountryController extends Controller
         if ($countries->isEmpty()) {
             return response()->json([
                 'success' => false,
-                'message' => 'No featured countries found'
+                'message' => 'No featured countries found',
             ]);
         }
 
         return response()->json([
             'success' => true,
-            'data' => $countries
+            'data' => $countries,
         ]);
     }
 
@@ -94,15 +94,15 @@ class PublicCountryController extends Controller
             'seo',
             'states' => function ($query) {
                 $query->select('id', 'name', 'slug', 'country_id', 'feature_image');
-            }
+            },
         ])
-        ->where('slug', $slug)
-        ->first();
+            ->where('slug', $slug)
+            ->first();
 
-        if (!$country) {
+        if (! $country) {
             return response()->json([
                 'success' => false,
-                'message' => 'Country not found'
+                'message' => 'Country not found',
             ], 404);
         }
 
@@ -136,7 +136,7 @@ class PublicCountryController extends Controller
                 'faqs' => $country->faqs,
                 'seo' => $country->seo,
                 'states' => $country->states,
-            ]
+            ],
         ]);
     }
 }

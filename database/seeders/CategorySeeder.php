@@ -3,8 +3,8 @@
 namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
 use App\Models\Category;
+use Illuminate\Database\Seeder;
 
 class CategorySeeder extends Seeder
 {
@@ -19,7 +19,7 @@ class CategorySeeder extends Seeder
             ['name' => 'Music', 'slug' => 'music', 'description' => 'Musical events and activities'],
             ['name' => 'Fitness', 'slug' => 'fitness', 'description' => 'Health and fitness activities'],
             ['name' => 'Education', 'slug' => 'education', 'description' => 'Learning and educational activities'],
-        
+
             ['name' => 'Adventure', 'slug' => 'adventure', 'description' => 'Adventure trips and challenges'],
             ['name' => 'Wellness', 'slug' => 'wellness', 'description' => 'Wellness and self-care programs'],
             ['name' => 'Cultural', 'slug' => 'cultural', 'description' => 'Cultural festivals and traditions'],
@@ -51,7 +51,7 @@ class CategorySeeder extends Seeder
             ['name' => 'Nightlife', 'slug' => 'nightlife', 'description' => 'Clubbing, drinks, and late night events'],
             ['name' => 'Public Speaking', 'slug' => 'public-speaking', 'description' => 'Improve your speaking skills'],
             ['name' => 'Spirituality', 'slug' => 'spirituality', 'description' => 'Yoga, meditation, and peace'],
-        ];        
+        ];
 
         foreach ($categories as $category) {
             Category::create($category);

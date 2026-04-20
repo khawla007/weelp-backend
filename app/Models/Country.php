@@ -4,6 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * @property int $id
@@ -16,6 +19,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property bool $featured_destination
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property string|null $feature_image
+ * @property array $media_gallery
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\CountryAdditionalInfo> $additionalInfo
  * @property-read int|null $additional_info_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\CountryEvent> $events
@@ -33,6 +38,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\State> $states
  * @property-read int|null $states_count
  * @property-read \App\Models\CountryTravelInfo|null $travelInfo
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Country newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Country newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Country query()
@@ -46,7 +52,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Country whereSlug($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Country whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Country whereUpdatedAt($value)
- * @mixin \Eloquent
+ *
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class Country extends Model
 {
@@ -58,59 +65,66 @@ class Country extends Model
         'slug',
         'type',
         'description',
-        'featured_destination'
+        'featured_destination',
     ];
 
     protected $casts = [
-        'featured_destination' => 'boolean'
+        'featured_destination' => 'boolean',
     ];
 
-    public function regions()
+    public function regions(): BelongsToMany
     {
         // return $this->belongsToMany(Region::class, 'region_country');
         return $this->belongsToMany(Region::class, 'region_country', 'country_id', 'region_id');
     }
-    
+
     // public function cities(): HasMany
     // {
     //     return $this->hasMany(City::class);
     // }
 
-    public function mediaGallery()
+    public function mediaGallery(): HasMany
     {
         return $this->hasMany(CountryMediaGallery::class, 'country_id');
     }
-    
-    public function locationDetails() {
+
+    public function locationDetails(): HasOne
+    {
         return $this->hasOne(CountryLocationDetail::class);
     }
 
-    public function travelInfo() {
+    public function travelInfo(): HasOne
+    {
         return $this->hasOne(CountryTravelInfo::class);
     }
 
-    public function seasons()
+    public function seasons(): HasMany
     {
         return $this->hasMany(CountrySeason::class, 'country_id', 'id');
     }
-    
-    public function events() {
+
+    public function events(): HasMany
+    {
         return $this->hasMany(CountryEvent::class, 'country_id', 'id');
     }
 
-    public function additionalInfo() {
+    public function additionalInfo(): HasMany
+    {
         return $this->hasMany(CountryAdditionalInfo::class);
     }
-    
-    public function faqs() {
+
+    public function faqs(): HasMany
+    {
         return $this->hasMany(CountryFaq::class);
     }
-    
-    public function seo() {
+
+    public function seo(): HasOne
+    {
         return $this->hasOne(CountrySeo::class);
     }
 
-    public function states() {
+    public function states(): HasMany
+    {
         return $this->hasMany(State::class);
     }
 }

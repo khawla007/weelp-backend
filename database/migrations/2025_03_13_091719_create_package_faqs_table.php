@@ -15,8 +15,8 @@ return new class extends Migration
             $table->bigIncrements('id');
             $table->bigInteger('package_id')->unsigned();
             // $table->integer('question_number')->autoIncrement(false); // Auto-generated question number
-            $table->text('question'); 
-            $table->text('answer'); 
+            $table->text('question');
+            $table->text('answer');
             $table->timestamps();
 
             // Foreign Key Constraint

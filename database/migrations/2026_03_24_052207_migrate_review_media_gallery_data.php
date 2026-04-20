@@ -2,8 +2,8 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -20,13 +20,13 @@ return new class extends Migration
         foreach ($reviews as $review) {
             $mediaIds = json_decode($review->media_gallery, true);
 
-            if (!is_array($mediaIds) || empty($mediaIds)) {
+            if (! is_array($mediaIds) || empty($mediaIds)) {
                 continue;
             }
 
             foreach ($mediaIds as $index => $mediaId) {
                 // Skip invalid media IDs
-                if (!in_array($mediaId, $validMediaIds)) {
+                if (! in_array($mediaId, $validMediaIds)) {
                     continue;
                 }
 

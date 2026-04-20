@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -18,6 +19,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\City $city
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CitySeo newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CitySeo newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CitySeo query()
@@ -32,16 +34,18 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CitySeo whereSchemaData($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CitySeo whereSchemaType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CitySeo whereUpdatedAt($value)
- * @mixin \Eloquent
+ *
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class CitySeo extends Model
 {
     use HasFactory;
 
     protected $table = 'city_seo';
+
     protected $fillable = [
-        'city_id', 'meta_title', 'meta_description', 'keywords', 
-        'og_image_url', 'canonical_url', 'schema_type', 'schema_data'
+        'city_id', 'meta_title', 'meta_description', 'keywords',
+        'og_image_url', 'canonical_url', 'schema_type', 'schema_data',
     ];
 
     // protected $casts = [
@@ -60,7 +64,7 @@ class CitySeo extends Model
         return $value ? json_decode($value, true) : null;
     }
 
-    public function city()
+    public function city(): BelongsTo
     {
         return $this->belongsTo(City::class);
     }

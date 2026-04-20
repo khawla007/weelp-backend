@@ -4,6 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasOneThrough;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 
 /**
  * @property int $id
@@ -46,6 +52,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read \App\Models\CitySeo|null $seo
  * @property-read \App\Models\State $state
  * @property-read \App\Models\CityTravelInfo|null $travelInfo
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|City newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|City newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|City query()
@@ -59,7 +66,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|City whereStateId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|City whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|City whereUpdatedAt($value)
- * @mixin \Eloquent
+ *
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 class City extends Model
 {
@@ -67,109 +75,113 @@ class City extends Model
 
     protected $fillable = [
         'name', 'code', 'slug', 'type', 'state_id', 'description',
-        'featured_destination'
+        'featured_destination',
     ];
-    protected $casts = [
-        'featured_destination' => 'boolean'
-    ];
-    // public function country(): BelongsTo
-    // {
-    //     return $this->belongsTo(Country::class);
-    // }
 
-    public function state()
+    protected $casts = [
+        'featured_destination' => 'boolean',
+    ];
+
+    public function state(): BelongsTo
     {
         return $this->belongsTo(State::class);
     }
 
-    public function country()
+    public function country(): HasOneThrough
     {
         return $this->hasOneThrough(Country::class, State::class, 'country_id', 'id', 'state_id', 'id');
     }
 
-    public function region()
+    public function region(): HasOneThrough
     {
         return $this->hasOneThrough(
             Region::class,
-            RegionCountry::class, // Pivot table ka model
-            'country_id', // Foreign key on region_country table
-            'id', // Foreign key on regions table
-            'state_id', // Local key on cities table
-            'region_id' // Local key on region_country table
+            RegionCountry::class,
+            'country_id',
+            'id',
+            'state_id',
+            'region_id'
         );
     }
 
-    public function mediaGallery()
+    public function mediaGallery(): HasMany
     {
         return $this->hasMany(CityMediaGallery::class, 'city_id');
     }
 
-    public function locationDetails()
+    public function locationDetails(): HasOne
     {
         return $this->hasOne(CityLocationDetail::class);
     }
 
-    public function travelInfo()
+    public function travelInfo(): HasOne
     {
         return $this->hasOne(CityTravelInfo::class);
     }
 
-    public function seasons()
+    public function seasons(): HasMany
     {
         return $this->hasMany(CitySeason::class);
     }
 
-    public function events()
+    public function events(): HasMany
     {
         return $this->hasMany(CityEvent::class);
     }
 
-    public function additionalInfo()
+    public function additionalInfo(): HasMany
     {
         return $this->hasMany(CityAdditionalInfo::class);
     }
 
-    public function faqs()
+    public function faqs(): HasMany
     {
         return $this->hasMany(CityFaq::class);
     }
 
-    public function seo()
+    public function seo(): HasOne
     {
         return $this->hasOne(CitySeo::class);
     }
 
-    public function places() {
+    public function places(): HasMany
+    {
         return $this->hasMany(Place::class);
     }
 
-    public function zones()
+    public function zones(): MorphToMany
     {
         return $this->morphToMany(TransferZone::class, 'locatable', 'transfer_zone_locations')
             ->withTimestamps();
     }
 
-    public function activityLocations() {
+    public function activityLocations(): HasMany
+    {
         return $this->hasMany(ActivityLocation::class, 'city_id');
     }
 
-    public function activities() {
+    public function activities(): HasManyThrough
+    {
         return $this->hasManyThrough(Activity::class, ActivityLocation::class, 'city_id', 'id', 'id', 'activity_id');
     }
 
-    public function itineraryLocations() {
+    public function itineraryLocations(): HasMany
+    {
         return $this->hasMany(ItineraryLocation::class, 'city_id');
     }
 
-    public function itineraries() {
+    public function itineraries(): HasManyThrough
+    {
         return $this->hasManyThrough(Itinerary::class, ItineraryLocation::class, 'city_id', 'id', 'id', 'itinerary_id');
     }
 
-    public function packageLocations() {
+    public function packageLocations(): HasMany
+    {
         return $this->hasMany(PackageLocation::class, 'city_id');
     }
 
-    public function packages() {
+    public function packages(): HasManyThrough
+    {
         return $this->hasManyThrough(Package::class, PackageLocation::class, 'city_id', 'id', 'id', 'package_id');
     }
 
@@ -186,12 +198,12 @@ class City extends Model
                         ->from('activity_locations')
                         ->where('city_id', $this->id);
                 })
-                ->orWhereIn('activity_id', function ($sub) {
-                    $sub->select('activity_locations.activity_id')
-                        ->from('activity_locations')
-                        ->join('places', 'places.id', '=', 'activity_locations.place_id')
-                        ->where('places.city_id', $this->id);
-                });
+                    ->orWhereIn('activity_id', function ($sub) {
+                        $sub->select('activity_locations.activity_id')
+                            ->from('activity_locations')
+                            ->join('places', 'places.id', '=', 'activity_locations.place_id')
+                            ->where('places.city_id', $this->id);
+                    });
             })
             ->orderBy('regular_price', 'asc')
             ->first(['regular_price', 'currency']);

@@ -6,13 +6,15 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    public function up(): void {
+    public function up(): void
+    {
         Schema::table('categories', function (Blueprint $table) {
             $table->enum('status', ['active', 'draft'])->default('active')->after('description');
         });
     }
 
-    public function down(): void {
+    public function down(): void
+    {
         Schema::table('categories', function (Blueprint $table) {
             $table->dropColumn('status');
         });

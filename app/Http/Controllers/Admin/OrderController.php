@@ -3,21 +3,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Mail\CustomerRefundedOrderMail;
-use App\Mail\CustomerCompletedOrderMail;
-use App\Mail\CustomerCancelledOrderMail;
-use Illuminate\Support\Facades\Mail; // ✅ Ye zaruri hai
-use Illuminate\Validation\Rule;
-use Illuminate\Support\Facades\DB;
 use App\Models\Order;
-use App\Models\OrderPayment;
-use App\Models\OrderEmergencyContact;
-use App\Models\Commission;
+use Illuminate\Http\Request; // ✅ Ye zaruri hai
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\Rule;
 
 class OrderController extends Controller
 {
-
     public function store(Request $request)
     {
         $modelMap = [
@@ -26,63 +19,55 @@ class OrderController extends Controller
             'package' => \App\Models\Package::class,
         ];
         $rules = [
-            'user_id'              => 'required|exists:users,id',
-            'orderable_type'       => ['required', Rule::in(array_keys($modelMap))],
-            'orderable_id'         => 'required|integer',
-            'travel_date'          => 'required|date',
-            'preferred_time'       => 'nullable|date_format:H:i:s',
-            'number_of_adults'     => 'required|integer|min:1',
-            'number_of_children'   => 'nullable|integer|min:0',
-            'status'               => 'nullable|string|in:pending,confirmed,cancelled',
+            'user_id' => 'required|exists:users,id',
+            'orderable_type' => ['required', Rule::in(array_keys($modelMap))],
+            'orderable_id' => 'required|integer',
+            'travel_date' => 'required|date',
+            'preferred_time' => 'nullable|date_format:H:i:s',
+            'number_of_adults' => 'required|integer|min:1',
+            'number_of_children' => 'nullable|integer|min:0',
+            'status' => 'nullable|string|in:pending,confirmed,cancelled',
             'special_requirements' => 'nullable|string',
 
-            'payment'              => 'required|array',
-            'emergency_contact'    => 'required|array',
+            'payment' => 'required|array',
+            'emergency_contact' => 'required|array',
         ];
 
         $validated = $request->validate($rules);
-
-        // Server-side enforcement: itineraries charge the sum of their schedule items,
-        // ignoring any admin-supplied total. Mirrors StripeController@createOrder.
-        if ($validated['orderable_type'] === 'itinerary') {
-            $itinerary = \App\Models\Itinerary::with('schedules.activities', 'schedules.transfers')
-                ->findOrFail($validated['orderable_id']);
-            $validated['payment']['total_amount'] = (float) $itinerary->schedule_total_price;
-        }
 
         DB::beginTransaction();
 
         try {
             // Step 1: Create main order
             $order = Order::create([
-                'user_id'              => $validated['user_id'],
-                'orderable_type'       => $modelMap[$validated['orderable_type']],
-                'orderable_id'         => $validated['orderable_id'],
-                'travel_date'          => $validated['travel_date'],
-                'preferred_time'       => $validated['preferred_time'] ?? null,
-                'number_of_adults'     => $validated['number_of_adults'],
-                'number_of_children'   => $validated['number_of_children'] ?? 0,
-                'status'               => $validated['status'] ?? 'pending',
+                'user_id' => $validated['user_id'],
+                'orderable_type' => $modelMap[$validated['orderable_type']],
+                'orderable_id' => $validated['orderable_id'],
+                'travel_date' => $validated['travel_date'],
+                'preferred_time' => $validated['preferred_time'] ?? null,
+                'number_of_adults' => $validated['number_of_adults'],
+                'number_of_children' => $validated['number_of_children'] ?? 0,
+                'status' => $validated['status'] ?? 'pending',
                 'special_requirements' => $validated['special_requirements'] ?? null,
             ]);
 
             // Step 2: Create payment
             if (isset($validated['payment'])) {
                 $order->payment()->create([
-                    'payment_status'    => $validated['payment']['payment_status'] ?? 'pending',
-                    'payment_method'    => $validated['payment']['payment_method'] ?? null,
-                    'total_amount'      => $validated['payment']['total_amount'] ?? 0,
-                    'is_custom_amount'  => $validated['payment']['is_custom_amount'] ?? false,
-                    'custom_amount'     => $validated['payment']['custom_amount'] ?? 0,
+                    'payment_status' => $validated['payment']['payment_status'] ?? 'pending',
+                    'payment_method' => $validated['payment']['payment_method'] ?? null,
+                    'total_amount' => $validated['payment']['total_amount'] ?? 0,
+                    'is_custom_amount' => $validated['payment']['is_custom_amount'] ?? false,
+                    'custom_amount' => $validated['payment']['custom_amount'] ?? 0,
                 ]);
             }
 
             // Step 3: Create emergency contact
             if (isset($validated['emergency_contact'])) {
                 $order->emergencyContact()->create([
-                    'contact_name'  => $validated['emergency_contact']['contact_name'] ?? null,
+                    'contact_name' => $validated['emergency_contact']['contact_name'] ?? null,
                     'contact_phone' => $validated['emergency_contact']['contact_phone'] ?? null,
-                    'relationship'  => $validated['emergency_contact']['relationship'] ?? null,
+                    'relationship' => $validated['emergency_contact']['relationship'] ?? null,
                 ]);
             }
 
@@ -90,7 +75,7 @@ class OrderController extends Controller
 
             return response()->json([
                 'message' => 'Order created successfully.',
-                'data'    => $order->load(['payment', 'emergencyContact']),
+                'data' => $order->load(['payment', 'emergencyContact']),
             ], 201);
 
         } catch (\Exception $e) {
@@ -98,7 +83,7 @@ class OrderController extends Controller
 
             return response()->json([
                 'message' => 'Failed to create order.',
-                'error'   => $e->getMessage(),
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -106,12 +91,11 @@ class OrderController extends Controller
     public function index(Request $request)
     {
         $perPage = 3;
-        $page    = $request->get('page', 1);
-        $status  = $request->get('status');
+        $page = $request->get('page', 1);
+        $status = $request->get('status');
 
-        // Base query for pagination (filtered), latest first
-        $query = Order::with(['user', 'orderable', 'payment', 'emergencyContact'])
-            ->orderBy('created_at', 'desc');
+        // Base query for pagination (filtered)
+        $query = Order::with(['user', 'orderable', 'payment', 'emergencyContact']);
 
         if ($status && in_array($status, ['pending', 'confirmed', 'cancelled'])) {
             $query->where('status', $status);
@@ -132,18 +116,18 @@ class OrderController extends Controller
 
         $formatted = $orderCollection->map(function ($order) {
             return [
-                'id'                   => $order->id,
-                'order_type'           => strtolower(class_basename($order->orderable_type)),
-                'travel_date'          => $order->travel_date,
-                'preferred_time'       => $order->preferred_time,
-                'number_of_adults'     => $order->number_of_adults,
-                'number_of_children'   => $order->number_of_children,
-                'status'               => $order->status,
+                'id' => $order->id,
+                'order_type' => strtolower(class_basename($order->orderable_type)),
+                'travel_date' => $order->travel_date,
+                'preferred_time' => $order->preferred_time,
+                'number_of_adults' => $order->number_of_adults,
+                'number_of_children' => $order->number_of_children,
+                'status' => $order->status,
                 'special_requirements' => $order->special_requirements,
-                'user'                 => $order->user,
-                'orderable'            => $order->orderable,
-                'payment'              => $order->payment,
-                'emergency_contact'    => $order->emergencyContact,
+                'user' => $order->user,
+                'orderable' => $order->orderable,
+                'payment' => $order->payment,
+                'emergency_contact' => $order->emergencyContact,
             ];
         });
 
@@ -245,40 +229,36 @@ class OrderController extends Controller
         }
 
         $summary = [
-            'total_orders'     => $allOrders->count(),
+            'total_orders' => $allOrders->count(),
             'total_orders_growth' => $totalOrdersGrowth,
-            'pending_orders'   => $allOrders->where('status', 'pending')->count(),
+            'pending_orders' => $allOrders->where('status', 'pending')->count(),
             'pending_orders_growth' => $pendingOrdersGrowth,
             'confirmed_orders' => $allOrders->where('status', 'confirmed')->count(),
             'completed_orders' => $allOrders->where('status', 'completed')->count(),
             'completed_orders_growth' => $completedOrdersGrowth,
             'cancelled_orders' => $allOrders->where('status', 'cancelled')->count(),
-            'total_revenue'    => $allOrders->pluck('payment')->filter()->sum(function ($payment) {
+            'total_revenue' => $allOrders->pluck('payment')->filter()->sum(function ($payment) {
                 return ($payment->total_amount ?? 0) + ($payment->custom_amount ?? 0);
             }),
             'total_revenue_growth' => $totalRevenueGrowth,
-            'monthly_orders' => $totalOrdersCurrent,
-            'monthly_pending_orders' => $pendingOrdersCurrent,
-            'monthly_completed_orders' => $completedOrdersCurrent,
-            'monthly_revenue' => $totalRevenueCurrent,
         ];
 
         // Final Response
         $response = [
             'success' => true,
-            'data'    => $formatted,
+            'data' => $formatted,
             'summary' => $summary,
         ];
 
         if ($isPaginated) {
             $response['current_page'] = $orders->currentPage();
-            $response['per_page']     = $orders->perPage();
-            $response['total']        = $orders->total();
+            $response['per_page'] = $orders->perPage();
+            $response['total'] = $orders->total();
 
             if ($formatted->isEmpty()) {
                 $response['message'] = $status
                     ? "No more {$status} orders available."
-                    : "No more orders available.";
+                    : 'No more orders available.';
             }
         }
 
@@ -288,26 +268,26 @@ class OrderController extends Controller
     public function show($id)
     {
         $order = Order::with(['user', 'orderable', 'payment', 'emergencyContact'])->findOrFail($id);
-    
+
         $formatted = [
-            'id'                   => $order->id,
-            'type'                 => strtolower(class_basename($order->orderable_type)), // e.g. activity, package
-            'travel_date'          => $order->travel_date,
-            'preferred_time'       => $order->preferred_time,
-            'number_of_adults'     => $order->number_of_adults,
-            'number_of_children'   => $order->number_of_children,
-            'status'               => $order->status,
+            'id' => $order->id,
+            'type' => strtolower(class_basename($order->orderable_type)), // e.g. activity, package
+            'travel_date' => $order->travel_date,
+            'preferred_time' => $order->preferred_time,
+            'number_of_adults' => $order->number_of_adults,
+            'number_of_children' => $order->number_of_children,
+            'status' => $order->status,
             'special_requirements' => $order->special_requirements,
-            'user'                 => $order->user,
-            'orderable'            => $order->orderable,
-            'payment'              => $order->payment,
-            'emergency_contact'    => $order->emergencyContact,
+            'user' => $order->user,
+            'orderable' => $order->orderable,
+            'payment' => $order->payment,
+            'emergency_contact' => $order->emergencyContact,
             // 'created_at'           => $order->created_at,
         ];
-    
+
         return response()->json([
             'success' => true,
-            'data'    => $formatted
+            'data' => $formatted,
         ]);
     }
 
@@ -319,7 +299,7 @@ class OrderController extends Controller
 
         // ---------------- Refund Logic ----------------
         if ($status === 'refunded') {
-            if (!$order->payment || $order->payment->payment_status !== 'paid') {
+            if (! $order->payment || $order->payment->payment_status !== 'paid') {
                 return response()->json([
                     'success' => false,
                     'message' => 'Refund not possible. Payment not found or not paid.',
@@ -336,8 +316,6 @@ class OrderController extends Controller
                 if (isset($refund->status) && $refund->status === 'succeeded') {
                     $order->payment->update(['payment_status' => 'refunded']);
                     $order->update(['status' => 'refunded']);
-
-                    Commission::where('order_id', $order->id)->delete();
                 }
 
                 Mail::to($order->user->email)->send(new \App\Mail\CustomerRefundedOrderMail($order));
@@ -345,31 +323,31 @@ class OrderController extends Controller
                 return response()->json([
                     'success' => true,
                     'message' => 'Refund initiated successfully. Status updated in table.',
-                    'refund'  => $refund,
-                    'email'   => $order->user->email,
+                    'refund' => $refund,
+                    'email' => $order->user->email,
                 ]);
 
             } catch (\Exception $e) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Refund failed.',
-                    'error'   => $e->getMessage(),
+                    'error' => $e->getMessage(),
                 ], 500);
             }
         }
 
         // ---------------- Manual Status Update ----------------
         $allowedStatuses = ['completed', 'cancelled'];
-        if (!in_array($status, $allowedStatuses)) {
+        if (! in_array($status, $allowedStatuses)) {
             return response()->json([
                 'success' => false,
-                'message' => "You can only update status to: " . implode(', ', $allowedStatuses),
+                'message' => 'You can only update status to: '.implode(', ', $allowedStatuses),
             ], 400);
         }
 
         // Completed only if payment_status is paid
         if ($status === 'completed') {
-            if (!$order->payment || $order->payment->payment_status !== 'paid') {
+            if (! $order->payment || $order->payment->payment_status !== 'paid') {
                 return response()->json([
                     'success' => false,
                     'message' => 'Cannot mark order as completed. Payment not paid yet.',
@@ -379,7 +357,7 @@ class OrderController extends Controller
 
         // Cancelled only if payment_status is pending
         if ($status === 'cancelled') {
-            if (!$order->payment || $order->payment->payment_status !== 'pending') {
+            if (! $order->payment || $order->payment->payment_status !== 'pending') {
                 return response()->json([
                     'success' => false,
                     'message' => 'Cannot cancel order. Payment is not pending.',
@@ -389,13 +367,6 @@ class OrderController extends Controller
 
         // Update order status
         $order->update(['status' => $status]);
-
-        // Update commission lifecycle
-        if ($status === 'completed') {
-            Commission::where('order_id', $order->id)->update(['status' => 'approved']);
-        } elseif ($status === 'cancelled') {
-            Commission::where('order_id', $order->id)->delete();
-        }
 
         // Email sending
         if ($status === 'completed') {
@@ -407,14 +378,15 @@ class OrderController extends Controller
         return response()->json([
             'success' => true,
             'message' => "Order status updated to {$status}.",
-            'data'    => $order,
+            'data' => $order,
         ]);
     }
-    
+
     public function destroy($id)
     {
         $order = Order::findOrFail($id);
         $order->delete();
+
         return response()->json(['message' => 'Order deleted successfully']);
     }
 }

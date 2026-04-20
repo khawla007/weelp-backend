@@ -4,6 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * @property int $id
@@ -16,6 +19,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property bool $featured_destination
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property string|null $feature_image
+ * @property array $media_gallery
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\PlaceAdditionalInfo> $additionalInfo
  * @property-read int|null $additional_info_count
  * @property-read \App\Models\City $city
@@ -30,6 +35,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read int|null $seasons_count
  * @property-read \App\Models\PlaceSeo|null $seo
  * @property-read \App\Models\PlaceTravelInfo|null $travelInfo
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Place newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Place newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Place query()
@@ -43,9 +49,11 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Place whereSlug($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Place whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Place whereUpdatedAt($value)
- * @mixin \Eloquent
+ *
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
-class Place extends Model {
+class Place extends Model
+{
     use HasFactory;
 
     protected $fillable = [
@@ -59,44 +67,51 @@ class Place extends Model {
     ];
 
     protected $casts = [
-        'featured_destination' => 'boolean'
+        'featured_destination' => 'boolean',
     ];
 
-    public function mediaGallery()
+    public function mediaGallery(): HasMany
     {
         return $this->hasMany(PlaceMediaGallery::class, 'place_id');
     }
 
-    public function city()
+    public function city(): BelongsTo
     {
         return $this->belongsTo(City::class, 'city_id');
     }
 
-    public function locationDetails() {
+    public function locationDetails(): HasOne
+    {
         return $this->hasOne(PlaceLocationDetail::class);
     }
 
-    public function travelInfo() {
+    public function travelInfo(): HasOne
+    {
         return $this->hasOne(PlaceTravelInfo::class);
     }
 
-    public function seasons() {
+    public function seasons(): HasMany
+    {
         return $this->hasMany(PlaceSeason::class);
     }
 
-    public function events() {
+    public function events(): HasMany
+    {
         return $this->hasMany(PlaceEvent::class);
     }
 
-    public function additionalInfo() {
+    public function additionalInfo(): HasMany
+    {
         return $this->hasMany(PlaceAdditionalInfo::class);
     }
 
-    public function faqs() {
+    public function faqs(): HasMany
+    {
         return $this->hasMany(PlaceFaq::class);
     }
 
-    public function seo() {
+    public function seo(): HasOne
+    {
         return $this->hasOne(PlaceSeo::class);
     }
 
