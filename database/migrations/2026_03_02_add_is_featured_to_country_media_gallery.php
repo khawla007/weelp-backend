@@ -17,13 +17,26 @@ return new class extends Migration
         });
 
         // Migrate existing data: if country has feature_image, find matching media_id and set is_featured = true
-        DB::statement('
-            UPDATE country_media_gallery cmg
-            INNER JOIN countries c ON cmg.country_id = c.id
-            INNER JOIN media m ON cmg.media_id = m.id
-            SET cmg.is_featured = 1
-            WHERE c.feature_image = m.url
-        ');
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement('
+                UPDATE country_media_gallery cmg
+                INNER JOIN countries c ON cmg.country_id = c.id
+                INNER JOIN media m ON cmg.media_id = m.id
+                SET cmg.is_featured = 1
+                WHERE c.feature_image = m.url
+            ');
+        } else {
+            DB::statement('
+                UPDATE country_media_gallery
+                SET is_featured = 1
+                WHERE id IN (
+                    SELECT cmg.id FROM country_media_gallery cmg
+                    JOIN countries c ON cmg.country_id = c.id
+                    JOIN media m ON cmg.media_id = m.id
+                    WHERE c.feature_image = m.url
+                )
+            ');
+        }
     }
 
     /**

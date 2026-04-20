@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Str;
@@ -38,6 +39,8 @@ use Illuminate\Support\Str;
  */
 class Tag extends Model
 {
+    use HasFactory;
+
     protected $fillable = ['name', 'slug', 'description', 'taxonomy', 'post_type', 'status', 'is_featured'];
 
     protected $casts = [
