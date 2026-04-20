@@ -115,6 +115,8 @@ class PublicItineraryController extends Controller
             'locations.city',
             'schedules.activities',
             'schedules.transfers',
+            'schedules.activities.activity.mediaGallery.media',
+            'schedules.transfers.transfer.mediaGallery.media',
             'basePricing.variations',
             'basePricing.blackoutDates',
             'inclusionsExclusions',
@@ -158,8 +160,7 @@ class PublicItineraryController extends Controller
                 'description' => $itinerary->description,
                 'schedule_total_price' => $itinerary->schedule_total_price,
                 'item_type' => $itinerary->item_type,
-                'featured_image' => $itinerary->mediaGallery->where('is_featured', true)->first()?->media?->url
-                    ?? $itinerary->mediaGallery->first()?->media?->url,
+                'featured_image' => $itinerary->featured_image,
                 'city_slug' => $itinerary->locations->first()?->city?->slug,
                 'locations' => $itinerary->locations->map(function ($location) {
                     $city = $location->city;

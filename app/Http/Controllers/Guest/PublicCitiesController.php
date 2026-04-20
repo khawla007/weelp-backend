@@ -8,7 +8,6 @@ use App\Models\Category;
 use App\Models\City;
 use App\Models\Country;
 use App\Models\Itinerary;
-use App\Models\Package;
 use App\Models\State;
 use App\Models\Tag;
 use Illuminate\Http\Request;
@@ -294,7 +293,7 @@ class PublicCitiesController extends Controller
             'min_price' => 'nullable|numeric|min:0',
             'max_price' => 'nullable|numeric|min:0',
             'sort_by' => 'nullable|in:name_asc,name_desc,price_asc,price_desc,id_asc,id_desc',
-            'item_type' => 'nullable|in:activity,itinerary,package',
+            'item_type' => 'nullable|in:activity,itinerary',
         ]);
 
         $city = City::with('state.country.regions')->where('slug', $city_slug)->first();
@@ -325,34 +324,27 @@ class PublicCitiesController extends Controller
                     'mediaGallery.media',
                     'categories.category',
                     'tags',
+                    'schedules.activities.activity.mediaGallery.media',
+                    'schedules.transfers.transfer.mediaGallery.media',
                 ])
-            : null;
-
-        $packages = (! $itemType || $itemType === 'package')
-            ? Package::whereHas('locations', fn ($query) => $query->where('city_id', $city->id))
-                ->with(['basePricing.variations', 'mediaGallery.media', 'categories.category', 'tags'])
             : null;
 
         if (! empty($categoryIds)) {
             $activities?->whereHas('categories', fn ($q) => $q->whereIn('category_id', $categoryIds));
             $itineraries?->whereHas('categories', fn ($q) => $q->whereIn('category_id', $categoryIds));
-            $packages?->whereHas('categories', fn ($q) => $q->whereIn('category_id', $categoryIds));
         }
 
         if (! empty($tagIds)) {
             $itineraries?->whereHas('tags', fn ($q) => $q->whereIn('tags.id', $tagIds));
-            $packages?->whereHas('tags', fn ($q) => $q->whereIn('tags.id', $tagIds));
         }
 
         if ($maxPrice !== null) {
             $activities?->whereHas('pricing', fn ($q) => $q->whereBetween('regular_price', [$minPrice, $maxPrice]));
             $itineraries?->whereHas('basePricing.variations', fn ($q) => $q->whereBetween('regular_price', [$minPrice, $maxPrice]));
-            $packages?->whereHas('basePricing.variations', fn ($q) => $q->whereBetween('regular_price', [$minPrice, $maxPrice]));
         }
 
         $activities = $activities?->get() ?? collect();
         $itineraries = $itineraries?->get() ?? collect();
-        $packages = $packages?->get() ?? collect();
 
         $allItems = collect()
             ->merge($activities->map(fn ($activity) => [
@@ -377,33 +369,13 @@ class PublicCitiesController extends Controller
                 'item_type' => 'itinerary',
                 'city_slug' => $city_slug,
                 'featured' => $itinerary->featured_itinerary,
-                'featured_image' => $itinerary->mediaGallery->where('is_featured', true)->first()?->media?->url
-                    ?? $itinerary->mediaGallery->first()?->media?->url,
+                'featured_image' => $itinerary->featured_image,
                 'base_pricing' => $itinerary->basePricing,
                 'categories' => $itinerary->categories->map(fn ($category) => [
                     'slug' => $category->category->slug,
                     'name' => $category->category->name,
                 ])->toArray(),
                 'tags' => $itinerary->tags->map(fn ($tag) => [
-                    'slug' => $tag->slug,
-                    'name' => $tag->name,
-                ])->toArray(),
-            ]))
-            ->merge($packages->map(fn ($package) => [
-                'id' => $package->id,
-                'name' => $package->name,
-                'slug' => $package->slug,
-                'item_type' => 'package',
-                'city_slug' => $city_slug,
-                'featured' => $package->featured_package,
-                'featured_image' => $package->mediaGallery->where('is_featured', true)->first()?->media?->url
-                    ?? $package->mediaGallery->first()?->media?->url,
-                'base_pricing' => $package->basePricing,
-                'categories' => $package->categories->map(fn ($category) => [
-                    'slug' => $category->category->slug,
-                    'name' => $category->category->name,
-                ])->toArray(),
-                'tags' => $package->tags->map(fn ($tag) => [
                     'slug' => $tag->slug,
                     'name' => $tag->name,
                 ])->toArray(),

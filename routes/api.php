@@ -550,7 +550,7 @@ Route::prefix('region')->group(function () {
     Route::get('/', [PublicRegionController::class, 'getRegions']);
     Route::get('/{slug}', [PublicRegionController::class, 'getRegionDetails']);
     Route::get('/{region_slug}/cities', [PublicRegionController::class, 'getCitiesByRegion']);
-    Route::get('/{region_slug}/region-packages', [PublicRegionController::class, 'getPackagesByRegion']);
+    Route::get('/{region_slug}/region-itineraries', [PublicRegionController::class, 'getItinerariesByRegion']);
 
     Route::get('/{region_slug}/region-all-items', [PublicRegionController::class, 'getAllItemsByRegion']);
 });

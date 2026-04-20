@@ -589,22 +589,14 @@ class PublicRegionController extends Controller
         ], 200);
     }
 
-    
-
-    // -----------------------Code to get All Packages based on region with location details--------------------------
-    public function getPackagesByRegion($region_slug)
+    // -----------------------Code to get Itineraries based on region--------------------------
+    public function getItinerariesByRegion($region_slug): \Illuminate\Http\JsonResponse
     {
-        // Find Region
         $region = Region::where('slug', $region_slug)->first();
-
-        if (!$region) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Region not found'
-            ], 404);
+        if (! $region) {
+            return response()->json(['success' => false, 'message' => 'Region not found'], 404);
         }
 
-        // Get city IDs linked to the region
         $cityIds = City::whereExists(function ($query) use ($region) {
             $query->select(DB::raw(1))
                 ->from('states')
@@ -622,93 +614,124 @@ class PublicRegionController extends Controller
                 });
         })->pluck('id');
 
-        if ($cityIds->isEmpty()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'No cities and Packages found in this region'
-            ], 404);
+        $query = Itinerary::with([
+            'locations.city.state.country.regions',
+            'schedules.activities',
+            'schedules.transfers',
+            'basePricing.variations',
+            'basePricing.blackoutDates',
+            'inclusionsExclusions',
+            'mediaGallery.media',
+            'seo',
+            'categories.category',
+            'attributes',
+            'tags.tag',
+        ])
+        ->where('featured_itinerary', true)
+        ->whereHas('locations', fn($q) => $q->whereIn('city_id', $cityIds));
+
+        $tagNames = request()->has('tags') ? array_filter(explode(',', request()->get('tags'))) : [];
+        if (! empty($tagNames)) {
+            $query->whereHas('tags.tag', fn($q) => $q->whereIn('name', $tagNames));
         }
 
-        // Get all packages linked to those cities using the pivot table
-        $packages = Package::whereHas('locations', function ($query) use ($cityIds) {
-            $query->whereIn('city_id', $cityIds);
-        })
-            ->with([
-                'basePricing.variations',
-                'mediaGallery',
-                'categories.category',
-                'tags.tag',
-                'locations.city.state.country.regions'
-            ])
-            ->where('featured_package', true)
-            ->get();
+        $itineraries = $query->get();
 
-        if ($packages->isEmpty()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'No packages found for this region.'
-            ], 404);
-        }
+        $allTags = $itineraries->pluck('tags')->flatten()
+            ->filter(fn($pt) => $pt->tag !== null)
+            ->map(fn($pt) => ['id' => $pt->tag->id, 'name' => $pt->tag->name, 'is_featured' => (bool) $pt->tag->is_featured])
+            ->unique('id')
+            ->values();
 
-        // Format the package data
-        $formattedPackages = $packages->map(function ($package) {
+        $formattedItineraries = $itineraries->map(function ($itinerary) {
             return [
-                'id' => $package->id,
-                'name' => $package->name,
-                'slug' => $package->slug,
-                'item_type' => $package->item_type,
-                'featured_package' => $package->featured_package,
-                'city_slug' => $package->locations->first()?->city?->slug,
-                'locations' => $package->locations->map(function ($location) {
+                'id' => $itinerary->id,
+                'name' => $itinerary->name,
+                'slug' => $itinerary->slug,
+                'featured_itinerary' => $itinerary->featured_itinerary,
+                'description' => $itinerary->description,
+                'schedule_total_price' => $itinerary->schedule_total_price,
+                'item_type' => $itinerary->item_type,
+                'featured_image' => $itinerary->featured_image,
+                'city_slug' => $itinerary->locations->first()?->city?->slug,
+                'locations' => $itinerary->locations->map(function ($location) {
                     $city = $location->city;
                     return [
-                        'city_id' => $city->id,
-                        'city' => $city->name,
-                        'city_slug' => $city->slug,
-                        'state_id' => $city->state->id ?? null,
-                        'state' => $city->state->name ?? null,
-                        'country_id' => $city->state->country->id ?? null,
-                        'country' => $city->state->country->name ?? null,
-                        'region_id' => $city->state->country->regions->first()->id ?? null,
-                        'region' => $city->state->country->regions->first()->name ?? null,
+                        'city_id' => $city?->id,
+                        'city' => $city?->name,
+                        'state_id' => $city?->state ? $city->state->id : null,
+                        'state' => $city?->state ? $city->state->name : null,
+                        'country_id' => $city?->state && $city->state->country ? $city->state->country->id : null,
+                        'country' => $city?->state && $city->state->country ? $city->state->country->name : null,
+                        'region_id' => $city?->state && $city->state->country && $city->state->country->regions->isNotEmpty()
+                            ? $city->state->country->regions->first()->id
+                            : null,
+                        'region' => $city?->state && $city->state->country && $city->state->country->regions->isNotEmpty()
+                            ? $city->state->country->regions->first()->name
+                            : null,
                     ];
-                })->toArray(),
-                'categories' => $package->categories->map(function ($category) {
+                }),
+                'categories' => $itinerary->categories->map(function ($category) {
                     return [
-                        'id' => $category->category->id ?? null,
-                        'name' => $category->category->name ?? null,
+                        'id' => $category->category->id,
+                        'name' => $category->category->name,
                     ];
                 })->toArray(),
-                'tags' => $package->tags->map(function ($tag) {
+                'attributes' => $itinerary->attributes->map(function ($attribute) {
                     return [
-                        'id' => $tag->tag->id ?? null,
-                        'name' => $tag->tag->name ?? null,
+                        'name' => $attribute->attribute->name,
+                        'value' => $attribute->attribute_value,
+                    ];
+                }),
+                'tags' => $itinerary->tags->filter(fn($pt) => $pt->tag !== null)->map(function ($tag) {
+                    return [
+                        'id' => $tag->tag->id,
+                        'name' => $tag->tag->name,
+                    ];
+                })->values()->toArray(),
+                'media_gallery' => $itinerary->mediaGallery->map(function ($media) {
+                    return [
+                        'id' => $media->media->id,
+                        'name' => $media->media->name,
+                        'alt_text' => $media->media->alt_text,
+                        'url' => $media->media->url,
+                        'is_featured' => (bool) $media->is_featured,
                     ];
                 })->toArray(),
-                'base_pricing' => $package->basePricing,
-                'media_gallery' => $package->mediaGallery,
+                'seo' => $itinerary->seo ? [
+                    'meta_title' => $itinerary->seo->meta_title,
+                    'meta_description' => $itinerary->seo->meta_description,
+                    'keywords' => $itinerary->seo->keywords,
+                ] : null,
+                'base_pricing' => $itinerary->basePricing,
             ];
         });
-        
-        // tag list
-        $tagList = $formattedPackages->flatMap(fn ($item) => $item['tags'])
-        ->unique('id')
-        ->values();
 
-        if (collect($formattedPackages)->isEmpty()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Packages not found'
-            ], 404);
-        }
+        $sortBy = request()->get('sort_by', 'id_desc');
+        $formattedItineraries = match ($sortBy) {
+            'name_asc'   => $formattedItineraries->sortBy('name'),
+            'name_desc'  => $formattedItineraries->sortByDesc('name'),
+            'price_asc'  => $formattedItineraries->sortBy(fn($item) => $item['base_pricing']?->variations?->first()?->regular_price ?? 0),
+            'price_desc' => $formattedItineraries->sortByDesc(fn($item) => $item['base_pricing']?->variations?->first()?->regular_price ?? 0),
+            default      => $formattedItineraries->sortByDesc('id'),
+        };
+
+        $perPage = (int) request()->get('per_page', 8);
+        $page = (int) request()->get('page', 1);
+        $total = $formattedItineraries->count();
+        $paginatedItems = $formattedItineraries->forPage($page, $perPage)->values();
 
         return response()->json([
             'success' => true,
-            'data' => $formattedPackages,
-            'tag_list' => $tagList
-        ], 200);
+            'data' => $paginatedItems,
+            'all_tags' => $allTags,
+            'current_page' => $page,
+            'last_page' => (int) ceil($total / $perPage) ?: 1,
+            'per_page' => $perPage,
+            'total' => $total,
+        ]);
     }
-    
+
     public function getAllItemsByRegion($region_slug)
     {
         $region = Region::with('countries.states.cities')->where('slug', $region_slug)->first();
@@ -753,7 +776,10 @@ class PublicRegionController extends Controller
         $minPrice = request()->get('min_price', 0);
         $maxPrice = request()->get('max_price', null);
         $sortBy = request()->get('sort_by', 'id_desc'); // Default: Newest First
-        $itemTypes = request()->has('item_types') ? explode(',', request()->get('item_types')) : [];
+        $itemType = request()->get('item_type');
+        if ($itemType && !in_array($itemType, ['activity', 'itinerary'], true)) {
+            return response()->json(['success' => false, 'message' => 'Invalid item type.'], 404);
+        }
 
         // Fetch Category and Tag IDs
         $categoryIds = Category::whereIn('slug', $categorySlugs)->pluck('id')->toArray();
@@ -767,79 +793,52 @@ class PublicRegionController extends Controller
         if (!empty($tagSlugs) && empty($tagIds)) {
             return response()->json(['success' => false, 'message' => 'Tag not found.'], 404);
         }
-        // Fetch Activities, Itineraries, and Packages
-        $activities = Activity::whereHas('locations', fn ($query) =>  
-            $query->whereIn('city_id', $validCityIds->isEmpty() ? $cities->pluck('id') : $validCityIds)
-            ->when($itemTypes, fn ($query) => $query->where('item_type', $itemTypes))
-        )->with(['pricing', 'groupDiscounts', 'categories.category', 'locations.city.state.country.regions']);
+        $cityIds = $validCityIds->isEmpty() ? $cities->pluck('id') : $validCityIds;
 
-        $itineraries = Itinerary::whereHas('locations', fn ($query) =>  
-            $query->whereIn('city_id', $validCityIds->isEmpty() ? $cities->pluck('id') : $validCityIds)
-            ->when($itemTypes, fn ($query) => $query->where('item_type', $itemTypes))
-        )->with(['basePricing.variations', 'mediaGallery', 'categories.category', 'tags']);
+        $activities = (!$itemType || $itemType === 'activity')
+            ? Activity::whereHas('locations', fn ($query) => $query->whereIn('city_id', $cityIds))
+                ->with(['pricing', 'groupDiscounts', 'categories.category', 'locations.city.state.country.regions', 'mediaGallery.media'])
+            : null;
 
-        $packages = Package::whereHas('locations', fn ($query) =>  
-            $query->whereIn('city_id', $validCityIds->isEmpty() ? $cities->pluck('id') : $validCityIds)
-            ->when($itemTypes, fn ($query) => $query->where('item_type', $itemTypes))
-        )->with(['basePricing.variations', 'mediaGallery', 'categories.category', 'tags']);
-        
-        $validItemTypes = ['activity', 'itinerary', 'package'];
-        if (!empty($itemTypes) && array_diff($itemTypes, $validItemTypes)) {
-            return response()->json(['success' => false, 'message' => 'Invalid item type.'], 404);
-        }
-
-        // Apply Category Filter
-        // if (!empty($categoryIds)) {
-        //     $activities->whereHas('categories', fn ($q) => $q->whereIn('category_id', $categoryIds));
-        //     $itineraries->whereHas('categories', fn ($q) => $q->whereIn('category_id', $categoryIds));
-        //     $packages->whereHas('categories', fn ($q) => $q->whereIn('category_id', $categoryIds));
-        // }
+        $itineraries = (!$itemType || $itemType === 'itinerary')
+            ? Itinerary::whereHas('locations', fn ($query) => $query->whereIn('city_id', $cityIds))
+                ->with([
+                    'basePricing.variations',
+                    'mediaGallery.media',
+                    'categories.category',
+                    'tags',
+                    'schedules.activities.activity.mediaGallery.media',
+                    'schedules.transfers.transfer.mediaGallery.media',
+                ])
+            : null;
 
         if (!empty($categoryIds)) {
-            $activities = $activities->whereHas('categories', fn ($q) => $q->whereIn('category_id', $categoryIds));
-            $itineraries = $itineraries->whereHas('categories', fn ($q) => $q->whereIn('category_id', $categoryIds));
-            $packages = $packages->whereHas('categories', fn ($q) => $q->whereIn('category_id', $categoryIds));
+            $activities?->whereHas('categories', fn ($q) => $q->whereIn('category_id', $categoryIds));
+            $itineraries?->whereHas('categories', fn ($q) => $q->whereIn('category_id', $categoryIds));
         }
-
-        // Apply Tag Filter
-        // if (!empty($tagIds)) {
-        //     $itineraries->whereHas('tags', fn ($q) => $q->whereIn('tags.id', $tagIds));
-        //     $packages->whereHas('tags', fn ($q) => $q->whereIn('tags.id', $tagIds));
-        // }
 
         if (!empty($tagIds)) {
-            $itineraries = $itineraries->whereHas('tags', fn ($q) => $q->whereIn('tags.id', $tagIds));
-            $packages = $packages->whereHas('tags', fn ($q) => $q->whereIn('tags.id', $tagIds));
+            $itineraries?->whereHas('tags', fn ($q) => $q->whereIn('tags.id', $tagIds));
         }
-
-        // Apply Price Filter
-        // if ($maxPrice !== null) {
-        //     $activities->whereHas('pricing', fn ($q) => $q->whereBetween('regular_price', [$minPrice, $maxPrice]));
-        //     $itineraries->whereHas('basePricing.variations', fn ($q) => $q->whereBetween('regular_price', [$minPrice, $maxPrice]));
-        //     $packages->whereHas('basePricing.variations', fn ($q) => $q->whereBetween('regular_price', [$minPrice, $maxPrice]));
-        // }
 
         if ($maxPrice !== null) {
-            $activities = $activities->whereHas('pricing', fn ($q) => $q->whereBetween('regular_price', [$minPrice, $maxPrice]));
-            $itineraries = $itineraries->whereHas('basePricing.variations', fn ($q) => $q->whereBetween('regular_price', [$minPrice, $maxPrice]));
-            $packages = $packages->whereHas('basePricing.variations', fn ($q) => $q->whereBetween('regular_price', [$minPrice, $maxPrice]));
+            $activities?->whereHas('pricing', fn ($q) => $q->whereBetween('regular_price', [$minPrice, $maxPrice]));
+            $itineraries?->whereHas('basePricing.variations', fn ($q) => $q->whereBetween('regular_price', [$minPrice, $maxPrice]));
         }
 
-        // Retrieve Data
-        $activities = $activities->get();
-        $itineraries = $itineraries->get();
-        $packages = $packages->get();
+        $activities = $activities?->get() ?? collect();
+        $itineraries = $itineraries?->get() ?? collect();
 
         // **Check for Empty Data**
-        if (!empty($citySlugs) && count($selectedCities) && $activities->isEmpty() && $itineraries->isEmpty() && $packages->isEmpty()) {
+        if (!empty($citySlugs) && count($selectedCities) && $activities->isEmpty() && $itineraries->isEmpty()) {
             return response()->json(['success' => false, 'message' => 'No items found .'], 404);
         }
 
-        if (!empty($categorySlugs) && ($activities->isEmpty() && $itineraries->isEmpty() && $packages->isEmpty())) {
+        if (!empty($categorySlugs) && ($activities->isEmpty() && $itineraries->isEmpty())) {
             return response()->json(['success' => false, 'message' => 'Category has no items.'], 404);
         }
 
-        if (!empty($tagSlugs) && ($itineraries->isEmpty() && $packages->isEmpty())) {
+        if (!empty($tagSlugs) && $itineraries->isEmpty()) {
             return response()->json(['success' => false, 'message' => 'Tag has no items.'], 404);
         }
 
@@ -852,6 +851,8 @@ class PublicRegionController extends Controller
                 'item_type' => 'activity',
                 'featured' => $activity->featured_activity,
                 'city_slug' => $activity->locations->first()?->city?->slug,
+                'featured_image' => $activity->mediaGallery->where('is_featured', true)->first()?->media?->url
+                    ?? $activity->mediaGallery->first()?->media?->url,
                 'pricing' => $activity->pricing,
                 'categories' => $activity->categories->map(fn ($category) => [
                     'slug' => $category->category->slug,
@@ -878,8 +879,9 @@ class PublicRegionController extends Controller
                 'slug' => $itinerary->slug,
                 'item_type' => 'itinerary',
                 'featured' => $itinerary->featured_itinerary,
+                'featured_image' => $itinerary->featured_image,
                 'city_slug' => $itinerary->locations->first()?->city?->slug,
-                'pricing' => $itinerary->basePricing,
+                'base_pricing' => $itinerary->basePricing,
                 'categories' => $itinerary->categories->map(fn ($category) => [
                     'slug' => $category->category->slug,
                     'name' => $category->category->name,
@@ -889,37 +891,6 @@ class PublicRegionController extends Controller
                     'name' => $tag->name,
                 ])->toArray(),
                 'locations' => $itinerary->locations->map(function ($location) {
-                    $city = $location->city;
-                    return [
-                        'city_id' => $city->id,
-                        'city' => $city->name,
-                        'city_slug' => $city->slug,
-                        'state_id' => $city->state?->id,
-                        'state' => $city->state?->name,
-                        'country_id' => $city->state?->country?->id,
-                        'country' => $city->state?->country?->name,
-                        'region_id' => $city->state?->country?->regions->first()?->id,
-                        'region' => $city->state?->country?->regions->first()?->name,
-                    ];
-                }),
-            ]))
-            ->merge($packages->map(fn ($package) => [
-                'id' => $package->id,
-                'name' => $package->name,
-                'slug' => $package->slug,
-                'item_type' => 'package',
-                'featured' => $package->featured_package,
-                'city_slug' => $package->locations->first()?->city?->slug,
-                'pricing' => $package->basePricing,
-                'categories' => $package->categories->map(fn ($category) => [
-                    'slug' => $category->category->slug,
-                    'name' => $category->category->name,
-                ])->toArray(),
-                'tags' => $package->tags->map(fn ($tag) => [
-                    'slug' => $tag->slug,
-                    'name' => $tag->name,
-                ])->toArray(),
-                'locations' => $package->locations->map(function ($location) {
                     $city = $location->city;
                     return [
                         'city_id' => $city->id,
@@ -944,10 +915,10 @@ class PublicRegionController extends Controller
                 $allItems = $allItems->sortByDesc('name');
                 break;
             case 'price_asc':
-                $allItems = $allItems->sortBy(fn ($item) => (float) ($item['base_pricing']['variations'][0]['sale_price'] ?? $item['price']['regular_price'] ?? 0));
+                $allItems = $allItems->sortBy(fn ($item) => (float) ($item['base_pricing']['variations'][0]['sale_price'] ?? $item['pricing']['regular_price'] ?? 0));
                 break;
             case 'price_desc':
-                $allItems = $allItems->sortByDesc(fn ($item) => (float) ($item['base_pricing']['variations'][0]['sale_price'] ?? $item['price']['regular_price'] ?? 0));
+                $allItems = $allItems->sortByDesc(fn ($item) => (float) ($item['base_pricing']['variations'][0]['sale_price'] ?? $item['pricing']['regular_price'] ?? 0));
                 break;
             case 'id_asc':
                 $allItems = $allItems->sortBy('id');
