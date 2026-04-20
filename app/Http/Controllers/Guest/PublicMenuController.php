@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Guest;
 
 use App\Http\Controllers\Controller;
 use App\Models\Region;
+use App\Models\Country;
 use App\Models\City;
 use Illuminate\Http\Request;
 
@@ -42,68 +43,64 @@ class PublicMenuController extends Controller
 
     public function getMegaMenuData()
     {
-        $mapCity = function ($city) {
-            $featured = $city->mediaGallery->firstWhere('is_featured', true);
-            $fallback = $city->mediaGallery->first();
+        $mapCountry = function ($country) {
+            $featured = $country->mediaGallery->firstWhere('is_featured', true);
+            $fallback = $country->mediaGallery->first();
+
+            $stateIds = $country->states->pluck('id');
+
+            $cities = City::select('id', 'state_id', 'name', 'slug')
+                ->whereIn('state_id', $stateIds)
+                ->orderByDesc('featured_destination')
+                ->orderBy('name')
+                ->limit(20)
+                ->get()
+                ->map(fn ($c) => [
+                    'id' => $c->id,
+                    'name' => $c->name,
+                    'slug' => $c->slug,
+                ])
+                ->values();
+
             return [
-                'id' => $city->id,
-                'name' => $city->name,
-                'slug' => $city->slug,
+                'id' => $country->id,
+                'name' => $country->name,
+                'slug' => $country->slug,
                 'featured_image' => $featured?->media?->url ?? $fallback?->media?->url,
-                'activities_count' => $city->activities_count,
-                'places' => $city->places->map(fn ($p) => [
-                    'id' => $p->id,
-                    'name' => $p->name,
-                    'slug' => $p->slug,
-                ])->values(),
+                'cities_count' => $cities->count(),
+                'cities' => $cities,
             ];
         };
 
-        $regions = Region::with('countries:id')->get()->map(function ($region) use ($mapCity) {
-            $countryIds = $region->countries->pluck('id');
-
-            $cities = City::with([
-                    'mediaGallery.media',
-                    'places' => fn ($q) => $q->select('id', 'city_id', 'name', 'slug')
-                        ->where('featured_destination', true)
-                        ->orderBy('id')
-                        ->limit(20),
-                ])
-                ->withCount('activities')
-                ->whereHas('state', fn ($q) => $q->whereIn('country_id', $countryIds))
-                ->orderByDesc('featured_destination')
-                ->orderByDesc('activities_count')
-                ->limit(10)
-                ->get()
-                ->map($mapCity);
-
-            return [
-                'id' => $region->id,
-                'name' => $region->name,
-                'slug' => $region->slug,
-                'image_url' => $region->image_url,
-                'cities' => $cities,
-            ];
-        });
-
-        $trendingCities = City::with([
-                'mediaGallery.media',
-                'places' => fn ($q) => $q->select('id', 'city_id', 'name', 'slug')
-                    ->where('featured_destination', true)
-                    ->orderBy('id')
-                    ->limit(20),
+        $regions = Region::with([
+                'countries' => fn ($q) => $q->orderByDesc('featured_destination')->orderBy('name'),
+                'countries.mediaGallery.media',
+                'countries.states:id,country_id',
             ])
-            ->withCount('activities')
+            ->get()
+            ->map(function ($region) use ($mapCountry) {
+                $countries = $region->countries->take(3)->values()->map($mapCountry);
+
+                return [
+                    'id' => $region->id,
+                    'name' => $region->name,
+                    'slug' => $region->slug,
+                    'image_url' => $region->image_url,
+                    'countries' => $countries,
+                ];
+            });
+
+        $trendingCountries = Country::with(['mediaGallery.media', 'states:id,country_id'])
             ->orderByDesc('featured_destination')
-            ->orderByDesc('activities_count')
+            ->orderBy('name')
             ->limit(3)
             ->get()
-            ->map($mapCity);
+            ->map($mapCountry);
 
         return response()->json([
             'success' => true,
             'data' => $regions,
-            'trending' => $trendingCities,
+            'trending' => $trendingCountries,
         ]);
     }
 }
