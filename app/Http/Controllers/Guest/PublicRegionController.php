@@ -76,27 +76,47 @@ class PublicRegionController extends Controller
     // ------------------Getting Cities behalf of Region-------------------
     public function getCitiesByRegion($region_slug)
     {
-        $region = Region::where('name', $region_slug)->firstOrFail();
+        $region = Region::where('slug', $region_slug)->first();
 
         if (!$region) {
-            return response()->json(['success' => false, 'message' => 'Region not found'], 404);
-        }
-
-        $cities = [];
-    
-        foreach ($region->countries as $country) {
-            foreach ($country->states as $state) {
-                $cities = array_merge($cities, $state->cities()->get()->toArray());
-            }
-        }
-        
-        if (collect($cities)->isEmpty()) {
             return response()->json([
                 'success' => false,
-                'message' => 'No cities found in this region'
+                'message' => 'Region not found'
             ], 404);
         }
-        
+
+        $cities = City::with('mediaGallery.media')
+            ->withCount('activities')
+            ->whereExists(function ($query) use ($region) {
+                $query->select(DB::raw(1))
+                    ->from('states')
+                    ->whereColumn('cities.state_id', 'states.id')
+                    ->whereExists(function ($subQuery) use ($region) {
+                        $subQuery->select(DB::raw(1))
+                            ->from('countries')
+                            ->whereColumn('states.country_id', 'countries.id')
+                            ->whereExists(function ($innerQuery) use ($region) {
+                                $innerQuery->select(DB::raw(1))
+                                    ->from('region_country')
+                                    ->whereColumn('countries.id', 'region_country.country_id')
+                                    ->where('region_country.region_id', $region->id);
+                            });
+                    });
+            })
+            ->get()
+            ->map(function ($city) {
+                $featuredImage = $city->mediaGallery->firstWhere('is_featured', true)
+                    ?? $city->mediaGallery->first();
+                return [
+                    'id' => $city->id,
+                    'name' => $city->name,
+                    'slug' => $city->slug,
+                    'description' => $city->description,
+                    'featured_image' => $featuredImage?->media?->url,
+                    'activities_count' => $city->activities_count,
+                ];
+            });
+
         return response()->json([
             'success' => true,
             'data' => $cities
