@@ -84,12 +84,14 @@ class PublicTransferControllerContractTest extends TestCase
             'transfer_route_id' => $route->id,
         ]);
 
-        // Seed non-vendor pricing availability with transfer_price=30
+        // Seed non-vendor pricing availability with transfer_price=30, extras
         TransferPricingAvailability::create([
-            'transfer_id'   => $transfer->id,
-            'is_vendor'     => false,
-            'transfer_price' => 30.00,
-            'currency'      => 'USD',
+            'transfer_id'            => $transfer->id,
+            'is_vendor'              => false,
+            'transfer_price'         => 30.00,
+            'extra_luggage_charge'   => 5.00,
+            'waiting_charge'         => 3.00,
+            'currency'               => 'USD',
         ]);
 
         return compact('zoneA', 'zoneB', 'placeA', 'placeB', 'route', 'transfer');
@@ -122,11 +124,15 @@ class PublicTransferControllerContractTest extends TestCase
         $this->assertArrayHasKey('transfer_price', $transfer, 'transfer_price key missing');
         $this->assertArrayHasKey('route_price', $transfer, 'route_price key missing');
         $this->assertArrayHasKey('route_currency', $transfer, 'route_currency key missing');
+        $this->assertArrayHasKey('extra_luggage_charge', $transfer, 'extra_luggage_charge key missing');
+        $this->assertArrayHasKey('waiting_charge', $transfer, 'waiting_charge key missing');
 
-        // Assert correct values: base 50 + transfer 30 = route 80
+        // Assert correct values: base 50 + transfer 30 + luggage 5 + waiting 3 = route 88
         $this->assertEquals(50.0, (float) $transfer['zone_base_price'], 'zone_base_price mismatch');
         $this->assertEquals(30.0, (float) $transfer['transfer_price'], 'transfer_price mismatch');
-        $this->assertEquals(80.0, (float) $transfer['route_price'], 'route_price mismatch');
+        $this->assertEquals(5.0, (float) $transfer['extra_luggage_charge'], 'extra_luggage_charge mismatch');
+        $this->assertEquals(3.0, (float) $transfer['waiting_charge'], 'waiting_charge mismatch');
+        $this->assertEquals(88.0, (float) $transfer['route_price'], 'route_price mismatch');
         $this->assertSame('USD', $transfer['route_currency'], 'route_currency mismatch');
     }
 
@@ -158,8 +164,10 @@ class PublicTransferControllerContractTest extends TestCase
         $this->assertArrayHasKey('transfer_price', $transfer);
         $this->assertArrayHasKey('route_price', $transfer);
         $this->assertArrayHasKey('route_currency', $transfer);
+        $this->assertArrayHasKey('extra_luggage_charge', $transfer);
+        $this->assertArrayHasKey('waiting_charge', $transfer);
 
-        // Assert values match formula
-        $this->assertEquals(80.0, (float) $transfer['route_price']);
+        // Assert values match formula: base 50 + transfer 30 + luggage 5 + waiting 3 = 88
+        $this->assertEquals(88.0, (float) $transfer['route_price']);
     }
 }
