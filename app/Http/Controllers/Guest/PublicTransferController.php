@@ -180,6 +180,8 @@ class PublicTransferController extends Controller
 
         $data['zone_base_price']        = $zoneBasePrice;
         $data['transfer_price']         = $transferPrice;
+        $data['extra_luggage_charge']   = $transfer->extra_luggage_charge;
+        $data['waiting_charge']         = $transfer->waiting_charge;
         $data['route_price']            = $transfer->computeRoutePrice();
         $data['route_currency']         = $transfer->routeCurrency();
         $data['route_duration_minutes'] = $transfer->route?->duration_minutes;
