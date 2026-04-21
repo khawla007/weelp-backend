@@ -189,7 +189,8 @@ class Transfer extends Model
     }
 
     /**
-     * Compute the total route price: zone base_price + non-vendor transfer_price.
+     * Compute the total route price: zone base_price + non-vendor transfer_price + extras.
+     * Includes extra_luggage_charge and waiting_charge for admin-authored transfers (non-vendor).
      * Returns float rounded to 2 decimals.
      */
     public function computeRoutePrice(): float
@@ -203,7 +204,11 @@ class Transfer extends Model
             : null;
         $transferPrice = $nonVendorPricing ? (float) $nonVendorPricing->transfer_price : 0.0;
 
-        return round($zoneBasePrice + $transferPrice, 2);
+        // TODO(vendor): include VendorPricingTier.waiting_charge when vendor flow is added
+        $luggage = $nonVendorPricing ? (float) ($nonVendorPricing->extra_luggage_charge ?? 0) : 0.0;
+        $waiting = $nonVendorPricing ? (float) ($nonVendorPricing->waiting_charge ?? 0) : 0.0;
+
+        return round($zoneBasePrice + $transferPrice + $luggage + $waiting, 2);
     }
 
     /**
@@ -232,5 +237,31 @@ class Transfer extends Model
     public static function clearZonePriceCache(): void
     {
         self::$zonePriceCache = [];
+    }
+
+    /**
+     * Get the extra luggage charge for this transfer (non-vendor path only).
+     * Returns 0.0 if pricing availability is missing or vendor.
+     */
+    public function getExtraLuggageChargeAttribute(): float
+    {
+        $pricingAvailability = $this->pricingAvailability;
+        $nonVendorPricing = ($pricingAvailability && ! $pricingAvailability->is_vendor)
+            ? $pricingAvailability
+            : null;
+        return (float) ($nonVendorPricing?->extra_luggage_charge ?? 0);
+    }
+
+    /**
+     * Get the waiting charge for this transfer (non-vendor path only).
+     * Returns 0.0 if pricing availability is missing or vendor.
+     */
+    public function getWaitingChargeAttribute(): float
+    {
+        $pricingAvailability = $this->pricingAvailability;
+        $nonVendorPricing = ($pricingAvailability && ! $pricingAvailability->is_vendor)
+            ? $pricingAvailability
+            : null;
+        return (float) ($nonVendorPricing?->waiting_charge ?? 0);
     }
 }
