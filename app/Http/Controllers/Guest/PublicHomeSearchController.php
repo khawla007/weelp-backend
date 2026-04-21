@@ -120,10 +120,18 @@ class PublicHomeSearchController extends Controller
                 $allItems = $allItems->sortByDesc('name');
                 break;
             case 'price_asc':
-                $allItems = $allItems->sortBy(fn ($item) => (float) ($item['base_pricing']['variations'][0]['sale_price'] ?? $item['price']['regular_price'] ?? 0));
+                $allItems = $allItems->sortBy(fn ($item) => (float) (
+                    ($item['item_type'] ?? null) === 'itinerary'
+                        ? ($item['schedule_total_price'] ?? 0)
+                        : ($item['base_pricing']['variations'][0]['sale_price'] ?? $item['price']['regular_price'] ?? 0)
+                ));
                 break;
             case 'price_desc':
-                $allItems = $allItems->sortByDesc(fn ($item) => (float) ($item['base_pricing']['variations'][0]['sale_price'] ?? $item['price']['regular_price'] ?? 0));
+                $allItems = $allItems->sortByDesc(fn ($item) => (float) (
+                    ($item['item_type'] ?? null) === 'itinerary'
+                        ? ($item['schedule_total_price'] ?? 0)
+                        : ($item['base_pricing']['variations'][0]['sale_price'] ?? $item['price']['regular_price'] ?? 0)
+                ));
                 break;
 
             case 'id_asc':
@@ -305,8 +313,9 @@ class PublicHomeSearchController extends Controller
             'locations.city',
             'basePricing.variations',
             'mediaGallery.media',
-            'schedules.activities:id,schedule_id,price',
-            'schedules.transfers:id,schedule_id,price',
+            'schedules.activities',
+            'schedules.transfers.transfer.route',
+            'schedules.transfers.transfer.pricingAvailability',
         ])->whereHas('locations', function ($q) use ($cityIds) {
             $q->whereIn('city_id', $cityIds);
         });
@@ -389,6 +398,7 @@ class PublicHomeSearchController extends Controller
                     'name' => $tag->tag->name,
                 ])->toArray(),
                 'schedule_total_price' => $itinerary->schedule_total_price,
+                'schedule_total_currency' => $itinerary->schedule_total_currency,
                 'base_pricing' => $itinerary->basePricing ? [
                     'currency' => $itinerary->basePricing->currency,
                     'availability' => $itinerary->basePricing->availability,
