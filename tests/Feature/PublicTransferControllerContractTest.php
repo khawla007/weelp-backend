@@ -19,9 +19,12 @@ class PublicTransferControllerContractTest extends TestCase
 {
     use RefreshDatabase;
 
-    /**
-     * Seed a scenario with zones, pricing, route, and transfer.
-     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Transfer::clearZonePriceCache();
+    }
+
     private function seedScenario(): array
     {
         $country = Country::create(['name' => 'UAE', 'code' => 'AE', 'slug' => 'uae']);

@@ -453,12 +453,10 @@ class Itinerary extends Model
         $transfersSum = $this->schedules
             ->flatMap(fn ($schedule) => $schedule->transfers)
             ->sum(function ($row) {
-                // If transfer exists and has a route, use live computed price
-                if ($row->transfer && $row->transfer->route) {
-                    return (float) $row->transfer->computeRoutePrice();
+                if (! $row->transfer) {
+                    return (float) ($row->price ?? 0);
                 }
-                // Fallback to stored snapshot price
-                return (float) ($row->price ?? 0);
+                return (float) $row->transfer->computeRoutePrice();
             });
 
         return round($activitiesSum + $transfersSum, 2);
