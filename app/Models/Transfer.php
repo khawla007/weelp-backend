@@ -198,15 +198,10 @@ class Transfer extends Model
         $zonePrice = $this->resolvedZonePrice();
         $zoneBasePrice = $zonePrice ? (float) $zonePrice->base_price : 0.0;
 
-        $pricingAvailability = $this->pricingAvailability;
-        $nonVendorPricing = ($pricingAvailability && ! $pricingAvailability->is_vendor)
-            ? $pricingAvailability
-            : null;
-        $transferPrice = $nonVendorPricing ? (float) $nonVendorPricing->transfer_price : 0.0;
-
-        // TODO(vendor): include VendorPricingTier.waiting_charge when vendor flow is added
-        $luggage = $nonVendorPricing ? (float) ($nonVendorPricing->extra_luggage_charge ?? 0) : 0.0;
-        $waiting = $nonVendorPricing ? (float) ($nonVendorPricing->waiting_charge ?? 0) : 0.0;
+        $nonVendorPricing = $this->nonVendorPricing();
+        $transferPrice = (float) ($nonVendorPricing?->transfer_price ?? 0);
+        $luggage = (float) ($nonVendorPricing?->extra_luggage_charge ?? 0);
+        $waiting = (float) ($nonVendorPricing?->waiting_charge ?? 0);
 
         return round($zoneBasePrice + $transferPrice + $luggage + $waiting, 2);
     }
@@ -222,12 +217,7 @@ class Transfer extends Model
             return $zonePrice->currency;
         }
 
-        $pricingAvailability = $this->pricingAvailability;
-        $nonVendorPricing = ($pricingAvailability && ! $pricingAvailability->is_vendor)
-            ? $pricingAvailability
-            : null;
-
-        return $nonVendorPricing?->currency;
+        return $this->nonVendorPricing()?->currency;
     }
 
     /**
@@ -239,29 +229,19 @@ class Transfer extends Model
         self::$zonePriceCache = [];
     }
 
-    /**
-     * Get the extra luggage charge for this transfer (non-vendor path only).
-     * Returns 0.0 if pricing availability is missing or vendor.
-     */
     public function getExtraLuggageChargeAttribute(): float
     {
-        $pricingAvailability = $this->pricingAvailability;
-        $nonVendorPricing = ($pricingAvailability && ! $pricingAvailability->is_vendor)
-            ? $pricingAvailability
-            : null;
-        return (float) ($nonVendorPricing?->extra_luggage_charge ?? 0);
+        return (float) ($this->nonVendorPricing()?->extra_luggage_charge ?? 0);
     }
 
-    /**
-     * Get the waiting charge for this transfer (non-vendor path only).
-     * Returns 0.0 if pricing availability is missing or vendor.
-     */
     public function getWaitingChargeAttribute(): float
     {
-        $pricingAvailability = $this->pricingAvailability;
-        $nonVendorPricing = ($pricingAvailability && ! $pricingAvailability->is_vendor)
-            ? $pricingAvailability
-            : null;
-        return (float) ($nonVendorPricing?->waiting_charge ?? 0);
+        return (float) ($this->nonVendorPricing()?->waiting_charge ?? 0);
+    }
+
+    private function nonVendorPricing(): ?TransferPricingAvailability
+    {
+        $pa = $this->pricingAvailability;
+        return ($pa && ! $pa->is_vendor) ? $pa : null;
     }
 }
