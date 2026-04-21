@@ -8,6 +8,10 @@ use App\Models\ItineraryActivity;
 use App\Models\ItinerarySchedule;
 use App\Models\ItineraryTransfer;
 use App\Models\Transfer;
+use App\Models\TransferRoute;
+use App\Models\TransferZone;
+use App\Models\TransferZonePrice;
+use App\Models\TransferPricingAvailability;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Tests\TestCase;
@@ -30,21 +34,54 @@ class ItineraryScheduleTotalPriceTest extends TestCase
         ]);
     }
 
-    private function makeTransfer(): Transfer
+    private function makeTransfer(float $totalPrice = 0): Transfer
     {
         $suffix = Str::random(12);
 
-        return Transfer::create([
+        $transfer = Transfer::create([
             'name' => 'Test Transfer ' . $suffix,
             'slug' => 'test-transfer-' . strtolower($suffix),
             'description' => 'Test transfer description',
             'item_type' => 'transfer',
             'transfer_type' => 'private',
         ]);
+
+        // Set up zone pricing if needed (split as zone base + transfer price)
+        if ($totalPrice > 0) {
+            $fromZone = TransferZone::factory()->create();
+            $toZone = TransferZone::factory()->create();
+
+            $route = TransferRoute::factory()->create([
+                'from_zone_id' => $fromZone->id,
+                'to_zone_id' => $toZone->id,
+            ]);
+            $transfer->update(['transfer_route_id' => $route->id]);
+
+            $zoneBase = floor($totalPrice / 2);
+            $transferPrice = $totalPrice - $zoneBase;
+
+            TransferZonePrice::create([
+                'from_zone_id' => $fromZone->id,
+                'to_zone_id' => $toZone->id,
+                'base_price' => $zoneBase,
+                'currency' => 'USD',
+            ]);
+
+            TransferPricingAvailability::create([
+                'transfer_id' => $transfer->id,
+                'transfer_price' => $transferPrice,
+                'currency' => 'USD',
+                'is_vendor' => false,
+            ]);
+        }
+
+        return $transfer;
     }
 
     public function test_sums_activity_and_transfer_prices_across_schedules(): void
     {
+        Transfer::clearZonePriceCache();
+
         $itinerary = Itinerary::factory()->create();
 
         $day1 = ItinerarySchedule::create([
@@ -71,7 +108,7 @@ class ItineraryScheduleTotalPriceTest extends TestCase
         ]);
         ItineraryTransfer::create([
             'schedule_id' => $day1->id,
-            'transfer_id' => $this->makeTransfer()->id,
+            'transfer_id' => $this->makeTransfer(30.00)->id,
             'price' => 30.00,
             'included' => true,
         ]);
@@ -85,12 +122,12 @@ class ItineraryScheduleTotalPriceTest extends TestCase
         ]);
         ItineraryTransfer::create([
             'schedule_id' => $day2->id,
-            'transfer_id' => $this->makeTransfer()->id,
+            'transfer_id' => $this->makeTransfer(45.00)->id,
             'price' => 45.00,
             'included' => true,
         ]);
 
-        $itinerary->load('schedules.activities', 'schedules.transfers');
+        $itinerary->load('schedules.activities', 'schedules.transfers.transfer.route', 'schedules.transfers.transfer.pricingAvailability');
 
         $this->assertSame(300.00, $itinerary->schedule_total_price);
     }
@@ -105,6 +142,8 @@ class ItineraryScheduleTotalPriceTest extends TestCase
 
     public function test_null_prices_are_coerced_to_zero(): void
     {
+        Transfer::clearZonePriceCache();
+
         $itinerary = Itinerary::factory()->create();
 
         $day = ItinerarySchedule::create([
@@ -126,12 +165,12 @@ class ItineraryScheduleTotalPriceTest extends TestCase
         ]);
         ItineraryTransfer::create([
             'schedule_id' => $day->id,
-            'transfer_id' => $this->makeTransfer()->id,
+            'transfer_id' => $this->makeTransfer()->id, // No price setup, will return 0
             'price' => null,
             'included' => true,
         ]);
 
-        $itinerary->load('schedules.activities', 'schedules.transfers');
+        $itinerary->load('schedules.activities', 'schedules.transfers.transfer.route', 'schedules.transfers.transfer.pricingAvailability');
 
         $this->assertSame(25.00, $itinerary->schedule_total_price);
     }
@@ -144,6 +183,7 @@ class ItineraryScheduleTotalPriceTest extends TestCase
         $array = $itinerary->toArray();
 
         $this->assertArrayHasKey('schedule_total_price', $array);
+        $this->assertArrayHasKey('schedule_total_currency', $array);
         $this->assertSame(0.0, $array['schedule_total_price']);
     }
 }

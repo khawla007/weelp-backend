@@ -81,7 +81,7 @@ class Itinerary extends Model
         'private_itinerary' => 'boolean',
     ];
 
-    protected $appends = ['schedule_total_price'];
+    protected $appends = ['schedule_total_price', 'schedule_total_currency'];
 
     // Delegated meta attributes
     protected array $metaAttributes = [
@@ -436,12 +436,14 @@ class Itinerary extends Model
 
     /**
      * Sum of all per-day activity prices + per-day transfer prices.
+     * For transfers, uses live computeRoutePrice() for non-deleted transfers,
+     * falling back to stored snapshot price if transfer route is missing.
      * This is the canonical "price" of the itinerary.
      */
     public function getScheduleTotalPriceAttribute(): float
     {
         if (!$this->relationLoaded('schedules')) {
-            $this->load('schedules.activities', 'schedules.transfers');
+            $this->load('schedules.activities', 'schedules.transfers.transfer.route', 'schedules.transfers.transfer.pricingAvailability');
         }
 
         $activitiesSum = $this->schedules
@@ -450,8 +452,46 @@ class Itinerary extends Model
 
         $transfersSum = $this->schedules
             ->flatMap(fn ($schedule) => $schedule->transfers)
-            ->sum(fn ($row) => (float) ($row->price ?? 0));
+            ->sum(function ($row) {
+                // If transfer exists and has route, use live computed price
+                if ($row->transfer) {
+                    return (float) $row->transfer->computeRoutePrice();
+                }
+                // Fallback to stored snapshot price
+                return (float) ($row->price ?? 0);
+            });
 
         return round($activitiesSum + $transfersSum, 2);
+    }
+
+    /**
+     * Currency of the itinerary total.
+     * Resolves from: base pricing currency (first), then first transfer's route currency, else null.
+     */
+    public function getScheduleTotalCurrencyAttribute(): ?string
+    {
+        // First check base pricing currency
+        if (!$this->relationLoaded('basePricing')) {
+            $this->load('basePricing');
+        }
+
+        if ($this->basePricing) {
+            return $this->basePricing->currency;
+        }
+
+        // Fall back to first transfer's route currency
+        if (!$this->relationLoaded('schedules')) {
+            $this->load('schedules.transfers.transfer.route', 'schedules.transfers.transfer.pricingAvailability');
+        }
+
+        $firstTransfer = $this->schedules
+            ->flatMap(fn ($schedule) => $schedule->transfers)
+            ->first(fn ($row) => $row->transfer)?->transfer;
+
+        if ($firstTransfer) {
+            return $firstTransfer->routeCurrency();
+        }
+
+        return null;
     }
 }
