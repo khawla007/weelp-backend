@@ -173,8 +173,9 @@ class PublicToursSearchController extends Controller
             'locations.city',
             'basePricing.variations',
             'mediaGallery.media',
-            'schedules.activities:id,schedule_id,price',
-            'schedules.transfers:id,schedule_id,price',
+            'schedules.activities',
+            'schedules.transfers.transfer.route',
+            'schedules.transfers.transfer.pricingAvailability',
         ]);
 
         // Destination filter (to)
@@ -279,6 +280,7 @@ class PublicToursSearchController extends Controller
                 'name' => $tag->name,
             ])->toArray(),
             'schedule_total_price' => $itinerary->schedule_total_price,
+            'schedule_total_currency' => $itinerary->schedule_total_currency,
             'base_pricing' => $itinerary->basePricing ? [
                 'currency' => $itinerary->basePricing->currency,
                 'availability' => $itinerary->basePricing->availability,
