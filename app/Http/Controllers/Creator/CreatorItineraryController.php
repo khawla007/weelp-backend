@@ -530,8 +530,9 @@ class CreatorItineraryController extends Controller
                 'mediaGallery.media',
                 'basePricing.variations' => fn($q) => $q->limit(1),
                 'schedules' => fn($q) => $q->orderBy('day'),
-                'schedules.activities.activity.mediaGallery.media',
-                'schedules.transfers.transfer.mediaGallery.media',
+                'schedules.activities',
+                'schedules.transfers.transfer.route',
+                'schedules.transfers.transfer.pricingAvailability',
             ]);
 
         if ($request->query('source') === 'mine') {
@@ -591,6 +592,7 @@ class CreatorItineraryController extends Controller
                 'day_count' => $itinerary->schedules->count(),
                 'featured_image' => $itinerary->featured_image,
                 'display_price' => $itinerary->schedule_total_price,
+                'display_currency' => $itinerary->schedule_total_currency,
                 'currency' => $itinerary->basePricing?->currency,
                 'likes_count' => $itinerary->likes_count,
                 'views_count' => $itinerary->views_count,
