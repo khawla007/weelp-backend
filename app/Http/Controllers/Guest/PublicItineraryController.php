@@ -326,7 +326,7 @@ class PublicItineraryController extends Controller
                             'notes' => $activity->notes,
                             'price' => $activity->price,
                             'included' => $activity->included,
-                            'include_in_package' => $activity->include_in_package,
+                            'include_in_package' => $activity->included,
                             'main_location' => $primaryLocation?->city?->name,
                             'duration_minutes' => $primaryLocation?->duration,
                             'featured_image' => $featuredMedia?->media?->url
@@ -345,7 +345,7 @@ class PublicItineraryController extends Controller
                             'pax' => $transfer->pax,
                             'price' => $transfer->price,
                             'included' => $transfer->included,
-                            'include_in_package' => $transfer->include_in_package,
+                            'include_in_package' => $transfer->included,
                         ];
                     }),
                 ];
