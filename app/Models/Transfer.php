@@ -207,13 +207,13 @@ class Transfer extends Model
     }
 
     /**
-     * Get the currency for this route: zone currency takes precedence,
-     * then non-vendor pricing availability currency, else null.
+     * Get the currency for this route: zone currency takes precedence (if non-null),
+     * then non-vendor pricing availability currency (if non-null), else null.
      */
     public function routeCurrency(): ?string
     {
         $zonePrice = $this->resolvedZonePrice();
-        if ($zonePrice) {
+        if ($zonePrice && $zonePrice->currency) {
             return $zonePrice->currency;
         }
 

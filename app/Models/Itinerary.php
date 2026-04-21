@@ -464,20 +464,21 @@ class Itinerary extends Model
 
     /**
      * Currency of the itinerary total.
-     * Resolves from: base pricing currency (first), then first transfer's route currency, else null.
+     * Resolves from: base pricing currency (if non-null), then first transfer's route currency (if non-null),
+     * then first activity's pricing currency (if non-null), else null.
      */
     public function getScheduleTotalCurrencyAttribute(): ?string
     {
-        // First check base pricing currency
+        // First check base pricing currency (non-null check)
         if (!$this->relationLoaded('basePricing')) {
             $this->load('basePricing');
         }
 
-        if ($this->basePricing) {
+        if ($this->basePricing && $this->basePricing->currency) {
             return $this->basePricing->currency;
         }
 
-        // Fall back to first transfer's route currency
+        // Fall back to first transfer's route currency (non-null check)
         if (!$this->relationLoaded('schedules')) {
             $this->load('schedules.transfers.transfer.route', 'schedules.transfers.transfer.pricingAvailability');
         }
@@ -487,7 +488,23 @@ class Itinerary extends Model
             ->first(fn ($row) => $row->transfer)?->transfer;
 
         if ($firstTransfer) {
-            return $firstTransfer->routeCurrency();
+            $transferCurrency = $firstTransfer->routeCurrency();
+            if ($transferCurrency) {
+                return $transferCurrency;
+            }
+        }
+
+        // Fall back to first activity's pricing currency
+        if (!$this->relationLoaded('schedules')) {
+            $this->load('schedules.activities.activity.pricing');
+        }
+
+        $firstActivity = $this->schedules
+            ->flatMap(fn ($schedule) => $schedule->activities)
+            ->first()?->activity;
+
+        if ($firstActivity && $firstActivity->pricing && $firstActivity->pricing->currency) {
+            return $firstActivity->pricing->currency;
         }
 
         return null;
