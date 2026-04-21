@@ -324,8 +324,9 @@ class PublicCitiesController extends Controller
                     'mediaGallery.media',
                     'categories.category',
                     'tags',
-                    'schedules.activities.activity.mediaGallery.media',
-                    'schedules.transfers.transfer.mediaGallery.media',
+                    'schedules.activities',
+                    'schedules.transfers.transfer.route',
+                    'schedules.transfers.transfer.pricingAvailability',
                 ])
             : null;
 
@@ -371,6 +372,8 @@ class PublicCitiesController extends Controller
                 'featured' => $itinerary->featured_itinerary,
                 'featured_image' => $itinerary->featured_image,
                 'base_pricing' => $itinerary->basePricing,
+                'schedule_total_price' => $itinerary->schedule_total_price,
+                'schedule_total_currency' => $itinerary->schedule_total_currency,
                 'categories' => $itinerary->categories->map(fn ($category) => [
                     'slug' => $category->category->slug,
                     'name' => $category->category->name,
