@@ -116,4 +116,38 @@ class TransferComputeRoutePriceTest extends TestCase
         // Assert routeCurrency() == null
         $this->assertNull($transfer->routeCurrency());
     }
+
+    /**
+     * Test that routeCurrency checks zone price currency is non-null before returning,
+     * falling back to non-vendor pricing availability currency if zone currency is null.
+     */
+    public function test_route_currency_falls_back_when_zone_currency_is_null(): void
+    {
+        // Create zone price with null currency
+        $zonePricing = new TransferZonePrice([
+            'base_price' => 40.00,
+            'currency'   => null,  // Null currency — should not be returned
+        ]);
+
+        // Create non-vendor pricing availability with valid currency
+        $pricingAvailability = new TransferPricingAvailability([
+            'is_vendor'      => false,
+            'transfer_price' => 25.00,
+            'currency'       => 'CAD',  // Should be returned as fallback
+        ]);
+
+        $transfer = new Transfer();
+
+        // Use reflection to inject the zone price with null currency
+        $refClass = new \ReflectionClass($transfer);
+        $resolvedProperty = $refClass->getProperty('resolvedZonePrice');
+        $resolvedProperty->setAccessible(true);
+        $resolvedProperty->setValue($transfer, $zonePricing);
+
+        // Set pricingAvailability relation
+        $transfer->setRelation('pricingAvailability', $pricingAvailability);
+
+        // Assert routeCurrency() == 'CAD' (falls back because zone currency is null)
+        $this->assertSame('CAD', $transfer->routeCurrency());
+    }
 }

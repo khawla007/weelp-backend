@@ -225,4 +225,33 @@ class ItineraryScheduleTotalPriceLiveTransferTest extends TestCase
         // Currency should be GBP (from first transfer's route currency)
         $this->assertSame('GBP', $itinerary->schedule_total_currency);
     }
+
+    public function test_currency_falls_back_to_first_activity_when_no_base_pricing_or_transfer(): void
+    {
+        Transfer::clearZonePriceCache();
+
+        $itinerary = Itinerary::factory()->create();
+
+        $day = ItinerarySchedule::create([
+            'itinerary_id' => $itinerary->id,
+            'day' => 1,
+        ]);
+
+        // Create activity with pricing in CAD
+        $activity = $this->makeActivity();
+        $activity->pricing()->create([
+            'regular_price' => 100.0,
+            'currency' => 'CAD',
+        ]);
+
+        ItineraryActivity::create([
+            'schedule_id' => $day->id,
+            'activity_id' => $activity->id,
+            'price' => 50.00,
+            'included' => true,
+        ]);
+
+        // No base pricing, no transfers — currency should fall back to activity's CAD
+        $this->assertSame('CAD', $itinerary->schedule_total_currency);
+    }
 }
