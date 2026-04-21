@@ -66,6 +66,17 @@ class Transfer extends Model
         'transfer_route_id',
     ];
 
+    /**
+     * Static cache for resolved zone prices, keyed by "from_zone_id:to_zone_id".
+     * Cleared at the start of each request cycle.
+     */
+    private static array $zonePriceCache = [];
+
+    /**
+     * Per-instance memoised resolved zone price.
+     */
+    private ?TransferZonePrice $resolvedZonePrice = null;
+
     public function route()
     {
         return $this->belongsTo(TransferRoute::class, 'transfer_route_id');
@@ -134,5 +145,92 @@ class Transfer extends Model
     public function getItemTypeAttribute($value)
     {
         return $value ?? strtolower(class_basename($this));
+    }
+
+    /**
+     * Resolve the zone pricing for this transfer's route, with per-request caching.
+     * Returns null if route is missing or zones are not set.
+     *
+     * Per-instance memoisation prevents multiple queries in the same request
+     * when the same transfer is accessed multiple times. Static cache allows
+     * multiple transfers pointing to the same zone pair to share the lookup.
+     */
+    public function resolvedZonePrice(): ?TransferZonePrice
+    {
+        // Per-instance memoisation
+        if ($this->resolvedZonePrice !== null) {
+            return $this->resolvedZonePrice;
+        }
+
+        // Early exit if route is missing or zones are not set
+        $route = $this->route;
+        if (! $route || ! $route->from_zone_id || ! $route->to_zone_id) {
+            return $this->resolvedZonePrice = null;
+        }
+
+        // Static cache key
+        $cacheKey = "{$route->from_zone_id}:{$route->to_zone_id}";
+
+        // Check static cache first
+        if (isset(self::$zonePriceCache[$cacheKey])) {
+            return $this->resolvedZonePrice = self::$zonePriceCache[$cacheKey];
+        }
+
+        // Query if not cached
+        $resolved = TransferZonePrice::query()
+            ->where('from_zone_id', $route->from_zone_id)
+            ->where('to_zone_id', $route->to_zone_id)
+            ->first();
+
+        // Store in static cache (even if null)
+        self::$zonePriceCache[$cacheKey] = $resolved;
+
+        return $this->resolvedZonePrice = $resolved;
+    }
+
+    /**
+     * Compute the total route price: zone base_price + non-vendor transfer_price.
+     * Returns float rounded to 2 decimals.
+     */
+    public function computeRoutePrice(): float
+    {
+        $zonePrice = $this->resolvedZonePrice();
+        $zoneBasePrice = $zonePrice ? (float) $zonePrice->base_price : 0.0;
+
+        $pricingAvailability = $this->pricingAvailability;
+        $nonVendorPricing = ($pricingAvailability && ! $pricingAvailability->is_vendor)
+            ? $pricingAvailability
+            : null;
+        $transferPrice = $nonVendorPricing ? (float) $nonVendorPricing->transfer_price : 0.0;
+
+        return round($zoneBasePrice + $transferPrice, 2);
+    }
+
+    /**
+     * Get the currency for this route: zone currency takes precedence,
+     * then non-vendor pricing availability currency, else null.
+     */
+    public function routeCurrency(): ?string
+    {
+        $zonePrice = $this->resolvedZonePrice();
+        if ($zonePrice) {
+            return $zonePrice->currency;
+        }
+
+        $pricingAvailability = $this->pricingAvailability;
+        $nonVendorPricing = ($pricingAvailability && ! $pricingAvailability->is_vendor)
+            ? $pricingAvailability
+            : null;
+
+        return $nonVendorPricing?->currency;
+    }
+
+    /**
+     * Clear the per-request static zone price cache.
+     * Call this at the start of each request cycle to prevent stale data.
+     */
+    public static function clearZonePriceCache(): void
+    {
+        self::$zonePriceCache = [];
     }
 }

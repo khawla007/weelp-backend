@@ -173,17 +173,15 @@ class PublicTransferController extends Controller
         })->toArray();
         unset($data['media_gallery_raw']);
 
-        $resolved = $transfer->route?->resolvedPrice();
-        $zoneBasePrice = $resolved ? (float) $resolved->base_price : 0.0;
-
+        $zoneBasePrice = (float) ($transfer->resolvedZonePrice()?->base_price ?? 0);
         $pricingAvailability = $transfer->pricingAvailability;
         $nonVendorPricing    = ($pricingAvailability && ! $pricingAvailability->is_vendor) ? $pricingAvailability : null;
         $transferPrice       = $nonVendorPricing ? (float) $nonVendorPricing->transfer_price : 0.0;
 
         $data['zone_base_price']        = $zoneBasePrice;
         $data['transfer_price']         = $transferPrice;
-        $data['route_price']            = $zoneBasePrice + $transferPrice;
-        $data['route_currency']         = $resolved?->currency ?? $nonVendorPricing?->currency;
+        $data['route_price']            = $transfer->computeRoutePrice();
+        $data['route_currency']         = $transfer->routeCurrency();
         $data['route_duration_minutes'] = $transfer->route?->duration_minutes;
 
         $origin = $transfer->route?->origin;
