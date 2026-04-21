@@ -221,8 +221,9 @@ class PublicRegionController extends Controller
             'mediaGallery.media',
             'categories.category',
             'tags',
-            'schedules.activities:id,schedule_id,price',
-            'schedules.transfers:id,schedule_id,price',
+            'schedules.activities',
+            'schedules.transfers.transfer.route',
+            'schedules.transfers.transfer.pricingAvailability',
         ])->where('featured_itinerary', true)->get();
 
         if ($itineraries->isEmpty()) {
@@ -268,6 +269,7 @@ class PublicRegionController extends Controller
                     ];
                 })->toArray(),
                 'schedule_total_price' => $itinerary->schedule_total_price,
+                'schedule_total_currency' => $itinerary->schedule_total_currency,
                 'base_pricing' => $itinerary->basePricing,
                 'media_gallery' => $itinerary->mediaGallery,
             ];
@@ -441,8 +443,9 @@ class PublicRegionController extends Controller
                 'mediaGallery.media',
                 'categories.category',
                 'tags',
-                'schedules.activities:id,schedule_id,price',
-                'schedules.transfers:id,schedule_id,price',
+                'schedules.activities',
+                'schedules.transfers.transfer.route',
+                'schedules.transfers.transfer.pricingAvailability',
             ])
             : null;
 
@@ -499,6 +502,7 @@ class PublicRegionController extends Controller
                 'featured_image' => $itinerary->mediaGallery->where('is_featured', true)->first()?->media?->url
                     ?? $itinerary->mediaGallery->first()?->media?->url,
                 'schedule_total_price' => $itinerary->schedule_total_price,
+                'schedule_total_currency' => $itinerary->schedule_total_currency,
                 'base_pricing' => $itinerary->basePricing,
                 // 'rating' => $itinerary->rating,
                 'categories' => $itinerary->categories->map(fn ($category) => [
@@ -617,7 +621,8 @@ class PublicRegionController extends Controller
         $query = Itinerary::with([
             'locations.city.state.country.regions',
             'schedules.activities',
-            'schedules.transfers',
+            'schedules.transfers.transfer.route',
+            'schedules.transfers.transfer.pricingAvailability',
             'basePricing.variations',
             'basePricing.blackoutDates',
             'inclusionsExclusions',
@@ -651,6 +656,7 @@ class PublicRegionController extends Controller
                 'featured_itinerary' => $itinerary->featured_itinerary,
                 'description' => $itinerary->description,
                 'schedule_total_price' => $itinerary->schedule_total_price,
+                'schedule_total_currency' => $itinerary->schedule_total_currency,
                 'item_type' => $itinerary->item_type,
                 'featured_image' => $itinerary->featured_image,
                 'city_slug' => $itinerary->locations->first()?->city?->slug,
@@ -807,8 +813,9 @@ class PublicRegionController extends Controller
                     'mediaGallery.media',
                     'categories.category',
                     'tags',
-                    'schedules.activities.activity.mediaGallery.media',
-                    'schedules.transfers.transfer.mediaGallery.media',
+                    'schedules.activities',
+                    'schedules.transfers.transfer.route',
+                    'schedules.transfers.transfer.pricingAvailability',
                 ])
             : null;
 
@@ -882,6 +889,8 @@ class PublicRegionController extends Controller
                 'featured_image' => $itinerary->featured_image,
                 'city_slug' => $itinerary->locations->first()?->city?->slug,
                 'base_pricing' => $itinerary->basePricing,
+                'schedule_total_price' => $itinerary->schedule_total_price,
+                'schedule_total_currency' => $itinerary->schedule_total_currency,
                 'categories' => $itinerary->categories->map(fn ($category) => [
                     'slug' => $category->category->slug,
                     'name' => $category->category->name,
