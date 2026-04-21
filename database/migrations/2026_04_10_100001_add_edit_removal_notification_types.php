@@ -7,6 +7,9 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (DB::connection()->getDriverName() !== 'mysql') {
+            return;
+        }
         DB::statement("ALTER TABLE user_notifications MODIFY COLUMN `type` ENUM(
             'application_approved',
             'application_rejected',
@@ -22,6 +25,9 @@ return new class extends Migration
 
     public function down(): void
     {
+        if (DB::connection()->getDriverName() !== 'mysql') {
+            return;
+        }
         DB::statement("ALTER TABLE user_notifications MODIFY COLUMN `type` ENUM(
             'application_approved',
             'application_rejected',
