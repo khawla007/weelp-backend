@@ -150,4 +150,74 @@ class TransferComputeRoutePriceTest extends TestCase
         // Assert routeCurrency() == 'CAD' (falls back because zone currency is null)
         $this->assertSame('CAD', $transfer->routeCurrency());
     }
+
+    /**
+     * Test that route_price sums zone base (100) + transfer price (50) + extra luggage (10) + waiting (5) = 165
+     */
+    public function test_route_price_sums_zone_base_transfer_price_extra_luggage_waiting(): void
+    {
+        // Create zone price
+        $zonePricing = new TransferZonePrice([
+            'base_price' => 100.00,
+            'currency'   => 'USD',
+        ]);
+
+        // Create non-vendor pricing availability with extras
+        $pricingAvailability = new TransferPricingAvailability([
+            'is_vendor'              => false,
+            'transfer_price'         => 50.00,
+            'extra_luggage_charge'   => 10.00,
+            'waiting_charge'         => 5.00,
+            'currency'               => 'USD',
+        ]);
+
+        $transfer = new Transfer();
+
+        // Use reflection to inject the zone price
+        $refClass = new \ReflectionClass($transfer);
+        $resolvedProperty = $refClass->getProperty('resolvedZonePrice');
+        $resolvedProperty->setAccessible(true);
+        $resolvedProperty->setValue($transfer, $zonePricing);
+
+        // Set pricingAvailability relation
+        $transfer->setRelation('pricingAvailability', $pricingAvailability);
+
+        // Assert computeRoutePrice() == 165.00 (100 + 50 + 10 + 5)
+        $this->assertEquals(165.00, $transfer->computeRoutePrice());
+    }
+
+    /**
+     * Test that null extras coerce to 0, so zone (50) + transfer (30) + null + null = 80
+     */
+    public function test_route_price_null_extras_coerce_to_zero(): void
+    {
+        // Create zone price
+        $zonePricing = new TransferZonePrice([
+            'base_price' => 50.00,
+            'currency'   => 'USD',
+        ]);
+
+        // Create non-vendor pricing availability with null extras
+        $pricingAvailability = new TransferPricingAvailability([
+            'is_vendor'              => false,
+            'transfer_price'         => 30.00,
+            'extra_luggage_charge'   => null,
+            'waiting_charge'         => null,
+            'currency'               => 'USD',
+        ]);
+
+        $transfer = new Transfer();
+
+        // Use reflection to inject the zone price
+        $refClass = new \ReflectionClass($transfer);
+        $resolvedProperty = $refClass->getProperty('resolvedZonePrice');
+        $resolvedProperty->setAccessible(true);
+        $resolvedProperty->setValue($transfer, $zonePricing);
+
+        // Set pricingAvailability relation
+        $transfer->setRelation('pricingAvailability', $pricingAvailability);
+
+        // Assert computeRoutePrice() == 80.00 (50 + 30 + 0 + 0)
+        $this->assertEquals(80.00, $transfer->computeRoutePrice());
+    }
 }
