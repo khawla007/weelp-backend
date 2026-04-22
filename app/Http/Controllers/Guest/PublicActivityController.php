@@ -280,6 +280,7 @@ class PublicActivityController extends Controller
                     'duration' => $location->duration,
                     'city_id' => $city->id,
                     'city' => $city->name,
+                    'city_slug' => $city->slug,
                     'state_id' => $city->state->id,
                     'state' => $city->state->name,
                     'country_id' => $city->state->country->id,
