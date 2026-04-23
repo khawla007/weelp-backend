@@ -373,12 +373,6 @@ parameters:
 			path: app/Http/Controllers/Guest/PublicBlogController.php
 
 		-
-			message: '#^Call to static method query\(\) on an unknown class App\\Http\\Controllers\\Guest\\YourModel\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Http/Controllers/Guest/PublicFilterController.php
-
-		-
 			message: '#^Anonymous function should return array\{day\: int, activities\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float\|int\|string\|null, include_in_package\: bool, main_location\: string\|null, \.\.\.\}\>, transfers\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, pickup_location\: string\|null, dropoff_location\: string\|null, pax\: int\|null, price\: float\|int\|string\|null, \.\.\.\}\>\} but returns array\{day\: int, activities\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float\|int\|string\|null, include_in_package\: bool, main_location\: string\|null, \.\.\.\}\>, transfers\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, pickup_location\: string\|null, dropoff_location\: string\|null, pax\: int\|null, price\: float\|int\|string\|null, \.\.\.\}\>\}\.$#'
 			identifier: return.type
 			count: 1
