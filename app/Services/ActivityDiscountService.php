@@ -91,11 +91,12 @@ final class ActivityDiscountService
             }
 
             $isPercentage = $tier->discount_type === 'percentage';
-            $completeGroups = $isPercentage ? 0 : (int) floor($headcount / $tier->min_people);
+            $completeGroups = (int) floor($headcount / $tier->min_people);
+            $discountedPax = $completeGroups * (int) $tier->min_people;
 
             if ($isPercentage) {
                 $amount = min((float) $tier->discount_amount, 100.0);
-                $discountTotal = round(($amount / 100) * $perPax * $headcount, 2);
+                $discountTotal = round(($amount / 100) * $perPax * $discountedPax, 2);
             } else {
                 $discountTotal = round((float) $tier->discount_amount * $completeGroups, 2);
             }

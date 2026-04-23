@@ -219,10 +219,30 @@ class ActivityDiscountServiceTest extends TestCase
 
         $result = $this->service->quote($activity, 15);
 
+        // 5-tier: complete=3, disc=3% × 100 × 15 = 45
+        // 13-tier: complete=1, disc=10% × 100 × 13 = 130 (2 pax pay regular)
+        // 13-tier wins.
         $this->assertSame(1500.0, $result['subtotal']);
         $this->assertSame(13, $result['selected_tier']->min_people);
-        $this->assertSame(150.0, $result['discount_total']);
-        $this->assertSame(1350.0, $result['final_amount']);
+        $this->assertSame(130.0, $result['discount_total']);
+        $this->assertSame(1370.0, $result['final_amount']);
+    }
+
+    public function testPercentageSixPaxAppliesOnlyToCompleteGroup(): void
+    {
+        $activity = new Activity(['id' => 20, 'name' => 'Six pax case', 'slug' => 'test20']);
+        $activity->setRelation('pricing', new ActivityPricing(['id' => 20, 'regular_price' => 211.00, 'currency' => 'USD']));
+        $tier5 = (new ActivityGroupDiscount())->forceFill(['id' => 30, 'activity_id' => 20, 'min_people' => 5, 'discount_amount' => 35.00, 'discount_type' => 'percentage']);
+        $activity->setRelation('groupDiscounts', collect([$tier5]));
+
+        $result = $this->service->quote($activity, 6);
+
+        // complete=1, discounted_pax=5, discount=0.35 × 211 × 5 = 369.25
+        // final = 6×211 - 369.25 = 1266 - 369.25 = 896.75
+        $this->assertSame(1266.0, $result['subtotal']);
+        $this->assertSame(1, $result['complete_groups']);
+        $this->assertSame(369.25, $result['discount_total']);
+        $this->assertSame(896.75, $result['final_amount']);
     }
 
     public function testPercentageThirteenTierForHeadcountTwentySix(): void
