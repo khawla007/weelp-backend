@@ -647,4 +647,17 @@ class ActivityDiscountServiceTest extends TestCase
         $this->assertSame(0.0, $result['combined_discount']);
         $this->assertSame(0.0, $result['final_amount']);
     }
+
+    public function testLastMinuteTriggersOnSameDayBooking(): void
+    {
+        $a = $this->makeActivity();
+        $this->attachLastMinute($a, ['days_before_start' => 7, 'discount_amount' => 10, 'discount_type' => 'percentage']);
+        $travel = CarbonImmutable::today();
+
+        $result = $this->service->quote($a, 2, $travel);
+
+        $this->assertSame(0, $result['days_ahead']);
+        $this->assertSame(20.0, $result['last_minute_discount']);
+        $this->assertSame(180.0, $result['final_amount']);
+    }
 }
