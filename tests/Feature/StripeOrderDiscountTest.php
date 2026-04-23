@@ -3,7 +3,9 @@
 namespace Tests\Feature;
 
 use App\Models\Activity;
+use App\Models\ActivityEarlyBirdDiscount;
 use App\Models\ActivityGroupDiscount;
+use App\Models\ActivityLastMinuteDiscount;
 use App\Models\ActivityPricing;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -351,5 +353,174 @@ class StripeOrderDiscountTest extends TestCase
         $response = $this->postJson('/api/stripe/create-order', $payload);
 
         $response->assertStatus(422)->assertJson(['error' => 'base_amount_required']);
+    }
+
+    /**
+     * Test 9: Early Bird discount is applied with travel_date.
+     * Activity: regularPrice = 100
+     * EB discount: 30 days before start, 10% discount
+     * travel_date = now + 60 days (well within EB window)
+     * 2 adults: subtotal = 200, EB discount = 20, final = 180
+     */
+    public function test_stripe_order_accepts_early_bird_discounted_base_amount(): void
+    {
+        $user = User::factory()->create();
+        $activity = $this->createActivityWithPricing(
+            'early-bird-activity',
+            regularPrice: 100,
+            discounts: []
+        );
+
+        ActivityEarlyBirdDiscount::factory()->create([
+            'activity_id' => $activity->id,
+            'enabled' => true,
+            'days_before_start' => 30,
+            'discount_amount' => 10,
+            'discount_type' => 'percentage',
+        ]);
+
+        $payload = $this->buildActivityOrderPayload(
+            activity: $activity,
+            adults: 2,
+            children: 0,
+            baseAmount: 180.0 // 200 subtotal - 20 EB discount = 180
+        );
+        $payload['user_id'] = $user->id;
+        $payload['travel_date'] = now()->addDays(60)->toDateString();
+
+        $response = $this->postJson('/api/stripe/create-order', $payload);
+
+        $response->assertStatus(200);
+        $data = $response->json();
+        $this->assertTrue($data['success'] ?? false);
+    }
+
+    /**
+     * Test 10: Tampered Early Bird base_amount is rejected.
+     * Same setup as Test 9, but submit incorrect base_amount (200 instead of 180).
+     * The service recompute with travel_date should detect the mismatch.
+     */
+    public function test_stripe_order_rejects_tampered_early_bird_base_amount(): void
+    {
+        $user = User::factory()->create();
+        $activity = $this->createActivityWithPricing(
+            'tampered-eb-activity',
+            regularPrice: 100,
+            discounts: []
+        );
+
+        ActivityEarlyBirdDiscount::factory()->create([
+            'activity_id' => $activity->id,
+            'enabled' => true,
+            'days_before_start' => 30,
+            'discount_amount' => 10,
+            'discount_type' => 'percentage',
+        ]);
+
+        $payload = $this->buildActivityOrderPayload(
+            activity: $activity,
+            adults: 2,
+            children: 0,
+            baseAmount: 200.0 // Tampered: should be 180 with EB discount
+        );
+        $payload['user_id'] = $user->id;
+        $payload['travel_date'] = now()->addDays(60)->toDateString();
+
+        $response = $this->postJson('/api/stripe/create-order', $payload);
+
+        $response->assertStatus(422);
+        $data = $response->json();
+        $this->assertEquals('activity_price_mismatch', $data['error']);
+    }
+
+    /**
+     * Test 11: Per-pax fixed EB discount regression test.
+     * Old frontend algo: subtotal(400) - 10*4 = 360. New server rule: subtotal(400) - 10 = 390.
+     * If frontend sends 360 (old algo), server should reject it.
+     */
+    public function test_stripe_order_rejects_per_pax_fixed_tamper_regression(): void
+    {
+        $user = User::factory()->create();
+        $activity = $this->createActivityWithPricing(
+            'regression-fixed-eb',
+            regularPrice: 100,
+            discounts: []
+        );
+
+        ActivityEarlyBirdDiscount::factory()->create([
+            'activity_id' => $activity->id,
+            'enabled' => true,
+            'days_before_start' => 30,
+            'discount_amount' => 10,
+            'discount_type' => 'fixed',
+        ]);
+
+        // Old frontend algo: subtotal(400) - 10*4 = 360
+        // New server rule: subtotal(400) - 10 = 390
+        $payload = $this->buildActivityOrderPayload(
+            activity: $activity,
+            adults: 4,
+            children: 0,
+            baseAmount: 360.0 // Old algo, should be 390
+        );
+        $payload['user_id'] = $user->id;
+        $payload['travel_date'] = now()->addDays(60)->toDateString();
+
+        $response = $this->postJson('/api/stripe/create-order', $payload);
+
+        $response->assertStatus(422);
+        $data = $response->json();
+        $this->assertEquals('activity_price_mismatch', $data['error']);
+    }
+
+    /**
+     * Test 12: Group discount and Last Minute discount stack.
+     * Activity: regularPrice = 100
+     * Group: min_people = 5, 20% discount
+     * Last Minute: 7 days before start, 10% discount
+     * travel_date = now + 3 days (within LM window)
+     * 6 adults: subtotal = 600
+     *   Group discount (6 pax >= 5): 20% of 100 * 5 = 100 (1 complete group of 5)
+     *   Last Minute: 10% of 600 = 60
+     *   Combined discount: 100 + 60 = 160
+     *   Final: 600 - 160 = 440
+     */
+    public function test_stripe_order_stacks_group_and_last_minute(): void
+    {
+        $user = User::factory()->create();
+        $activity = $this->createActivityWithPricing(
+            'group-lm-activity',
+            regularPrice: 100,
+            discounts: [
+                [
+                    'min_people' => 5,
+                    'discount_amount' => 20,
+                    'discount_type' => 'percentage',
+                ],
+            ]
+        );
+
+        ActivityLastMinuteDiscount::factory()->create([
+            'activity_id' => $activity->id,
+            'enabled' => true,
+            'days_before_start' => 7,
+            'discount_amount' => 10,
+            'discount_type' => 'percentage',
+        ]);
+
+        $payload = $this->buildActivityOrderPayload(
+            activity: $activity,
+            adults: 6,
+            children: 0,
+            baseAmount: 440.0 // 600 - (group 100 + lm 60) = 440
+        );
+        $payload['user_id'] = $user->id;
+        $payload['travel_date'] = now()->addDays(3)->toDateString();
+
+        $response = $this->postJson('/api/stripe/create-order', $payload);
+
+        $response->assertStatus(200);
+        $data = $response->json();
+        $this->assertTrue($data['success'] ?? false);
     }
 }

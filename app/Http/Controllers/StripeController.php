@@ -86,12 +86,18 @@ class StripeController extends Controller
                 ], 422);
             }
 
+            // Eager-load EB/LM relations to avoid N+1 queries in service.
+            $orderable->loadMissing(['pricing', 'groupDiscounts', 'earlyBirdDiscount', 'lastMinuteDiscount']);
+
             $submittedBaseAmount = (float) $data['base_amount'];
 
-            // Re-validate: fetch expected price from service
+            // Re-validate: fetch expected price from service, using travel_date for EB/LM recompute.
             try {
                 $service = app(ActivityDiscountService::class);
-                $quote = $service->quote($orderable, $headcount);
+                $travelDate = !empty($data['travel_date'])
+                    ? \Carbon\CarbonImmutable::parse($data['travel_date'])
+                    : null;
+                $quote = $service->quote($orderable, $headcount, $travelDate);
                 $expectedBaseAmount = (float) $quote['final_amount'];
             } catch (\RuntimeException $e) {
                 return response()->json([
