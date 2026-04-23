@@ -5,7 +5,10 @@ namespace Tests\Unit;
 use App\Models\Activity;
 use App\Models\ActivityGroupDiscount;
 use App\Models\ActivityPricing;
+use App\Models\ActivityEarlyBirdDiscount;
+use App\Models\ActivityLastMinuteDiscount;
 use App\Services\ActivityDiscountService;
+use Carbon\CarbonImmutable;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
@@ -404,5 +407,244 @@ class ActivityDiscountServiceTest extends TestCase
 
         $this->assertSame(100.0, $result['per_pax']);
         $this->assertIsFloat($result['per_pax']);
+    }
+
+    // Early-bird and Last-minute discount tests
+
+    private function makeActivity(float $price = 100.0): Activity
+    {
+        $activity = (new Activity())->forceFill(['id' => 1, 'name' => 'Test', 'slug' => 'test']);
+        $activity->setRelation('pricing', (new ActivityPricing())->forceFill([
+            'id' => 1, 'regular_price' => $price, 'currency' => 'USD',
+        ]));
+        $activity->setRelation('groupDiscounts', collect([]));
+        $activity->setRelation('earlyBirdDiscount', null);
+        $activity->setRelation('lastMinuteDiscount', null);
+        return $activity;
+    }
+
+    private function attachEarlyBird(Activity $a, array $attrs): void
+    {
+        $a->setRelation('earlyBirdDiscount', (new ActivityEarlyBirdDiscount())->forceFill(array_merge([
+            'id' => 100, 'activity_id' => 1, 'enabled' => true,
+        ], $attrs)));
+    }
+
+    private function attachLastMinute(Activity $a, array $attrs): void
+    {
+        $a->setRelation('lastMinuteDiscount', (new ActivityLastMinuteDiscount())->forceFill(array_merge([
+            'id' => 200, 'activity_id' => 1, 'enabled' => true,
+        ], $attrs)));
+    }
+
+    public function testEarlyBirdDisabledReturnsZero(): void
+    {
+        $a = $this->makeActivity();
+        $this->attachEarlyBird($a, ['enabled' => false, 'days_before_start' => 30, 'discount_amount' => 10, 'discount_type' => 'percentage']);
+        $travel = CarbonImmutable::today()->addDays(90);
+
+        $result = $this->service->quote($a, 2, $travel);
+
+        $this->assertSame(0.0, $result['early_bird_discount']);
+        $this->assertNull($result['selected_early_bird']);
+        $this->assertSame(200.0, $result['final_amount']);
+    }
+
+    public function testEarlyBirdPercentTriggersAtThreshold(): void
+    {
+        $a = $this->makeActivity();
+        $this->attachEarlyBird($a, ['days_before_start' => 30, 'discount_amount' => 10, 'discount_type' => 'percentage']);
+        $travel = CarbonImmutable::today()->addDays(30);
+
+        $result = $this->service->quote($a, 2, $travel);
+
+        $this->assertSame(20.0, $result['early_bird_discount']);
+        $this->assertSame(180.0, $result['final_amount']);
+        $this->assertSame(30, $result['days_ahead']);
+    }
+
+    public function testEarlyBirdDoesNotTriggerBelowThreshold(): void
+    {
+        $a = $this->makeActivity();
+        $this->attachEarlyBird($a, ['days_before_start' => 30, 'discount_amount' => 10, 'discount_type' => 'percentage']);
+        $travel = CarbonImmutable::today()->addDays(29);
+
+        $result = $this->service->quote($a, 2, $travel);
+
+        $this->assertSame(0.0, $result['early_bird_discount']);
+        $this->assertSame(200.0, $result['final_amount']);
+    }
+
+    public function testEarlyBirdFixedStaysFlatAcrossHeadcount(): void
+    {
+        $a = $this->makeActivity();
+        $this->attachEarlyBird($a, ['days_before_start' => 30, 'discount_amount' => 10, 'discount_type' => 'fixed']);
+        $travel = CarbonImmutable::today()->addDays(45);
+
+        $this->assertSame(10.0, $this->service->quote($a, 1, $travel)['early_bird_discount']);
+        $this->assertSame(10.0, $this->service->quote($a, 5, $travel)['early_bird_discount']);
+        $this->assertSame(10.0, $this->service->quote($a, 10, $travel)['early_bird_discount']);
+    }
+
+    public function testEarlyBirdPercentClampsAt100(): void
+    {
+        $a = $this->makeActivity();
+        $this->attachEarlyBird($a, ['days_before_start' => 1, 'discount_amount' => 150, 'discount_type' => 'percentage']);
+        $travel = CarbonImmutable::today()->addDays(5);
+
+        $result = $this->service->quote($a, 2, $travel);
+
+        $this->assertSame(200.0, $result['early_bird_discount']);
+        $this->assertSame(0.0, $result['final_amount']);
+    }
+
+    public function testLastMinuteDisabledReturnsZero(): void
+    {
+        $a = $this->makeActivity();
+        $this->attachLastMinute($a, ['enabled' => false, 'days_before_start' => 7, 'discount_amount' => 10, 'discount_type' => 'percentage']);
+        $travel = CarbonImmutable::today()->addDays(3);
+
+        $this->assertSame(0.0, $this->service->quote($a, 2, $travel)['last_minute_discount']);
+    }
+
+    public function testLastMinutePercentTriggersWithinWindow(): void
+    {
+        $a = $this->makeActivity();
+        $this->attachLastMinute($a, ['days_before_start' => 7, 'discount_amount' => 10, 'discount_type' => 'percentage']);
+        $travel = CarbonImmutable::today()->addDays(7);
+
+        $result = $this->service->quote($a, 2, $travel);
+
+        $this->assertSame(20.0, $result['last_minute_discount']);
+        $this->assertSame(180.0, $result['final_amount']);
+    }
+
+    public function testLastMinuteDoesNotTriggerBeyondWindow(): void
+    {
+        $a = $this->makeActivity();
+        $this->attachLastMinute($a, ['days_before_start' => 7, 'discount_amount' => 10, 'discount_type' => 'percentage']);
+        $travel = CarbonImmutable::today()->addDays(8);
+
+        $this->assertSame(0.0, $this->service->quote($a, 2, $travel)['last_minute_discount']);
+    }
+
+    public function testLastMinuteIgnoresPastDate(): void
+    {
+        $a = $this->makeActivity();
+        $this->attachLastMinute($a, ['days_before_start' => 7, 'discount_amount' => 10, 'discount_type' => 'percentage']);
+        $travel = CarbonImmutable::today()->subDay();
+
+        $this->assertSame(0.0, $this->service->quote($a, 2, $travel)['last_minute_discount']);
+    }
+
+    public function testEbAndLmStackAdditivelyWhenBothConfigured(): void
+    {
+        $a = $this->makeActivity();
+        $this->attachEarlyBird($a, ['days_before_start' => 1, 'discount_amount' => 10, 'discount_type' => 'percentage']);
+        $this->attachLastMinute($a, ['days_before_start' => 14, 'discount_amount' => 10, 'discount_type' => 'percentage']);
+        $travel = CarbonImmutable::today()->addDays(5);
+
+        $result = $this->service->quote($a, 2, $travel);
+
+        $this->assertSame(20.0, $result['early_bird_discount']);
+        $this->assertSame(20.0, $result['last_minute_discount']);
+        $this->assertSame(40.0, $result['combined_discount']);
+        $this->assertSame(160.0, $result['final_amount']);
+    }
+
+    public function testTimeDiscountsStackOnRegularSubtotalNotPostGroup(): void
+    {
+        $a = $this->makeActivity();
+        $tier = new ActivityGroupDiscount([
+            'id' => 10, 'activity_id' => 1,
+            'min_people' => 5, 'discount_amount' => 20, 'discount_type' => 'percentage',
+        ]);
+        $a->setRelation('groupDiscounts', collect([$tier]));
+        $this->attachEarlyBird($a, ['days_before_start' => 30, 'discount_amount' => 10, 'discount_type' => 'percentage']);
+        $travel = CarbonImmutable::today()->addDays(90);
+
+        $result = $this->service->quote($a, 6, $travel);
+
+        $this->assertSame(600.0, $result['subtotal']);
+        $this->assertSame(100.0, $result['discount_total']);
+        $this->assertSame(60.0, $result['early_bird_discount']);
+        $this->assertSame(160.0, $result['combined_discount']);
+        $this->assertSame(440.0, $result['final_amount']);
+    }
+
+    public function testPercentClampWithGroupStack(): void
+    {
+        $a = $this->makeActivity();
+        $tier = new ActivityGroupDiscount([
+            'id' => 10, 'activity_id' => 1,
+            'min_people' => 5, 'discount_amount' => 20, 'discount_type' => 'percentage',
+        ]);
+        $a->setRelation('groupDiscounts', collect([$tier]));
+        $this->attachEarlyBird($a, ['days_before_start' => 30, 'discount_amount' => 150, 'discount_type' => 'percentage']);
+        $travel = CarbonImmutable::today()->addDays(60);
+
+        $result = $this->service->quote($a, 6, $travel);
+
+        $this->assertSame(600.0, $result['subtotal']);
+        $this->assertSame(100.0, $result['discount_total']);
+        $this->assertSame(600.0, $result['early_bird_discount']);
+        $this->assertSame(700.0, $result['combined_discount']);
+        $this->assertSame(0.0, $result['final_amount']);
+    }
+
+    public function testFixedEarlyBirdMixedWithPercentLastMinute(): void
+    {
+        $a = $this->makeActivity();
+        $this->attachEarlyBird($a, ['days_before_start' => 1, 'discount_amount' => 15, 'discount_type' => 'fixed']);
+        $this->attachLastMinute($a, ['days_before_start' => 14, 'discount_amount' => 10, 'discount_type' => 'percentage']);
+        $travel = CarbonImmutable::today()->addDays(5);
+
+        $result = $this->service->quote($a, 4, $travel);
+
+        $this->assertSame(15.0, $result['early_bird_discount']);
+        $this->assertSame(40.0, $result['last_minute_discount']);
+        $this->assertSame(55.0, $result['combined_discount']);
+        $this->assertSame(345.0, $result['final_amount']);
+    }
+
+    public function testOverDiscountClampsToZero(): void
+    {
+        $a = $this->makeActivity();
+        $this->attachEarlyBird($a, ['days_before_start' => 1, 'discount_amount' => 60, 'discount_type' => 'fixed']);
+        $this->attachLastMinute($a, ['days_before_start' => 14, 'discount_amount' => 50, 'discount_type' => 'fixed']);
+        $travel = CarbonImmutable::today()->addDays(3);
+
+        $this->assertSame(0.0, $this->service->quote($a, 1, $travel)['final_amount']);
+    }
+
+    public function testNullTravelDateReturnsZeroTimeDiscounts(): void
+    {
+        $a = $this->makeActivity();
+        $this->attachEarlyBird($a, ['days_before_start' => 30, 'discount_amount' => 10, 'discount_type' => 'percentage']);
+        $this->attachLastMinute($a, ['days_before_start' => 7, 'discount_amount' => 10, 'discount_type' => 'percentage']);
+
+        $result = $this->service->quote($a, 2, null);
+
+        $this->assertSame(0.0, $result['early_bird_discount']);
+        $this->assertSame(0.0, $result['last_minute_discount']);
+        $this->assertNull($result['days_ahead']);
+        $this->assertSame(200.0, $result['final_amount']);
+    }
+
+    public function testZeroHeadcountWithEbLmAttachedStaysZero(): void
+    {
+        $a = $this->makeActivity();
+        $this->attachEarlyBird($a, ['days_before_start' => 30, 'discount_amount' => 10, 'discount_type' => 'percentage']);
+        $this->attachLastMinute($a, ['days_before_start' => 7, 'discount_amount' => 10, 'discount_type' => 'percentage']);
+        $travel = CarbonImmutable::today()->addDays(60);
+
+        $result = $this->service->quote($a, 0, $travel);
+
+        $this->assertSame(0, $result['headcount']);
+        $this->assertSame(0.0, $result['subtotal']);
+        $this->assertSame(0.0, $result['early_bird_discount']);
+        $this->assertSame(0.0, $result['last_minute_discount']);
+        $this->assertSame(0.0, $result['combined_discount']);
+        $this->assertSame(0.0, $result['final_amount']);
     }
 }
