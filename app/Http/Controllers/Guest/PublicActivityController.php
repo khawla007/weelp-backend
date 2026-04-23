@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Activity;
 use App\Models\Category;
 use App\Models\City;
+use App\Services\ActivityDiscountService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class PublicActivityController extends Controller
 {
@@ -343,6 +346,58 @@ class PublicActivityController extends Controller
         return response()->json([
             'success' => true,
             'data' => $formattedActivity,
+        ]);
+    }
+
+    public function quote(Request $request, string $slug): JsonResponse
+    {
+        $validated = $request->validate([
+            'adults' => 'required|integer|min:0|max:999',
+            'children' => 'nullable|integer|min:0|max:999',
+        ]);
+
+        $adults = (int) $validated['adults'];
+        $children = (int) ($validated['children'] ?? 0);
+        $headcount = $adults + $children;
+
+        if ($headcount === 0) {
+            return response()->json([
+                'error' => 'invalid_headcount',
+                'message' => 'Total headcount must be at least 1.',
+            ], 422);
+        }
+
+        $activity = Activity::where('slug', $slug)->with(['pricing', 'groupDiscounts'])->first();
+        if (! $activity) {
+            return response()->json(['error' => 'activity_not_found'], 404);
+        }
+
+        try {
+            $quote = app(ActivityDiscountService::class)->quote($activity, $headcount);
+        } catch (\RuntimeException $e) {
+            return response()->json([
+                'error' => 'activity_pricing_missing',
+                'message' => $e->getMessage(),
+            ], 422);
+        }
+
+        return response()->json([
+            'activity_slug' => $slug,
+            'headcount' => $quote['headcount'],
+            'adults' => $adults,
+            'children' => $children,
+            'per_pax' => $quote['per_pax'],
+            'subtotal' => $quote['subtotal'],
+            'selected_tier' => $quote['selected_tier'] ? [
+                'id' => $quote['selected_tier']->id,
+                'min_people' => $quote['selected_tier']->min_people,
+                'discount_amount' => (float) $quote['selected_tier']->discount_amount,
+                'discount_type' => $quote['selected_tier']->discount_type,
+            ] : null,
+            'complete_groups' => $quote['complete_groups'],
+            'discount_total' => $quote['discount_total'],
+            'final_amount' => $quote['final_amount'],
+            'currency' => $quote['currency'],
         ]);
     }
 }

@@ -21,6 +21,7 @@ use Stripe\Stripe;
 use Stripe\Checkout\Session as StripeSession;
 use App\Models\Commission;
 use App\Models\Notification;
+use App\Services\ActivityDiscountService;
 
 
 class StripeController extends Controller
@@ -70,6 +71,51 @@ class StripeController extends Controller
             ], 404);
         }
         $totalAmount = $data['is_custom_amount'] ? $data['custom_amount'] : $data['amount'];
+
+        if ($orderable instanceof \App\Models\Activity) {
+            $adults = (int) $data['number_of_adults'];
+            $children = (int) $data['number_of_children'];
+            $headcount = $adults + $children;
+
+            if ($headcount === 0) {
+                return response()->json([
+                    'error' => 'invalid_headcount',
+                    'message' => 'At least one adult or child is required.',
+                ], 422);
+            }
+
+            // Require explicit base_amount so addon-inclusive `amount` can't bypass the check.
+            if (!array_key_exists('base_amount', $data) || $data['base_amount'] === null) {
+                return response()->json([
+                    'error' => 'base_amount_required',
+                    'message' => 'base_amount is required for activity orders.',
+                ], 422);
+            }
+
+            $submittedBaseAmount = (float) $data['base_amount'];
+
+            // Re-validate: fetch expected price from service
+            try {
+                $service = app(ActivityDiscountService::class);
+                $quote = $service->quote($orderable, $headcount);
+                $expectedBaseAmount = (float) $quote['final_amount'];
+            } catch (\RuntimeException $e) {
+                return response()->json([
+                    'error' => 'activity_pricing_missing',
+                    'message' => 'Activity pricing is not available.',
+                ], 422);
+            }
+
+            // Tolerance: 0.01 (one cent)
+            $tolerance = 0.01;
+            if (abs($submittedBaseAmount - $expectedBaseAmount) > $tolerance) {
+                return response()->json([
+                    'error' => 'activity_price_mismatch',
+                    'expected' => $expectedBaseAmount,
+                    'submitted' => $submittedBaseAmount,
+                ], 422);
+            }
+        }
 
         // Server-side enforcement: itineraries charge the sum of their schedule items,
         // ignoring any client-supplied amount. Prevents tampering.

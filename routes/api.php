@@ -571,6 +571,8 @@ Route::get('/cities/{city_slug}/all-items', [PublicCitiesController::class, 'get
 Route::prefix('activities')->group(function () {
     Route::get('/', [PublicActivityController::class, 'getActivities']);
     Route::get('/featured-activities', [PublicActivityController::class, 'getFeaturedActivities']);
+    Route::get('/{slug}/quote', [PublicActivityController::class, 'quote'])
+        ->middleware('throttle:60,1');
     Route::get('/{activity_slug}', [PublicActivityController::class, 'getActivityBySlug']);
 });
 
