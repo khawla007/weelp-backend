@@ -89,14 +89,16 @@ final class ActivityDiscountService
         if ($travelDate === null) {
             return null;
         }
-        $today = CarbonImmutable::today();
-        $travel = CarbonImmutable::instance($travelDate)->startOfDay();
-        return (int) floor($today->diffInDays($travel, false));
+        // Normalise both sides to UTC midnight so days_ahead matches the frontend's
+        // Date.UTC-anchored calculation and does not drift across DST / non-UTC app timezones.
+        $travel = CarbonImmutable::instance($travelDate)->utc()->startOfDay();
+        $today = CarbonImmutable::now('UTC')->startOfDay();
+        return (int) $today->diffInDays($travel, false);
     }
 
     private function computeEarlyBird(Activity $activity, float $subtotal, ?int $daysAhead): array
     {
-        $row = $activity->relationLoaded('earlyBirdDiscount') ? $activity->earlyBirdDiscount : null;
+        $row = $this->loadEarlyBird($activity);
         if (!$row || !$row->enabled || $daysAhead === null || $daysAhead < (int) $row->days_before_start) {
             return ['discount' => 0.0, 'row' => null];
         }
@@ -105,11 +107,27 @@ final class ActivityDiscountService
 
     private function computeLastMinute(Activity $activity, float $subtotal, ?int $daysAhead): array
     {
-        $row = $activity->relationLoaded('lastMinuteDiscount') ? $activity->lastMinuteDiscount : null;
+        $row = $this->loadLastMinute($activity);
         if (!$row || !$row->enabled || $daysAhead === null || $daysAhead < 0 || $daysAhead > (int) $row->days_before_start) {
             return ['discount' => 0.0, 'row' => null];
         }
         return ['discount' => $this->applyTimeDiscount($subtotal, $row), 'row' => $row];
+    }
+
+    private function loadEarlyBird(Activity $activity)
+    {
+        if ($activity->relationLoaded('earlyBirdDiscount')) {
+            return $activity->earlyBirdDiscount;
+        }
+        return $activity->exists ? $activity->earlyBirdDiscount()->first() : null;
+    }
+
+    private function loadLastMinute(Activity $activity)
+    {
+        if ($activity->relationLoaded('lastMinuteDiscount')) {
+            return $activity->lastMinuteDiscount;
+        }
+        return $activity->exists ? $activity->lastMinuteDiscount()->first() : null;
     }
 
     private function applyTimeDiscount(float $subtotal, Model $row): float
