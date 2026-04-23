@@ -10,7 +10,6 @@ use App\Models\Itinerary;
 use App\Models\Package;
 use App\Models\Region;
 use App\Models\Tag;
-use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 class PublicShopController extends Controller

@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Attribute;
 use App\Models\Category;
-use App\Models\City;
 use App\Models\Package;
 use App\Models\PackageActivity;
 use App\Models\PackageAddon;

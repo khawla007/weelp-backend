@@ -9,7 +9,6 @@ use App\Mail\ItineraryRemovalRequestedMail;
 use App\Mail\ItinerarySubmittedAdminMail;
 use App\Mail\ItinerarySubmittedCreatorMail;
 use App\Models\Itinerary;
-use App\Models\Notification;
 use App\Services\ItineraryDeepCopyService;
 use App\Services\ItineraryDraftService;
 use Illuminate\Http\JsonResponse;
@@ -28,7 +27,7 @@ class CreatorItineraryController extends Controller
 
         $original = Itinerary::original()->findOrFail($validated['parent_itinerary_id']);
 
-        $service = new ItineraryDeepCopyService();
+        $service = new ItineraryDeepCopyService;
         $copy = $service->deepCopy(
             $original,
             $validated['schedules'],
@@ -55,7 +54,7 @@ class CreatorItineraryController extends Controller
 
     public function myItineraries(): JsonResponse
     {
-        $itineraries = Itinerary::whereHas('meta', fn($q) => $q->where('creator_id', Auth::id()))
+        $itineraries = Itinerary::whereHas('meta', fn ($q) => $q->where('creator_id', Auth::id()))
             ->with([
                 'parentItinerary',
                 'mediaGallery.media',
@@ -74,7 +73,7 @@ class CreatorItineraryController extends Controller
 
     public function getDraft($id): JsonResponse
     {
-        $draft = Itinerary::whereHas('meta', fn($q) => $q->where('creator_id', Auth::id())
+        $draft = Itinerary::whereHas('meta', fn ($q) => $q->where('creator_id', Auth::id())
             ->whereIn('status', ['draft', 'edit_pending']))
             ->with([
                 'locations.city',
@@ -84,18 +83,18 @@ class CreatorItineraryController extends Controller
             ])
             ->find($id);
 
-        if (!$draft) {
+        if (! $draft) {
             return response()->json(['success' => false, 'message' => 'Draft not found.'], 404);
         }
 
         $shapeMediaGallery = function ($model) {
             return collect($model?->mediaGallery ?? [])->map(function ($m) {
                 return [
-                    'id'          => $m->id,
-                    'media_id'    => $m->media_id,
-                    'name'        => $m->media->name ?? null,
-                    'alt_text'    => $m->media->alt_text ?? null,
-                    'url'         => $m->media->url ?? null,
+                    'id' => $m->id,
+                    'media_id' => $m->media_id,
+                    'name' => $m->media->name ?? null,
+                    'alt_text' => $m->media->alt_text ?? null,
+                    'url' => $m->media->url ?? null,
                     'is_featured' => $m->is_featured ?? false,
                 ];
             })->values();
@@ -109,45 +108,45 @@ class CreatorItineraryController extends Controller
                 'activities' => $schedule->activities->map(function ($activity) use ($shapeMediaGallery) {
                     $activityModel = $activity->activity;
                     $activitydata = $activityModel ? [
-                        'id'            => $activityModel->id,
-                        'name'          => $activityModel->name,
-                        'slug'          => $activityModel->slug,
+                        'id' => $activityModel->id,
+                        'name' => $activityModel->name,
+                        'slug' => $activityModel->slug,
                         'media_gallery' => $shapeMediaGallery($activityModel),
                     ] : null;
 
                     return [
-                        'id'           => $activity->id,
-                        'activity_id'  => $activity->activity_id,
-                        'name'         => $activityModel?->name,
-                        'start_time'   => $activity->start_time,
-                        'end_time'     => $activity->end_time,
-                        'notes'        => $activity->notes,
-                        'price'        => $activity->price,
-                        'included'     => $activity->included,
+                        'id' => $activity->id,
+                        'activity_id' => $activity->activity_id,
+                        'name' => $activityModel?->name,
+                        'start_time' => $activity->start_time,
+                        'end_time' => $activity->end_time,
+                        'notes' => $activity->notes,
+                        'price' => $activity->price,
+                        'included' => $activity->included,
                         'activitydata' => $activitydata,
                     ];
                 }),
                 'transfers' => $schedule->transfers->map(function ($transfer) use ($shapeMediaGallery) {
                     $transferModel = $transfer->transfer;
                     $transferData = $transferModel ? [
-                        'id'            => $transferModel->id,
-                        'name'          => $transferModel->name,
-                        'slug'          => $transferModel->slug,
+                        'id' => $transferModel->id,
+                        'name' => $transferModel->name,
+                        'slug' => $transferModel->slug,
                         'media_gallery' => $shapeMediaGallery($transferModel),
                     ] : null;
 
                     return [
-                        'id'               => $transfer->id,
-                        'transfer_id'      => $transfer->transfer_id,
-                        'name'             => $transferModel?->name,
-                        'start_time'       => $transfer->start_time,
-                        'end_time'         => $transfer->end_time,
-                        'pickup_location'  => $transfer->pickup_location,
+                        'id' => $transfer->id,
+                        'transfer_id' => $transfer->transfer_id,
+                        'name' => $transferModel?->name,
+                        'start_time' => $transfer->start_time,
+                        'end_time' => $transfer->end_time,
+                        'pickup_location' => $transfer->pickup_location,
                         'dropoff_location' => $transfer->dropoff_location,
-                        'pax'              => $transfer->pax,
-                        'price'            => $transfer->price,
-                        'included'         => $transfer->included,
-                        'transferData'     => $transferData,
+                        'pax' => $transfer->pax,
+                        'price' => $transfer->price,
+                        'included' => $transfer->included,
+                        'transferData' => $transferData,
                     ];
                 }),
             ];
@@ -158,11 +157,11 @@ class CreatorItineraryController extends Controller
 
     public function requestEdit($id): JsonResponse
     {
-        $itinerary = Itinerary::whereHas('meta', fn($q) => $q->where('creator_id', Auth::id()))
+        $itinerary = Itinerary::whereHas('meta', fn ($q) => $q->where('creator_id', Auth::id()))
             ->approved()
             ->find($id);
 
-        if (!$itinerary) {
+        if (! $itinerary) {
             return response()->json(['success' => false, 'message' => 'Approved itinerary not found.'], 404);
         }
 
@@ -174,7 +173,7 @@ class CreatorItineraryController extends Controller
             return response()->json(['success' => false, 'message' => 'Cannot edit while a removal request is pending.'], 422);
         }
 
-        $service = new ItineraryDraftService();
+        $service = new ItineraryDraftService;
         $draft = $service->createDraft($itinerary);
 
         return response()->json(['success' => true, 'message' => 'Edit draft created.', 'data' => $draft], 201);
@@ -182,11 +181,11 @@ class CreatorItineraryController extends Controller
 
     public function updateDraft(Request $request, $id): JsonResponse
     {
-        $draft = Itinerary::whereHas('meta', fn($q) => $q->where('creator_id', Auth::id()))
+        $draft = Itinerary::whereHas('meta', fn ($q) => $q->where('creator_id', Auth::id()))
             ->draft()
             ->find($id);
 
-        if (!$draft) {
+        if (! $draft) {
             return response()->json(['success' => false, 'message' => 'Draft not found.'], 404);
         }
 
@@ -227,7 +226,7 @@ class CreatorItineraryController extends Controller
                 $slug = $baseSlug;
 
                 while (Itinerary::where('slug', $slug)->where('id', '!=', $draft->id)->exists()) {
-                    $slug = $baseSlug . '-' . Str::random(4);
+                    $slug = $baseSlug.'-'.Str::random(4);
                 }
 
                 $draft->update([
@@ -267,9 +266,9 @@ class CreatorItineraryController extends Controller
                     $scheduleMap[$scheduleData['day']] = $schedule->id;
                 }
 
-                if (!empty($validated['activities'])) {
+                if (! empty($validated['activities'])) {
                     foreach ($validated['activities'] as $activityData) {
-                        if (!isset($scheduleMap[$activityData['day']])) {
+                        if (! isset($scheduleMap[$activityData['day']])) {
                             continue;
                         }
                         \App\Models\ItineraryActivity::create([
@@ -284,9 +283,9 @@ class CreatorItineraryController extends Controller
                     }
                 }
 
-                if (!empty($validated['transfers'])) {
+                if (! empty($validated['transfers'])) {
                     foreach ($validated['transfers'] as $transferData) {
-                        if (!isset($scheduleMap[$transferData['day']])) {
+                        if (! isset($scheduleMap[$transferData['day']])) {
                             continue;
                         }
                         \App\Models\ItineraryTransfer::create([
@@ -315,17 +314,17 @@ class CreatorItineraryController extends Controller
 
     public function submitDraft($id): JsonResponse
     {
-        $draft = Itinerary::whereHas('meta', fn($q) => $q->where('creator_id', Auth::id()))
+        $draft = Itinerary::whereHas('meta', fn ($q) => $q->where('creator_id', Auth::id()))
             ->draft()
             ->find($id);
 
-        if (!$draft) {
+        if (! $draft) {
             return response()->json(['success' => false, 'message' => 'Draft not found.'], 404);
         }
 
         $draft->update(['status' => 'edit_pending']);
 
-        $approved = Itinerary::whereHas('meta', fn($q) => $q->where('draft_itinerary_id', $draft->id))->first();
+        $approved = Itinerary::whereHas('meta', fn ($q) => $q->where('draft_itinerary_id', $draft->id))->first();
 
         $creator = Auth::user();
         try {
@@ -343,11 +342,11 @@ class CreatorItineraryController extends Controller
 
     public function requestRemoval(Request $request, $id): JsonResponse
     {
-        $itinerary = Itinerary::whereHas('meta', fn($q) => $q->where('creator_id', Auth::id()))
+        $itinerary = Itinerary::whereHas('meta', fn ($q) => $q->where('creator_id', Auth::id()))
             ->approved()
             ->find($id);
 
-        if (!$itinerary) {
+        if (! $itinerary) {
             return response()->json(['success' => false, 'message' => 'Approved itinerary not found.'], 404);
         }
 
@@ -382,8 +381,6 @@ class CreatorItineraryController extends Controller
 
     /**
      * Create a new creator itinerary draft (fresh submission from Explore page)
-     * @param Request $request
-     * @return JsonResponse
      */
     public function createDraft(Request $request): JsonResponse
     {
@@ -458,9 +455,9 @@ class CreatorItineraryController extends Controller
             }
 
             // Create activities with day mapping
-            if (!empty($validated['activities'])) {
+            if (! empty($validated['activities'])) {
                 foreach ($validated['activities'] as $activityData) {
-                    if (!isset($scheduleMap[$activityData['day']])) {
+                    if (! isset($scheduleMap[$activityData['day']])) {
                         continue;
                     }
 
@@ -477,9 +474,9 @@ class CreatorItineraryController extends Controller
             }
 
             // Create transfers with day mapping
-            if (!empty($validated['transfers'])) {
+            if (! empty($validated['transfers'])) {
                 foreach ($validated['transfers'] as $transferData) {
-                    if (!isset($scheduleMap[$transferData['day']])) {
+                    if (! isset($scheduleMap[$transferData['day']])) {
                         continue;
                     }
 
@@ -528,8 +525,8 @@ class CreatorItineraryController extends Controller
                 'locations:id,itinerary_id,city_id',
                 'locations.city:id,name',
                 'mediaGallery.media',
-                'basePricing.variations' => fn($q) => $q->limit(1),
-                'schedules' => fn($q) => $q->orderBy('day'),
+                'basePricing.variations' => fn ($q) => $q->limit(1),
+                'schedules' => fn ($q) => $q->orderBy('day'),
                 'schedules.activities',
                 'schedules.transfers.transfer.route',
                 'schedules.transfers.transfer.pricingAvailability',
@@ -538,7 +535,7 @@ class CreatorItineraryController extends Controller
         if ($request->query('source') === 'mine') {
             $user = Auth::guard('api')->user();
             if ($user) {
-                $query->whereHas('meta', fn($q) => $q->where('creator_id', $user->id));
+                $query->whereHas('meta', fn ($q) => $q->where('creator_id', $user->id));
             } else {
                 return response()->json([
                     'success' => true,
@@ -555,15 +552,15 @@ class CreatorItineraryController extends Controller
                 break;
             case 'top_rated':
                 $query->join('itinerary_meta', 'itineraries.id', '=', 'itinerary_meta.itinerary_id')
-                      ->orderBy('itinerary_meta.likes_count', 'desc')
-                      ->orderBy('itineraries.created_at', 'desc')
-                      ->select('itineraries.*');
+                    ->orderBy('itinerary_meta.likes_count', 'desc')
+                    ->orderBy('itineraries.created_at', 'desc')
+                    ->select('itineraries.*');
                 break;
             case 'most_viewed':
                 $query->join('itinerary_meta', 'itineraries.id', '=', 'itinerary_meta.itinerary_id')
-                      ->orderBy('itinerary_meta.views_count', 'desc')
-                      ->orderBy('itineraries.created_at', 'desc')
-                      ->select('itineraries.*');
+                    ->orderBy('itinerary_meta.views_count', 'desc')
+                    ->orderBy('itineraries.created_at', 'desc')
+                    ->select('itineraries.*');
                 break;
             default:
                 $query->orderBy('itineraries.created_at', 'desc');
@@ -580,7 +577,7 @@ class CreatorItineraryController extends Controller
                 ->toArray()
             : [];
 
-        $collection = $paginated->getCollection()->map(function (\App\Models\Itinerary $itinerary) use ($userId, $likedIds) {
+        $collection = $paginated->getCollection()->map(function (\App\Models\Itinerary $itinerary) use ($likedIds) {
             return [
                 'id' => $itinerary->id,
                 'name' => $itinerary->name,
@@ -680,7 +677,7 @@ class CreatorItineraryController extends Controller
             ->select('id', 'name', 'slug', 'state_id');
 
         if ($request->has('search')) {
-            $query->where('name', 'like', '%' . $request->search . '%');
+            $query->where('name', 'like', '%'.$request->search.'%');
         }
 
         $cities = $query->orderBy('name')
@@ -697,7 +694,7 @@ class CreatorItineraryController extends Controller
     {
         // Accept either city_id (single) or city_ids (comma-separated list)
         $cityIds = $request->get('city_ids');
-        $cityId  = $request->get('city_id');
+        $cityId = $request->get('city_id');
 
         $cityIdArray = [];
         if ($cityIds) {
@@ -710,14 +707,14 @@ class CreatorItineraryController extends Controller
             ->with(['tags.tag', 'mediaGallery.media', 'locations.city', 'locations.place'])
             ->select('id', 'name', 'slug', 'description', 'item_type', 'featured_activity');
 
-        if (!empty($cityIdArray)) {
+        if (! empty($cityIdArray)) {
             $query->whereHas('locations', function ($q) use ($cityIdArray) {
                 $q->whereIn('city_id', $cityIdArray);
             });
         }
 
         if ($request->has('search')) {
-            $query->where('name', 'like', '%' . $request->search . '%');
+            $query->where('name', 'like', '%'.$request->search.'%');
         }
 
         $activities = $query->get()->map(function ($activity) {
@@ -726,27 +723,27 @@ class CreatorItineraryController extends Controller
 
             $mediaGallery = collect($activity->mediaGallery)->map(function ($m) {
                 return [
-                    'id'          => $m->id,
-                    'media_id'    => $m->media_id,
-                    'name'        => $m->media->name ?? null,
-                    'alt_text'    => $m->media->alt_text ?? null,
-                    'url'         => $m->media->url ?? null,
+                    'id' => $m->id,
+                    'media_id' => $m->media_id,
+                    'name' => $m->media->name ?? null,
+                    'alt_text' => $m->media->alt_text ?? null,
+                    'url' => $m->media->url ?? null,
                     'is_featured' => $m->is_featured ?? false,
                 ];
             });
 
             return [
-                'id'               => $activity->id,
-                'name'             => $activity->name,
-                'slug'             => $activity->slug,
-                'city_name'        => $primaryLocation?->city?->name,
-                'place_name'       => $primaryLocation?->place?->name,
+                'id' => $activity->id,
+                'name' => $activity->name,
+                'slug' => $activity->slug,
+                'city_name' => $primaryLocation?->city?->name,
+                'place_name' => $primaryLocation?->place?->name,
                 'duration_minutes' => $primaryLocation?->duration,
-                'type'             => $activity->item_type,
-                'featured_image'   => $mediaGallery->firstWhere('is_featured', true)['url'] ?? $mediaGallery->first()['url'] ?? null,
-                'media_gallery'    => $mediaGallery->values(),
-                'tags'             => $activity->tags->map(fn($t) => [
-                    'id'   => $t->tag?->id,
+                'type' => $activity->item_type,
+                'featured_image' => $mediaGallery->firstWhere('is_featured', true)['url'] ?? $mediaGallery->first()['url'] ?? null,
+                'media_gallery' => $mediaGallery->values(),
+                'tags' => $activity->tags->map(fn ($t) => [
+                    'id' => $t->tag?->id,
                     'name' => $t->tag?->name,
                 ]),
             ];
@@ -759,7 +756,7 @@ class CreatorItineraryController extends Controller
     {
         // Accept optional city_id (single) or city_ids (comma-separated list)
         $cityIds = $request->get('city_ids');
-        $cityId  = $request->get('city_id');
+        $cityId = $request->get('city_id');
 
         $cityIdArray = [];
         if ($cityIds) {
@@ -776,7 +773,7 @@ class CreatorItineraryController extends Controller
                 'mediaGallery.media',
             ]);
 
-        if (!empty($cityIdArray)) {
+        if (! empty($cityIdArray)) {
             $placeIds = \App\Models\Place::whereIn('city_id', $cityIdArray)->pluck('id');
             $query->whereHas('vendorRoutes', function ($q) use ($placeIds) {
                 $q->whereIn('pickup_place_id', $placeIds);
@@ -788,29 +785,29 @@ class CreatorItineraryController extends Controller
 
             $mediaGallery = collect($transfer->mediaGallery)->map(function ($m) {
                 return [
-                    'id'          => $m->id,
-                    'media_id'    => $m->media_id,
-                    'name'        => $m->media->name ?? null,
-                    'alt_text'    => $m->media->alt_text ?? null,
-                    'url'         => $m->media->url ?? null,
+                    'id' => $m->id,
+                    'media_id' => $m->media_id,
+                    'name' => $m->media->name ?? null,
+                    'alt_text' => $m->media->alt_text ?? null,
+                    'url' => $m->media->url ?? null,
                     'is_featured' => $m->is_featured ?? false,
                 ];
             });
 
             return [
-                'id'                => $transfer->id,
-                'name'              => $transfer->name,
-                'slug'              => $transfer->slug,
-                'vehicle_type'      => $route?->vehicle_type,
-                'featured_image'    => $mediaGallery->firstWhere('is_featured', true)['url'] ?? $mediaGallery->first()['url'] ?? null,
-                'media_gallery'     => $mediaGallery->values(),
-                'pickup_city_name'  => $route?->pickupPlace?->city?->name,
+                'id' => $transfer->id,
+                'name' => $transfer->name,
+                'slug' => $transfer->slug,
+                'vehicle_type' => $route?->vehicle_type,
+                'featured_image' => $mediaGallery->firstWhere('is_featured', true)['url'] ?? $mediaGallery->first()['url'] ?? null,
+                'media_gallery' => $mediaGallery->values(),
+                'pickup_city_name' => $route?->pickupPlace?->city?->name,
                 'dropoff_city_name' => $route?->dropoffPlace?->city?->name,
-                'vendor_routes'     => [
-                    'pickup_place_id'  => $route?->pickup_place_id,
+                'vendor_routes' => [
+                    'pickup_place_id' => $route?->pickup_place_id,
                     'dropoff_place_id' => $route?->dropoff_place_id,
-                    'pickup_city_id'   => $route?->pickupPlace?->city_id,
-                    'dropoff_city_id'  => $route?->dropoffPlace?->city_id,
+                    'pickup_city_id' => $route?->pickupPlace?->city_id,
+                    'dropoff_city_id' => $route?->dropoffPlace?->city_id,
                 ],
             ];
         });
@@ -829,7 +826,7 @@ class CreatorItineraryController extends Controller
             'mediaGallery',
         ])->original()->where('slug', $slug)->first();
 
-        if (!$itinerary) {
+        if (! $itinerary) {
             return response()->json([
                 'success' => false,
                 'message' => 'Itinerary not found',

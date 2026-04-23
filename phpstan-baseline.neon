@@ -19,7 +19,13 @@ parameters:
 			path: app/Http/Controllers/Admin/ActivityController.php
 
 		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Activity\>\:\:map\(\) expects callable\(App\\Models\\Activity, int\)\: non\-empty\-array, Closure\(App\\Models\\Activity, int\)\: non\-empty\-array given\.$#'
+			message: '#^Empty array passed to foreach\.$#'
+			identifier: foreach.emptyArray
+			count: 1
+			path: app/Http/Controllers/Admin/ActivityController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Activity\>\:\:map\(\) expects callable\(App\\Models\\Activity, int\)\: non\-empty\-array, Closure\(mixed\)\: non\-empty\-array given\.$#'
 			identifier: argument.type
 			count: 1
 			path: app/Http/Controllers/Admin/ActivityController.php
@@ -37,6 +43,12 @@ parameters:
 			path: app/Http/Controllers/Admin/ActivityController.php
 
 		-
+			message: '#^Undefined variable\: \$cityId$#'
+			identifier: variable.undefined
+			count: 1
+			path: app/Http/Controllers/Admin/ActivityController.php
+
+		-
 			message: '#^Anonymous function should return array\{id\: int, name\: string, slug\: string, excerpt\: string, publish\: bool, feature_image\: mixed, media_gallery\: Illuminate\\Support\\Collection\<int, array\{media_id\: int, name\: string\|null, alt\: string\|null, url\: mixed, is_featured\: mixed\}\>, categories\: Illuminate\\Support\\Collection\<int, array\{category_id\: int, category_name\: string, slug\: string\|null\}\>, \.\.\.\} but returns array\{id\: int, name\: string, slug\: string, excerpt\: string, publish\: bool, feature_image\: mixed, media_gallery\: Illuminate\\Support\\Collection\<int, array\{media_id\: int, name\: string\|null, alt\: string\|null, url\: mixed, is_featured\: mixed\}\>, categories\: Illuminate\\Support\\Collection\<int, array\{category_id\: int, category_name\: string, slug\: string\|null\}\>, \.\.\.\}\.$#'
 			identifier: return.type
 			count: 1
@@ -47,6 +59,18 @@ parameters:
 			identifier: argument.type
 			count: 1
 			path: app/Http/Controllers/Admin/BlogController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\City\:\:\$feature_image\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Admin/CityController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\City\:\:\$media_gallery\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Admin/CityController.php
 
 		-
 			message: '#^Anonymous function should return array\{id\: int, name\: string, code\: string\|null, slug\: string, type\: string, description\: string\|null, feature_image\: mixed, featured_destination\: bool, \.\.\.\} but returns array\{id\: int, name\: string, code\: string\|null, slug\: string, type\: string, description\: string\|null, feature_image\: mixed, featured_destination\: bool, \.\.\.\}\.$#'
@@ -71,6 +95,78 @@ parameters:
 			identifier: argument.type
 			count: 1
 			path: app/Http/Controllers/Admin/CountryController.php
+
+		-
+			message: '#^Property App\\Models\\User\:\:\$is_creator \(int\) does not accept true\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Http/Controllers/Admin/CreatorApplicationManagementController.php
+
+		-
+			message: '#^Relation ''reviewer'' is not found in App\\Models\\CreatorApplication model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Admin/CreatorApplicationManagementController.php
+
+		-
+			message: '#^Relation ''user'' is not found in App\\Models\\CreatorApplication model\.$#'
+			identifier: larastan.relationExistence
+			count: 3
+			path: app/Http/Controllers/Admin/CreatorApplicationManagementController.php
+
+		-
+			message: '#^Anonymous function should return array\{day\: int, title\: string\|null, activities\: Illuminate\\Support\\Collection\<int, array\{id\: int, activity_id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float\|int\|string\|null, included\: bool, \.\.\.\}\>, transfers\: Illuminate\\Support\\Collection\<int, array\{id\: int, transfer_id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, pickup_location\: string\|null, dropoff_location\: string\|null, pax\: int\|null, \.\.\.\}\>\} but returns array\{day\: int, title\: string\|null, activities\: Illuminate\\Support\\Collection\<int, array\{id\: int, activity_id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float\|int\|string\|null, included\: bool, \.\.\.\}\>, transfers\: Illuminate\\Support\\Collection\<int, array\{id\: int, transfer_id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, pickup_location\: string\|null, dropoff_location\: string\|null, pax\: int\|null, \.\.\.\}\>\}\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Http/Controllers/Admin/CreatorItineraryManagementController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:activities\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Admin/CreatorItineraryManagementController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:transfers\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Admin/CreatorItineraryManagementController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\ItinerarySchedule\>\:\:map\(\) expects callable\(App\\Models\\ItinerarySchedule, int\)\: array\{day\: int, title\: string\|null, activities\: Illuminate\\Support\\Collection\<int, array\{id\: int, activity_id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float\|int\|string\|null, included\: bool, include_in_package\: bool, main_location\: string\|null, duration_minutes\: int\|null, featured_image\: mixed\}\>, transfers\: Illuminate\\Support\\Collection\<int, array\{id\: int, transfer_id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, pickup_location\: string\|null, dropoff_location\: string\|null, pax\: int\|null, price\: float\|int\|string\|null, included\: bool, include_in_package\: bool\}\>\}, Closure\(mixed\)\: array\{day\: int, title\: string\|null, activities\: Illuminate\\Support\\Collection\<int, array\{id\: int, activity_id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float\|int\|string\|null, included\: bool, include_in_package\: bool, main_location\: string\|null, duration_minutes\: int\|null, featured_image\: mixed\}\>, transfers\: Illuminate\\Support\\Collection\<int, array\{id\: int, transfer_id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, pickup_location\: string\|null, dropoff_location\: string\|null, pax\: int\|null, price\: float\|int\|string\|null, included\: bool, include_in_package\: bool\}\>\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Admin/CreatorItineraryManagementController.php
+
+		-
+			message: '#^Relation ''creator'' is not found in App\\Models\\Itinerary model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Admin/CreatorItineraryManagementController.php
+
+		-
+			message: '#^Relation ''parentItinerary'' is not found in App\\Models\\Itinerary model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Admin/CreatorItineraryManagementController.php
+
+		-
+			message: '#^Ternary operator condition is always true\.$#'
+			identifier: ternary.alwaysTrue
+			count: 1
+			path: app/Http/Controllers/Admin/CreatorItineraryManagementController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>url" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Admin/CreatorItineraryManagementController.php
+
+		-
+			message: '#^Using nullsafe property access on non\-nullable type App\\Models\\Activity\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 4
+			path: app/Http/Controllers/Admin/CreatorItineraryManagementController.php
 
 		-
 			message: '#^Negated boolean expression is always false\.$#'
@@ -283,6 +379,12 @@ parameters:
 			path: app/Http/Controllers/Admin/StateController.php
 
 		-
+			message: '#^Access to an undefined property App\\Models\\TransferPricingAvailability\:\:\$base_price\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Admin/TransferController.php
+
+		-
 			message: '#^Anonymous function should return non\-empty\-array but returns non\-empty\-array\.$#'
 			identifier: return.type
 			count: 1
@@ -305,6 +407,60 @@ parameters:
 			identifier: identical.alwaysFalse
 			count: 1
 			path: app/Http/Controllers/Admin/TransferController.php
+
+		-
+			message: '#^Relation ''fromZone'' is not found in App\\Models\\TransferRoute model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: app/Http/Controllers/Admin/TransferRouteController.php
+
+		-
+			message: '#^Relation ''toZone'' is not found in App\\Models\\TransferRoute model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: app/Http/Controllers/Admin/TransferRouteController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\TransferZone\:\:\$cities_count\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Admin/TransferZoneController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\TransferZone\:\:\$locations_count\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Admin/TransferZoneController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\TransferZone\:\:\$places_count\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Admin/TransferZoneController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\TransferZone\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\TransferZone\>\:\:\$cities_count\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Admin/TransferZoneController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\TransferZone\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\TransferZone\>\:\:\$locations_count\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Admin/TransferZoneController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\TransferZone\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\TransferZone\>\:\:\$places_count\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Admin/TransferZoneController.php
+
+		-
+			message: '#^Relation ''zone'' is not found in App\\Models\\TransferZoneLocation model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Admin/TransferZoneLocationController.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$mediaGallery\.$#'
@@ -343,6 +499,138 @@ parameters:
 			path: app/Http/Controllers/Creator/CreatorDashboardController.php
 
 		-
+			message: '#^Access to an undefined property App\\Models\\ActivityLocation\:\:\$place\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Creator/CreatorItineraryController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$city\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Creator/CreatorItineraryController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$city_id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Creator/CreatorItineraryController.php
+
+		-
+			message: '#^Anonymous function should return array\{day\: int, title\: string\|null, activities\: Illuminate\\Support\\Collection\<int, array\{id\: int, activity_id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float\|int\|string\|null, included\: bool, \.\.\.\}\>, transfers\: Illuminate\\Support\\Collection\<int, array\{id\: int, transfer_id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, pickup_location\: string\|null, dropoff_location\: string\|null, pax\: int\|null, \.\.\.\}\>\} but returns array\{day\: int, title\: string\|null, activities\: Illuminate\\Support\\Collection\<int, array\{id\: int, activity_id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float\|int\|string\|null, included\: bool, \.\.\.\}\>, transfers\: Illuminate\\Support\\Collection\<int, array\{id\: int, transfer_id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, pickup_location\: string\|null, dropoff_location\: string\|null, pax\: int\|null, \.\.\.\}\>\}\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Http/Controllers/Creator/CreatorItineraryController.php
+
+		-
+			message: '#^Anonymous function should return array\{id\: int, name\: string, slug\: string, city_name\: string\|null, place_name\: mixed, duration_minutes\: int\|null, type\: mixed, featured_image\: mixed, \.\.\.\} but returns array\{id\: int, name\: string, slug\: string, city_name\: string\|null, place_name\: mixed, duration_minutes\: int\|null, type\: mixed, featured_image\: mixed, \.\.\.\}\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Http/Controllers/Creator/CreatorItineraryController.php
+
+		-
+			message: '#^Anonymous function should return array\{id\: int, name\: string, slug\: string, vehicle_type\: string\|null, featured_image\: mixed, media_gallery\: Illuminate\\Support\\Collection\<int, array\{id\: int, media_id\: int, name\: string\|null, alt_text\: string\|null, url\: mixed, is_featured\: bool\|int\}\>, pickup_city_name\: mixed, dropoff_city_name\: mixed, \.\.\.\} but returns array\{id\: int, name\: string, slug\: string, vehicle_type\: string\|null, featured_image\: mixed, media_gallery\: Illuminate\\Support\\Collection\<int, array\{id\: int, media_id\: int, name\: string\|null, alt_text\: string\|null, url\: mixed, is_featured\: bool\|int\}\>, pickup_city_name\: mixed, dropoff_city_name\: mixed, \.\.\.\}\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Http/Controllers/Creator/CreatorItineraryController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:activities\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Creator/CreatorItineraryController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:transfers\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Creator/CreatorItineraryController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Activity\>\:\:map\(\) expects callable\(App\\Models\\Activity, int\)\: array\{id\: int, name\: string, slug\: string, city_name\: string\|null, place_name\: mixed, duration_minutes\: int\|null, type\: mixed, featured_image\: mixed, media_gallery\: Illuminate\\Support\\Collection\<int, array\{id\: int, media_id\: int, name\: string\|null, alt_text\: string\|null, url\: mixed, is_featured\: bool\|int\}\>, tags\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string\}\>\}, Closure\(mixed\)\: array\{id\: int, name\: string, slug\: string, city_name\: string\|null, place_name\: mixed, duration_minutes\: int\|null, type\: mixed, featured_image\: mixed, media_gallery\: Illuminate\\Support\\Collection\<int, array\{id\: int, media_id\: int, name\: string\|null, alt_text\: string\|null, url\: mixed, is_featured\: bool\|int\}\>, tags\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string\}\>\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Creator/CreatorItineraryController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\ItinerarySchedule\>\:\:map\(\) expects callable\(App\\Models\\ItinerarySchedule, int\)\: array\{day\: int, title\: string\|null, activities\: Illuminate\\Support\\Collection\<int, array\{id\: int, activity_id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float\|int\|string\|null, included\: bool, activitydata\: array\{id\: int, name\: string, slug\: string, media_gallery\: Illuminate\\Support\\Collection\<int, array\{id\: mixed, media_id\: mixed, name\: mixed, alt_text\: mixed, url\: mixed, is_featured\: mixed\}\>\}\}\>, transfers\: Illuminate\\Support\\Collection\<int, array\{id\: int, transfer_id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, pickup_location\: string\|null, dropoff_location\: string\|null, pax\: int\|null, price\: float\|int\|string\|null, included\: bool, transferData\: array\{id\: int, name\: string, slug\: string, media_gallery\: Illuminate\\Support\\Collection\<int, array\{id\: mixed, media_id\: mixed, name\: mixed, alt_text\: mixed, url\: mixed, is_featured\: mixed\}\>\}\}\>\}, Closure\(mixed\)\: array\{day\: int, title\: string\|null, activities\: Illuminate\\Support\\Collection\<int, array\{id\: int, activity_id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float\|int\|string\|null, included\: bool, activitydata\: array\{id\: int, name\: string, slug\: string, media_gallery\: Illuminate\\Support\\Collection\<int, array\{id\: mixed, media_id\: mixed, name\: mixed, alt_text\: mixed, url\: mixed, is_featured\: mixed\}\>\}\}\>, transfers\: Illuminate\\Support\\Collection\<int, array\{id\: int, transfer_id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, pickup_location\: string\|null, dropoff_location\: string\|null, pax\: int\|null, price\: float\|int\|string\|null, included\: bool, transferData\: array\{id\: int, name\: string, slug\: string, media_gallery\: Illuminate\\Support\\Collection\<int, array\{id\: mixed, media_id\: mixed, name\: mixed, alt_text\: mixed, url\: mixed, is_featured\: mixed\}\>\}\}\>\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Creator/CreatorItineraryController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Transfer\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Creator/CreatorItineraryController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Transfer\>\:\:map\(\) expects callable\(App\\Models\\Transfer, int\)\: array\{id\: int, name\: string, slug\: string, vehicle_type\: string\|null, featured_image\: mixed, media_gallery\: Illuminate\\Support\\Collection\<int, array\{id\: int, media_id\: int, name\: string\|null, alt_text\: string\|null, url\: mixed, is_featured\: bool\|int\}\>, pickup_city_name\: mixed, dropoff_city_name\: mixed, vendor_routes\: array\{pickup_place_id\: int\<0, max\>\|null, dropoff_place_id\: int\<0, max\>\|null, pickup_city_id\: mixed, dropoff_city_id\: mixed\}\}, Closure\(mixed\)\: array\{id\: int, name\: string, slug\: string, vehicle_type\: string\|null, featured_image\: mixed, media_gallery\: Illuminate\\Support\\Collection\<int, array\{id\: int, media_id\: int, name\: string\|null, alt_text\: string\|null, url\: mixed, is_featured\: bool\|int\}\>, pickup_city_name\: mixed, dropoff_city_name\: mixed, vendor_routes\: array\{pickup_place_id\: int\<0, max\>\|null, dropoff_place_id\: int\<0, max\>\|null, pickup_city_id\: mixed, dropoff_city_id\: mixed\}\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Creator/CreatorItineraryController.php
+
+		-
+			message: '#^Relation ''creator'' is not found in App\\Models\\Itinerary model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Creator/CreatorItineraryController.php
+
+		-
+			message: '#^Ternary operator condition is always true\.$#'
+			identifier: ternary.alwaysTrue
+			count: 2
+			path: app/Http/Controllers/Creator/CreatorItineraryController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>mediaGallery" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Creator/CreatorItineraryController.php
+
+		-
+			message: '#^Using nullsafe property access on non\-nullable type App\\Models\\Activity\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Creator/CreatorItineraryController.php
+
+		-
+			message: '#^Using nullsafe property access on non\-nullable type App\\Models\\Tag\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Http/Controllers/Creator/CreatorItineraryController.php
+
+		-
+			message: '#^Using nullsafe property access on non\-nullable type App\\Models\\Transfer\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Creator/CreatorItineraryController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ActivityLocation\:\:\$place\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Customer/CustomerItineraryController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$city\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Customer/CustomerItineraryController.php
+
+		-
+			message: '#^Using nullsafe property access on non\-nullable type App\\Models\\Tag\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Http/Controllers/Customer/CustomerItineraryController.php
+
+		-
+			message: '#^Call to static method warning\(\) on an unknown class App\\Http\\Controllers\\Guest\\Log\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Controllers/Guest/OtpController.php
+
+		-
 			message: '#^Anonymous function should return array\{id\: int, name\: string, slug\: string, featured_activity\: bool, description\: string\|null, item_type\: mixed, short_description\: string\|null, featured_image\: mixed, \.\.\.\} but returns array\{id\: int, name\: string, slug\: string, featured_activity\: bool, description\: string\|null, item_type\: mixed, short_description\: string\|null, featured_image\: mixed, \.\.\.\}\.$#'
 			identifier: return.type
 			count: 2
@@ -373,40 +661,118 @@ parameters:
 			path: app/Http/Controllers/Guest/PublicBlogController.php
 
 		-
-			message: '#^Anonymous function should return array\{day\: int, activities\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float\|int\|string\|null, include_in_package\: bool, main_location\: string\|null, \.\.\.\}\>, transfers\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, pickup_location\: string\|null, dropoff_location\: string\|null, pax\: int\|null, price\: float\|int\|string\|null, \.\.\.\}\>\} but returns array\{day\: int, activities\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float\|int\|string\|null, include_in_package\: bool, main_location\: string\|null, \.\.\.\}\>, transfers\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, pickup_location\: string\|null, dropoff_location\: string\|null, pax\: int\|null, price\: float\|int\|string\|null, \.\.\.\}\>\}\.$#'
+			message: '#^Access to an undefined property App\\Models\\City\:\:\$feature_image\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Guest/PublicCitiesController.php
+
+		-
+			message: '#^Ternary operator condition is always true\.$#'
+			identifier: ternary.alwaysTrue
+			count: 1
+			path: app/Http/Controllers/Guest/PublicCitiesController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>url" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Guest/PublicCitiesController.php
+
+		-
+			message: '#^Anonymous function should return array\{day\: int, title\: string\|null, activities\: Illuminate\\Support\\Collection\<int, array\{id\: int, activity_id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float\|int\|string\|null, included\: bool, \.\.\.\}\>, transfers\: Illuminate\\Support\\Collection\<int, array\{id\: int, transfer_id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, pickup_location\: string\|null, dropoff_location\: string\|null, pax\: int\|null, \.\.\.\}\>\} but returns array\{day\: int, title\: string\|null, activities\: Illuminate\\Support\\Collection\<int, array\{id\: int, activity_id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float\|int\|string\|null, included\: bool, \.\.\.\}\>, transfers\: Illuminate\\Support\\Collection\<int, array\{id\: int, transfer_id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, pickup_location\: string\|null, dropoff_location\: string\|null, pax\: int\|null, \.\.\.\}\>\}\.$#'
 			identifier: return.type
 			count: 1
 			path: app/Http/Controllers/Guest/PublicItineraryController.php
 
 		-
-			message: '#^Anonymous function should return array\{id\: int, name\: string, slug\: string, featured_itinerary\: bool, description\: string\|null, item_type\: mixed, featured_image\: mixed, city_slug\: string\|null, \.\.\.\} but returns array\{id\: int, name\: string, slug\: string, featured_itinerary\: bool, description\: string\|null, item_type\: mixed, featured_image\: mixed, city_slug\: string\|null, \.\.\.\}\.$#'
+			message: '#^Anonymous function should return array\{id\: int, name\: string, slug\: string, featured_itinerary\: bool, description\: string\|null, schedule_total_price\: float, schedule_total_currency\: string\|null, item_type\: mixed, \.\.\.\} but returns array\{id\: int, name\: string, slug\: string, featured_itinerary\: bool, description\: string\|null, schedule_total_price\: float, schedule_total_currency\: string\|null, item_type\: mixed, \.\.\.\}\.$#'
 			identifier: return.type
-			count: 1
+			count: 2
 			path: app/Http/Controllers/Guest/PublicItineraryController.php
 
 		-
-			message: '#^Anonymous function should return array\{id\: int, name\: string, slug\: string, featured_itinerary\: bool, description\: string\|null, item_type\: mixed, featured_image\: mixed, locations\: Illuminate\\Support\\Collection\<int, array\{city_id\: int, city\: string, state_id\: int, state\: string, country_id\: int, country\: string, region_id\: int\|null, region\: string\|null\}\>, \.\.\.\} but returns array\{id\: int, name\: string, slug\: string, featured_itinerary\: bool, description\: string\|null, item_type\: mixed, featured_image\: mixed, locations\: Illuminate\\Support\\Collection\<int, array\{city_id\: int, city\: string, state_id\: int, state\: string, country_id\: int, country\: string, region_id\: int\|null, region\: string\|null\}\>, \.\.\.\}\.$#'
-			identifier: return.type
-			count: 1
+			message: '#^Expression on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.expr
+			count: 2
 			path: app/Http/Controllers/Guest/PublicItineraryController.php
 
 		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Itinerary\>\:\:map\(\) expects callable\(App\\Models\\Itinerary, int\)\: array\{id\: int, name\: string, slug\: string, featured_itinerary\: bool, description\: string\|null, item_type\: mixed, featured_image\: mixed, city_slug\: string\|null, locations\: Illuminate\\Support\\Collection\<int, array\{city_id\: int, city\: string, state_id\: int, state\: string, country_id\: int, country\: string, region_id\: int\|null, region\: string\|null\}\>, categories\: array\<mixed\>, attributes\: Illuminate\\Support\\Collection\<int, array\{name\: string, value\: string\}\>, tags\: array\<mixed\>, media_gallery\: array\<mixed\>, seo\: array\{meta_title\: string, meta_description\: string\|null, keywords\: string\|null\}\|null\}, Closure\(App\\Models\\Itinerary, int\)\: array\{id\: int, name\: string, slug\: string, featured_itinerary\: bool, description\: string\|null, item_type\: mixed, featured_image\: mixed, city_slug\: string\|null, locations\: Illuminate\\Support\\Collection\<int, array\{city_id\: int, city\: string, state_id\: int, state\: string, country_id\: int, country\: string, region_id\: int\|null, region\: string\|null\}\>, categories\: array\<mixed\>, attributes\: Illuminate\\Support\\Collection\<int, array\{name\: string, value\: string\}\>, tags\: array\<mixed\>, media_gallery\: array\<mixed\>, seo\: array\{meta_title\: string, meta_description\: string\|null, keywords\: string\|null\}\|null\} given\.$#'
+			message: '#^Left side of && is always true\.$#'
+			identifier: booleanAnd.leftAlwaysTrue
+			count: 12
+			path: app/Http/Controllers/Guest/PublicItineraryController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Itinerary\>\:\:map\(\) expects callable\(App\\Models\\Itinerary, int\)\: array\{id\: int, name\: string, slug\: string, featured_itinerary\: bool, description\: string\|null, schedule_total_price\: float, schedule_total_currency\: string\|null, item_type\: mixed, featured_image\: mixed, locations\: Illuminate\\Support\\Collection\<int, array\{city_id\: int, city\: string, state_id\: int, state\: string, country_id\: int, country\: string, region_id\: int\|null, region\: string\|null\}\>, categories\: array\<mixed\>, attributes\: Illuminate\\Support\\Collection\<int, array\{name\: string, value\: string\}\>, tags\: array\<mixed\>, media_gallery\: array\<mixed\>, seo\: array\{meta_title\: string, meta_description\: string\|null, keywords\: string\|null\}\|null\}, Closure\(mixed\)\: array\{id\: int, name\: string, slug\: string, featured_itinerary\: bool, description\: string\|null, schedule_total_price\: float, schedule_total_currency\: string\|null, item_type\: mixed, featured_image\: mixed, locations\: Illuminate\\Support\\Collection\<int, array\{city_id\: int, city\: string, state_id\: int, state\: string, country_id\: int, country\: string, region_id\: int\|null, region\: string\|null\}\>, categories\: array\<mixed\>, attributes\: Illuminate\\Support\\Collection\<int, array\{name\: string, value\: string\}\>, tags\: array\<mixed\>, media_gallery\: array\<mixed\>, seo\: array\{meta_title\: string, meta_description\: string\|null, keywords\: string\|null\}\|null\} given\.$#'
 			identifier: argument.type
 			count: 1
 			path: app/Http/Controllers/Guest/PublicItineraryController.php
 
 		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Itinerary\>\:\:map\(\) expects callable\(App\\Models\\Itinerary, int\)\: array\{id\: int, name\: string, slug\: string, featured_itinerary\: bool, description\: string\|null, item_type\: mixed, featured_image\: mixed, locations\: Illuminate\\Support\\Collection\<int, array\{city_id\: int, city\: string, state_id\: int, state\: string, country_id\: int, country\: string, region_id\: int\|null, region\: string\|null\}\>, categories\: array\<mixed\>, attributes\: Illuminate\\Support\\Collection\<int, array\{name\: string, value\: string\}\>, tags\: array\<mixed\>, media_gallery\: array\<mixed\>, seo\: array\{meta_title\: string, meta_description\: string\|null, keywords\: string\|null\}\|null\}, Closure\(App\\Models\\Itinerary, int\)\: array\{id\: int, name\: string, slug\: string, featured_itinerary\: bool, description\: string\|null, item_type\: mixed, featured_image\: mixed, locations\: Illuminate\\Support\\Collection\<int, array\{city_id\: int, city\: string, state_id\: int, state\: string, country_id\: int, country\: string, region_id\: int\|null, region\: string\|null\}\>, categories\: array\<mixed\>, attributes\: Illuminate\\Support\\Collection\<int, array\{name\: string, value\: string\}\>, tags\: array\<mixed\>, media_gallery\: array\<mixed\>, seo\: array\{meta_title\: string, meta_description\: string\|null, keywords\: string\|null\}\|null\} given\.$#'
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Itinerary\>\:\:map\(\) expects callable\(App\\Models\\Itinerary, int\)\: array\{id\: int, name\: string, slug\: string, featured_itinerary\: bool, description\: string\|null, schedule_total_price\: float, schedule_total_currency\: string\|null, item_type\: mixed, featured_image\: string\|null, city_slug\: string\|null, locations\: Illuminate\\Support\\Collection\<int, array\{city_id\: int, city\: string, state_id\: int, state\: string, country_id\: int, country\: string, region_id\: int\|null, region\: string\|null\}\>, categories\: array\<mixed\>, attributes\: Illuminate\\Support\\Collection\<int, array\{name\: string, value\: string\}\>, tags\: array\<mixed\>, media_gallery\: array\<mixed\>, seo\: array\{meta_title\: string, meta_description\: string\|null, keywords\: string\|null\}\|null, base_pricing\: App\\Models\\ItineraryBasePricing\|null\}, Closure\(mixed\)\: array\{id\: int, name\: string, slug\: string, featured_itinerary\: bool, description\: string\|null, schedule_total_price\: float, schedule_total_currency\: string\|null, item_type\: mixed, featured_image\: string\|null, city_slug\: string\|null, locations\: Illuminate\\Support\\Collection\<int, array\{city_id\: int, city\: string, state_id\: int, state\: string, country_id\: int, country\: string, region_id\: int\|null, region\: string\|null\}\>, categories\: array\<mixed\>, attributes\: Illuminate\\Support\\Collection\<int, array\{name\: string, value\: string\}\>, tags\: array\<mixed\>, media_gallery\: array\<mixed\>, seo\: array\{meta_title\: string, meta_description\: string\|null, keywords\: string\|null\}\|null, base_pricing\: App\\Models\\ItineraryBasePricing\|null\} given\.$#'
 			identifier: argument.type
 			count: 1
 			path: app/Http/Controllers/Guest/PublicItineraryController.php
 
 		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\ItinerarySchedule\>\:\:map\(\) expects callable\(App\\Models\\ItinerarySchedule, int\)\: array\{day\: int, activities\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float\|int\|string\|null, include_in_package\: bool, main_location\: string\|null, duration_minutes\: int\|null, featured_image\: mixed\}\>, transfers\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, pickup_location\: string\|null, dropoff_location\: string\|null, pax\: int\|null, price\: float\|int\|string\|null, include_in_package\: bool\}\>\}, Closure\(App\\Models\\ItinerarySchedule, int\)\: array\{day\: int, activities\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float\|int\|string\|null, include_in_package\: bool, main_location\: string\|null, duration_minutes\: int\|null, featured_image\: mixed\}\>, transfers\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, pickup_location\: string\|null, dropoff_location\: string\|null, pax\: int\|null, price\: float\|int\|string\|null, include_in_package\: bool\}\>\} given\.$#'
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\ItinerarySchedule\>\:\:map\(\) expects callable\(App\\Models\\ItinerarySchedule, int\)\: array\{day\: int, title\: string\|null, activities\: Illuminate\\Support\\Collection\<int, array\{id\: int, activity_id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float\|int\|string\|null, included\: bool, include_in_package\: bool, main_location\: string\|null, duration_minutes\: int\|null, featured_image\: mixed\}\>, transfers\: Illuminate\\Support\\Collection\<int, array\{id\: int, transfer_id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, pickup_location\: string\|null, dropoff_location\: string\|null, pax\: int\|null, price\: float\|int\|string\|null, included\: bool, include_in_package\: bool\}\>\}, Closure\(mixed\)\: array\{day\: int, title\: string\|null, activities\: Illuminate\\Support\\Collection\<int, array\{id\: int, activity_id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float\|int\|string\|null, included\: bool, include_in_package\: bool, main_location\: string\|null, duration_minutes\: int\|null, featured_image\: mixed\}\>, transfers\: Illuminate\\Support\\Collection\<int, array\{id\: int, transfer_id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, pickup_location\: string\|null, dropoff_location\: string\|null, pax\: int\|null, price\: float\|int\|string\|null, included\: bool, include_in_package\: bool\}\>\} given\.$#'
 			identifier: argument.type
 			count: 1
 			path: app/Http/Controllers/Guest/PublicItineraryController.php
+
+		-
+			message: '#^Right side of && is always true\.$#'
+			identifier: booleanAnd.rightAlwaysTrue
+			count: 12
+			path: app/Http/Controllers/Guest/PublicItineraryController.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between App\\Models\\Tag and null will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: app/Http/Controllers/Guest/PublicItineraryController.php
+
+		-
+			message: '#^Ternary operator condition is always true\.$#'
+			identifier: ternary.alwaysTrue
+			count: 7
+			path: app/Http/Controllers/Guest/PublicItineraryController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>regular_price" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Http/Controllers/Guest/PublicItineraryController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>url" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 3
+			path: app/Http/Controllers/Guest/PublicItineraryController.php
+
+		-
+			message: '#^Using nullsafe property access on non\-nullable type App\\Models\\Activity\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 4
+			path: app/Http/Controllers/Guest/PublicItineraryController.php
+
+		-
+			message: '#^Using nullsafe property access on non\-nullable type App\\Models\\Media\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Guest/PublicItineraryController.php
+
+		-
+			message: '#^Variable \$formattedItinerary in empty\(\) always exists and is not falsy\.$#'
+			identifier: empty.variable
+			count: 1
+			path: app/Http/Controllers/Guest/PublicItineraryController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>url" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Guest/PublicMenuController.php
 
 		-
 			message: '#^Anonymous function should return array\{day\: int, activities\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float\|int\|string\|null, include_in_package\: bool, main_location\: string\|null, \.\.\.\}\>, transfers\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, pickup_location\: string, dropoff_location\: string, pax\: int\|null, price\: float\|int\|string\|null, \.\.\.\}\>\} but returns array\{day\: int, activities\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, notes\: string\|null, price\: float\|int\|string\|null, include_in_package\: bool, main_location\: string\|null, \.\.\.\}\>, transfers\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, start_time\: string\|null, end_time\: string\|null, pickup_location\: string, dropoff_location\: string, pax\: int\|null, price\: float\|int\|string\|null, \.\.\.\}\>\}\.$#'
@@ -493,6 +859,18 @@ parameters:
 			path: app/Http/Controllers/Guest/PublicRegionController.php
 
 		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$schedule_total_currency\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Guest/PublicRegionController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$schedule_total_price\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Guest/PublicRegionController.php
+
+		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$slug\.$#'
 			identifier: property.notFound
 			count: 2
@@ -505,19 +883,7 @@ parameters:
 			path: app/Http/Controllers/Guest/PublicRegionController.php
 
 		-
-			message: '#^Anonymous function should return array\{id\: int, name\: string, slug\: string, item_type\: ''activity'', featured\: bool, city_slug\: string\|null, pricing\: App\\Models\\ActivityPricing\|null, categories\: array\<mixed\>, \.\.\.\} but returns array\{id\: int, name\: string, slug\: string, item_type\: ''activity'', featured\: bool, city_slug\: string\|null, pricing\: App\\Models\\ActivityPricing\|null, categories\: array\<mixed\>, \.\.\.\}\.$#'
-			identifier: return.type
-			count: 1
-			path: app/Http/Controllers/Guest/PublicRegionController.php
-
-		-
-			message: '#^Anonymous function should return array\{id\: int, name\: string, slug\: string, item_type\: ''itinerary'', featured\: bool, city_slug\: string\|null, pricing\: App\\Models\\ItineraryBasePricing\|null, categories\: array\<mixed\>, \.\.\.\} but returns array\{id\: int, name\: string, slug\: string, item_type\: ''itinerary'', featured\: bool, city_slug\: string\|null, pricing\: App\\Models\\ItineraryBasePricing\|null, categories\: array\<mixed\>, \.\.\.\}\.$#'
-			identifier: return.type
-			count: 1
-			path: app/Http/Controllers/Guest/PublicRegionController.php
-
-		-
-			message: '#^Anonymous function should return array\{id\: int, name\: string, slug\: string, item_type\: ''package'', featured\: bool, city_slug\: string\|null, pricing\: App\\Models\\PackageBasePricing\|null, categories\: array\<mixed\>, \.\.\.\} but returns array\{id\: int, name\: string, slug\: string, item_type\: ''package'', featured\: bool, city_slug\: string\|null, pricing\: App\\Models\\PackageBasePricing\|null, categories\: array\<mixed\>, \.\.\.\}\.$#'
+			message: '#^Anonymous function should return array\{id\: int, name\: string, slug\: string, featured_itinerary\: bool, description\: string\|null, schedule_total_price\: float, schedule_total_currency\: string\|null, item_type\: mixed, \.\.\.\} but returns array\{id\: int, name\: string, slug\: string, featured_itinerary\: bool, description\: string\|null, schedule_total_price\: float, schedule_total_currency\: string\|null, item_type\: mixed, \.\.\.\}\.$#'
 			identifier: return.type
 			count: 1
 			path: app/Http/Controllers/Guest/PublicRegionController.php
@@ -535,31 +901,19 @@ parameters:
 			path: app/Http/Controllers/Guest/PublicRegionController.php
 
 		-
-			message: '#^Negated boolean expression is always false\.$#'
-			identifier: booleanNot.alwaysFalse
-			count: 1
+			message: '#^Left side of && is always true\.$#'
+			identifier: booleanAnd.leftAlwaysTrue
+			count: 8
 			path: app/Http/Controllers/Guest/PublicRegionController.php
 
 		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Activity\>\:\:map\(\) expects callable\(App\\Models\\Activity, int\)\: array\{id\: int, name\: string, slug\: string, item_type\: ''activity'', featured\: bool, city_slug\: string\|null, pricing\: App\\Models\\ActivityPricing\|null, categories\: array\<mixed\>, locations\: Illuminate\\Support\\Collection\<int, array\{city_id\: int, city\: string, city_slug\: string, state_id\: int, state\: string, country_id\: int, country\: string, region_id\: int\|null, region\: string\|null\}\>\}, Closure\(App\\Models\\Activity, int\)\: array\{id\: int, name\: string, slug\: string, item_type\: ''activity'', featured\: bool, city_slug\: string\|null, pricing\: App\\Models\\ActivityPricing\|null, categories\: array\<mixed\>, locations\: Illuminate\\Support\\Collection\<int, array\{city_id\: int, city\: string, city_slug\: string, state_id\: int, state\: string, country_id\: int, country\: string, region_id\: int\|null, region\: string\|null\}\>\} given\.$#'
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Activity\>\:\:map\(\) expects callable\(App\\Models\\Activity, int\)\: array\{id\: int, name\: string, slug\: string, item_type\: mixed, featured_activity\: bool, featured_image\: mixed, pricing\: App\\Models\\ActivityPricing\|null, groupDiscounts\: Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\ActivityGroupDiscount\>, categories\: array\<mixed\>, locations\: Illuminate\\Support\\Collection\<int, array\{location_type\: string, location_label\: string\|null, duration\: int\|null, city_id\: int, city\: string, state_id\: int, state\: string, country_id\: int, country\: string, region_id\: int\|null, region\: string\|null\}\>\}, Closure\(mixed\)\: array\{id\: int, name\: string, slug\: string, item_type\: mixed, featured_activity\: bool, featured_image\: mixed, pricing\: App\\Models\\ActivityPricing\|null, groupDiscounts\: Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\ActivityGroupDiscount\>, categories\: array\<mixed\>, locations\: Illuminate\\Support\\Collection\<int, array\{location_type\: string, location_label\: string\|null, duration\: int\|null, city_id\: int, city\: string, state_id\: int, state\: string, country_id\: int, country\: string, region_id\: int\|null, region\: string\|null\}\>\} given\.$#'
 			identifier: argument.type
 			count: 1
 			path: app/Http/Controllers/Guest/PublicRegionController.php
 
 		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Activity\>\:\:map\(\) expects callable\(App\\Models\\Activity, int\)\: array\{id\: int, name\: string, slug\: string, item_type\: mixed, featured_activity\: bool, featured_image\: mixed, pricing\: App\\Models\\ActivityPricing\|null, groupDiscounts\: Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\ActivityGroupDiscount\>, categories\: array\<mixed\>, locations\: Illuminate\\Support\\Collection\<int, array\{location_type\: string, location_label\: string\|null, duration\: int\|null, city_id\: int, city\: string, state_id\: int, state\: string, country_id\: int, country\: string, region_id\: int\|null, region\: string\|null\}\>\}, Closure\(App\\Models\\Activity, int\)\: array\{id\: int, name\: string, slug\: string, item_type\: mixed, featured_activity\: bool, featured_image\: mixed, pricing\: App\\Models\\ActivityPricing\|null, groupDiscounts\: Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\ActivityGroupDiscount\>, categories\: array\<mixed\>, locations\: Illuminate\\Support\\Collection\<int, array\{location_type\: string, location_label\: string\|null, duration\: int\|null, city_id\: int, city\: string, state_id\: int, state\: string, country_id\: int, country\: string, region_id\: int\|null, region\: string\|null\}\>\} given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/Guest/PublicRegionController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Itinerary\>\:\:map\(\) expects callable\(App\\Models\\Itinerary, int\)\: array\{id\: int, name\: string, slug\: string, item_type\: ''itinerary'', featured\: bool, city_slug\: string\|null, pricing\: App\\Models\\ItineraryBasePricing\|null, categories\: array\<mixed\>, tags\: array\<mixed\>, locations\: Illuminate\\Support\\Collection\<int, array\{city_id\: int, city\: string, city_slug\: string, state_id\: int, state\: string, country_id\: int, country\: string, region_id\: int\|null, region\: string\|null\}\>\}, Closure\(App\\Models\\Itinerary, int\)\: array\{id\: int, name\: string, slug\: string, item_type\: ''itinerary'', featured\: bool, city_slug\: string\|null, pricing\: App\\Models\\ItineraryBasePricing\|null, categories\: array\<mixed\>, tags\: array\<mixed\>, locations\: Illuminate\\Support\\Collection\<int, array\{city_id\: int, city\: string, city_slug\: string, state_id\: int, state\: string, country_id\: int, country\: string, region_id\: int\|null, region\: string\|null\}\>\} given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/Guest/PublicRegionController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Package\>\:\:map\(\) expects callable\(App\\Models\\Package, int\)\: array\{id\: int, name\: string, slug\: string, item_type\: ''package'', featured\: bool, city_slug\: string\|null, pricing\: App\\Models\\PackageBasePricing\|null, categories\: array\<mixed\>, tags\: array\<mixed\>, locations\: Illuminate\\Support\\Collection\<int, array\{city_id\: int, city\: string, city_slug\: string, state_id\: int, state\: string, country_id\: int, country\: string, region_id\: int\|null, region\: string\|null\}\>\}, Closure\(App\\Models\\Package, int\)\: array\{id\: int, name\: string, slug\: string, item_type\: ''package'', featured\: bool, city_slug\: string\|null, pricing\: App\\Models\\PackageBasePricing\|null, categories\: array\<mixed\>, tags\: array\<mixed\>, locations\: Illuminate\\Support\\Collection\<int, array\{city_id\: int, city\: string, city_slug\: string, state_id\: int, state\: string, country_id\: int, country\: string, region_id\: int\|null, region\: string\|null\}\>\} given\.$#'
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Itinerary\>\:\:map\(\) expects callable\(App\\Models\\Itinerary, int\)\: array\{id\: int, name\: string, slug\: string, featured_itinerary\: bool, description\: string\|null, schedule_total_price\: float, schedule_total_currency\: string\|null, item_type\: mixed, featured_image\: string\|null, city_slug\: string\|null, locations\: Illuminate\\Support\\Collection\<int, array\{city_id\: int, city\: string, state_id\: int, state\: string, country_id\: int, country\: string, region_id\: int\|null, region\: string\|null\}\>, categories\: array\<mixed\>, attributes\: Illuminate\\Support\\Collection\<int, array\{name\: string, value\: string\}\>, tags\: array\<mixed\>, media_gallery\: array\<mixed\>, seo\: array\{meta_title\: string, meta_description\: string\|null, keywords\: string\|null\}\|null, base_pricing\: App\\Models\\ItineraryBasePricing\|null\}, Closure\(mixed\)\: array\{id\: int, name\: string, slug\: string, featured_itinerary\: bool, description\: string\|null, schedule_total_price\: float, schedule_total_currency\: string\|null, item_type\: mixed, featured_image\: string\|null, city_slug\: string\|null, locations\: Illuminate\\Support\\Collection\<int, array\{city_id\: int, city\: string, state_id\: int, state\: string, country_id\: int, country\: string, region_id\: int\|null, region\: string\|null\}\>, categories\: array\<mixed\>, attributes\: Illuminate\\Support\\Collection\<int, array\{name\: string, value\: string\}\>, tags\: array\<mixed\>, media_gallery\: array\<mixed\>, seo\: array\{meta_title\: string, meta_description\: string\|null, keywords\: string\|null\}\|null, base_pricing\: App\\Models\\ItineraryBasePricing\|null\} given\.$#'
 			identifier: argument.type
 			count: 1
 			path: app/Http/Controllers/Guest/PublicRegionController.php
@@ -583,27 +937,51 @@ parameters:
 			path: app/Http/Controllers/Guest/PublicRegionController.php
 
 		-
-			message: '#^Parameter \#1 \$items of method Illuminate\\Support\\Collection\<\(int\|string\),mixed\>\:\:merge\(\) expects Illuminate\\Contracts\\Support\\Arrayable\<\(int\|string\), array\{id\: int, name\: string, slug\: string, item_type\: string, featured\: bool, city_slug\: string\|null, pricing\: App\\Models\\ActivityPricing\|null, categories\: array\<mixed\>, \.\.\.\}\>\|iterable\<\(int\|string\), array\{id\: int, name\: string, slug\: string, item_type\: string, featured\: bool, city_slug\: string\|null, pricing\: App\\Models\\ActivityPricing\|null, categories\: array\<mixed\>, \.\.\.\}\>, Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, slug\: string, item_type\: string, featured\: bool, city_slug\: string\|null, pricing\: App\\Models\\ActivityPricing\|null, categories\: array\<mixed\>, \.\.\.\}\> given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/Guest/PublicRegionController.php
-
-		-
-			message: '#^Parameter \#1 \$items of method Illuminate\\Support\\Collection\<\(int\|string\),mixed\>\:\:merge\(\) expects Illuminate\\Contracts\\Support\\Arrayable\<\(int\|string\), array\{id\: int, name\: string, slug\: string, item_type\: string, featured\: bool, city_slug\: string\|null, pricing\: App\\Models\\ItineraryBasePricing\|null, categories\: array\<mixed\>, \.\.\.\}\>\|iterable\<\(int\|string\), array\{id\: int, name\: string, slug\: string, item_type\: string, featured\: bool, city_slug\: string\|null, pricing\: App\\Models\\ItineraryBasePricing\|null, categories\: array\<mixed\>, \.\.\.\}\>, Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, slug\: string, item_type\: string, featured\: bool, city_slug\: string\|null, pricing\: App\\Models\\ItineraryBasePricing\|null, categories\: array\<mixed\>, \.\.\.\}\> given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/Guest/PublicRegionController.php
-
-		-
-			message: '#^Parameter \#1 \$items of method Illuminate\\Support\\Collection\<\(int\|string\),mixed\>\:\:merge\(\) expects Illuminate\\Contracts\\Support\\Arrayable\<\(int\|string\), array\{id\: int, name\: string, slug\: string, item_type\: string, featured\: bool, city_slug\: string\|null, pricing\: App\\Models\\PackageBasePricing\|null, categories\: array\<mixed\>, \.\.\.\}\>\|iterable\<\(int\|string\), array\{id\: int, name\: string, slug\: string, item_type\: string, featured\: bool, city_slug\: string\|null, pricing\: App\\Models\\PackageBasePricing\|null, categories\: array\<mixed\>, \.\.\.\}\>, Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, slug\: string, item_type\: string, featured\: bool, city_slug\: string\|null, pricing\: App\\Models\\PackageBasePricing\|null, categories\: array\<mixed\>, \.\.\.\}\> given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/Guest/PublicRegionController.php
-
-		-
 			message: '#^Parameter \#1 \$value of function collect contains unresolvable type\.$#'
 			identifier: argument.unresolvableType
 			count: 1
+			path: app/Http/Controllers/Guest/PublicRegionController.php
+
+		-
+			message: '#^Parameter \#1 \$value of function collect expects Illuminate\\Contracts\\Support\\Arrayable\<int, array\{id\: int, name\: string, slug\: string, item_type\: mixed, featured_activity\: bool, featured_image\: mixed, pricing\: App\\Models\\ActivityPricing\|null, groupDiscounts\: Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\ActivityGroupDiscount\>, \.\.\.\}\>\|iterable\<int, array\{id\: int, name\: string, slug\: string, item_type\: mixed, featured_activity\: bool, featured_image\: mixed, pricing\: App\\Models\\ActivityPricing\|null, groupDiscounts\: Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\ActivityGroupDiscount\>, \.\.\.\}\>\|null, Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, slug\: string, item_type\: mixed, featured_activity\: bool, featured_image\: mixed, pricing\: App\\Models\\ActivityPricing\|null, groupDiscounts\: Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\ActivityGroupDiscount\>, \.\.\.\}\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Guest/PublicRegionController.php
+
+		-
+			message: '#^Right side of && is always true\.$#'
+			identifier: booleanAnd.rightAlwaysTrue
+			count: 8
+			path: app/Http/Controllers/Guest/PublicRegionController.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between App\\Models\\Tag and null will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: app/Http/Controllers/Guest/PublicRegionController.php
+
+		-
+			message: '#^Ternary operator condition is always true\.$#'
+			identifier: ternary.alwaysTrue
+			count: 4
+			path: app/Http/Controllers/Guest/PublicRegionController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>regular_price" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 4
+			path: app/Http/Controllers/Guest/PublicRegionController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>url" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 7
+			path: app/Http/Controllers/Guest/PublicRegionController.php
+
+		-
+			message: '#^Using nullsafe property access on non\-nullable type App\\Models\\City\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 8
 			path: app/Http/Controllers/Guest/PublicRegionController.php
 
 		-
@@ -643,6 +1021,132 @@ parameters:
 			path: app/Http/Controllers/Guest/PublicReviewController.php
 
 		-
+			message: '#^Using nullsafe property access "\?\-\>url" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Http/Controllers/Guest/PublicToursSearchController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Transfer\:\:\$route\.$#'
+			identifier: property.notFound
+			count: 4
+			path: app/Http/Controllers/Guest/PublicTransferController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>base_price" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Guest/PublicTransferController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Http/Controllers/Guest/PublicTransferController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>url" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Http/Controllers/Guest/PublicTransferController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ActivityLocation\:\:\$place\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Shared/SharedItineraryResourcesController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$city\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Shared/SharedItineraryResourcesController.php
+
+		-
+			message: '#^Left side of && is always true\.$#'
+			identifier: booleanAnd.leftAlwaysTrue
+			count: 1
+			path: app/Http/Controllers/Shared/SharedItineraryResourcesController.php
+
+		-
+			message: '#^Right side of && is always true\.$#'
+			identifier: booleanAnd.rightAlwaysTrue
+			count: 1
+			path: app/Http/Controllers/Shared/SharedItineraryResourcesController.php
+
+		-
+			message: '#^Ternary operator condition is always true\.$#'
+			identifier: ternary.alwaysTrue
+			count: 1
+			path: app/Http/Controllers/Shared/SharedItineraryResourcesController.php
+
+		-
+			message: '#^Using nullsafe property access on non\-nullable type App\\Models\\Tag\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Http/Controllers/Shared/SharedItineraryResourcesController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Activity\:\:\$pricings\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/StripeController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\PackageBasePricing\:\:\$priceVariations\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/StripeController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\VendorRoute\:\:\$destination\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/StripeController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\VendorRoute\:\:\$origin\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/StripeController.php
+
+		-
+			message: '#^Call to function is_array\(\) with string\|null will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 1
+			path: app/Http/Controllers/StripeController.php
+
+		-
+			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
+			identifier: larastan.noEnvCallsOutsideOfConfig
+			count: 5
+			path: app/Http/Controllers/StripeController.php
+
+		-
+			message: '#^Using nullsafe property access on non\-nullable type App\\Models\\City\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 12
+			path: app/Http/Controllers/StripeController.php
+
+		-
+			message: '#^Using nullsafe property access on non\-nullable type App\\Models\\Country\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 4
+			path: app/Http/Controllers/StripeController.php
+
+		-
+			message: '#^Using nullsafe property access on non\-nullable type App\\Models\\Media\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 12
+			path: app/Http/Controllers/StripeController.php
+
+		-
+			message: '#^Using nullsafe property access on non\-nullable type App\\Models\\State\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 8
+			path: app/Http/Controllers/StripeController.php
+
+		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$label\.$#'
 			identifier: property.notFound
 			count: 1
@@ -679,25 +1183,115 @@ parameters:
 			path: app/Http/Controllers/UserProfileController.php
 
 		-
+			message: '#^Call to function is_array\(\) with string\|null will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 1
+			path: app/Http/Controllers/UserProfileController.php
+
+		-
 			message: '#^If condition is always true\.$#'
 			identifier: if.alwaysTrue
 			count: 1
 			path: app/Http/Controllers/UserProfileController.php
 
 		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,App\\Models\\Order\>\:\:map\(\) expects callable\(App\\Models\\Order, int\)\: array\{id\: int, item_id\: int, status\: string, travel_date\: string, preferred_time\: string\|null, number_of_adults\: int\|null, number_of_children\: int\|null, special_requirements\: string\|null, payment\: App\\Models\\OrderPayment\|null, emergency_contact\: App\\Models\\OrderEmergencyContact\|null, item\: array\{name\: mixed, slug\: mixed, item_type\: mixed, city\: mixed, region\: string\|null, locations\: mixed, media\: Illuminate\\Support\\Collection\<int\|string, array\{id\: mixed, name\: mixed, alt_text\: mixed, url\: mixed\}\>\}, review\: array\{id\: int, user_id\: int, item_type\: string, item_id\: int, rating\: int, review_text\: string\|null, status\: string, media_gallery\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, alt_text\: string\|null, url\: mixed\}\>, created_at\: Illuminate\\Support\\Carbon\|null, updated_at\: Illuminate\\Support\\Carbon\|null\}\|null, user\: array\{name\: string, email\: string, phone\: string\|null\}\}, Closure\(App\\Models\\Order, int\)\: array\{id\: int, item_id\: int, status\: string, travel_date\: string, preferred_time\: string\|null, number_of_adults\: int\|null, number_of_children\: int\|null, special_requirements\: string\|null, payment\: App\\Models\\OrderPayment\|null, emergency_contact\: App\\Models\\OrderEmergencyContact\|null, item\: array\{name\: mixed, slug\: mixed, item_type\: mixed, city\: mixed, region\: string\|null, locations\: mixed, media\: Illuminate\\Support\\Collection\<int\|string, array\{id\: mixed, name\: mixed, alt_text\: mixed, url\: mixed\}\>\}, review\: array\{id\: int, user_id\: int, item_type\: string, item_id\: int, rating\: int, review_text\: string\|null, status\: string, media_gallery\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, alt_text\: string\|null, url\: mixed\}\>, created_at\: Illuminate\\Support\\Carbon\|null, updated_at\: Illuminate\\Support\\Carbon\|null\}\|null, user\: array\{name\: string, email\: string, phone\: string\|null\}\} given\.$#'
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,App\\Models\\Order\>\:\:map\(\) expects callable\(App\\Models\\Order, int\)\: array\{id\: int, item_id\: int, status\: string, travel_date\: string, preferred_time\: string\|null, number_of_adults\: int\|null, number_of_children\: int\|null, special_requirements\: string\|null, payment\: App\\Models\\OrderPayment\|null, emergency_contact\: App\\Models\\OrderEmergencyContact\|null, item\: array\{name\: mixed, slug\: mixed, item_type\: mixed, city\: mixed, region\: string\|null, locations\: mixed, media\: Illuminate\\Support\\Collection\<int\|string, array\{id\: mixed, name\: mixed, alt_text\: mixed, url\: mixed\}\>\}, review\: array\{id\: int, user_id\: int, item_type\: string, item_id\: int, rating\: int, review_text\: string\|null, status\: string, media_gallery\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, alt_text\: string\|null, url\: mixed\}\>, created_at\: Illuminate\\Support\\Carbon\|null, updated_at\: Illuminate\\Support\\Carbon\|null\}\|null, user\: array\{name\: string, email\: string, phone\: string\|null\}\}, Closure\(mixed\)\: array\{id\: int, item_id\: int, status\: string, travel_date\: string, preferred_time\: string\|null, number_of_adults\: int\|null, number_of_children\: int\|null, special_requirements\: string\|null, payment\: App\\Models\\OrderPayment\|null, emergency_contact\: App\\Models\\OrderEmergencyContact\|null, item\: array\{name\: mixed, slug\: mixed, item_type\: mixed, city\: mixed, region\: string\|null, locations\: mixed, media\: Illuminate\\Support\\Collection\<int\|string, array\{id\: mixed, name\: mixed, alt_text\: mixed, url\: mixed\}\>\}, review\: array\{id\: int, user_id\: int, item_type\: string, item_id\: int, rating\: int, review_text\: string\|null, status\: string, media_gallery\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, alt_text\: string\|null, url\: mixed\}\>, created_at\: Illuminate\\Support\\Carbon\|null, updated_at\: Illuminate\\Support\\Carbon\|null\}\|null, user\: array\{name\: string, email\: string, phone\: string\|null\}\} given\.$#'
 			identifier: argument.type
 			count: 1
 			path: app/Http/Controllers/UserProfileController.php
 
 		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,App\\Models\\Review\>\:\:map\(\) expects callable\(App\\Models\\Review, int\)\: array\{id\: int, order_id\: int\|null, item_type\: string, item_id\: int, item_name\: string, item_slug\: string\|null, has_live_item\: bool, rating\: int, review_text\: string\|null, status\: string, media_gallery\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, alt_text\: string\|null, url\: mixed\}\>, created_at\: Illuminate\\Support\\Carbon\|null, updated_at\: Illuminate\\Support\\Carbon\|null\}, Closure\(App\\Models\\Review, int\)\: array\{id\: int, order_id\: int\|null, item_type\: string, item_id\: int, item_name\: string, item_slug\: string\|null, has_live_item\: bool, rating\: int, review_text\: string\|null, status\: string, media_gallery\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, alt_text\: string\|null, url\: mixed\}\>, created_at\: Illuminate\\Support\\Carbon\|null, updated_at\: Illuminate\\Support\\Carbon\|null\} given\.$#'
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,App\\Models\\Review\>\:\:map\(\) expects callable\(App\\Models\\Review, int\)\: array\{id\: int, order_id\: int\|null, item_type\: string, item_id\: int, item_name\: string, item_slug\: string\|null, has_live_item\: bool, rating\: int, review_text\: string\|null, status\: string, media_gallery\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, alt_text\: string\|null, url\: mixed\}\>, created_at\: Illuminate\\Support\\Carbon\|null, updated_at\: Illuminate\\Support\\Carbon\|null\}, Closure\(mixed\)\: array\{id\: int, order_id\: int\|null, item_type\: string, item_id\: int, item_name\: string, item_slug\: string\|null, has_live_item\: bool, rating\: int, review_text\: string\|null, status\: string, media_gallery\: Illuminate\\Support\\Collection\<int, array\{id\: int, name\: string, alt_text\: string\|null, url\: mixed\}\>, created_at\: Illuminate\\Support\\Carbon\|null, updated_at\: Illuminate\\Support\\Carbon\|null\} given\.$#'
 			identifier: argument.type
 			count: 1
 			path: app/Http/Controllers/UserProfileController.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/CreatorApplication.php
+
+		-
+			message: '#^Expression on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.expr
+			count: 2
+			path: app/Models/Itinerary.php
+
+		-
+			message: '#^Negated boolean expression is always false\.$#'
+			identifier: booleanNot.alwaysFalse
+			count: 1
+			path: app/Models/Itinerary.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,App\\Models\\ItineraryTransfer\>\:\:first\(\) expects \(callable\(App\\Models\\ItineraryTransfer, int\)\: bool\)\|null, Closure\(mixed\)\: App\\Models\\Transfer given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Models/Itinerary.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>url" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Models/Itinerary.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/ItineraryLike.php
+
+		-
+			message: '#^PHPDoc tag @mixin contains unknown class Eloquent\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/Notification.php
 
 		-
 			message: '#^Strict comparison using \!\=\= between Illuminate\\Database\\Eloquent\\Model and null will always evaluate to true\.$#'
 			identifier: notIdentical.alwaysTrue
 			count: 1
 			path: app/Models/Review.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Transfer\:\:\$route\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Transfer.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>extra_luggage_charge" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Models/Transfer.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>transfer_price" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Models/Transfer.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>waiting_charge" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Models/Transfer.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between float\|int\|numeric\-string and null will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: app/Services/ActivityDiscountService.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:activities\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Services/ItineraryDraftService.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:transfers\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Services/ItineraryDraftService.php

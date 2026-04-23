@@ -19,8 +19,6 @@ use App\Models\ActivitySeasonalPricing;
 use App\Models\ActivityTag;
 use App\Models\Attribute;
 use App\Models\Category;
-use App\Models\City;
-use App\Models\Tag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -58,10 +56,8 @@ class ActivityController extends Controller
             ->leftJoin('activity_pricing', 'activity_pricing.activity_id', '=', 'activities.id') // Left join so activities without pricing still show
             ->with(['categories.category', 'tags.tag', 'locations.city', 'locations.place', 'pricing', 'attributes', 'mediaGallery.media', 'addons.addon']) // Eager load relationships
 
-            ->when($cityIds, fn($query) =>
-                $query->whereHas('locations', fn($q) =>
-                    $q->whereIn('city_id', array_map('intval', explode(',', $cityIds)))
-                )
+            ->when($cityIds, fn ($query) => $query->whereHas('locations', fn ($q) => $q->whereIn('city_id', array_map('intval', explode(',', $cityIds)))
+            )
             )
 
             ->when($search, fn ($query) => $query->where('activities.name', 'like', "%{$search}%")
@@ -651,13 +647,14 @@ class ActivityController extends Controller
             if ($request->has('locations')) {
                 $locationsData = collect($request->locations)->map(function ($location) {
                     $cityId = $location['city_id'] ?? null;
-                    if (!empty($location['place_id'])) {
+                    if (! empty($location['place_id'])) {
                         $place = \App\Models\Place::find($location['place_id']);
                         if ($place) {
                             $cityId = $place->city_id;
                         }
                     }
                     $location['city_id'] = $cityId;
+
                     return $location;
                 })->toArray();
 
@@ -665,7 +662,7 @@ class ActivityController extends Controller
             }
 
             foreach ([] as $relation) {
-            // foreach (['seasonalPricing', 'group_discounts', 'early_bird_discount', 'last_minute_discount', 'promo_codes', 'availability'] as $relation) {
+                // foreach (['seasonalPricing', 'group_discounts', 'early_bird_discount', 'last_minute_discount', 'promo_codes', 'availability'] as $relation) {
                 if ($request->has($relation)) {
                     $updateOrCreateRelation($relation, $request->$relation);
                 }

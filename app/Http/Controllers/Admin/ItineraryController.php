@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Attribute;
 use App\Models\Category;
-use App\Models\City;
 use App\Models\Itinerary;
 use App\Models\ItineraryActivity;
 use App\Models\ItineraryAddon;

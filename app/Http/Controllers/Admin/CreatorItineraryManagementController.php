@@ -17,7 +17,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Str;
 
 class CreatorItineraryManagementController extends Controller
 {
@@ -27,7 +26,7 @@ class CreatorItineraryManagementController extends Controller
             ->with(['creator', 'parentItinerary.locations.city', 'locations', 'mediaGallery.media']);
 
         if ($request->has('status')) {
-            $query->whereHas('meta', fn($q) => $q->where('status', $request->status));
+            $query->whereHas('meta', fn ($q) => $q->where('status', $request->status));
         }
 
         $itineraries = $query->latest()->paginate(15);
@@ -57,7 +56,7 @@ class CreatorItineraryManagementController extends Controller
             ])
             ->find($id);
 
-        if (!$itinerary) {
+        if (! $itinerary) {
             return response()->json([
                 'success' => false,
                 'message' => 'Creator itinerary not found',
@@ -139,7 +138,7 @@ class CreatorItineraryManagementController extends Controller
     {
         $creatorCopy = Itinerary::creatorCopies()->find($id);
 
-        if (!$creatorCopy) {
+        if (! $creatorCopy) {
             return response()->json([
                 'success' => false,
                 'message' => 'Creator itinerary not found',
@@ -156,7 +155,7 @@ class CreatorItineraryManagementController extends Controller
             'seo',
         ])->find($creatorCopy->parent_itinerary_id);
 
-        if (!$original) {
+        if (! $original) {
             return response()->json([
                 'success' => false,
                 'message' => 'Original itinerary not found',
@@ -173,7 +172,7 @@ class CreatorItineraryManagementController extends Controller
     {
         $itinerary = Itinerary::creatorCopies()->find($id);
 
-        if (!$itinerary) {
+        if (! $itinerary) {
             return response()->json([
                 'success' => false,
                 'message' => 'Creator itinerary not found',
@@ -217,7 +216,7 @@ class CreatorItineraryManagementController extends Controller
     public function updateAndApprove(Request $request, $id): JsonResponse
     {
         $itinerary = Itinerary::creatorCopies()->find($id);
-        if (!$itinerary) {
+        if (! $itinerary) {
             return response()->json(['success' => false, 'message' => 'Creator itinerary not found'], 404);
         }
 
@@ -279,7 +278,7 @@ class CreatorItineraryManagementController extends Controller
     {
         $itinerary = Itinerary::creatorCopies()->find($id);
 
-        if (!$itinerary) {
+        if (! $itinerary) {
             return response()->json([
                 'success' => false,
                 'message' => 'Creator itinerary not found',
@@ -323,18 +322,19 @@ class CreatorItineraryManagementController extends Controller
     public function update(Request $request, $id): JsonResponse
     {
         $itinerary = Itinerary::creatorCopies()->find($id);
-        if (!$itinerary) {
+        if (! $itinerary) {
             return response()->json(['success' => false, 'message' => 'Creator itinerary not found'], 404);
         }
 
         $adminController = app(\App\Http\Controllers\Admin\ItineraryController::class);
+
         return $adminController->update($request, $id);
     }
 
     public function destroy($id): JsonResponse
     {
         $itinerary = Itinerary::creatorCopies()->find($id);
-        if (!$itinerary) {
+        if (! $itinerary) {
             return response()->json(['success' => false, 'message' => 'Creator itinerary not found'], 404);
         }
 
@@ -342,7 +342,7 @@ class CreatorItineraryManagementController extends Controller
             if ($itinerary->draft_itinerary_id) {
                 $draft = Itinerary::find($itinerary->draft_itinerary_id);
                 if ($draft) {
-                    (new ItineraryDraftService())->deleteDraft($draft);
+                    (new ItineraryDraftService)->deleteDraft($draft);
                 }
             }
 
@@ -370,16 +370,16 @@ class CreatorItineraryManagementController extends Controller
     public function approveEdit($id): JsonResponse
     {
         $itinerary = Itinerary::creatorCopies()->find($id);
-        if (!$itinerary || !$itinerary->draft_itinerary_id) {
+        if (! $itinerary || ! $itinerary->draft_itinerary_id) {
             return response()->json(['success' => false, 'message' => 'No pending edit found for this itinerary.'], 404);
         }
 
         $draft = Itinerary::find($itinerary->draft_itinerary_id);
-        if (!$draft || $draft->status !== 'edit_pending') {
+        if (! $draft || $draft->status !== 'edit_pending') {
             return response()->json(['success' => false, 'message' => 'Draft is not pending approval.'], 422);
         }
 
-        $service = new ItineraryDraftService();
+        $service = new ItineraryDraftService;
         $updated = $service->mergeDraft($itinerary, $draft);
 
         Notification::create([
@@ -406,16 +406,16 @@ class CreatorItineraryManagementController extends Controller
     public function rejectEdit($id): JsonResponse
     {
         $itinerary = Itinerary::creatorCopies()->find($id);
-        if (!$itinerary || !$itinerary->draft_itinerary_id) {
+        if (! $itinerary || ! $itinerary->draft_itinerary_id) {
             return response()->json(['success' => false, 'message' => 'No pending edit found for this itinerary.'], 404);
         }
 
         $draft = Itinerary::find($itinerary->draft_itinerary_id);
-        if (!$draft || $draft->status !== 'edit_pending') {
+        if (! $draft || $draft->status !== 'edit_pending') {
             return response()->json(['success' => false, 'message' => 'Draft is not pending approval.'], 422);
         }
 
-        $service = new ItineraryDraftService();
+        $service = new ItineraryDraftService;
         $service->deleteDraft($draft);
 
         Notification::create([
@@ -442,7 +442,7 @@ class CreatorItineraryManagementController extends Controller
     public function approveRemoval($id): JsonResponse
     {
         $itinerary = Itinerary::creatorCopies()->find($id);
-        if (!$itinerary || $itinerary->removal_status !== 'requested') {
+        if (! $itinerary || $itinerary->removal_status !== 'requested') {
             return response()->json(['success' => false, 'message' => 'No pending removal request found.'], 404);
         }
 
@@ -475,7 +475,7 @@ class CreatorItineraryManagementController extends Controller
     public function rejectRemoval($id): JsonResponse
     {
         $itinerary = Itinerary::creatorCopies()->find($id);
-        if (!$itinerary || $itinerary->removal_status !== 'requested') {
+        if (! $itinerary || $itinerary->removal_status !== 'requested') {
             return response()->json(['success' => false, 'message' => 'No pending removal request found.'], 404);
         }
 

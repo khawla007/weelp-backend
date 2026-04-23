@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Guest;
 
 use App\Http\Controllers\Controller;
-use App\Models\Attribute;
 use App\Models\City;
 use App\Models\Package;
 use App\Models\PackageSchedule;

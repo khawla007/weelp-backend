@@ -5,12 +5,10 @@ namespace App\Http\Controllers\Guest;
 use App\Http\Controllers\Controller;
 use App\Models\City;
 use App\Models\Itinerary;
-use App\Models\ItinerarySchedule;
 use Illuminate\Http\JsonResponse;
 
 class PublicItineraryController extends Controller
 {
-
     //  -------------------Code to grt itineraries with location details-------------------
     public function index(): JsonResponse
     {
@@ -28,7 +26,7 @@ class PublicItineraryController extends Controller
             'seo',
             'categories.category',
             'attributes',
-            'tags'
+            'tags',
         ])->get()->map(function ($itinerary) {
             return [
                 'id' => $itinerary->id,
@@ -43,6 +41,7 @@ class PublicItineraryController extends Controller
                     ?? $itinerary->mediaGallery->first()?->media?->url,
                 'locations' => $itinerary->locations->map(function ($location) {
                     $city = $location->city;
+
                     return [
                         'city_id' => $city->id,
                         'city' => $city->name,
@@ -100,13 +99,13 @@ class PublicItineraryController extends Controller
         if ($itineraries->isEmpty()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Itineraries not found'
+                'message' => 'Itineraries not found',
             ]);
         }
 
         return response()->json([
             'success' => true,
-            'data' => $itineraries
+            'data' => $itineraries,
         ]);
     }
 
@@ -131,30 +130,30 @@ class PublicItineraryController extends Controller
             'seo',
             'categories.category',
             'attributes',
-            'tags.tag'
+            'tags.tag',
         ])
-        ->where('featured_itinerary', true);
+            ->where('featured_itinerary', true);
 
         if ($citySlug) {
             $city = City::where('slug', $citySlug)->first();
             if (! $city) {
                 return response()->json(['success' => false, 'message' => 'City not found'], 404);
             }
-            $query->whereHas('locations', fn($q) => $q->where('city_id', $city->id));
+            $query->whereHas('locations', fn ($q) => $q->where('city_id', $city->id));
         }
 
         // Tag filter
         $tagNames = request()->has('tags') ? array_filter(explode(',', request()->get('tags'))) : [];
         if (! empty($tagNames)) {
-            $query->whereHas('tags.tag', fn($q) => $q->whereIn('name', $tagNames));
+            $query->whereHas('tags.tag', fn ($q) => $q->whereIn('name', $tagNames));
         }
 
         $itineraries = $query->get();
 
         // Get all tags from result set (for filter UI)
         $allTags = $itineraries->pluck('tags')->flatten()
-            ->filter(fn($pt) => $pt->tag !== null)
-            ->map(fn($pt) => ['id' => $pt->tag->id, 'name' => $pt->tag->name, 'is_featured' => (bool) $pt->tag->is_featured])
+            ->filter(fn ($pt) => $pt->tag !== null)
+            ->map(fn ($pt) => ['id' => $pt->tag->id, 'name' => $pt->tag->name, 'is_featured' => (bool) $pt->tag->is_featured])
             ->unique('id')
             ->values();
 
@@ -172,6 +171,7 @@ class PublicItineraryController extends Controller
                 'city_slug' => $itinerary->locations->first()?->city?->slug,
                 'locations' => $itinerary->locations->map(function ($location) {
                     $city = $location->city;
+
                     return [
                         'city_id' => $city->id,
                         'city' => $city->name,
@@ -199,7 +199,7 @@ class PublicItineraryController extends Controller
                         'value' => $attribute->attribute_value,
                     ];
                 }),
-                'tags' => $itinerary->tags->filter(fn($pt) => $pt->tag !== null)->map(function ($tag) {
+                'tags' => $itinerary->tags->filter(fn ($pt) => $pt->tag !== null)->map(function ($tag) {
                     return [
                         'id' => $tag->tag->id,
                         'name' => $tag->tag->name,
@@ -228,8 +228,8 @@ class PublicItineraryController extends Controller
         $formattedItineraries = match ($sortBy) {
             'name_asc' => $formattedItineraries->sortBy('name'),
             'name_desc' => $formattedItineraries->sortByDesc('name'),
-            'price_asc' => $formattedItineraries->sortBy(fn($item) => $item['base_pricing']?->variations?->first()?->regular_price ?? 0),
-            'price_desc' => $formattedItineraries->sortByDesc(fn($item) => $item['base_pricing']?->variations?->first()?->regular_price ?? 0),
+            'price_asc' => $formattedItineraries->sortBy(fn ($item) => $item['base_pricing']?->variations?->first()?->regular_price ?? 0),
+            'price_desc' => $formattedItineraries->sortByDesc(fn ($item) => $item['base_pricing']?->variations?->first()?->regular_price ?? 0),
             default => $formattedItineraries->sortByDesc('id'),
         };
 
@@ -269,13 +269,13 @@ class PublicItineraryController extends Controller
             'seo',
             'categories.category',
             'attributes.attribute',
-            'tags'
+            'tags',
         ])->where('slug', $slug)->first();
 
         if (! $itinerary) {
             return response()->json([
                 'success' => false,
-                'message' => 'Itinerary not found'
+                'message' => 'Itinerary not found',
             ], 404);
         }
 
@@ -291,22 +291,23 @@ class PublicItineraryController extends Controller
             'featured_image' => $itinerary->mediaGallery->where('is_featured', true)->first()?->media?->url
                 ?? $itinerary->mediaGallery->first()?->media?->url,
             'locations' => $itinerary->locations->map(function ($location) {
-                    $city = $location->city;
-                    return [
-                        'city_id' => $city->id,
-                        'city' => $city->name,
-                        'state_id' => $city->state ? $city->state->id : null,
-                        'state' => $city->state ? $city->state->name : null,
-                        'country_id' => $city->state && $city->state->country ? $city->state->country->id : null,
-                        'country' => $city->state && $city->state->country ? $city->state->country->name : null,
-                        'region_id' => $city->state && $city->state->country && $city->state->country->regions->isNotEmpty()
-                            ? $city->state->country->regions->first()->id
-                            : null,
-                        'region' => $city->state && $city->state->country && $city->state->country->regions->isNotEmpty()
-                            ? $city->state->country->regions->first()->name
-                            : null,
+                $city = $location->city;
 
-                    ];
+                return [
+                    'city_id' => $city->id,
+                    'city' => $city->name,
+                    'state_id' => $city->state ? $city->state->id : null,
+                    'state' => $city->state ? $city->state->name : null,
+                    'country_id' => $city->state && $city->state->country ? $city->state->country->id : null,
+                    'country' => $city->state && $city->state->country ? $city->state->country->name : null,
+                    'region_id' => $city->state && $city->state->country && $city->state->country->regions->isNotEmpty()
+                        ? $city->state->country->regions->first()->id
+                        : null,
+                    'region' => $city->state && $city->state->country && $city->state->country->regions->isNotEmpty()
+                        ? $city->state->country->regions->first()->name
+                        : null,
+
+                ];
             }),
             'schedules' => $itinerary->schedules->map(function ($schedule) {
                 return [
@@ -377,13 +378,13 @@ class PublicItineraryController extends Controller
         if (empty($formattedItinerary)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Itinerary not found'
+                'message' => 'Itinerary not found',
             ]);
         }
 
         return response()->json([
             'success' => true,
-            'data' => $formattedItinerary
+            'data' => $formattedItinerary,
         ]);
     }
 
@@ -398,7 +399,7 @@ class PublicItineraryController extends Controller
         if (! $itinerary) {
             return response()->json([
                 'success' => false,
-                'message' => 'Itinerary not found'
+                'message' => 'Itinerary not found',
             ], 404);
         }
 
@@ -421,7 +422,7 @@ class PublicItineraryController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $addons
+            'data' => $addons,
         ]);
     }
 
@@ -465,6 +466,7 @@ class PublicItineraryController extends Controller
                     'is_featured' => false,
                 ];
             }
+
             return $out;
         };
 
@@ -483,7 +485,7 @@ class PublicItineraryController extends Controller
                 fn ($transfer) => $transfer->transfer?->mediaGallery ?? collect()
             )
         );
+
         return $collectFrom($transferMedia);
     }
-
 }

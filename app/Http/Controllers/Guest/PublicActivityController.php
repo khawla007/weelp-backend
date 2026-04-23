@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Guest;
 
 use App\Http\Controllers\Controller;
 use App\Models\Activity;
-use App\Models\Category;
 use App\Models\City;
 use App\Services\ActivityDiscountService;
 use Illuminate\Http\JsonResponse;
