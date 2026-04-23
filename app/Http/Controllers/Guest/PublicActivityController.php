@@ -353,6 +353,7 @@ class PublicActivityController extends Controller
         $validated = $request->validate([
             'adults' => 'required|integer|min:0|max:999',
             'children' => 'nullable|integer|min:0|max:999',
+            'start_date' => 'nullable|date|after_or_equal:today',
         ]);
 
         $adults = (int) $validated['adults'];
@@ -366,13 +367,19 @@ class PublicActivityController extends Controller
             ], 422);
         }
 
-        $activity = Activity::where('slug', $slug)->with(['pricing', 'groupDiscounts'])->first();
+        $activity = Activity::where('slug', $slug)
+            ->with(['pricing', 'groupDiscounts', 'earlyBirdDiscount', 'lastMinuteDiscount'])
+            ->first();
         if (! $activity) {
             return response()->json(['error' => 'activity_not_found'], 404);
         }
 
+        $travelDate = isset($validated['start_date'])
+            ? \Carbon\CarbonImmutable::parse($validated['start_date'])
+            : null;
+
         try {
-            $quote = app(ActivityDiscountService::class)->quote($activity, $headcount);
+            $quote = app(ActivityDiscountService::class)->quote($activity, $headcount, $travelDate);
         } catch (\RuntimeException $e) {
             return response()->json([
                 'error' => 'activity_pricing_missing',
@@ -395,6 +402,24 @@ class PublicActivityController extends Controller
             ] : null,
             'complete_groups' => $quote['complete_groups'],
             'discount_total' => $quote['discount_total'],
+            'early_bird_discount' => $quote['early_bird_discount'],
+            'last_minute_discount' => $quote['last_minute_discount'],
+            'combined_discount' => $quote['combined_discount'],
+            'selected_early_bird' => $quote['selected_early_bird'] ? [
+                'id' => $quote['selected_early_bird']->id,
+                'enabled' => (bool) $quote['selected_early_bird']->enabled,
+                'days_before_start' => (int) $quote['selected_early_bird']->days_before_start,
+                'discount_amount' => (float) $quote['selected_early_bird']->discount_amount,
+                'discount_type' => $quote['selected_early_bird']->discount_type,
+            ] : null,
+            'selected_last_minute' => $quote['selected_last_minute'] ? [
+                'id' => $quote['selected_last_minute']->id,
+                'enabled' => (bool) $quote['selected_last_minute']->enabled,
+                'days_before_start' => (int) $quote['selected_last_minute']->days_before_start,
+                'discount_amount' => (float) $quote['selected_last_minute']->discount_amount,
+                'discount_type' => $quote['selected_last_minute']->discount_type,
+            ] : null,
+            'days_ahead' => $quote['days_ahead'],
             'final_amount' => $quote['final_amount'],
             'currency' => $quote['currency'],
         ]);

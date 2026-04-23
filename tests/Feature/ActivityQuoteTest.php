@@ -3,7 +3,9 @@
 namespace Tests\Feature;
 
 use App\Models\Activity;
+use App\Models\ActivityEarlyBirdDiscount;
 use App\Models\ActivityGroupDiscount;
+use App\Models\ActivityLastMinuteDiscount;
 use App\Models\ActivityPricing;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -206,5 +208,79 @@ class ActivityQuoteTest extends TestCase
         $this->assertEquals(10, $data['adults']);
         $this->assertEquals(5, $data['children']);
         $this->assertEquals(15, $data['headcount']);
+    }
+
+    public function test_quote_rejects_past_start_date(): void
+    {
+        $activity = Activity::factory()->create();
+        ActivityPricing::factory()->create(['activity_id' => $activity->id, 'regular_price' => 100, 'currency' => 'USD']);
+
+        $yesterday = now()->subDay()->toDateString();
+        $this->getJson("/api/activities/{$activity->slug}/quote?adults=2&start_date={$yesterday}")
+            ->assertStatus(422);
+    }
+
+    public function test_quote_returns_early_bird_breakdown(): void
+    {
+        $activity = Activity::factory()->create();
+        ActivityPricing::factory()->create(['activity_id' => $activity->id, 'regular_price' => 100, 'currency' => 'USD']);
+        ActivityEarlyBirdDiscount::factory()->create([
+            'activity_id' => $activity->id,
+            'enabled' => true, 'days_before_start' => 30,
+            'discount_amount' => 10, 'discount_type' => 'percentage',
+        ]);
+
+        $future = now()->addDays(60)->toDateString();
+        $response = $this->getJson("/api/activities/{$activity->slug}/quote?adults=2&start_date={$future}");
+
+        $response->assertOk();
+        $data = $response->json();
+        $this->assertEquals(200.0, $data['subtotal']);
+        $this->assertEquals(20.0, $data['early_bird_discount']);
+        $this->assertEquals(0.0, $data['last_minute_discount']);
+        $this->assertEquals(20.0, $data['combined_discount']);
+        $this->assertEquals(180.0, $data['final_amount']);
+        $this->assertEquals(60, $data['days_ahead']);
+        $this->assertEquals(10.0, $data['selected_early_bird']['discount_amount']);
+        $this->assertEquals('percentage', $data['selected_early_bird']['discount_type']);
+    }
+
+    public function test_quote_returns_last_minute_breakdown(): void
+    {
+        $activity = Activity::factory()->create();
+        ActivityPricing::factory()->create(['activity_id' => $activity->id, 'regular_price' => 100, 'currency' => 'USD']);
+        ActivityLastMinuteDiscount::factory()->create([
+            'activity_id' => $activity->id,
+            'enabled' => true, 'days_before_start' => 7,
+            'discount_amount' => 15, 'discount_type' => 'percentage',
+        ]);
+
+        $soon = now()->addDays(3)->toDateString();
+        $response = $this->getJson("/api/activities/{$activity->slug}/quote?adults=2&start_date={$soon}");
+
+        $response->assertOk();
+        $data = $response->json();
+        $this->assertEquals(30.0, $data['last_minute_discount']);
+        $this->assertEquals(170.0, $data['final_amount']);
+        $this->assertEquals(3, $data['days_ahead']);
+    }
+
+    public function test_quote_without_start_date_omits_time_discounts(): void
+    {
+        $activity = Activity::factory()->create();
+        ActivityPricing::factory()->create(['activity_id' => $activity->id, 'regular_price' => 100, 'currency' => 'USD']);
+        ActivityEarlyBirdDiscount::factory()->create([
+            'activity_id' => $activity->id,
+            'enabled' => true, 'days_before_start' => 30,
+            'discount_amount' => 10, 'discount_type' => 'percentage',
+        ]);
+
+        $response = $this->getJson("/api/activities/{$activity->slug}/quote?adults=2");
+
+        $response->assertOk();
+        $data = $response->json();
+        $this->assertEquals(0.0, $data['early_bird_discount']);
+        $this->assertNull($data['days_ahead']);
+        $this->assertEquals(200.0, $data['final_amount']);
     }
 }
