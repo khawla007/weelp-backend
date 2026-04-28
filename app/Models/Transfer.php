@@ -190,18 +190,23 @@ class Transfer extends Model
 
     /**
      * Compute the route headline price: zone base_price + non-vendor transfer_price.
+     * If price_type is 'per_person', multiplies by $headcount (default 1).
      * Luggage and waiting are NOT included here — they are user-input add-ons
      * (per-bag and per-minute rates) computed at order time. See luggagePerBagRate()
      * and waitingPerMinuteRate().
      * Returns float rounded to 2 decimals.
      */
-    public function computeRoutePrice(): float
+    public function computeRoutePrice(int $headcount = 1): float
     {
         $zonePrice = $this->resolvedZonePrice();
         $zoneBasePrice = $zonePrice ? (float) $zonePrice->base_price : 0.0;
 
         $nonVendorPricing = $this->nonVendorPricing();
         $transferPrice = (float) ($nonVendorPricing?->transfer_price ?? 0);
+        $unit = $zoneBasePrice + $transferPrice;
+
+        $pax = max(1, $headcount);
+        $multiplier = ($nonVendorPricing?->price_type === 'per_person') ? $pax : 1;
 
         // Phase A guard: surface silent multi-currency mismatches between the
         // zone matrix and pricing availability. Full multi-currency support is
@@ -221,7 +226,17 @@ class Transfer extends Model
             }
         }
 
-        return round($zoneBasePrice + $transferPrice, 2);
+        return round($unit * $multiplier, 2);
+    }
+
+    /**
+     * Returns the pricing price_type ('per_person' or 'per_vehicle'), or null if
+     * no non-vendor pricing exists. Frontend uses this to decide whether to
+     * multiply the displayed price by passenger count.
+     */
+    public function pricingPriceType(): ?string
+    {
+        return $this->nonVendorPricing()?->price_type;
     }
 
     /**

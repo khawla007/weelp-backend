@@ -134,8 +134,9 @@ class StripeController extends Controller
 
             $bagCount = (int) ($data['bag_count'] ?? 0);
             $waitingMinutes = (int) ($data['waiting_minutes'] ?? 0);
+            $headcount = max(1, (int) $data['number_of_adults'] + (int) $data['number_of_children']);
 
-            $routePrice = $orderable->computeRoutePrice();
+            $routePrice = $orderable->computeRoutePrice($headcount);
             $luggageRate = $orderable->luggagePerBagRate();
             $waitingRate = $orderable->waitingPerMinuteRate();
 
@@ -163,6 +164,8 @@ class StripeController extends Controller
             $transferQuantities = [
                 'bag_count' => $bagCount,
                 'waiting_minutes' => $waitingMinutes,
+                'headcount' => $headcount,
+                'price_type' => $orderable->pricingPriceType(),
                 'luggage_per_bag_rate' => $luggageRate,
                 'waiting_per_minute_rate' => $waitingRate,
                 'luggage_amount' => $luggageAmount,

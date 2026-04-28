@@ -126,6 +126,7 @@ class PublicTransferControllerContractTest extends TestCase
         $this->assertArrayHasKey('route_currency', $transfer, 'route_currency key missing');
         $this->assertArrayHasKey('luggage_per_bag_rate', $transfer, 'luggage_per_bag_rate key missing');
         $this->assertArrayHasKey('waiting_per_minute_rate', $transfer, 'waiting_per_minute_rate key missing');
+        $this->assertArrayHasKey('price_type', $transfer, 'price_type key missing');
 
         // Assert correct values: route_price = zone (50) + transfer (30) = 80.
         // luggage and waiting are surfaced as per-unit rates, NOT folded into route_price.

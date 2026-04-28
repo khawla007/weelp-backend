@@ -182,7 +182,10 @@ class PublicTransferController extends Controller
         $data['transfer_price']            = $transferPrice;
         $data['luggage_per_bag_rate']      = $transfer->luggagePerBagRate();
         $data['waiting_per_minute_rate']   = $transfer->waitingPerMinuteRate();
-        $data['route_price']               = $transfer->computeRoutePrice();
+        // route_price is the unit price (per-person or per-vehicle).
+        // Frontend multiplies by headcount when price_type === 'per_person'.
+        $data['route_price']               = $transfer->computeRoutePrice(1);
+        $data['price_type']                = $transfer->pricingPriceType();
         $data['route_currency']            = $transfer->routeCurrency();
         $data['route_duration_minutes'] = $transfer->route?->duration_minutes;
 

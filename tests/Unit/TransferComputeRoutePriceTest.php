@@ -185,6 +185,59 @@ class TransferComputeRoutePriceTest extends TestCase
     }
 
     /**
+     * When price_type is per_person, computeRoutePrice multiplies by headcount.
+     * When per_vehicle (default), headcount is ignored.
+     */
+    public function test_route_price_multiplies_by_headcount_when_per_person(): void
+    {
+        $zonePricing = new TransferZonePrice(['base_price' => 40.00, 'currency' => 'USD']);
+
+        $perPerson = new TransferPricingAvailability([
+            'is_vendor'      => false,
+            'transfer_price' => 20.00,
+            'price_type'     => 'per_person',
+            'currency'       => 'USD',
+        ]);
+
+        $transfer = new Transfer();
+        $ref = new \ReflectionClass($transfer);
+        $prop = $ref->getProperty('resolvedZonePrice');
+        $prop->setAccessible(true);
+        $prop->setValue($transfer, $zonePricing);
+        $transfer->setRelation('pricingAvailability', $perPerson);
+
+        // Unit = 60. 4 pax × 60 = 240.
+        $this->assertEquals(60.00, $transfer->computeRoutePrice());      // default headcount = 1
+        $this->assertEquals(60.00, $transfer->computeRoutePrice(1));
+        $this->assertEquals(240.00, $transfer->computeRoutePrice(4));
+        $this->assertSame('per_person', $transfer->pricingPriceType());
+    }
+
+    public function test_route_price_ignores_headcount_when_per_vehicle(): void
+    {
+        $zonePricing = new TransferZonePrice(['base_price' => 40.00, 'currency' => 'USD']);
+
+        $perVehicle = new TransferPricingAvailability([
+            'is_vendor'      => false,
+            'transfer_price' => 20.00,
+            'price_type'     => 'per_vehicle',
+            'currency'       => 'USD',
+        ]);
+
+        $transfer = new Transfer();
+        $ref = new \ReflectionClass($transfer);
+        $prop = $ref->getProperty('resolvedZonePrice');
+        $prop->setAccessible(true);
+        $prop->setValue($transfer, $zonePricing);
+        $transfer->setRelation('pricingAvailability', $perVehicle);
+
+        // Headcount must NOT change the result for per_vehicle.
+        $this->assertEquals(60.00, $transfer->computeRoutePrice(1));
+        $this->assertEquals(60.00, $transfer->computeRoutePrice(4));
+        $this->assertSame('per_vehicle', $transfer->pricingPriceType());
+    }
+
+    /**
      * Test that null extras coerce to 0, so zone (50) + transfer (30) + null + null = 80
      */
     public function test_route_price_null_extras_coerce_to_zero(): void
