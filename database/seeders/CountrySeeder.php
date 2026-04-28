@@ -392,12 +392,13 @@ class CountrySeeder extends Seeder
                 ],
             ]);
 
-            // Media Gallery - 3-4 random images
+            // Media Gallery - 3-5 random images, first is featured
             $selectedMediaIds = Arr::random($mediaIds, rand(3, 5));
-            foreach ($selectedMediaIds as $mediaId) {
+            foreach (array_values($selectedMediaIds) as $idx => $mediaId) {
                 CountryMediaGallery::create([
-                    'country_id' => $country->id,
-                    'media_id'   => $mediaId,
+                    'country_id'  => $country->id,
+                    'media_id'    => $mediaId,
+                    'is_featured' => $idx === 0,
                 ]);
             }
 

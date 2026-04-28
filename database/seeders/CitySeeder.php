@@ -263,12 +263,13 @@ class CitySeeder extends Seeder
                     'schema_data' => $this->getSchemaData($city->name, $city->slug),
                 ]);
 
-                // Media Gallery - 3-4 random images
+                // Media Gallery - 3-5 random images, first is featured
                 $selectedMediaIds = Arr::random($mediaIds, rand(3, 5));
-                foreach ($selectedMediaIds as $mediaId) {
+                foreach (array_values($selectedMediaIds) as $idx => $mediaId) {
                     CityMediaGallery::create([
-                        'city_id'  => $city->id,
-                        'media_id' => $mediaId,
+                        'city_id'     => $city->id,
+                        'media_id'    => $mediaId,
+                        'is_featured' => $idx === 0,
                     ]);
                 }
 

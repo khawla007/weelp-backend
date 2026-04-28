@@ -107,14 +107,15 @@ class PlaceSeeder extends Seeder
             echo "Created: {$place->name}\n";
             $createdCount++;
 
-            // Attach random media to place (3-5 random media items)
+            // Attach random media to place (3-5 random media items, first is featured)
             if (!empty($mediaIds)) {
                 $mediaCount = min(rand(3, 5), count($mediaIds));
                 $randomMediaIds = Arr::random($mediaIds, $mediaCount);
-                foreach ($randomMediaIds as $mediaId) {
+                foreach (array_values($randomMediaIds) as $idx => $mediaId) {
                     PlaceMediaGallery::create([
-                        'place_id' => $place->id,
-                        'media_id' => $mediaId,
+                        'place_id'    => $place->id,
+                        'media_id'    => $mediaId,
+                        'is_featured' => $idx === 0,
                     ]);
                 }
             }
