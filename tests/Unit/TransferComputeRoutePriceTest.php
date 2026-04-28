@@ -152,38 +152,36 @@ class TransferComputeRoutePriceTest extends TestCase
     }
 
     /**
-     * Test that route_price sums zone base (100) + transfer price (50) + extra luggage (10) + waiting (5) = 165
+     * route_price is now zone base + transfer price ONLY (luggage and waiting are
+     * per-bag / per-minute rates, exposed separately and added at order time).
      */
-    public function test_route_price_sums_zone_base_transfer_price_extra_luggage_waiting(): void
+    public function test_route_price_excludes_luggage_and_waiting_rates(): void
     {
-        // Create zone price
         $zonePricing = new TransferZonePrice([
             'base_price' => 100.00,
             'currency'   => 'USD',
         ]);
 
-        // Create non-vendor pricing availability with extras
         $pricingAvailability = new TransferPricingAvailability([
             'is_vendor'              => false,
             'transfer_price'         => 50.00,
-            'extra_luggage_charge'   => 10.00,
-            'waiting_charge'         => 5.00,
+            'extra_luggage_charge'   => 10.00, // now meaning: $10 per bag
+            'waiting_charge'         => 5.00,  // now meaning: $5 per minute
             'currency'               => 'USD',
         ]);
 
         $transfer = new Transfer();
 
-        // Use reflection to inject the zone price
         $refClass = new \ReflectionClass($transfer);
         $resolvedProperty = $refClass->getProperty('resolvedZonePrice');
         $resolvedProperty->setAccessible(true);
         $resolvedProperty->setValue($transfer, $zonePricing);
 
-        // Set pricingAvailability relation
         $transfer->setRelation('pricingAvailability', $pricingAvailability);
 
-        // Assert computeRoutePrice() == 165.00 (100 + 50 + 10 + 5)
-        $this->assertEquals(165.00, $transfer->computeRoutePrice());
+        $this->assertEquals(150.00, $transfer->computeRoutePrice());
+        $this->assertEquals(10.00, $transfer->luggagePerBagRate());
+        $this->assertEquals(5.00, $transfer->waitingPerMinuteRate());
     }
 
     /**

@@ -189,8 +189,10 @@ class Transfer extends Model
     }
 
     /**
-     * Compute the total route price: zone base_price + non-vendor transfer_price + extras.
-     * Includes extra_luggage_charge and waiting_charge for admin-authored transfers (non-vendor).
+     * Compute the route headline price: zone base_price + non-vendor transfer_price.
+     * Luggage and waiting are NOT included here — they are user-input add-ons
+     * (per-bag and per-minute rates) computed at order time. See luggagePerBagRate()
+     * and waitingPerMinuteRate().
      * Returns float rounded to 2 decimals.
      */
     public function computeRoutePrice(): float
@@ -200,10 +202,44 @@ class Transfer extends Model
 
         $nonVendorPricing = $this->nonVendorPricing();
         $transferPrice = (float) ($nonVendorPricing?->transfer_price ?? 0);
-        $luggage = (float) ($nonVendorPricing?->extra_luggage_charge ?? 0);
-        $waiting = (float) ($nonVendorPricing?->waiting_charge ?? 0);
 
-        return round($zoneBasePrice + $transferPrice + $luggage + $waiting, 2);
+        // Phase A guard: surface silent multi-currency mismatches between the
+        // zone matrix and pricing availability. Full multi-currency support is
+        // Phase B. Logged (not thrown) so request flow continues with best-effort.
+        if ($nonVendorPricing && $zonePrice
+            && $zonePrice->currency
+            && $nonVendorPricing->currency
+            && $zonePrice->currency !== $nonVendorPricing->currency) {
+            try {
+                \Illuminate\Support\Facades\Log::warning('Transfer pricing currency mismatch', [
+                    'transfer_id' => $this->id,
+                    'zone_currency' => $zonePrice->currency,
+                    'pricing_currency' => $nonVendorPricing->currency,
+                ]);
+            } catch (\Throwable) {
+                // Facades not bootstrapped (e.g. plain PHPUnit unit test) — skip.
+            }
+        }
+
+        return round($zoneBasePrice + $transferPrice, 2);
+    }
+
+    /**
+     * Per-bag rate for extra luggage. Reuses the extra_luggage_charge column,
+     * which is now interpreted as a per-bag rate (not a flat charge).
+     */
+    public function luggagePerBagRate(): float
+    {
+        return (float) ($this->nonVendorPricing()?->extra_luggage_charge ?? 0);
+    }
+
+    /**
+     * Per-minute rate for waiting time. Reuses the waiting_charge column,
+     * which is now interpreted as a per-minute rate (not a flat charge).
+     */
+    public function waitingPerMinuteRate(): float
+    {
+        return (float) ($this->nonVendorPricing()?->waiting_charge ?? 0);
     }
 
     /**
@@ -229,14 +265,32 @@ class Transfer extends Model
         self::$zonePriceCache = [];
     }
 
+    /**
+     * @deprecated semantic name — column now means per-bag rate. Use luggagePerBagRate().
+     * Kept for backward compatibility with existing snapshots and reports.
+     */
     public function getExtraLuggageChargeAttribute(): float
     {
-        return (float) ($this->nonVendorPricing()?->extra_luggage_charge ?? 0);
+        return $this->luggagePerBagRate();
     }
 
+    /**
+     * @deprecated semantic name — column now means per-minute rate. Use waitingPerMinuteRate().
+     * Kept for backward compatibility with existing snapshots and reports.
+     */
     public function getWaitingChargeAttribute(): float
     {
-        return (float) ($this->nonVendorPricing()?->waiting_charge ?? 0);
+        return $this->waitingPerMinuteRate();
+    }
+
+    public function getLuggagePerBagRateAttribute(): float
+    {
+        return $this->luggagePerBagRate();
+    }
+
+    public function getWaitingPerMinuteRateAttribute(): float
+    {
+        return $this->waitingPerMinuteRate();
     }
 
     private function nonVendorPricing(): ?TransferPricingAvailability

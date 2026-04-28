@@ -124,15 +124,16 @@ class PublicTransferControllerContractTest extends TestCase
         $this->assertArrayHasKey('transfer_price', $transfer, 'transfer_price key missing');
         $this->assertArrayHasKey('route_price', $transfer, 'route_price key missing');
         $this->assertArrayHasKey('route_currency', $transfer, 'route_currency key missing');
-        $this->assertArrayHasKey('extra_luggage_charge', $transfer, 'extra_luggage_charge key missing');
-        $this->assertArrayHasKey('waiting_charge', $transfer, 'waiting_charge key missing');
+        $this->assertArrayHasKey('luggage_per_bag_rate', $transfer, 'luggage_per_bag_rate key missing');
+        $this->assertArrayHasKey('waiting_per_minute_rate', $transfer, 'waiting_per_minute_rate key missing');
 
-        // Assert correct values: base 50 + transfer 30 + luggage 5 + waiting 3 = route 88
+        // Assert correct values: route_price = zone (50) + transfer (30) = 80.
+        // luggage and waiting are surfaced as per-unit rates, NOT folded into route_price.
         $this->assertEquals(50.0, (float) $transfer['zone_base_price'], 'zone_base_price mismatch');
         $this->assertEquals(30.0, (float) $transfer['transfer_price'], 'transfer_price mismatch');
-        $this->assertEquals(5.0, (float) $transfer['extra_luggage_charge'], 'extra_luggage_charge mismatch');
-        $this->assertEquals(3.0, (float) $transfer['waiting_charge'], 'waiting_charge mismatch');
-        $this->assertEquals(88.0, (float) $transfer['route_price'], 'route_price mismatch');
+        $this->assertEquals(5.0, (float) $transfer['luggage_per_bag_rate'], 'luggage_per_bag_rate mismatch');
+        $this->assertEquals(3.0, (float) $transfer['waiting_per_minute_rate'], 'waiting_per_minute_rate mismatch');
+        $this->assertEquals(80.0, (float) $transfer['route_price'], 'route_price mismatch');
         $this->assertSame('USD', $transfer['route_currency'], 'route_currency mismatch');
     }
 
@@ -164,10 +165,10 @@ class PublicTransferControllerContractTest extends TestCase
         $this->assertArrayHasKey('transfer_price', $transfer);
         $this->assertArrayHasKey('route_price', $transfer);
         $this->assertArrayHasKey('route_currency', $transfer);
-        $this->assertArrayHasKey('extra_luggage_charge', $transfer);
-        $this->assertArrayHasKey('waiting_charge', $transfer);
+        $this->assertArrayHasKey('luggage_per_bag_rate', $transfer);
+        $this->assertArrayHasKey('waiting_per_minute_rate', $transfer);
 
-        // Assert values match formula: base 50 + transfer 30 + luggage 5 + waiting 3 = 88
-        $this->assertEquals(88.0, (float) $transfer['route_price']);
+        // route_price = zone (50) + transfer (30) = 80. Luggage/waiting are per-unit rates.
+        $this->assertEquals(80.0, (float) $transfer['route_price']);
     }
 }

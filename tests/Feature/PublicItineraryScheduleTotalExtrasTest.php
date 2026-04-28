@@ -222,7 +222,7 @@ class PublicItineraryScheduleTotalExtrasTest extends TestCase
         return $itinerary->fresh();
     }
 
-    public function test_schedule_total_includes_transfer_extras_on_show(): void
+    public function test_schedule_total_excludes_transfer_extras_on_show(): void
     {
         $itinerary = $this->seedComplexItinerary();
 
@@ -231,12 +231,17 @@ class PublicItineraryScheduleTotalExtrasTest extends TestCase
         $response->assertOk();
         $payload = $response->json('data');
 
-        // Expected: (100 + 125) + (50 + 85) = 360
+        // Itinerary-bundled transfers no longer include luggage/waiting (they are
+        // per-bag / per-minute rates that require user input — itinerary schedules
+        // have no UI for them, so they default to zero).
+        // Expected: (100 + 110) + (50 + 80) = 340
+        //   Transfer 1: zone (80) + transfer (30) = 110
+        //   Transfer 2: zone (60) + transfer (20) = 80
         $this->assertArrayHasKey('schedule_total_price', $payload);
-        $this->assertSame(360.00, (float) $payload['schedule_total_price']);
+        $this->assertSame(340.00, (float) $payload['schedule_total_price']);
     }
 
-    public function test_schedule_total_includes_transfer_extras_on_index(): void
+    public function test_schedule_total_excludes_transfer_extras_on_index(): void
     {
         $itinerary = $this->seedComplexItinerary();
 
@@ -249,9 +254,9 @@ class PublicItineraryScheduleTotalExtrasTest extends TestCase
         $found = collect($items)->firstWhere('id', $itinerary->id);
         $this->assertNotNull($found, 'Seeded itinerary missing from index response');
 
-        // Expected: (100 + 125) + (50 + 85) = 360
+        // Expected: (100 + 110) + (50 + 80) = 340
         $this->assertArrayHasKey('schedule_total_price', $found);
-        $this->assertSame(360.00, (float) $found['schedule_total_price']);
+        $this->assertSame(340.00, (float) $found['schedule_total_price']);
     }
 
     public function test_parity_between_index_and_show_totals(): void

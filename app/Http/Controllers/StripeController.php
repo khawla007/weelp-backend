@@ -48,6 +48,8 @@ class StripeController extends Controller
             'base_amount' => 'nullable|numeric',
             'creator_id' => 'nullable|integer',
             'addons_amount' => 'nullable|numeric',
+            'bag_count' => 'nullable|integer|min:0',
+            'waiting_minutes' => 'nullable|integer|min:0',
         ]);
 
         $orderableClass = 'App\\Models\\'.ucfirst($data['order_type']);
@@ -122,6 +124,51 @@ class StripeController extends Controller
         if ($orderable instanceof \App\Models\Itinerary) {
             $orderable->loadMissing('schedules.activities', 'schedules.transfers');
             $totalAmount = (float) $orderable->schedule_total_price;
+        }
+
+        // Server-side enforcement: transfers recompute final amount from DB rates ×
+        // posted bag/minute quantities. Client-supplied amount is not trusted.
+        $transferQuantities = null;
+        if ($orderable instanceof \App\Models\Transfer) {
+            $orderable->loadMissing('pricingAvailability', 'route');
+
+            $bagCount = (int) ($data['bag_count'] ?? 0);
+            $waitingMinutes = (int) ($data['waiting_minutes'] ?? 0);
+
+            $routePrice = $orderable->computeRoutePrice();
+            $luggageRate = $orderable->luggagePerBagRate();
+            $waitingRate = $orderable->waitingPerMinuteRate();
+
+            $luggageAmount = round($luggageRate * $bagCount, 2);
+            $waitingAmount = round($waitingRate * $waitingMinutes, 2);
+            $expected = round($routePrice + $luggageAmount + $waitingAmount, 2);
+
+            $submitted = (float) $totalAmount;
+            if (abs($submitted - $expected) > 0.01) {
+                return response()->json([
+                    'error' => 'transfer_price_mismatch',
+                    'expected' => $expected,
+                    'submitted' => $submitted,
+                ], 422);
+            }
+
+            $totalAmount = $expected;
+            // Keep `payment.amount` and `snapshot.base_amount` consistent with the
+            // server-recomputed total for transfers. Otherwise the order record can
+            // carry the original (potentially tampered) client value.
+            $data['amount'] = $expected;
+            $data['base_amount'] = $routePrice;
+            $data['addons_amount'] = round($luggageAmount + $waitingAmount, 2);
+
+            $transferQuantities = [
+                'bag_count' => $bagCount,
+                'waiting_minutes' => $waitingMinutes,
+                'luggage_per_bag_rate' => $luggageRate,
+                'waiting_per_minute_rate' => $waitingRate,
+                'luggage_amount' => $luggageAmount,
+                'waiting_amount' => $waitingAmount,
+                'base_amount' => $routePrice,
+            ];
         }
 
         // Validate creator if provided
@@ -220,6 +267,9 @@ class StripeController extends Controller
                         'alt' => $mg->media?->alt_text,
                     ];
                 }),
+                // Capture per-unit semantics so the snapshot remains forensically clear
+                // even after column meanings drift in future schema work.
+                'transfer_quantities' => $transferQuantities,
             ];
         }
 

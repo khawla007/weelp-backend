@@ -50,8 +50,8 @@ class AdminTransferSeeder extends Seeder
                 'inclusion'    => 'Meet & greet, bottled water, WiFi, luggage assistance',
                 'price_type'   => 'per_vehicle',
                 'currency'     => 'USD',
-                'extra_luggage'=> 10.00,
-                'waiting'      => 5.00,
+                'extra_luggage'=> 10.00,  // per bag
+                'waiting'      => 0.50,   // per minute
                 'availability' => 'always_available',
                 'days'         => ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'],
                 'slots'        => [['start' => '08:00', 'end' => '09:00'], ['start' => '17:00', 'end' => '18:00']],
@@ -70,8 +70,8 @@ class AdminTransferSeeder extends Seeder
                 'inclusion'    => 'Meet & greet, AC vehicle, child seat available, bottled water',
                 'price_type'   => 'per_vehicle',
                 'currency'     => 'USD',
-                'extra_luggage'=> 12.00,
-                'waiting'      => 6.00,
+                'extra_luggage'=> 12.00,  // per bag
+                'waiting'      => 0.60,   // per minute
                 'availability' => 'always_available',
                 'days'         => ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'],
                 'slots'        => [['start' => '06:00', 'end' => '07:00'], ['start' => '14:00', 'end' => '15:00'], ['start' => '20:00', 'end' => '21:00']],
@@ -90,8 +90,8 @@ class AdminTransferSeeder extends Seeder
                 'inclusion'    => 'Luxury driver, refreshments, WiFi, newspapers',
                 'price_type'   => 'per_person',
                 'currency'     => 'USD',
-                'extra_luggage'=> 15.00,
-                'waiting'      => 8.00,
+                'extra_luggage'=> 15.00,  // per bag
+                'waiting'      => 0.80,   // per minute
                 'availability' => 'always_available',
                 'days'         => ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'],
                 'slots'        => [['start' => '09:00', 'end' => '10:00'], ['start' => '18:00', 'end' => '19:00']],
@@ -110,8 +110,8 @@ class AdminTransferSeeder extends Seeder
                 'inclusion'    => 'AC vehicle, bottled water, shopping bag assistance',
                 'price_type'   => 'per_vehicle',
                 'currency'     => 'USD',
-                'extra_luggage'=> 8.00,
-                'waiting'      => 5.00,
+                'extra_luggage'=> 8.00,   // per bag
+                'waiting'      => 0.50,   // per minute
                 'availability' => 'always_available',
                 'days'         => ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'],
                 'slots'        => [['start' => '10:00', 'end' => '11:00'], ['start' => '15:00', 'end' => '16:00'], ['start' => '21:00', 'end' => '22:00']],
@@ -130,8 +130,8 @@ class AdminTransferSeeder extends Seeder
                 'inclusion'    => 'AC vehicle, English-speaking driver, bottled water',
                 'price_type'   => 'per_vehicle',
                 'currency'     => 'USD',
-                'extra_luggage'=> 10.00,
-                'waiting'      => 5.00,
+                'extra_luggage'=> 10.00,  // per bag
+                'waiting'      => 0.50,   // per minute
                 'availability' => 'always_available',
                 'days'         => ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'],
                 'slots'        => [['start' => '11:00', 'end' => '12:00'], ['start' => '19:00', 'end' => '20:00']],
