@@ -21,6 +21,7 @@ class TransferController extends Controller
     {
         $perPage = 3;
         $page = $request->get('page', 1);
+        $all = filter_var($request->get('all'), FILTER_VALIDATE_BOOLEAN); // Skip pagination when 'all' is passed
         $sortBy = $request->get('sort_by', 'id_desc');
 
         $search = $request->get('search');
@@ -38,6 +39,8 @@ class TransferController extends Controller
                 'vendorRoutes.route',
                 'vendorRoutes.vendor.vehicles',
                 'vendorRoutes.vendor.availabilityTimeSlots',
+                'vendorRoutes.pickupPlace',
+                'vendorRoutes.dropoffPlace',
                 'pricingAvailability.pricingTier',
                 'pricingAvailability.availability',
                 'mediaGallery.media',
@@ -157,9 +160,20 @@ class TransferController extends Controller
                 break;
         }
 
-        $paginated = $query->paginate($perPage, ['*'], 'page', $page);
+        if ($all) {
+            $items = $query->get();
+            $currentPage = 1;
+            $effectivePerPage = $items->count();
+            $total = $items->count();
+        } else {
+            $paginated = $query->paginate($perPage, ['*'], 'page', $page);
+            $items = $paginated->getCollection();
+            $currentPage = $paginated->currentPage();
+            $effectivePerPage = $paginated->perPage();
+            $total = $paginated->total();
+        }
 
-        $transformed = $paginated->getCollection()->map(function (Transfer $transfer, int $key) {
+        $transformed = $items->map(function (Transfer $transfer, int $key) {
             $data = $transfer->toArray();
 
             $data['media_gallery'] = collect($transfer->mediaGallery)->map(function ($media) {
@@ -179,8 +193,16 @@ class TransferController extends Controller
             $data['is_featured'] = $featuredImage !== null;
 
             // Add vendor_routes with is_vendor flag (required by frontend for Edit link routing)
+            // Include pickup/dropoff place + city ids so the shared TransferSearchModal
+            // city filter (used in itinerary edit/create flows) can match transfers
+            // against the itinerary's selected locations.
+            $route = $transfer->vendorRoutes;
             $data['vendor_routes'] = [
-                'is_vendor' => $transfer->vendorRoutes->is_vendor ?? false,
+                'is_vendor' => $route->is_vendor ?? false,
+                'pickup_place_id' => $route?->pickup_place_id,
+                'dropoff_place_id' => $route?->dropoff_place_id,
+                'pickup_city_id' => $route?->pickupPlace?->city_id,
+                'dropoff_city_id' => $route?->dropoffPlace?->city_id,
             ];
 
             // Tags and attributes not yet implemented for Transfers - return empty arrays
@@ -193,9 +215,9 @@ class TransferController extends Controller
         return response()->json([
             'success' => true,
             'data' => $transformed,
-            'current_page' => $paginated->currentPage(),
-            'per_page' => $paginated->perPage(),
-            'total' => $paginated->total(),
+            'current_page' => $currentPage,
+            'per_page' => $effectivePerPage,
+            'total' => $total,
         ]);
     }
 
