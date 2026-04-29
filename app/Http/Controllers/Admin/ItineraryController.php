@@ -560,6 +560,7 @@ class ItineraryController extends Controller
                         'name' => $media->media->name ?? null,
                         'alt_text' => $media->media->alt_text ?? null,
                         'url' => $media->media->url ?? null,
+                        'is_featured' => (bool) ($media->is_featured ?? false),
                     ];
                 })->filter(fn ($item) => $item['url'])->values();
 
@@ -587,6 +588,7 @@ class ItineraryController extends Controller
                         'name' => $media->media->name ?? null,
                         'alt_text' => $media->media->alt_text ?? null,
                         'url' => $media->media->url ?? null,
+                        'is_featured' => (bool) ($media->is_featured ?? false),
                     ];
                 })->filter(fn ($item) => $item['url'])->values(); // null url वाले हटा दिए जाएं
 
