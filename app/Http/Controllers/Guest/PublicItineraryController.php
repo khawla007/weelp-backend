@@ -251,15 +251,17 @@ class PublicItineraryController extends Controller
     }
 
     // ---------------------------New Code to get Single itinerary with location details--------------------------
-    public function show($slug): JsonResponse
+    public function show(\Illuminate\Http\Request $request, $slug): JsonResponse
     {
         $itinerary = Itinerary::with([
             'locations.city',
             'schedules.activities.activity.locations.city',
             'schedules.activities.activity.mediaGallery.media',
+            'schedules.activities.activity.pricing',
             'schedules.transfers.transfer',
             'schedules.transfers.transfer.route',
             'schedules.transfers.transfer.pricingAvailability',
+            'schedules.transfers.transfer.schedule',
             'schedules.transfers.transfer.mediaGallery.media',
             'basePricing',
             'basePricing.variations',
@@ -279,6 +281,14 @@ class PublicItineraryController extends Controller
             ], 404);
         }
 
+        // Optional pax query params: ?adults=2&children=1 → returns computed_total
+        // for that headcount alongside the per-person preview.
+        $reqAdults = (int) $request->query('adults', 0);
+        $reqChildren = (int) $request->query('children', 0);
+        $computedTotal = ($reqAdults > 0 || $reqChildren > 0)
+            ? $itinerary->priceForGuests(max(1, $reqAdults), max(0, $reqChildren))
+            : null;
+
         $formattedItinerary = [
             'id' => $itinerary->id,
             'name' => $itinerary->name,
@@ -287,6 +297,9 @@ class PublicItineraryController extends Controller
             'description' => $itinerary->description,
             'schedule_total_price' => $itinerary->schedule_total_price,
             'schedule_total_currency' => $itinerary->schedule_total_currency,
+            'max_guests' => $itinerary->max_guests,
+            'computed_total' => $computedTotal,
+            'pricing_breakdown' => $itinerary->pricingBreakdown(),
             'item_type' => $itinerary->item_type,
             'featured_image' => $itinerary->mediaGallery->where('is_featured', true)->first()?->media?->url
                 ?? $itinerary->mediaGallery->first()?->media?->url,

@@ -119,19 +119,24 @@ class StripeController extends Controller
             }
         }
 
-        // Server-side enforcement: itineraries charge the sum of their schedule items,
+        // Server-side enforcement: itineraries charge priceForGuests(adults, children),
         // ignoring any client-supplied amount. Prevents tampering.
         if ($orderable instanceof \App\Models\Itinerary) {
             $orderable->loadMissing(
-                'schedules.activities',
+                'schedules.activities.activity.pricing',
+                'schedules.transfers.transfer.route',
+                'schedules.transfers.transfer.pricingAvailability',
                 'schedules.transfers.transfer.schedule',
             );
+
+            $bookingAdults = (int) $data['number_of_adults'];
+            $bookingChildren = (int) $data['number_of_children'];
 
             // Cap booking guest count by smallest transfer capacity in the itinerary.
             // Adults + children only; infants excluded.
             $maxGuests = $orderable->max_guests;
             if ($maxGuests !== null) {
-                $bookingGuests = (int) $data['number_of_adults'] + (int) $data['number_of_children'];
+                $bookingGuests = $bookingAdults + $bookingChildren;
                 if ($bookingGuests > $maxGuests) {
                     return response()->json([
                         'error' => 'guests_exceed_transfer_capacity',
@@ -141,7 +146,7 @@ class StripeController extends Controller
                 }
             }
 
-            $totalAmount = (float) $orderable->schedule_total_price;
+            $totalAmount = $orderable->priceForGuests($bookingAdults, $bookingChildren);
         }
 
         // Server-side enforcement: transfers recompute final amount from DB rates ×

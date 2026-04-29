@@ -435,12 +435,15 @@ class Itinerary extends Model
     }
 
     /**
-     * Sum of all per-day activity prices + per-day transfer prices.
-     * For transfers, uses live computeRoutePrice() for non-deleted transfers,
-     * falling back to stored snapshot price if transfer route is missing.
-     * This is the canonical "price" of the itinerary.
+     * Canonical itinerary price for a given guest count.
+     *
+     * - Activity is per-person: regular_price × (adults + children).
+     * - Transfer follows price_type: per_person → × headcount; per_vehicle → flat.
+     *   computeRoutePrice($headcount) handles the split.
+     * - Per-row extras (luggage, waiting) are flat and not pax-multiplied.
+     * - Infants excluded from headcount. Discounts not applied at this layer.
      */
-    public function getScheduleTotalPriceAttribute(): float
+    public function priceForGuests(int $adults = 1, int $children = 0): float
     {
         if (!$this->relationLoaded('schedules')) {
             $this->load(
@@ -450,34 +453,98 @@ class Itinerary extends Model
             );
         }
 
-        // Activity unit base price. Discounts apply at checkout, not here.
+        $headcount = max(1, $adults + $children);
+
         $activitiesSum = $this->schedules
             ->flatMap(fn ($schedule) => $schedule->activities)
-            ->sum(function ($row) {
+            ->sum(function ($row) use ($headcount) {
                 $regularPrice = $row->activity?->pricing?->regular_price;
                 if ($regularPrice !== null) {
-                    return (float) $regularPrice;
+                    return (float) $regularPrice * $headcount;
                 }
                 return (float) ($row->price ?? 0);
             });
 
-        // Transfer unit base = zone base + transfer markup (computeRoutePrice(1)
-        // returns the unit regardless of price_type), plus per-row luggage and
-        // waiting extras. Per-person multiplication is applied at checkout.
         $transfersSum = $this->schedules
             ->flatMap(fn ($schedule) => $schedule->transfers)
-            ->sum(function ($row) {
+            ->sum(function ($row) use ($headcount) {
                 $transfer = $row->transfer;
                 if (! $transfer) {
                     return (float) ($row->price ?? 0);
                 }
-                $base = (float) $transfer->computeRoutePrice(1);
+                $base = (float) $transfer->computeRoutePrice($headcount);
                 $luggage = (int) ($row->bag_count ?? 0) * (float) $transfer->luggagePerBagRate();
                 $waiting = (int) ($row->waiting_minutes ?? 0) * (float) $transfer->waitingPerMinuteRate();
                 return $base + $luggage + $waiting;
             });
 
         return round($activitiesSum + $transfersSum, 2);
+    }
+
+    /**
+     * Per-person preview price (1 adult, 0 children). Used in catalog listings
+     * and as a fallback. Real charge total comes from priceForGuests() with the
+     * actual booking pax.
+     */
+    public function getScheduleTotalPriceAttribute(): float
+    {
+        return $this->priceForGuests(1, 0);
+    }
+
+    /**
+     * Decomposed pricing for client-side recomputation:
+     *
+     *   total = (per_pax_total) × headcount + flat_total
+     *
+     * - per_pax_total  = Σ activity.regular_price + Σ per_person transfer unit base
+     * - flat_total     = Σ per_vehicle transfer unit base + Σ transfer extras
+     *
+     * Lets the frontend reflect a customer's pax slider without a network call.
+     */
+    public function pricingBreakdown(): array
+    {
+        if (!$this->relationLoaded('schedules')) {
+            $this->load(
+                'schedules.activities.activity.pricing',
+                'schedules.transfers.transfer.route',
+                'schedules.transfers.transfer.pricingAvailability',
+            );
+        }
+
+        $perPax = 0.0;
+        $flat = 0.0;
+
+        foreach ($this->schedules as $schedule) {
+            foreach ($schedule->activities as $row) {
+                $regular = $row->activity?->pricing?->regular_price;
+                if ($regular !== null) {
+                    $perPax += (float) $regular;
+                } else {
+                    $flat += (float) ($row->price ?? 0);
+                }
+            }
+
+            foreach ($schedule->transfers as $row) {
+                $transfer = $row->transfer;
+                if (! $transfer) {
+                    $flat += (float) ($row->price ?? 0);
+                    continue;
+                }
+                $unit = (float) $transfer->computeRoutePrice(1);
+                if ($transfer->pricingPriceType() === 'per_person') {
+                    $perPax += $unit;
+                } else {
+                    $flat += $unit;
+                }
+                $flat += (int) ($row->bag_count ?? 0) * (float) $transfer->luggagePerBagRate();
+                $flat += (int) ($row->waiting_minutes ?? 0) * (float) $transfer->waitingPerMinuteRate();
+            }
+        }
+
+        return [
+            'per_pax_total' => round($perPax, 2),
+            'flat_total' => round($flat, 2),
+        ];
     }
 
     /**

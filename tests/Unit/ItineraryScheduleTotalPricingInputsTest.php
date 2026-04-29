@@ -193,6 +193,119 @@ class ItineraryScheduleTotalPricingInputsTest extends TestCase
         $this->assertNull($itinerary->max_guests);
     }
 
+    public function test_priceForGuests_multiplies_activity_per_pax(): void
+    {
+        Transfer::clearZonePriceCache();
+
+        $itinerary = Itinerary::factory()->create();
+        $day = ItinerarySchedule::create(['itinerary_id' => $itinerary->id, 'day' => 1]);
+
+        ItineraryActivity::create([
+            'schedule_id' => $day->id,
+            'activity_id' => $this->makeActivityWithPrice(50.0)->id,
+            'price' => null,
+            'included' => true,
+        ]);
+
+        // 2 adults + 1 child = 3 pax × 50 = 150
+        $this->assertSame(150.00, $itinerary->priceForGuests(2, 1));
+    }
+
+    public function test_priceForGuests_per_person_transfer_multiplies(): void
+    {
+        Transfer::clearZonePriceCache();
+
+        $itinerary = Itinerary::factory()->create();
+        $day = ItinerarySchedule::create(['itinerary_id' => $itinerary->id, 'day' => 1]);
+
+        // unit = 10 + 5 = 15 per_person; pax=4 → 60
+        $transfer = $this->buildTransfer(10, 5.0, priceType: 'per_person');
+        ItineraryTransfer::create([
+            'schedule_id' => $day->id,
+            'transfer_id' => $transfer->id,
+            'included' => true,
+            'bag_count' => 0,
+            'waiting_minutes' => 0,
+        ]);
+
+        $this->assertSame(60.00, $itinerary->priceForGuests(3, 1));
+    }
+
+    public function test_priceForGuests_per_vehicle_transfer_does_not_multiply(): void
+    {
+        Transfer::clearZonePriceCache();
+
+        $itinerary = Itinerary::factory()->create();
+        $day = ItinerarySchedule::create(['itinerary_id' => $itinerary->id, 'day' => 1]);
+
+        // unit = 10 + 5 = 15 per_vehicle; pax=4 → 15 (flat)
+        $transfer = $this->buildTransfer(10, 5.0, priceType: 'per_vehicle');
+        ItineraryTransfer::create([
+            'schedule_id' => $day->id,
+            'transfer_id' => $transfer->id,
+            'included' => true,
+        ]);
+
+        $this->assertSame(15.00, $itinerary->priceForGuests(3, 1));
+    }
+
+    public function test_priceForGuests_extras_stay_flat(): void
+    {
+        Transfer::clearZonePriceCache();
+
+        $itinerary = Itinerary::factory()->create();
+        $day = ItinerarySchedule::create(['itinerary_id' => $itinerary->id, 'day' => 1]);
+
+        // per_vehicle unit 10; bag 2×4=8; waiting 10×0.5=5; total 23 (no pax multiplier)
+        $transfer = $this->buildTransfer(5, 5.0, luggagePerBag: 4.0, waitingPerMin: 0.5, priceType: 'per_vehicle');
+        ItineraryTransfer::create([
+            'schedule_id' => $day->id,
+            'transfer_id' => $transfer->id,
+            'included' => true,
+            'bag_count' => 2,
+            'waiting_minutes' => 10,
+        ]);
+
+        $this->assertSame(23.00, $itinerary->priceForGuests(5, 0));
+    }
+
+    public function test_pricingBreakdown_separates_per_pax_and_flat(): void
+    {
+        Transfer::clearZonePriceCache();
+
+        $itinerary = Itinerary::factory()->create();
+        $day = ItinerarySchedule::create(['itinerary_id' => $itinerary->id, 'day' => 1]);
+
+        // Activity 100 (per-pax)
+        ItineraryActivity::create([
+            'schedule_id' => $day->id,
+            'activity_id' => $this->makeActivityWithPrice(100.0)->id,
+            'price' => null,
+            'included' => true,
+        ]);
+
+        // Per-person transfer unit 20 (per-pax)
+        $tA = $this->buildTransfer(10, 10.0, priceType: 'per_person');
+        ItineraryTransfer::create(['schedule_id' => $day->id, 'transfer_id' => $tA->id, 'included' => true]);
+
+        // Per-vehicle transfer unit 30 + 8 luggage + 5 waiting (all flat)
+        $tB = $this->buildTransfer(20, 10.0, luggagePerBag: 4.0, waitingPerMin: 0.5, priceType: 'per_vehicle');
+        ItineraryTransfer::create([
+            'schedule_id' => $day->id,
+            'transfer_id' => $tB->id,
+            'included' => true,
+            'bag_count' => 2,
+            'waiting_minutes' => 10,
+        ]);
+
+        $b = $itinerary->pricingBreakdown();
+        $this->assertSame(120.00, $b['per_pax_total']); // 100 activity + 20 per_person
+        $this->assertSame(43.00, $b['flat_total']);     // 30 + 8 + 5
+
+        // priceForGuests(2, 0) = 120 × 2 + 43 = 283
+        $this->assertSame(283.00, $itinerary->priceForGuests(2, 0));
+    }
+
     public function test_mixed_unit_total(): void
     {
         Transfer::clearZonePriceCache();
