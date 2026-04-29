@@ -300,6 +300,7 @@ class PublicItineraryController extends Controller
             'max_guests' => $itinerary->max_guests,
             'computed_total' => $computedTotal,
             'pricing_breakdown' => $itinerary->pricingBreakdown(),
+            'city_slug' => $itinerary->locations->first()?->city?->slug,
             'item_type' => $itinerary->item_type,
             'featured_image' => $itinerary->mediaGallery->where('is_featured', true)->first()?->media?->url
                 ?? $itinerary->mediaGallery->first()?->media?->url,
