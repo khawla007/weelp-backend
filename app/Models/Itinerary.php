@@ -72,7 +72,6 @@ class Itinerary extends Model
 
     protected $fillable = [
         'name', 'slug', 'description', 'featured_itinerary', 'private_itinerary',
-        'travel_date', 'adults', 'children', 'infants',
     ];
 
     protected $with = ['meta'];
@@ -80,13 +79,9 @@ class Itinerary extends Model
     protected $casts = [
         'featured_itinerary' => 'boolean',
         'private_itinerary' => 'boolean',
-        'travel_date' => 'date:Y-m-d',
-        'adults' => 'integer',
-        'children' => 'integer',
-        'infants' => 'integer',
     ];
 
-    protected $appends = ['schedule_total_price', 'schedule_total_currency'];
+    protected $appends = ['schedule_total_price', 'schedule_total_currency', 'max_guests'];
 
     // Delegated meta attributes
     protected array $metaAttributes = [
@@ -455,37 +450,54 @@ class Itinerary extends Model
             );
         }
 
-        $headcount = max(1, (int) ($this->adults ?? 1) + (int) ($this->children ?? 0));
-
-        // Activity: live regular_price × headcount when activity+pricing present;
-        // otherwise fall back to stored snapshot (legacy rows or manual override).
+        // Activity unit base price. Discounts apply at checkout, not here.
         $activitiesSum = $this->schedules
             ->flatMap(fn ($schedule) => $schedule->activities)
-            ->sum(function ($row) use ($headcount) {
+            ->sum(function ($row) {
                 $regularPrice = $row->activity?->pricing?->regular_price;
                 if ($regularPrice !== null) {
-                    return (float) $regularPrice * $headcount;
+                    return (float) $regularPrice;
                 }
                 return (float) ($row->price ?? 0);
             });
 
-        // Transfer: live computeRoutePrice(headcount) + bag/waiting extras when
-        // transfer relation is loaded; otherwise fall back to stored snapshot.
+        // Transfer unit base = zone base + transfer markup (computeRoutePrice(1)
+        // returns the unit regardless of price_type), plus per-row luggage and
+        // waiting extras. Per-person multiplication is applied at checkout.
         $transfersSum = $this->schedules
             ->flatMap(fn ($schedule) => $schedule->transfers)
-            ->sum(function ($row) use ($headcount) {
+            ->sum(function ($row) {
                 $transfer = $row->transfer;
                 if (! $transfer) {
                     return (float) ($row->price ?? 0);
                 }
-                $rowHeadcount = max(1, (int) ($row->pax ?? $headcount));
-                $base = (float) $transfer->computeRoutePrice($rowHeadcount);
+                $base = (float) $transfer->computeRoutePrice(1);
                 $luggage = (int) ($row->bag_count ?? 0) * (float) $transfer->luggagePerBagRate();
                 $waiting = (int) ($row->waiting_minutes ?? 0) * (float) $transfer->waitingPerMinuteRate();
                 return $base + $luggage + $waiting;
             });
 
         return round($activitiesSum + $transfersSum, 2);
+    }
+
+    /**
+     * Maximum guests this itinerary can accommodate, capped by the smallest
+     * transfer's `maximum_passengers`. Adults + children combined; infants
+     * excluded. Returns null when no transfers (or none have a capacity set).
+     */
+    public function getMaxGuestsAttribute(): ?int
+    {
+        if (!$this->relationLoaded('schedules')) {
+            $this->load('schedules.transfers.transfer.schedule');
+        }
+
+        $caps = $this->schedules
+            ->flatMap(fn ($schedule) => $schedule->transfers)
+            ->map(fn ($row) => $row->transfer?->schedule?->maximum_passengers)
+            ->filter(fn ($cap) => $cap !== null && (int) $cap > 0)
+            ->map(fn ($cap) => (int) $cap);
+
+        return $caps->isEmpty() ? null : $caps->min();
     }
 
     /**

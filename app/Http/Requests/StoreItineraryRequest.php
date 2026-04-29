@@ -37,10 +37,6 @@ class StoreItineraryRequest extends FormRequest
             'schedules.*.transfers.*.pax' => 'nullable|integer|min:1',
             'schedules.*.transfers.*.bag_count' => 'nullable|integer|min:0',
             'schedules.*.transfers.*.waiting_minutes' => 'nullable|integer|min:0',
-            'travel_date' => 'nullable|date',
-            'adults' => 'nullable|integer|min:1',
-            'children' => 'nullable|integer|min:0',
-            'infants' => 'nullable|integer|min:0',
         ];
     }
 }

@@ -122,7 +122,25 @@ class StripeController extends Controller
         // Server-side enforcement: itineraries charge the sum of their schedule items,
         // ignoring any client-supplied amount. Prevents tampering.
         if ($orderable instanceof \App\Models\Itinerary) {
-            $orderable->loadMissing('schedules.activities', 'schedules.transfers');
+            $orderable->loadMissing(
+                'schedules.activities',
+                'schedules.transfers.transfer.schedule',
+            );
+
+            // Cap booking guest count by smallest transfer capacity in the itinerary.
+            // Adults + children only; infants excluded.
+            $maxGuests = $orderable->max_guests;
+            if ($maxGuests !== null) {
+                $bookingGuests = (int) $data['number_of_adults'] + (int) $data['number_of_children'];
+                if ($bookingGuests > $maxGuests) {
+                    return response()->json([
+                        'error' => 'guests_exceed_transfer_capacity',
+                        'max_guests' => $maxGuests,
+                        'submitted_guests' => $bookingGuests,
+                    ], 422);
+                }
+            }
+
             $totalAmount = (float) $orderable->schedule_total_price;
         }
 
@@ -251,12 +269,7 @@ class StripeController extends Controller
             ];
 
             if ($orderable instanceof \App\Models\Itinerary) {
-                $snapshot['itinerary_pricing_inputs'] = [
-                    'travel_date' => optional($orderable->travel_date)->toDateString(),
-                    'adults' => (int) ($orderable->adults ?? 1),
-                    'children' => (int) ($orderable->children ?? 0),
-                    'infants' => (int) ($orderable->infants ?? 0),
-                ];
+                $snapshot['max_guests'] = $orderable->max_guests;
 
                 // Forensic: capture per-transfer extras explicitly so future
                 // schema changes to schedules/$with don't silently lose them.

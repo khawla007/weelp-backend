@@ -221,10 +221,6 @@ class CreatorItineraryController extends Controller
             'transfers.*.price' => 'nullable|numeric',
             'transfers.*.included' => 'boolean',
             'transfers.*.notes' => 'nullable|string',
-            'travel_date' => 'nullable|date',
-            'adults' => 'nullable|integer|min:1',
-            'children' => 'nullable|integer|min:0',
-            'infants' => 'nullable|integer|min:0',
         ]);
 
         return DB::transaction(function () use ($validated, $draft) {
@@ -312,11 +308,6 @@ class CreatorItineraryController extends Controller
                         ]);
                     }
                 }
-            }
-
-            $itineraryFields = array_intersect_key($validated, array_flip(['travel_date', 'adults', 'children', 'infants']));
-            if (! empty($itineraryFields)) {
-                $draft->update($itineraryFields);
             }
 
             return response()->json([
@@ -431,10 +422,6 @@ class CreatorItineraryController extends Controller
             'transfers.*.price' => 'nullable|numeric',
             'transfers.*.included' => 'boolean',
             'transfers.*.notes' => 'nullable|string',
-            'travel_date' => 'nullable|date',
-            'adults' => 'nullable|integer|min:1',
-            'children' => 'nullable|integer|min:0',
-            'infants' => 'nullable|integer|min:0',
         ]);
 
         $creator = Auth::user();
@@ -447,10 +434,6 @@ class CreatorItineraryController extends Controller
                 'description' => $validated['description'],
                 'featured_itinerary' => $validated['featured_itinerary'] ?? false,
                 'private_itinerary' => $validated['private_itinerary'] ?? false,
-                'travel_date' => $validated['travel_date'] ?? null,
-                'adults' => $validated['adults'] ?? 1,
-                'children' => $validated['children'] ?? 0,
-                'infants' => $validated['infants'] ?? 0,
             ]);
 
             // Create itinerary_meta with creator_id and pending status
