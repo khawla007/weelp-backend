@@ -208,6 +208,10 @@ class ItineraryController extends Controller
             'description' => 'nullable|string',
             'featured_itinerary' => 'boolean',
             'private_itinerary' => 'boolean',
+            'travel_date' => 'nullable|date',
+            'adults' => 'nullable|integer|min:1',
+            'children' => 'nullable|integer|min:0',
+            'infants' => 'nullable|integer|min:0',
             'locations' => 'nullable|array',
             'information' => 'nullable|array',
             'schedules' => 'nullable|array',
@@ -238,6 +242,10 @@ class ItineraryController extends Controller
                 'description' => $request->description ?? null,
                 'featured_itinerary' => $request->boolean('featured_itinerary'),
                 'private_itinerary' => $request->boolean('private_itinerary'),
+                'travel_date' => $request->travel_date ?? null,
+                'adults' => $request->adults ?? 1,
+                'children' => $request->children ?? 0,
+                'infants' => $request->infants ?? 0,
             ]);
 
             // === Information ===
@@ -288,6 +296,8 @@ class ItineraryController extends Controller
                             'pickup_location' => $transfer['pickup_location'] ?? null,
                             'dropoff_location' => $transfer['dropoff_location'] ?? null,
                             'pax' => $transfer['pax'] ?? null,
+                            'bag_count' => $transfer['bag_count'] ?? 0,
+                            'waiting_minutes' => $transfer['waiting_minutes'] ?? 0,
                         ]);
                     }
                 }
@@ -603,6 +613,8 @@ class ItineraryController extends Controller
                     'pickup_location' => $transfer->pickup_location,
                     'dropoff_location' => $transfer->dropoff_location,
                     'pax' => $transfer->pax,
+                    'bag_count' => (int) ($transfer->bag_count ?? 0),
+                    'waiting_minutes' => (int) ($transfer->waiting_minutes ?? 0),
                 ];
             });
         })->values();
@@ -690,6 +702,10 @@ class ItineraryController extends Controller
             'description' => 'nullable|string',
             'featured_itinerary' => 'boolean',
             'private_itinerary' => 'boolean',
+            'travel_date' => 'nullable|date',
+            'adults' => 'nullable|integer|min:1',
+            'children' => 'nullable|integer|min:0',
+            'infants' => 'nullable|integer|min:0',
             'locations' => 'nullable|array',
             'information' => 'nullable|array',
             'schedules' => 'nullable|array',
@@ -717,6 +733,7 @@ class ItineraryController extends Controller
 
             $itinerary->fill($request->only([
                 'name', 'slug', 'description', 'featured_itinerary', 'private_itinerary',
+                'travel_date', 'adults', 'children', 'infants',
             ]));
             $itinerary->save();
 

@@ -249,6 +249,28 @@ class StripeController extends Controller
                     ];
                 }),
             ];
+
+            if ($orderable instanceof \App\Models\Itinerary) {
+                $snapshot['itinerary_pricing_inputs'] = [
+                    'travel_date' => optional($orderable->travel_date)->toDateString(),
+                    'adults' => (int) ($orderable->adults ?? 1),
+                    'children' => (int) ($orderable->children ?? 0),
+                    'infants' => (int) ($orderable->infants ?? 0),
+                ];
+
+                // Forensic: capture per-transfer extras explicitly so future
+                // schema changes to schedules/$with don't silently lose them.
+                $snapshot['transfers_extras'] = $orderable->schedules
+                    ->flatMap(fn ($schedule) => $schedule->transfers->map(fn ($row) => [
+                        'itinerary_transfer_id' => $row->id,
+                        'transfer_id' => $row->transfer_id,
+                        'pax' => $row->pax,
+                        'bag_count' => (int) ($row->bag_count ?? 0),
+                        'waiting_minutes' => (int) ($row->waiting_minutes ?? 0),
+                    ]))
+                    ->values()
+                    ->all();
+            }
         } elseif ($orderable instanceof \App\Models\Transfer) {
             $orderable->loadMissing('vendorRoutes.route.origin', 'vendorRoutes.route.destination', 'pricingAvailability', 'mediaGallery.media');
             $route = $orderable->vendorRoutes?->route;

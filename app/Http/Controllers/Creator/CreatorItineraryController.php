@@ -144,6 +144,8 @@ class CreatorItineraryController extends Controller
                         'pickup_location' => $transfer->pickup_location,
                         'dropoff_location' => $transfer->dropoff_location,
                         'pax' => $transfer->pax,
+                        'bag_count' => (int) ($transfer->bag_count ?? 0),
+                        'waiting_minutes' => (int) ($transfer->waiting_minutes ?? 0),
                         'price' => $transfer->price,
                         'included' => $transfer->included,
                         'transferData' => $transferData,
@@ -213,10 +215,16 @@ class CreatorItineraryController extends Controller
             'transfers.*.end_time' => 'nullable|string',
             'transfers.*.pickup_location' => 'nullable|string',
             'transfers.*.dropoff_location' => 'nullable|string',
-            'transfers.*.pax' => 'nullable|integer',
+            'transfers.*.pax' => 'nullable|integer|min:1',
+            'transfers.*.bag_count' => 'nullable|integer|min:0',
+            'transfers.*.waiting_minutes' => 'nullable|integer|min:0',
             'transfers.*.price' => 'nullable|numeric',
             'transfers.*.included' => 'boolean',
             'transfers.*.notes' => 'nullable|string',
+            'travel_date' => 'nullable|date',
+            'adults' => 'nullable|integer|min:1',
+            'children' => 'nullable|integer|min:0',
+            'infants' => 'nullable|integer|min:0',
         ]);
 
         return DB::transaction(function () use ($validated, $draft) {
@@ -296,12 +304,19 @@ class CreatorItineraryController extends Controller
                             'pickup_location' => $transferData['pickup_location'] ?? null,
                             'dropoff_location' => $transferData['dropoff_location'] ?? null,
                             'pax' => $transferData['pax'] ?? null,
+                            'bag_count' => $transferData['bag_count'] ?? 0,
+                            'waiting_minutes' => $transferData['waiting_minutes'] ?? 0,
                             'price' => $transferData['price'] ?? null,
                             'included' => $transferData['included'] ?? true,
                             'notes' => $transferData['notes'] ?? null,
                         ]);
                     }
                 }
+            }
+
+            $itineraryFields = array_intersect_key($validated, array_flip(['travel_date', 'adults', 'children', 'infants']));
+            if (! empty($itineraryFields)) {
+                $draft->update($itineraryFields);
             }
 
             return response()->json([
@@ -410,10 +425,16 @@ class CreatorItineraryController extends Controller
             'transfers.*.end_time' => 'nullable|string',
             'transfers.*.pickup_location' => 'nullable|string',
             'transfers.*.dropoff_location' => 'nullable|string',
-            'transfers.*.pax' => 'nullable|integer',
+            'transfers.*.pax' => 'nullable|integer|min:1',
+            'transfers.*.bag_count' => 'nullable|integer|min:0',
+            'transfers.*.waiting_minutes' => 'nullable|integer|min:0',
             'transfers.*.price' => 'nullable|numeric',
             'transfers.*.included' => 'boolean',
             'transfers.*.notes' => 'nullable|string',
+            'travel_date' => 'nullable|date',
+            'adults' => 'nullable|integer|min:1',
+            'children' => 'nullable|integer|min:0',
+            'infants' => 'nullable|integer|min:0',
         ]);
 
         $creator = Auth::user();
@@ -426,6 +447,10 @@ class CreatorItineraryController extends Controller
                 'description' => $validated['description'],
                 'featured_itinerary' => $validated['featured_itinerary'] ?? false,
                 'private_itinerary' => $validated['private_itinerary'] ?? false,
+                'travel_date' => $validated['travel_date'] ?? null,
+                'adults' => $validated['adults'] ?? 1,
+                'children' => $validated['children'] ?? 0,
+                'infants' => $validated['infants'] ?? 0,
             ]);
 
             // Create itinerary_meta with creator_id and pending status
@@ -488,6 +513,8 @@ class CreatorItineraryController extends Controller
                         'pickup_location' => $transferData['pickup_location'] ?? null,
                         'dropoff_location' => $transferData['dropoff_location'] ?? null,
                         'pax' => $transferData['pax'] ?? null,
+                        'bag_count' => $transferData['bag_count'] ?? 0,
+                        'waiting_minutes' => $transferData['waiting_minutes'] ?? 0,
                         'price' => $transferData['price'] ?? null,
                         'included' => $transferData['included'] ?? true,
                         'notes' => $transferData['notes'] ?? null,

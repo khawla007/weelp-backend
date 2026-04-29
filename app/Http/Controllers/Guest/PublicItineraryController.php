@@ -344,6 +344,8 @@ class PublicItineraryController extends Controller
                             'pickup_location' => $transfer->pickup_location,
                             'dropoff_location' => $transfer->dropoff_location,
                             'pax' => $transfer->pax,
+                            'bag_count' => (int) ($transfer->bag_count ?? 0),
+                            'waiting_minutes' => (int) ($transfer->waiting_minutes ?? 0),
                             'price' => $transfer->price,
                             'included' => $transfer->included,
                             'include_in_package' => $transfer->included,

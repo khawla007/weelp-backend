@@ -265,6 +265,8 @@ class ItineraryDeepCopyService
                 'price' => $transferData['price'] ?? null,
                 'included' => $transferData['included'] ?? true,
                 'pax' => $transferData['pax'] ?? null,
+                'bag_count' => $transferData['bag_count'] ?? 0,
+                'waiting_minutes' => $transferData['waiting_minutes'] ?? 0,
             ]);
         }
     }

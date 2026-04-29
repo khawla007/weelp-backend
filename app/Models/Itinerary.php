@@ -72,6 +72,7 @@ class Itinerary extends Model
 
     protected $fillable = [
         'name', 'slug', 'description', 'featured_itinerary', 'private_itinerary',
+        'travel_date', 'adults', 'children', 'infants',
     ];
 
     protected $with = ['meta'];
@@ -79,6 +80,10 @@ class Itinerary extends Model
     protected $casts = [
         'featured_itinerary' => 'boolean',
         'private_itinerary' => 'boolean',
+        'travel_date' => 'date:Y-m-d',
+        'adults' => 'integer',
+        'children' => 'integer',
+        'infants' => 'integer',
     ];
 
     protected $appends = ['schedule_total_price', 'schedule_total_currency'];
@@ -443,20 +448,41 @@ class Itinerary extends Model
     public function getScheduleTotalPriceAttribute(): float
     {
         if (!$this->relationLoaded('schedules')) {
-            $this->load('schedules.activities', 'schedules.transfers.transfer.route', 'schedules.transfers.transfer.pricingAvailability');
+            $this->load(
+                'schedules.activities.activity.pricing',
+                'schedules.transfers.transfer.route',
+                'schedules.transfers.transfer.pricingAvailability',
+            );
         }
 
+        $headcount = max(1, (int) ($this->adults ?? 1) + (int) ($this->children ?? 0));
+
+        // Activity: live regular_price × headcount when activity+pricing present;
+        // otherwise fall back to stored snapshot (legacy rows or manual override).
         $activitiesSum = $this->schedules
             ->flatMap(fn ($schedule) => $schedule->activities)
-            ->sum(fn ($row) => (float) ($row->price ?? 0));
+            ->sum(function ($row) use ($headcount) {
+                $regularPrice = $row->activity?->pricing?->regular_price;
+                if ($regularPrice !== null) {
+                    return (float) $regularPrice * $headcount;
+                }
+                return (float) ($row->price ?? 0);
+            });
 
+        // Transfer: live computeRoutePrice(headcount) + bag/waiting extras when
+        // transfer relation is loaded; otherwise fall back to stored snapshot.
         $transfersSum = $this->schedules
             ->flatMap(fn ($schedule) => $schedule->transfers)
-            ->sum(function ($row) {
-                if (! $row->transfer) {
+            ->sum(function ($row) use ($headcount) {
+                $transfer = $row->transfer;
+                if (! $transfer) {
                     return (float) ($row->price ?? 0);
                 }
-                return (float) $row->transfer->computeRoutePrice();
+                $rowHeadcount = max(1, (int) ($row->pax ?? $headcount));
+                $base = (float) $transfer->computeRoutePrice($rowHeadcount);
+                $luggage = (int) ($row->bag_count ?? 0) * (float) $transfer->luggagePerBagRate();
+                $waiting = (int) ($row->waiting_minutes ?? 0) * (float) $transfer->waitingPerMinuteRate();
+                return $base + $luggage + $waiting;
             });
 
         return round($activitiesSum + $transfersSum, 2);

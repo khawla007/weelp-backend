@@ -50,10 +50,14 @@ class ItineraryTransfer extends Model
         'schedule_id', 'transfer_id', 'start_time', 'end_time',
         'notes', 'price', 'included',
         'pickup_location', 'dropoff_location', 'pax',
+        'bag_count', 'waiting_minutes',
     ];
 
     protected $casts = [
         'included' => 'boolean',
+        'pax' => 'integer',
+        'bag_count' => 'integer',
+        'waiting_minutes' => 'integer',
     ];
 
     public function schedule(): BelongsTo
