@@ -795,21 +795,32 @@ class ItineraryController extends Controller
             $scheduleMap = $itinerary->schedules()->pluck('id', 'day')->toArray();
 
             $updateOrCreateSimple = function ($modelClass, $data, $scheduleMap = []) {
+                // Frontend-only blobs that aren't fillable on the join models.
+                $stripKeys = ['activitydata', 'transferData', 'transfer_name', 'activity_name', 'media_url', 'name', 'transfer', 'activity'];
+
                 foreach ($data as $item) {
+                    if (isset($item['day']) && empty($item['schedule_id'])) {
+                        $scheduleId = $scheduleMap[$item['day']] ?? null;
+                        if ($scheduleId) {
+                            $item['schedule_id'] = $scheduleId;
+                        }
+                        unset($item['day']);
+                    }
+
+                    foreach ($stripKeys as $key) {
+                        unset($item[$key]);
+                    }
+
                     if (! empty($item['id'])) {
                         $model = $modelClass::find($item['id']);
                         if ($model) {
-                            if (isset($item['day']) && empty($item['schedule_id'])) {
-                                $scheduleId = $scheduleMap[$item['day']] ?? null;
-                                if ($scheduleId) {
-                                    $item['schedule_id'] = $scheduleId;
-                                }
-                                unset($item['day']);
-                            }
-
                             $model->fill($item);
                             $model->save();
                         }
+                    } elseif (! empty($item['schedule_id'])) {
+                        // New row added in the edit form — create it.
+                        unset($item['id']);
+                        $modelClass::create($item);
                     }
                 }
             };
