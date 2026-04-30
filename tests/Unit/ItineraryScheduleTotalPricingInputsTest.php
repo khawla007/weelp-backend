@@ -336,4 +336,65 @@ class ItineraryScheduleTotalPricingInputsTest extends TestCase
 
         $this->assertSame(125.00, $itinerary->schedule_total_price);
     }
+
+    public function test_total_equals_per_pax_times_headcount_plus_flat(): void
+    {
+        Transfer::clearZonePriceCache();
+
+        $itinerary = Itinerary::factory()->create();
+        $day = ItinerarySchedule::create(['itinerary_id' => $itinerary->id, 'day' => 1]);
+
+        // Activity with per_pax unit = 50.00
+        ItineraryActivity::create([
+            'schedule_id' => $day->id,
+            'activity_id' => $this->makeActivityWithPrice(50.0)->id,
+            'price' => null,
+            'included' => true,
+        ]);
+
+        // Transfer: per_person unit base = 10 + 20 = 30
+        // Flat components: luggage 1 bag × 10 = 10
+        $transfer = $this->buildTransfer(10, 20.0, priceType: 'per_person', luggagePerBag: 10.0);
+        ItineraryTransfer::create([
+            'schedule_id' => $day->id,
+            'transfer_id' => $transfer->id,
+            'included' => true,
+            'bag_count' => 1,
+            'waiting_minutes' => 0,
+        ]);
+
+        // Expected breakdown:
+        // per_pax_total = 50 (activity) + 30 (per_person transfer unit) = 80
+        // flat_total = 10 (luggage) = 10
+
+        $breakdown = $itinerary->pricingBreakdown();
+        $this->assertSame(80.00, $breakdown['per_pax_total']);
+        $this->assertSame(10.00, $breakdown['flat_total']);
+
+        // Test formula: total = per_pax_total × headcount + flat_total
+        $testCases = [
+            [1, 0, 90.00],    // (80 × 1) + 10 = 90
+            [2, 0, 170.00],   // (80 × 2) + 10 = 170
+            [2, 2, 330.00],   // (80 × 4) + 10 = 330
+            [4, 3, 570.00],   // (80 × 7) + 10 = 570
+        ];
+
+        foreach ($testCases as [$adults, $children, $expectedTotal]) {
+            $actual = $itinerary->priceForGuests($adults, $children);
+            $this->assertSame(
+                $expectedTotal,
+                $actual,
+                "priceForGuests($adults, $children) returned $actual, expected $expectedTotal"
+            );
+
+            // Verify formula: total = per_pax × (adults + children) + flat
+            $headcount = $adults + $children;
+            $formulaTotal = round($breakdown['per_pax_total'] * $headcount + $breakdown['flat_total'], 2);
+            $this->assertSame(
+                $formulaTotal,
+                $actual,
+                "Formula check failed: {$breakdown['per_pax_total']} × $headcount + {$breakdown['flat_total']} != $actual"
+            );
+        }
+    }
 }
