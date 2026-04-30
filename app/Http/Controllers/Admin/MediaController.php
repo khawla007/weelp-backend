@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Media;
+use App\Support\UploadRules;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class MediaController extends Controller
 {
@@ -46,10 +48,11 @@ class MediaController extends Controller
                 'content_length' => $contentLength,
             ]);
 
-            // Validate - accept single file or array of files (increased size limit to 10MB)
+            // Validate - accept single file or array of files
+            // mimes:+mimetypes: extension AND magic-byte both checked. SVG/doc denied.
             $request->validate([
                 'file' => 'required',
-                'file.*' => 'file|mimes:jpg,jpeg,png,pdf,doc|max:10240', // 10MB = 10240 KB
+                'file.*' => UploadRules::mediaLibrary(),
             ]);
 
             info('[Media Upload] Processing files:', ['count' => count($files)]);
@@ -68,19 +71,9 @@ class MediaController extends Controller
                         ], 500);
                     }
 
-                    // Preserve original filename when storing to MinIO
-                    $originalFileName = $file->getClientOriginalName();
-                    $nameWithoutExt = pathinfo($originalFileName, PATHINFO_FILENAME);
-                    $extension = $file->getClientOriginalExtension();
-                    $fileName = $originalFileName;
-                    $counter = 0;
-
-                    // Handle duplicate filenames in storage
-                    while (Storage::disk('minio')->exists("media/{$fileName}")) {
-                        $counter++;
-                        $fileName = "{$nameWithoutExt}_{$counter}.{$extension}";
-                    }
-
+                    // Generate UUID-based object key — never trust client filename in path.
+                    $extension = strtolower($file->getClientOriginalExtension());
+                    $fileName = Str::uuid().'.'.$extension;
                     $filePath = $file->storeAs('media', $fileName, 'minio');
 
                     // Check if filePath is valid
@@ -104,7 +97,9 @@ class MediaController extends Controller
                     $width = $imageInfo ? $imageInfo[0] : null;
                     $height = $imageInfo ? $imageInfo[1] : null;
 
-                    $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+                    $originalName = UploadRules::sanitizeName(
+                        pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)
+                    );
 
                     $media = new Media;
                     $media->name = $originalName;

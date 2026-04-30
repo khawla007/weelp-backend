@@ -217,13 +217,13 @@ class UserController extends Controller
     public function uploadUserAvatar(Request $request, $id)
     {
         $request->validate([
-            'file' => 'required|file|mimes:jpg,jpeg,png,webp|max:2048',
+            'file' => array_merge(['required'], \App\Support\UploadRules::image(2048)),
         ]);
 
         $user = User::findOrFail($id);
 
         try {
-            $avatarService = new \App\Services\AvatarService();
+            $avatarService = new \App\Services\AvatarService;
             $url = $avatarService->upload($user, $request->file('file'));
 
             return response()->json([
