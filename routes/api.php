@@ -200,14 +200,16 @@ Route::middleware(['auth:api', 'creator'])->prefix('creator')->group(function ()
 // Route::post('/create-payment-intent', [StripePaymentController::class, 'bookAndCreatePaymentIntent']);
 // Route::post('/stripe/webhook', [StripeWebhookController::class, 'handleWebhook']);
 
-Route::post('/create-checkout-session', [StripeController::class, 'createCheckoutSession']);
-Route::post('/confirm-payment', [StripeController::class, 'confirmPayment']);
+// Authenticated payment routes (rate-limited)
+Route::middleware(['auth:api', 'throttle:30,1'])->group(function () {
+    Route::post('/create-checkout-session', [StripeController::class, 'createCheckoutSession']);
+    Route::post('/confirm-payment', [StripeController::class, 'confirmPayment']);
+    Route::post('/stripe/create-order', [StripeController::class, 'createOrder']);
+    Route::get('/order/thankyou', [StripeController::class, 'getOrderByPaymentIntent']);
+});
 
-// New striep payment flow self hosted
-// Route::post('/stripe/initialize', [StripeController::class, 'initializeCheckout']);
-Route::post('/stripe/create-order', [StripeController::class, 'createOrder']);
+// Stripe webhook stays PUBLIC — Stripe-Signature header is the auth.
 Route::post('/stripe/webhook', [StripeController::class, 'handleWebhook']);
-Route::get('/order/thankyou', [StripeController::class, 'getOrderByPaymentIntent']);
 
 Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
 

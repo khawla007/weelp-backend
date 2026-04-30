@@ -20,6 +20,7 @@ class WebhookTest extends TestCase
     private function createOrderWithPayment(string $paymentIntentId, string $status = 'pending'): array
     {
         $user = User::factory()->customer()->create();
+        $this->actingAs($user, "api");
         $activity = Activity::factory()->create();
 
         $order = Order::create([

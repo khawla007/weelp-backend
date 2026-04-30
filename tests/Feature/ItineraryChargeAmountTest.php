@@ -66,6 +66,7 @@ class ItineraryChargeAmountTest extends TestCase
     public function test_createOrder_uses_server_computed_total_for_itinerary_ignoring_tampered_amount(): void
     {
         $user = User::factory()->create();
+        $this->actingAs($user, "api");
         $itinerary = $this->seedItinerary(200.00, 50.00); // server total = 250.00
 
         $payload = [
@@ -106,6 +107,7 @@ class ItineraryChargeAmountTest extends TestCase
     public function test_createOrder_keeps_client_amount_for_non_itinerary_products(): void
     {
         $user = User::factory()->create();
+        $this->actingAs($user, "api");
         $activity = Activity::create([
             'name' => 'Bungee jump',
             'slug' => 'bungee-jump-' . uniqid(),

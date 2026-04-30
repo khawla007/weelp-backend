@@ -102,6 +102,7 @@ class OrderFlowTest extends TestCase
     public function test_order_thank_you_page_returns_order(): void
     {
         $user = User::factory()->customer()->create();
+        $this->actingAs($user, "api");
         $activity = Activity::factory()->create();
         $paymentIntentId = 'pi_test_' . uniqid();
 
@@ -184,6 +185,7 @@ class OrderFlowTest extends TestCase
         Mail::fake();
 
         $user = User::factory()->customer()->create();
+        $this->actingAs($user, "api");
         $activity = Activity::factory()->create();
         $payload = $this->buildCreateOrderPayload($user, 'activity', $activity->id);
 
@@ -211,6 +213,7 @@ class OrderFlowTest extends TestCase
         Mail::fake();
 
         $user = User::factory()->customer()->create();
+        $this->actingAs($user, "api");
         $package = Package::factory()->create();
         $payload = $this->buildCreateOrderPayload($user, 'package', $package->id);
 
@@ -237,6 +240,7 @@ class OrderFlowTest extends TestCase
         Mail::fake();
 
         $user = User::factory()->customer()->create();
+        $this->actingAs($user, "api");
         $itinerary = Itinerary::factory()->create();
         $payload = $this->buildCreateOrderPayload($user, 'itinerary', $itinerary->id);
 
@@ -282,6 +286,7 @@ class OrderFlowTest extends TestCase
         Mail::fake();
 
         $user = User::factory()->customer()->create();
+        $this->actingAs($user, "api");
         $activity = Activity::factory()->create();
         $sessionId = 'cs_test_' . uniqid();
 

@@ -91,6 +91,7 @@ class StripeOrderDiscountTest extends TestCase
     public function test_tampered_activity_base_amount_rejected(): void
     {
         $user = User::factory()->create();
+        $this->actingAs($user, "api");
         $activity = $this->createActivityWithPricing(
             'safari-activity',
             regularPrice: 100,
@@ -134,6 +135,7 @@ class StripeOrderDiscountTest extends TestCase
     public function test_legitimate_activity_base_amount_accepted(): void
     {
         $user = User::factory()->create();
+        $this->actingAs($user, "api");
         $activity = $this->createActivityWithPricing(
             'safari-activity-legit',
             regularPrice: 100,
@@ -183,6 +185,7 @@ class StripeOrderDiscountTest extends TestCase
     public function test_addon_passthrough_with_correct_base_amount(): void
     {
         $user = User::factory()->create();
+        $this->actingAs($user, "api");
         $activity = $this->createActivityWithPricing(
             'activity-with-addons',
             regularPrice: 100,
@@ -225,6 +228,7 @@ class StripeOrderDiscountTest extends TestCase
     public function test_zero_headcount_rejected(): void
     {
         $user = User::factory()->create();
+        $this->actingAs($user, "api");
         $activity = $this->createActivityWithPricing();
 
         $payload = $this->buildActivityOrderPayload(
@@ -250,6 +254,7 @@ class StripeOrderDiscountTest extends TestCase
     public function test_activity_without_pricing_rejected(): void
     {
         $user = User::factory()->create();
+        $this->actingAs($user, "api");
         $activity = Activity::factory()->create(['slug' => 'no-pricing-activity']);
         // Intentionally do NOT create ActivityPricing
 
@@ -276,6 +281,7 @@ class StripeOrderDiscountTest extends TestCase
     public function test_tolerance_boundary_within_limit(): void
     {
         $user = User::factory()->create();
+        $this->actingAs($user, "api");
         $activity = $this->createActivityWithPricing(
             'tolerance-activity',
             regularPrice: 100,
@@ -306,6 +312,7 @@ class StripeOrderDiscountTest extends TestCase
     public function test_tolerance_boundary_exceeded(): void
     {
         $user = User::factory()->create();
+        $this->actingAs($user, "api");
         $activity = $this->createActivityWithPricing(
             'tolerance-exceed-activity',
             regularPrice: 100,
@@ -332,6 +339,7 @@ class StripeOrderDiscountTest extends TestCase
     public function test_activity_order_rejected_when_base_amount_omitted(): void
     {
         $user = User::factory()->create();
+        $this->actingAs($user, "api");
         $activity = $this->createActivityWithPricing(
             slug: 'omit-base-amount',
             regularPrice: 100,
@@ -365,6 +373,7 @@ class StripeOrderDiscountTest extends TestCase
     public function test_stripe_order_accepts_early_bird_discounted_base_amount(): void
     {
         $user = User::factory()->create();
+        $this->actingAs($user, "api");
         $activity = $this->createActivityWithPricing(
             'early-bird-activity',
             regularPrice: 100,
@@ -403,6 +412,7 @@ class StripeOrderDiscountTest extends TestCase
     public function test_stripe_order_rejects_tampered_early_bird_base_amount(): void
     {
         $user = User::factory()->create();
+        $this->actingAs($user, "api");
         $activity = $this->createActivityWithPricing(
             'tampered-eb-activity',
             regularPrice: 100,
@@ -441,6 +451,7 @@ class StripeOrderDiscountTest extends TestCase
     public function test_stripe_order_rejects_per_pax_fixed_tamper_regression(): void
     {
         $user = User::factory()->create();
+        $this->actingAs($user, "api");
         $activity = $this->createActivityWithPricing(
             'regression-fixed-eb',
             regularPrice: 100,
@@ -488,6 +499,7 @@ class StripeOrderDiscountTest extends TestCase
     public function test_stripe_order_stacks_group_and_last_minute(): void
     {
         $user = User::factory()->create();
+        $this->actingAs($user, "api");
         $activity = $this->createActivityWithPricing(
             'group-lm-activity',
             regularPrice: 100,

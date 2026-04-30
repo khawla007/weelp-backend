@@ -45,6 +45,7 @@ class CheckoutTest extends TestCase
         Mail::fake();
 
         $user = User::factory()->customer()->create();
+        $this->actingAs($user, "api");
         $activity = Activity::factory()->create();
         $payload = $this->validOrderPayload($user, $activity);
 
@@ -110,6 +111,7 @@ class CheckoutTest extends TestCase
     public function test_create_order_fails_with_nonexistent_orderable(): void
     {
         $user = User::factory()->customer()->create();
+        $this->actingAs($user, "api");
         $activity = Activity::factory()->create();
         $payload = $this->validOrderPayload($user, $activity);
         $payload['orderable_id'] = 99999;
@@ -131,6 +133,7 @@ class CheckoutTest extends TestCase
         Mail::fake();
 
         $user = User::factory()->customer()->create();
+        $this->actingAs($user, "api");
         $activity = Activity::factory()->create();
 
         // Mock Stripe SDK

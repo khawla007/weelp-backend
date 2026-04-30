@@ -24,18 +24,14 @@ class StripeController extends Controller
     public function createOrder(Request $request)
     {
         $data = $request->validate([
-            'order_type' => 'required|string',
+            'order_type' => 'required|in:activity,package,itinerary,transfer',
             'orderable_id' => 'required|integer',
             'travel_date' => 'required|date',
             'preferred_time' => 'required',
             'number_of_adults' => 'required|integer',
             'number_of_children' => 'required|integer',
             'special_requirements' => 'nullable|string',
-            'user_id' => 'required|integer',
             'customer_email' => 'required|email',
-            'amount' => 'required|numeric|min:0',
-            'is_custom_amount' => 'required|boolean',
-            'custom_amount' => 'nullable|numeric|min:0|required_if:is_custom_amount,true',
             'currency' => 'required|string',
             'payment_intent_id' => 'required|string',
             'emergency_contact.name' => 'required|string',
@@ -52,13 +48,15 @@ class StripeController extends Controller
             'waiting_minutes' => 'nullable|integer|min:0',
         ]);
 
-        $orderableClass = 'App\\Models\\'.ucfirst($data['order_type']);
-        if (! class_exists($orderableClass)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Invalid order type.',
-            ], 422);
-        }
+        $userId = $request->user()->id;
+
+        $orderableMap = [
+            'activity' => \App\Models\Activity::class,
+            'package' => \App\Models\Package::class,
+            'itinerary' => \App\Models\Itinerary::class,
+            'transfer' => \App\Models\Transfer::class,
+        ];
+        $orderableClass = $orderableMap[$data['order_type']];
         $orderable = $orderableClass::find($data['orderable_id']);
         if (! $orderable) {
             return response()->json([
@@ -66,7 +64,9 @@ class StripeController extends Controller
                 'message' => 'The selected item is no longer available.',
             ], 404);
         }
-        $totalAmount = $data['is_custom_amount'] ? $data['custom_amount'] : $data['amount'];
+
+        $addonsAmount = collect($data['addons'] ?? [])->sum('price');
+        $totalAmount = 0.0;
 
         if ($orderable instanceof \App\Models\Activity) {
             $adults = (int) $data['number_of_adults'];
@@ -96,7 +96,7 @@ class StripeController extends Controller
             // Re-validate: fetch expected price from service, using travel_date for EB/LM recompute.
             try {
                 $service = app(ActivityDiscountService::class);
-                $travelDate = !empty($data['travel_date'])
+                $travelDate = ! empty($data['travel_date'])
                     ? \Carbon\CarbonImmutable::parse($data['travel_date'])
                     : null;
                 $quote = $service->quote($orderable, $headcount, $travelDate);
@@ -117,6 +117,12 @@ class StripeController extends Controller
                     'submitted' => $submittedBaseAmount,
                 ], 422);
             }
+
+            // TODO: addon prices are still client-supplied; replace with server-side
+            // addon catalog lookup once an addon price service exists.
+            $totalAmount = round($expectedBaseAmount + $addonsAmount, 2);
+            $data['base_amount'] = $expectedBaseAmount;
+            $data['addons_amount'] = round($addonsAmount, 2);
         }
 
         // Server-side enforcement: itineraries charge priceForGuests(adults, children),
@@ -146,7 +152,29 @@ class StripeController extends Controller
                 }
             }
 
-            $totalAmount = $orderable->priceForGuests($bookingAdults, $bookingChildren);
+            $totalAmount = round($orderable->priceForGuests($bookingAdults, $bookingChildren) + $addonsAmount, 2);
+            $data['base_amount'] = $orderable->priceForGuests($bookingAdults, $bookingChildren);
+            $data['addons_amount'] = round($addonsAmount, 2);
+        }
+
+        // Server-side enforcement: packages charge basePricing → first variation
+        // regular_price. Client-supplied amount is ignored.
+        // TODO: replace with a Package price service that handles seasonal/variant pricing.
+        if ($orderable instanceof \App\Models\Package) {
+            $orderable->loadMissing('basePricing.variations');
+            $variation = $orderable->basePricing?->variations->first();
+            $packageBase = $variation ? (float) $variation->regular_price : 0.0;
+
+            if ($packageBase <= 0) {
+                return response()->json([
+                    'error' => 'package_pricing_missing',
+                    'message' => 'Package pricing is not available.',
+                ], 422);
+            }
+
+            $totalAmount = round($packageBase + $addonsAmount, 2);
+            $data['base_amount'] = $packageBase;
+            $data['addons_amount'] = round($addonsAmount, 2);
         }
 
         // Server-side enforcement: transfers recompute final amount from DB rates ×
@@ -167,20 +195,9 @@ class StripeController extends Controller
             $waitingAmount = round($waitingRate * $waitingMinutes, 2);
             $expected = round($routePrice + $luggageAmount + $waitingAmount, 2);
 
-            $submitted = (float) $totalAmount;
-            if (abs($submitted - $expected) > 0.01) {
-                return response()->json([
-                    'error' => 'transfer_price_mismatch',
-                    'expected' => $expected,
-                    'submitted' => $submitted,
-                ], 422);
-            }
-
             $totalAmount = $expected;
-            // Keep `payment.amount` and `snapshot.base_amount` consistent with the
-            // server-recomputed total for transfers. Otherwise the order record can
-            // carry the original (potentially tampered) client value.
-            $data['amount'] = $expected;
+            // Keep `snapshot.base_amount` consistent with the server-recomputed total
+            // so the order record never carries a tampered client value.
             $data['base_amount'] = $routePrice;
             $data['addons_amount'] = round($luggageAmount + $waitingAmount, 2);
 
@@ -197,6 +214,13 @@ class StripeController extends Controller
             ];
         }
 
+        if ($totalAmount <= 0) {
+            return response()->json([
+                'error' => 'amount_unresolved',
+                'message' => 'Server could not compute order amount.',
+            ], 422);
+        }
+
         // Validate creator if provided
         $creatorId = null;
         if (! empty($data['creator_id'])) {
@@ -208,7 +232,7 @@ class StripeController extends Controller
 
         // ✅ Create order
         $order = Order::create([
-            'user_id' => $data['user_id'],
+            'user_id' => $userId,
             'creator_id' => $creatorId,
             'orderable_type' => $orderableClass,
             'orderable_id' => $data['orderable_id'],
@@ -318,7 +342,7 @@ class StripeController extends Controller
 
         if (isset($snapshot)) {
             $snapshot['addons'] = $data['addons'] ?? [];
-            $snapshot['base_amount'] = $data['base_amount'] ?? $data['amount'];
+            $snapshot['base_amount'] = $data['base_amount'] ?? $totalAmount;
             $snapshot['addons_amount'] = $data['addons_amount'] ?? 0;
             $order->item_snapshot_json = json_encode(collect($snapshot)->toArray());
             $order->save();
@@ -328,9 +352,9 @@ class StripeController extends Controller
         $order->payment()->create([
             'payment_status' => 'pending',
             'payment_method' => 'credit_card',
-            'amount' => $data['amount'],
-            'is_custom_amount' => $data['is_custom_amount'],
-            'custom_amount' => $data['custom_amount'],
+            'amount' => $totalAmount,
+            'is_custom_amount' => false,
+            'custom_amount' => null,
             'total_amount' => $totalAmount,
             'currency' => $data['currency'],
             'payment_intent_id' => $data['payment_intent_id'],
@@ -366,18 +390,20 @@ class StripeController extends Controller
     {
         $payload = $request->getContent();
         $sigHeader = $request->header('Stripe-Signature');
-        $webhookSecret = env('STRIPE_WEBHOOK_SECRET');
+        $webhookSecret = config('services.stripe.webhook_secret');
 
-        if ($webhookSecret && $sigHeader) {
-            try {
-                $event = \Stripe\Webhook::constructEvent($payload, $sigHeader, $webhookSecret);
-            } catch (\Stripe\Exception\SignatureVerificationException $e) {
-                Log::error('Stripe webhook signature verification failed: '.$e->getMessage());
+        if (! $webhookSecret || ! $sigHeader) {
+            Log::error('Stripe webhook rejected: missing secret or Stripe-Signature header');
 
-                return response('Invalid signature', 400);
-            }
-        } else {
-            $event = json_decode($payload);
+            return response('Webhook secret not configured', 500);
+        }
+
+        try {
+            $event = \Stripe\Webhook::constructEvent($payload, $sigHeader, $webhookSecret);
+        } catch (\Stripe\Exception\SignatureVerificationException $e) {
+            Log::error('Stripe webhook signature verification failed: '.$e->getMessage());
+
+            return response('Invalid signature', 400);
         }
 
         if ($event->type == 'payment_intent.succeeded') {
@@ -566,33 +592,65 @@ class StripeController extends Controller
     {
         // ✅ Validate input
         $data = $request->validate([
-            'order_type' => 'required|string',
+            'order_type' => 'required|in:activity,package,itinerary',
             'orderable_id' => 'required|integer',
             'travel_date' => 'required|date',
             'preferred_time' => 'required',
             'number_of_adults' => 'required|integer',
             'number_of_children' => 'required|integer',
             'special_requirements' => 'nullable|string',
-            'user_id' => 'required|integer',
             'customer_email' => 'required|email',
-            'amount' => 'required|numeric|min:0',
-            'is_custom_amount' => 'required|boolean',
-            'custom_amount' => 'nullable|numeric|min:0|required_if:is_custom_amount,true',
             'currency' => 'required|string',
             'emergency_contact.name' => 'required|string',
             'emergency_contact.phone' => 'required|string',
             'emergency_contact.relationship' => 'required|string',
         ]);
 
-        // ✅ Determine the orderable model
-        $orderableClass = 'App\\Models\\'.ucfirst($data['order_type']);
+        $userId = $request->user()->id;
+
+        // ✅ Determine the orderable model via allow-list
+        $orderableMap = [
+            'activity' => \App\Models\Activity::class,
+            'package' => \App\Models\Package::class,
+            'itinerary' => \App\Models\Itinerary::class,
+        ];
+        $orderableClass = $orderableMap[$data['order_type']];
         $orderable = $orderableClass::findOrFail($data['orderable_id']);
 
-        // ✅ Calculate total amount
-        $totalAmount = $data['is_custom_amount'] ? $data['custom_amount'] : $data['amount'];
+        // ✅ Server-side total: never trust client.
+        // TODO: replace with dedicated price services per type (currently
+        // mirrors confirmPayment's read paths).
+        $totalAmount = 0.0;
+        if ($orderable instanceof \App\Models\Activity) {
+            $orderable->loadMissing(['pricing', 'earlyBirdDiscount', 'lastMinuteDiscount']);
+            $headcount = max(1, (int) $data['number_of_adults'] + (int) $data['number_of_children']);
+            try {
+                $service = app(ActivityDiscountService::class);
+                $travelDate = ! empty($data['travel_date'])
+                    ? \Carbon\CarbonImmutable::parse($data['travel_date'])
+                    : null;
+                $totalAmount = (float) $service->quote($orderable, $headcount, $travelDate)['final_amount'];
+            } catch (\RuntimeException $e) {
+                return response()->json(['error' => 'activity_pricing_missing'], 422);
+            }
+        } elseif ($orderable instanceof \App\Models\Itinerary) {
+            $totalAmount = (float) $orderable->priceForGuests(
+                (int) $data['number_of_adults'],
+                (int) $data['number_of_children']
+            );
+        } elseif ($orderable instanceof \App\Models\Package) {
+            $orderable->loadMissing('basePricing.variations');
+            $variation = $orderable->basePricing?->variations->first();
+            $totalAmount = $variation ? (float) $variation->regular_price : 0.0;
+        }
+
+        if ($totalAmount <= 0) {
+            return response()->json(['error' => 'amount_unresolved'], 422);
+        }
+        $totalAmount = round($totalAmount, 2);
 
         // ✅ Check if existing pending order with same data already exists
-        $existingOrder = Order::where('user_id', $data['user_id'])
+        $existingOrder = Order::where('user_id', $userId)
             ->where('orderable_type', $orderableClass)
             ->where('orderable_id', $data['orderable_id'])
             ->where('travel_date', $data['travel_date'])
@@ -613,7 +671,7 @@ class StripeController extends Controller
 
         // ✅ Create Order
         $order = Order::create([
-            'user_id' => $data['user_id'],
+            'user_id' => $userId,
             'orderable_type' => $orderableClass,
             'orderable_id' => $data['orderable_id'],
             'travel_date' => $data['travel_date'],
@@ -682,7 +740,7 @@ class StripeController extends Controller
         }
 
         // ✅ Setup Stripe
-        Stripe::setApiKey(env('STRIPE_SECRET'));
+        Stripe::setApiKey(config('services.stripe.secret'));
         // \Stripe\Stripe::setApiKey(config('services.stripe.secret'));
 
         $checkoutSession = StripeSession::create([
@@ -707,9 +765,9 @@ class StripeController extends Controller
         $order->payment()->create([
             'payment_status' => 'pending',
             'payment_method' => 'credit_card',
-            'amount' => $data['amount'],
-            'is_custom_amount' => $data['is_custom_amount'],
-            'custom_amount' => $data['custom_amount'],
+            'amount' => $totalAmount,
+            'is_custom_amount' => false,
+            'custom_amount' => null,
             'total_amount' => $totalAmount,
             'currency' => $data['currency'],
             'stripe_session_id' => $checkoutSession->id,
@@ -723,7 +781,7 @@ class StripeController extends Controller
 
     public function confirmPayment(Request $request)
     {
-        Stripe::setApiKey(env('STRIPE_SECRET'));
+        Stripe::setApiKey(config('services.stripe.secret'));
         // \Stripe\Stripe::setApiKey(config('services.stripe.secret'));
 
         $sessionId = $request->input('session_id');
