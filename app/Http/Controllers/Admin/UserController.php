@@ -8,6 +8,7 @@ use App\Models\UserMeta;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
@@ -59,13 +60,16 @@ class UserController extends Controller
 
     public function createUser(Request $request)
     {
-        // Validate Input
+        $allowedRoles = auth()->user()?->role === User::ROLE_SUPER_ADMIN
+            ? [User::ROLE_SUPER_ADMIN, User::ROLE_ADMIN, User::ROLE_CUSTOMER]
+            : [User::ROLE_ADMIN, User::ROLE_CUSTOMER];
+
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users',
             'password' => 'required|min:8',
             'confirm_password' => 'required|same:password',
-            'role' => 'required|in:admin,customer',
+            'role' => ['required', Rule::in($allowedRoles)],
             'status' => 'required|in:active,inactive',
         ]);
 
@@ -73,14 +77,14 @@ class UserController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        // Create User
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role' => $request->role,
             'status' => $request->status,
         ]);
+        $user->role = $request->role;
+        $user->save();
 
         // Insert username into `user_meta` table
         $userMeta = UserMeta::create([
@@ -148,13 +152,16 @@ class UserController extends Controller
             return response()->json(['message' => 'User not found'], 404);
         }
 
-        // Validation (only for fields that can come in request)
+        $allowedRoles = auth()->user()?->role === User::ROLE_SUPER_ADMIN
+            ? [User::ROLE_SUPER_ADMIN, User::ROLE_ADMIN, User::ROLE_CUSTOMER]
+            : [User::ROLE_ADMIN, User::ROLE_CUSTOMER];
+
         $validator = Validator::make($request->all(), [
             'name' => 'sometimes|string|max:255',
             'email' => 'sometimes|email|unique:users,email,'.$id,
             'password' => 'sometimes|min:8',
             'confirm_password' => 'sometimes|same:password',
-            'role' => 'sometimes|in:admin,customer',
+            'role' => ['sometimes', Rule::in($allowedRoles)],
             'status' => 'sometimes|in:active,inactive',
         ]);
 

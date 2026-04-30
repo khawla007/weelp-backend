@@ -182,14 +182,15 @@ class OtpController extends Controller
         try {
             DB::beginTransaction();
 
-            // Create user
             $user = User::create([
                 'name' => $otpData['name'],
                 'email' => $otpData['email'],
                 'password' => $otpData['password'],
+            ]);
+            $user->forceFill([
                 'role' => User::ROLE_CUSTOMER,
                 'email_verified_at' => now(),
-            ]);
+            ])->save();
 
             // Store username in user_meta
             UserMeta::create([
@@ -210,7 +211,7 @@ class OtpController extends Controller
                 Mail::to($user->email)->send(new WelcomeRegistrationMail($user->name));
                 Mail::to(config('mail.admin_address', 'khawla@fanaticcoders.com'))->send(new AdminNewUserMail($user, $otpData['username']));
             } catch (\Exception $e) {
-                Log::warning('Post-registration email failed: ' . $e->getMessage());
+                Log::warning('Post-registration email failed: '.$e->getMessage());
             }
 
             return response()->json([

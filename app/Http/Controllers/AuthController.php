@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Validator;
@@ -94,6 +95,7 @@ class AuthController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
+        $user->forceFill(['role' => User::ROLE_CUSTOMER])->save();
 
         // Generate JWT token valid for 24 hours
         $payload = [
@@ -153,35 +155,37 @@ class AuthController extends Controller
 
     public function resendVerification(Request $request)
     {
-        $user = User::where('email', $request->email)->firstOrFail();
+        $request->validate([
+            'email' => 'required|email',
+        ]);
 
-        if ($user->email_verified_at) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Email already verified.',
-            ]);
+        $genericResponse = response()->json([
+            'success' => true,
+            'message' => 'If an unverified account with that email exists, a verification link has been sent.',
+        ]);
+
+        $user = User::where('email', $request->email)->first();
+
+        if ($user && ! $user->email_verified_at) {
+            try {
+                $payload = [
+                    'email' => $user->email,
+                    'exp' => now()->addDay()->timestamp,
+                ];
+                $token = JWTAuth::customClaims($payload)->fromUser($user);
+
+                DB::table('email_verifications')->updateOrInsert(
+                    ['email' => $user->email],
+                    ['token' => Hash::make($token), 'created_at' => now()]
+                );
+
+                Mail::to($user->email)->send(new VerifyEmailMail($user, $token));
+            } catch (\Throwable $e) {
+                Log::warning('resendVerification delivery failed: '.$e->getMessage());
+            }
         }
 
-        // Generate new JWT token
-        $payload = [
-            'email' => $user->email,
-            'exp' => now()->addDay()->timestamp,
-        ];
-        $token = JWTAuth::customClaims($payload)->fromUser($user);
-
-        // Update DB token
-        DB::table('email_verifications')->updateOrInsert(
-            ['email' => $user->email],
-            ['token' => Hash::make($token), 'created_at' => now()]
-        );
-
-        // Send email again
-        Mail::to($user->email)->send(new VerifyEmailMail($user, $token));
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Verification link resent successfully.',
-        ]);
+        return $genericResponse;
     }
 
     /**
@@ -194,13 +198,38 @@ class AuthController extends Controller
             'password' => 'required|min:6',
         ]);
 
-        $user = User::where('email', $validated['email'])->first();
+        $email = mb_strtolower(trim($validated['email']));
+        $user = User::where('email', $email)->first();
+
+        if ($user && $user->locked_until && now()->lt($user->locked_until)) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Account temporarily locked. Try again later.',
+            ], 423);
+        }
 
         if (! $user || ! Hash::check($validated['password'], $user->password)) {
+            if ($user) {
+                DB::table('users')->where('id', $user->id)->increment('failed_login_attempts');
+                $user->refresh();
+                if ($user->failed_login_attempts >= 10) {
+                    DB::table('users')->where('id', $user->id)->update([
+                        'locked_until' => now()->addMinutes(30),
+                        'failed_login_attempts' => 0,
+                    ]);
+                }
+            }
+
             return response()->json([
                 'success' => false,
                 'error' => 'email or password incorrect',
             ], 401);
+        }
+
+        if ($user->failed_login_attempts > 0 || $user->locked_until) {
+            $user->failed_login_attempts = 0;
+            $user->locked_until = null;
+            $user->save();
         }
 
         $user->load('profile');
@@ -312,37 +341,33 @@ class AuthController extends Controller
             'email' => 'required|email',
         ]);
 
+        $genericResponse = response()->json([
+            'success' => true,
+            'message' => 'If an account with that email exists, a password reset link has been sent.',
+        ]);
+
         $user = User::where('email', $request->email)->first();
 
-        if (! $user) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Email address not found.',
-            ], 404);
+        if ($user) {
+            try {
+                $payload = [
+                    'email' => $request->email,
+                    'exp' => now()->addMinutes(10)->timestamp,
+                ];
+                $token = JWTAuth::customClaims($payload)->fromUser($user);
+
+                DB::table('password_resets')->updateOrInsert(
+                    ['email' => $request->email],
+                    ['token' => Hash::make($token), 'created_at' => now()]
+                );
+
+                Mail::to($request->email)->send(new ResetPasswordMail($token));
+            } catch (\Throwable $e) {
+                Log::warning('forgotPassword delivery failed: '.$e->getMessage());
+            }
         }
 
-        // Generate JWT token with 10 minutes expiry
-        $payload = [
-            'email' => $request->email,
-            'exp' => now()->addMinutes(10)->timestamp,
-        ];
-        $token = JWTAuth::customClaims($payload)->fromUser($user);
-
-        // Store only the hashed token
-        $hashedToken = Hash::make($token);
-
-        DB::table('password_resets')->updateOrInsert(
-            ['email' => $request->email],
-            ['token' => $hashedToken, 'created_at' => now()]
-        );
-
-        // Send mail using new Mailable
-        Mail::to($request->email)->send(new ResetPasswordMail($token));
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Password reset link sent to your email.',
-        ]);
+        return $genericResponse;
     }
 
     /**

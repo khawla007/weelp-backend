@@ -67,8 +67,8 @@ Route::get('/test', function () {
     return response()->json(['message' => 'Route Working!']);
 });
 
-// Login - strict rate limit (5 attempts per minute)
-Route::middleware('throttle:5,1')->group(function () {
+// Login - named limiter: 5/min per email+IP and 20/min per IP
+Route::middleware('throttle:login')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
 });
 
@@ -94,10 +94,16 @@ Route::middleware('throttle:10,1')->group(function () {
     Route::post('/refresh-token', [AuthController::class, 'refreshToken']);
 });
 
-// Non-sensitive auth routes - no throttle needed
-Route::get('/check-username', [AuthController::class, 'checkUsername']);
+// Username availability - throttle to prevent enumeration
+Route::middleware('throttle:10,1')->group(function () {
+    Route::get('/check-username', [AuthController::class, 'checkUsername']);
+});
+
 Route::get('/verify-email', [AuthController::class, 'verifyEmail']);
-Route::post('/resend-verification', [AuthController::class, 'resendVerification']);
+
+Route::middleware('throttle:5,1')->group(function () {
+    Route::post('/resend-verification', [AuthController::class, 'resendVerification']);
+});
 
 // Role-agnostic authenticated routes
 Route::middleware(['auth:api'])->prefix('user')->group(function () {
