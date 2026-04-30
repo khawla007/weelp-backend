@@ -20,6 +20,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        if ($this->app->environment('production') && config('app.debug') === true) {
+            throw new \RuntimeException('APP_DEBUG must be false in production.');
+        }
+
         Relation::enforceMorphMap([
             'activity'  => \App\Models\Activity::class,
             'package'   => \App\Models\Package::class,
