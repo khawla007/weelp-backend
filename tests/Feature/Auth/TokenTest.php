@@ -35,28 +35,109 @@ class TokenTest extends TestCase
             return;
         }
 
-        $response = $this->withHeader('Authorization', 'Bearer ' . $token)
+        $response = $this->withHeader('Authorization', 'Bearer '.$token)
             ->getJson('/api/customer/profile');
 
         $response->assertUnauthorized();
     }
 
-    public function test_token_refresh_returns_new_token(): void
+    public function test_token_refresh_rotates_pair_and_invalidates_old_refresh(): void
     {
-        $user = User::factory()->create(['email_verified_at' => now()]);
-        $token = JWTAuth::fromUser($user);
+        $user = User::factory()->create(['email_verified_at' => now()])->refresh();
 
-        // JWTAuth::refresh() in the controller resolves the token from the
-        // singleton's parser, which needs to see the current HTTP request.
-        // In tests, the JWTAuth singleton may hold a stale request reference.
-        // Explicitly set the token on the JWTAuth singleton so that
-        // refresh() finds it when the controller calls JWTAuth::refresh().
-        JWTAuth::setToken($token);
+        $refresh = JWTAuth::customClaims([
+            'type' => 'refresh',
+            'tv' => (int) $user->token_version,
+            'exp' => now()->addMinutes((int) config('jwt.refresh_ttl'))->timestamp,
+        ])->fromUser($user);
 
-        $response = $this->withHeader('Authorization', 'Bearer ' . $token)
-            ->postJson('/api/refresh-token');
+        $response = $this->postJson('/api/refresh-token', ['refreshToken' => $refresh]);
 
         $response->assertOk()
-            ->assertJsonStructure(['access_token']);
+            ->assertJsonStructure(['accessToken', 'refreshToken']);
+
+        // Replaying the now-blacklisted refresh token must fail.
+        $replay = $this->postJson('/api/refresh-token', ['refreshToken' => $refresh]);
+        $replay->assertUnauthorized();
+    }
+
+    public function test_refresh_rejects_access_token(): void
+    {
+        $user = User::factory()->create(['email_verified_at' => now()])->refresh();
+
+        $access = JWTAuth::customClaims([
+            'type' => 'access',
+            'tv' => (int) $user->token_version,
+            'exp' => now()->addMinutes((int) config('jwt.ttl'))->timestamp,
+        ])->fromUser($user);
+
+        $response = $this->postJson('/api/refresh-token', ['refreshToken' => $access]);
+        $response->assertUnauthorized()
+            ->assertJson(['error' => 'invalid_token_type']);
+    }
+
+    public function test_refresh_with_stale_token_version_is_treated_as_theft(): void
+    {
+        $user = User::factory()->customer()->create(['email_verified_at' => now()])->refresh();
+
+        $stale = JWTAuth::customClaims([
+            'type' => 'refresh',
+            'tv' => (int) $user->token_version,
+            'exp' => now()->addMinutes((int) config('jwt.refresh_ttl'))->timestamp,
+        ])->fromUser($user);
+
+        // Simulate a logout-elsewhere bumping token_version on the server.
+        $user->increment('token_version');
+        $startVersion = (int) $user->fresh()->token_version;
+
+        $response = $this->postJson('/api/refresh-token', ['refreshToken' => $stale]);
+        $response->assertUnauthorized()->assertJson(['error' => 'token_revoked']);
+
+        $endVersion = (int) $user->fresh()->token_version;
+        $this->assertSame($startVersion + 1, $endVersion, 'tv mismatch should bump token_version');
+
+        // Replaying the same now-blacklisted refresh must still fail.
+        $replay = $this->postJson('/api/refresh-token', ['refreshToken' => $stale]);
+        $replay->assertUnauthorized();
+    }
+
+    public function test_logout_invalidates_access_and_refresh_and_bumps_token_version(): void
+    {
+        $user = User::factory()->customer()->create(['email_verified_at' => now()])->refresh();
+
+        $access = JWTAuth::customClaims([
+            'type' => 'access',
+            'tv' => (int) $user->token_version,
+            'exp' => now()->addMinutes((int) config('jwt.ttl'))->timestamp,
+        ])->fromUser($user);
+
+        $refresh = JWTAuth::customClaims([
+            'type' => 'refresh',
+            'tv' => (int) $user->token_version,
+            'exp' => now()->addMinutes((int) config('jwt.refresh_ttl'))->timestamp,
+        ])->fromUser($user);
+
+        $startVersion = (int) $user->token_version;
+
+        $logout = $this->withHeader('Authorization', 'Bearer '.$access)
+            ->postJson('/api/customer/logout', ['refreshToken' => $refresh]);
+        $logout->assertOk();
+
+        // token_version bumped → all outstanding tokens for this user are revoked.
+        $this->assertSame($startVersion + 1, (int) $user->fresh()->token_version);
+
+        // Tymon's JWTGuard caches the resolved user across HTTP test calls when the
+        // Application instance is shared. In production each request gets a fresh
+        // container, so this only matters for tests.
+        \Illuminate\Support\Facades\Auth::guard('api')->forgetUser();
+
+        // Old access on a protected route must fail (blacklist + tv mismatch both apply).
+        $protected = $this->withHeader('Authorization', 'Bearer '.$access)
+            ->getJson('/api/customer/profile');
+        $protected->assertUnauthorized();
+
+        // Old refresh must fail (blacklisted by logout, and tv stale).
+        $refreshAttempt = $this->postJson('/api/refresh-token', ['refreshToken' => $refresh]);
+        $refreshAttempt->assertUnauthorized();
     }
 }

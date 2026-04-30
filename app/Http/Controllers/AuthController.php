@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Validator;
 use Tymon\JWTAuth\Exceptions\JWTException;
+use Tymon\JWTAuth\Exceptions\TokenBlacklistedException;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller
@@ -234,9 +235,17 @@ class AuthController extends Controller
 
         $user->load('profile');
 
-        $accessToken = JWTAuth::fromUser($user);
+        $accessToken = JWTAuth::customClaims([
+            'type' => 'access',
+            'tv' => (int) $user->token_version,
+            'exp' => now()->addMinutes((int) config('jwt.ttl'))->timestamp,
+        ])->fromUser($user);
 
-        $refreshToken = JWTAuth::customClaims(['type' => 'refresh'])->fromUser($user);
+        $refreshToken = JWTAuth::customClaims([
+            'type' => 'refresh',
+            'tv' => (int) $user->token_version,
+            'exp' => now()->addMinutes((int) config('jwt.refresh_ttl'))->timestamp,
+        ])->fromUser($user);
 
         return response()->json([
             'success' => true,
@@ -257,8 +266,26 @@ class AuthController extends Controller
     public function logout(Request $request)
     {
         try {
-            // Invalidate the current token
-            JWTAuth::invalidate();
+            $user = $request->user();
+
+            // Blacklist the current access token.
+            try {
+                JWTAuth::invalidate(JWTAuth::getToken());
+            } catch (\Throwable $e) {
+                Log::warning('logout: access token invalidate failed: '.$e->getMessage());
+            }
+
+            // Blacklist the refresh token if the client sent it.
+            if ($refresh = $request->input('refreshToken')) {
+                try {
+                    JWTAuth::setToken($refresh)->invalidate();
+                } catch (\Throwable $e) {
+                    Log::warning('logout: refresh token invalidate failed: '.$e->getMessage());
+                }
+            }
+
+            // Bump token_version → revoke every other outstanding token for this user.
+            $user?->increment('token_version');
 
             return response()->json(['message' => 'Successfully logged out']);
         } catch (JWTException $e) {
@@ -450,19 +477,88 @@ class AuthController extends Controller
      */
     public function refreshToken(Request $request)
     {
-        try {
-            $newAccessToken = JWTAuth::refresh();
+        $oldRefresh = $request->input('refreshToken') ?? $request->bearerToken();
 
-            return response()->json([
-                'success' => true,
-                'access_token' => $newAccessToken,
-            ]);
-        } catch (\Tymon\JWTAuth\Exceptions\TokenExpiredException $e) {
-            return response()->json(['error' => 'Token has expired and cannot be refreshed'], 401);
-        } catch (\Tymon\JWTAuth\Exceptions\TokenInvalidException $e) {
-            return response()->json(['error' => 'Invalid token'], 401);
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'Could not refresh token'], 500);
+        if (! $oldRefresh) {
+            return response()->json(['error' => 'refresh_token_missing'], 401);
         }
+
+        try {
+            JWTAuth::setToken($oldRefresh);
+            $payload = JWTAuth::getPayload();
+        } catch (TokenBlacklistedException $e) {
+            // Reuse of an already-rotated refresh token → assume theft, revoke everything for the user.
+            try {
+                $unverifiedPayload = JWTAuth::manager()->getJWTProvider()->decode($oldRefresh);
+                if ($userId = $unverifiedPayload['sub'] ?? null) {
+                    User::whereKey($userId)->increment('token_version');
+                    Log::warning('Refresh token reuse detected for user '.$userId.'; token_version bumped.');
+                }
+            } catch (\Throwable $inner) {
+                Log::warning('Refresh reuse cleanup failed: '.$inner->getMessage());
+            }
+
+            return response()->json(['error' => 'refresh_token_reused'], 401);
+        } catch (\Tymon\JWTAuth\Exceptions\TokenExpiredException $e) {
+            return response()->json(['error' => 'refresh_token_expired'], 401);
+        } catch (\Tymon\JWTAuth\Exceptions\TokenInvalidException $e) {
+            return response()->json(['error' => 'invalid_token'], 401);
+        } catch (\Throwable $e) {
+            return response()->json(['error' => 'could_not_refresh'], 500);
+        }
+
+        if ($payload->get('type') !== 'refresh') {
+            return response()->json(['error' => 'invalid_token_type'], 401);
+        }
+
+        try {
+            $user = JWTAuth::authenticate();
+        } catch (\Throwable $e) {
+            return response()->json(['error' => 'invalid_token'], 401);
+        }
+
+        if (! $user) {
+            return response()->json(['error' => 'user_not_found'], 401);
+        }
+
+        if ((int) $payload->get('tv') !== (int) $user->token_version) {
+            // Stale tv on a signature-valid refresh = the user already rotated/logged out
+            // elsewhere. Treat as theft signal: blacklist this token and bump again so the
+            // attacker's parallel access tokens (if any) are invalidated immediately.
+            try {
+                JWTAuth::setToken($oldRefresh)->invalidate();
+            } catch (\Throwable $e) {
+                Log::warning('refreshToken: failed to blacklist tv-mismatch refresh: '.$e->getMessage());
+            }
+            $user->increment('token_version');
+            Log::warning('refreshToken: tv mismatch treated as theft', ['user_id' => $user->id]);
+
+            return response()->json(['error' => 'token_revoked'], 401);
+        }
+
+        // Single-use: blacklist the refresh token before issuing the new pair.
+        try {
+            JWTAuth::setToken($oldRefresh)->invalidate();
+        } catch (\Throwable $e) {
+            Log::warning('refreshToken: failed to blacklist old refresh: '.$e->getMessage());
+        }
+
+        $newAccess = JWTAuth::customClaims([
+            'type' => 'access',
+            'tv' => (int) $user->token_version,
+            'exp' => now()->addMinutes((int) config('jwt.ttl'))->timestamp,
+        ])->fromUser($user);
+
+        $newRefresh = JWTAuth::customClaims([
+            'type' => 'refresh',
+            'tv' => (int) $user->token_version,
+            'exp' => now()->addMinutes((int) config('jwt.refresh_ttl'))->timestamp,
+        ])->fromUser($user);
+
+        return response()->json([
+            'success' => true,
+            'accessToken' => $newAccess,
+            'refreshToken' => $newRefresh,
+        ]);
     }
 }

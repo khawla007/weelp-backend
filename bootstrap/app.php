@@ -15,10 +15,13 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
-            'admin'     => \App\Http\Middleware\AdminMiddleware::class,
-            'customer'  => \App\Http\Middleware\CustomerMiddleware::class,
-            'creator'   => \App\Http\Middleware\CreatorMiddleware::class,
+            'admin' => \App\Http\Middleware\AdminMiddleware::class,
+            'customer' => \App\Http\Middleware\CustomerMiddleware::class,
+            'creator' => \App\Http\Middleware\CreatorMiddleware::class,
+            'jwt.tv' => \App\Http\Middleware\VerifyTokenVersion::class,
         ]);
+
+        $middleware->appendToGroup('api', \App\Http\Middleware\VerifyTokenVersion::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

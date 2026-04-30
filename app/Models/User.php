@@ -112,6 +112,7 @@ class User extends Authenticatable implements JWTSubject
             'password' => 'hashed',
             'locked_until' => 'datetime',
             'failed_login_attempts' => 'integer',
+            'token_version' => 'integer',
         ];
     }
 
@@ -173,7 +174,9 @@ class User extends Authenticatable implements JWTSubject
      */
     public function getJWTCustomClaims()
     {
-        return []; // You can add custom claims here if needed
+        return [
+            'tv' => (int) ($this->token_version ?? 1),
+        ];
     }
 
     /**
