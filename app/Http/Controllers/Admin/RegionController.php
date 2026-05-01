@@ -138,8 +138,8 @@ class RegionController extends Controller
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
                 'type' => 'required|string|max:255',
-                'description' => 'nullable|string',
-                'image_url' => 'nullable|string',
+                'description' => 'nullable|string|max:5000',
+                'image_url' => 'nullable|string|max:2048',
                 'countries' => 'nullable|array',
                 'countries.*' => 'exists:countries,id',
             ]);
@@ -200,8 +200,8 @@ class RegionController extends Controller
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
                 'type' => 'required|string|max:255',
-                'description' => 'nullable|string',
-                'image_url' => 'nullable|string',
+                'description' => 'nullable|string|max:5000',
+                'image_url' => 'nullable|string|max:2048',
                 'countries' => 'nullable|array',
                 'countries.*' => 'exists:countries,id',
             ]);

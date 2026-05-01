@@ -203,8 +203,8 @@ class PackageController extends Controller
     {
         $rules = [
             'name' => 'required|string|max:255',
-            'slug' => 'required|string|unique:packages,slug',
-            'description' => 'nullable|string',
+            'slug' => 'required|string|max:160|unique:packages,slug',
+            'description' => 'nullable|string|max:5000',
             'featured_package' => 'boolean',
             'private_package' => 'boolean',
             'locations' => 'nullable|array',
@@ -738,8 +738,8 @@ class PackageController extends Controller
 
         $rules = [
             'name' => 'sometimes|string|max:255',
-            'slug' => 'sometimes|string|unique:packages,slug,'.$package->id,
-            'description' => 'nullable|string',
+            'slug' => 'sometimes|string|max:160|unique:packages,slug,'.$package->id,
+            'description' => 'nullable|string|max:5000',
             'featured_package' => 'boolean',
             'private_package' => 'boolean',
             'locations' => 'nullable|array',

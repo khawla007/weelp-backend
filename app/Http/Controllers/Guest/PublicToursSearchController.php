@@ -20,8 +20,8 @@ class PublicToursSearchController extends Controller
     public function search(Request $request)
     {
         $request->validate([
-            'from'       => 'nullable|string',
-            'to'         => 'nullable|string',
+            'from'       => 'nullable|string|max:200',
+            'to'         => 'nullable|string|max:200',
             'start_date' => 'nullable|date',
             'end_date'   => 'nullable|date|after_or_equal:start_date',
             'quantity'   => 'nullable|integer|min:1',

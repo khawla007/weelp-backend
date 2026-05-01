@@ -119,7 +119,7 @@ class PublicReviewController extends Controller
         request()->validate([
             'per_page' => 'nullable|integer|min:1|max:50',
             'sort' => 'nullable|in:recent,top',
-            'photos_only' => 'nullable|string|in:true,false,0,1',
+            'photos_only' => 'nullable|string|max:50|in:true,false,0,1',
         ]);
 
         $perPage = min((int) request()->query('per_page', 10), 50);

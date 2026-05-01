@@ -140,24 +140,24 @@ class CityController extends Controller
             'slug' => 'required|string|max:255',
             // 'type' => 'required|string|max:255',
             'state_id' => 'required|integer|exists:states,id',
-            'description' => 'nullable|string',
+            'description' => 'nullable|string|max:5000',
             'featured_destination' => 'boolean',
 
             // Media (array of objects)
             'media_gallery' => 'nullable|array',
 
             // Location Details
-            'location_details.latitude' => 'nullable|string',
-            'location_details.longitude' => 'nullable|string',
-            'location_details.capital_city' => 'nullable|string',
+            'location_details.latitude' => 'nullable|string|max:32',
+            'location_details.longitude' => 'nullable|string|max:32',
+            'location_details.capital_city' => 'nullable|string|max:120',
             'location_details.population' => 'nullable|integer',
-            'location_details.currency' => 'nullable|string',
-            'location_details.timezone' => 'nullable|string',
+            'location_details.currency' => 'nullable|string|max:8',
+            'location_details.timezone' => 'nullable|string|max:64',
             'location_details.language' => 'nullable|array',
             'location_details.local_cuisine' => 'nullable|array',
 
             // Travel Info
-            'travel_info.airport' => 'nullable|string',
+            'travel_info.airport' => 'nullable|string|max:255',
             'travel_info.public_transportation' => 'nullable|array',
             'travel_info.taxi_available' => 'boolean',
             'travel_info.rental_cars_available' => 'boolean',
@@ -165,43 +165,43 @@ class CityController extends Controller
             'travel_info.hostels' => 'boolean',
             'travel_info.apartments' => 'boolean',
             'travel_info.resorts' => 'boolean',
-            'travel_info.visa_requirements' => 'nullable|string',
-            'travel_info.best_time_to_visit' => 'nullable|string',
-            'travel_info.travel_tips' => 'nullable|string',
-            'travel_info.safety_information' => 'nullable|string',
+            'travel_info.visa_requirements' => 'nullable|string|max:5000',
+            'travel_info.best_time_to_visit' => 'nullable|string|max:5000',
+            'travel_info.travel_tips' => 'nullable|string|max:5000',
+            'travel_info.safety_information' => 'nullable|string|max:5000',
 
             // Season (array of objects)
             'seasons' => 'nullable|array',
-            'seasons.*.name' => 'nullable|string',
+            'seasons.*.name' => 'nullable|string|max:120',
             'seasons.*.months' => 'nullable|array',
-            'seasons.*.weather' => 'nullable|string',
+            'seasons.*.weather' => 'nullable|string|max:5000',
             'seasons.*.activities' => 'nullable|array',
 
             // Event (array of objects)
             'events' => 'nullable|array',
-            'events.*.name' => 'nullable|string',
+            'events.*.name' => 'nullable|string|max:120',
             'events.*.type' => 'nullable|array',
             'events.*.date' => 'nullable|date',
-            'events.*.location' => 'nullable|string',
-            'events.*.description' => 'nullable|string',
+            'events.*.location' => 'nullable|string|max:255',
+            'events.*.description' => 'nullable|string|max:5000',
 
             // Additional Info
             'additional_info' => 'nullable|array',
-            'additional_info.*.title' => 'required|string',
-            'additional_info.*.content' => 'required|string',
+            'additional_info.*.title' => 'required|string|max:200',
+            'additional_info.*.content' => 'required|string|max:5000',
 
             // FAQs
             'faqs' => 'array',
-            'faqs.*.question' => 'required|string',
-            'faqs.*.answer' => 'required|string',
+            'faqs.*.question' => 'required|string|max:200',
+            'faqs.*.answer' => 'required|string|max:5000',
 
             // SEO
-            'seo.meta_title' => 'nullable|string',
-            'seo.meta_description' => 'nullable|string',
-            'seo.keywords' => 'nullable|string',
+            'seo.meta_title' => 'nullable|string|max:200',
+            'seo.meta_description' => 'nullable|string|max:500',
+            'seo.keywords' => 'nullable|string|max:500',
             'seo.og_image_url' => 'nullable|url',
             'seo.canonical_url' => 'nullable|url',
-            'seo.schema_type' => 'nullable|string',
+            'seo.schema_type' => 'nullable|string|max:50',
             'seo.schema_data' => 'nullable|array',
         ]);
 
@@ -368,24 +368,24 @@ class CityController extends Controller
             'slug' => 'nullable|string|max:255',
             // 'type' => 'nullable|string|max:255',
             'state_id' => 'nullable|integer|exists:states,id',
-            'description' => 'nullable|string',
+            'description' => 'nullable|string|max:5000',
             'featured_destination' => 'boolean',
 
             // Media (array of objects)
             'media_gallery' => 'nullable|array',
 
             // Location Details
-            'location_details.latitude' => 'nullable|string',
-            'location_details.longitude' => 'nullable|string',
-            'location_details.capital_city' => 'nullable|string',
+            'location_details.latitude' => 'nullable|string|max:32',
+            'location_details.longitude' => 'nullable|string|max:32',
+            'location_details.capital_city' => 'nullable|string|max:120',
             'location_details.population' => 'nullable|integer',
-            'location_details.currency' => 'nullable|string',
-            'location_details.timezone' => 'nullable|string',
+            'location_details.currency' => 'nullable|string|max:8',
+            'location_details.timezone' => 'nullable|string|max:64',
             'location_details.language' => 'nullable|array',
             'location_details.local_cuisine' => 'nullable|array',
 
             // Travel Info
-            'travel_info.airport' => 'nullable|string',
+            'travel_info.airport' => 'nullable|string|max:255',
             'travel_info.public_transportation' => 'nullable|array',
             'travel_info.taxi_available' => 'boolean',
             'travel_info.rental_cars_available' => 'boolean',
@@ -393,47 +393,47 @@ class CityController extends Controller
             'travel_info.hostels' => 'boolean',
             'travel_info.apartments' => 'boolean',
             'travel_info.resorts' => 'boolean',
-            'travel_info.visa_requirements' => 'nullable|string',
-            'travel_info.best_time_to_visit' => 'nullable|string',
-            'travel_info.travel_tips' => 'nullable|string',
-            'travel_info.safety_information' => 'nullable|string',
+            'travel_info.visa_requirements' => 'nullable|string|max:5000',
+            'travel_info.best_time_to_visit' => 'nullable|string|max:5000',
+            'travel_info.travel_tips' => 'nullable|string|max:5000',
+            'travel_info.safety_information' => 'nullable|string|max:5000',
 
             // Season (array of objects)
             'seasons' => 'nullable|array',
             'seasons.*.id' => 'nullable|integer|exists:city_seasons,id',
-            'seasons.*.name' => 'nullable|string',
+            'seasons.*.name' => 'nullable|string|max:120',
             'seasons.*.months' => 'nullable|array',
-            'seasons.*.weather' => 'nullable|string',
+            'seasons.*.weather' => 'nullable|string|max:5000',
             'seasons.*.activities' => 'nullable|array',
 
             // Event (array of objects)
             'events' => 'nullable|array',
             'events.*.id' => 'nullable|integer|exists:city_events,id',
-            'events.*.name' => 'nullable|string',
+            'events.*.name' => 'nullable|string|max:120',
             'events.*.type' => 'nullable|array',
             'events.*.date' => 'nullable|date',
-            'events.*.location' => 'nullable|string',
-            'events.*.description' => 'nullable|string',
+            'events.*.location' => 'nullable|string|max:255',
+            'events.*.description' => 'nullable|string|max:5000',
 
             // Additional Info
             'additional_info' => 'nullable|array',
             'additional_info.*.id' => 'nullable|integer|exists:city_additional_infos,id',
-            'additional_info.*.title' => 'required|string',
-            'additional_info.*.content' => 'required|string',
+            'additional_info.*.title' => 'required|string|max:200',
+            'additional_info.*.content' => 'required|string|max:5000',
 
             // FAQs
             'faqs' => 'nullable|array',
             'faqs.*.id' => 'nullable|integer|exists:city_faqs,id',
-            'faqs.*.question' => 'required|string',
-            'faqs.*.answer' => 'required|string',
+            'faqs.*.question' => 'required|string|max:200',
+            'faqs.*.answer' => 'required|string|max:5000',
 
             // SEO
-            'seo.meta_title' => 'nullable|string',
-            'seo.meta_description' => 'nullable|string',
-            'seo.keywords' => 'nullable|string',
+            'seo.meta_title' => 'nullable|string|max:200',
+            'seo.meta_description' => 'nullable|string|max:500',
+            'seo.keywords' => 'nullable|string|max:500',
             'seo.og_image_url' => 'nullable|url',
             'seo.canonical_url' => 'nullable|url',
-            'seo.schema_type' => 'nullable|string',
+            'seo.schema_type' => 'nullable|string|max:50',
             'seo.schema_data' => 'nullable|array',
         ]);
 

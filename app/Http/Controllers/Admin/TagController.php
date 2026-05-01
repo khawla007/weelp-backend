@@ -54,7 +54,7 @@ class TagController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'slug' => 'sometimes|required|string|max:255|unique:tags,slug',
-            'description' => 'nullable|string',
+            'description' => 'nullable|string|max:5000',
             'status' => 'required|in:active,draft',
             'is_featured' => 'nullable|boolean',
         ]);
@@ -88,7 +88,7 @@ class TagController extends Controller
         $validated = $request->validate([
             'name' => 'sometimes|required|string|max:255',
             'slug' => 'sometimes|required|string|max:255|unique:tags,slug,'.$tag->id,
-            'description' => 'nullable|string',
+            'description' => 'nullable|string|max:5000',
             'status' => 'sometimes|required|in:active,draft',
             'is_featured' => 'nullable|boolean',
         ]);

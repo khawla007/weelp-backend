@@ -127,10 +127,10 @@ class AddonController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'type' => 'nullable|in:itinerary,activity,package,transfer',
-            'description' => 'nullable|string',
+            'description' => 'nullable|string|max:5000',
             'price' => 'required|numeric|min:0',
             'sale_price' => 'nullable|numeric|min:0',
-            'price_calculation' => 'required|string',
+            'price_calculation' => 'required|string|max:50',
             'active_status' => 'sometimes|boolean',
         ]);
 
@@ -164,10 +164,10 @@ class AddonController extends Controller
         $validated = $request->validate([
             'name' => 'sometimes|string|max:255',
             'type' => 'nullable|in:itinerary,activity,package,transfer',
-            'description' => 'nullable|string',
+            'description' => 'nullable|string|max:5000',
             'price' => 'sometimes|numeric|min:0',
             'sale_price' => 'nullable|numeric|min:0',
-            'price_calculation' => 'required|string',
+            'price_calculation' => 'required|string|max:50',
             'active_status' => 'sometimes|boolean',
         ]);
 

@@ -18,7 +18,7 @@ class BlogController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'content' => 'required|string',
+            'content' => 'required|string|max:5000',
             'publish' => 'required|boolean',
 
             'media_gallery' => 'required|array',
@@ -31,7 +31,7 @@ class BlogController extends Controller
             'tags' => 'required|array',
             'tags.*' => 'required|exists:tags,id',
 
-            'excerpt' => 'required|string',
+            'excerpt' => 'required|string|max:5000',
         ]);
 
         if ($validator->fails()) {
@@ -85,7 +85,7 @@ class BlogController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'sometimes|string|max:255',
             'slug' => 'sometimes|string|max:255',
-            'content' => 'sometimes|string',
+            'content' => 'sometimes|string|max:5000',
             'publish' => 'sometimes|boolean',
 
             'media_gallery' => 'sometimes|array',
@@ -98,7 +98,7 @@ class BlogController extends Controller
             'tags' => 'sometimes|array',
             'tags.*' => 'required|exists:tags,id',
 
-            'excerpt' => 'sometimes|string',
+            'excerpt' => 'sometimes|string|max:5000',
         ]);
 
         if ($validator->fails()) {

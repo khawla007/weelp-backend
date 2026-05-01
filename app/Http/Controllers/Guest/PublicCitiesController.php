@@ -288,8 +288,8 @@ class PublicCitiesController extends Controller
     public function getAllItemsByCity($city_slug)
     {
         request()->validate([
-            'categories' => 'nullable|string',
-            'tags' => 'nullable|string',
+            'categories' => 'nullable|string|max:500',
+            'tags' => 'nullable|string|max:500',
             'min_price' => 'nullable|numeric|min:0',
             'max_price' => 'nullable|numeric|min:0',
             'sort_by' => 'nullable|in:name_asc,name_desc,price_asc,price_desc,id_asc,id_desc',

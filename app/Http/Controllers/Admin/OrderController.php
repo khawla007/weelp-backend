@@ -26,8 +26,8 @@ class OrderController extends Controller
             'preferred_time' => 'nullable|date_format:H:i:s',
             'number_of_adults' => 'required|integer|min:1',
             'number_of_children' => 'nullable|integer|min:0',
-            'status' => 'nullable|string|in:pending,confirmed,cancelled',
-            'special_requirements' => 'nullable|string',
+            'status' => 'nullable|string|max:50|in:pending,confirmed,cancelled',
+            'special_requirements' => 'nullable|string|max:5000',
 
             'payment' => 'required|array',
             'emergency_contact' => 'required|array',

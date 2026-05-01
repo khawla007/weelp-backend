@@ -62,18 +62,18 @@ class PublicHomeSearchController extends Controller
     {
 
         $request->validate([
-            'location' => 'required|string',
+            'location' => 'required|string|max:200',
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
             'quantity' => 'nullable|integer|min:1',
-            'categories' => 'nullable|string',
-            'tags' => 'nullable|string',
-            'featured' => 'nullable|string|in:true,false',
+            'categories' => 'nullable|string|max:500',
+            'tags' => 'nullable|string|max:500',
+            'featured' => 'nullable|string|max:50|in:true,false',
             'min_price' => 'nullable|numeric|min:0',
             'max_price' => 'nullable|numeric|min:0',
-            'sort_by' => 'nullable|string|in:price_asc,price_desc,name_asc,name_desc,id_asc,id_desc',
+            'sort_by' => 'nullable|string|max:50|in:price_asc,price_desc,name_asc,name_desc,id_asc,id_desc',
             'page' => 'nullable|integer|min:1',
-            'item_type' => 'nullable|string', // New filter added
+            'item_type' => 'nullable|string|max:50', // New filter added
         ]);
 
         $location = $request->location;

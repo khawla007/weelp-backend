@@ -204,8 +204,8 @@ class ItineraryController extends Controller
     {
         $rules = [
             'name' => 'required|string|max:255',
-            'slug' => 'required|string|unique:itineraries,slug',
-            'description' => 'nullable|string',
+            'slug' => 'required|string|max:160|unique:itineraries,slug',
+            'description' => 'nullable|string|max:5000',
             'featured_itinerary' => 'boolean',
             'private_itinerary' => 'boolean',
             'locations' => 'nullable|array',
@@ -692,8 +692,8 @@ class ItineraryController extends Controller
 
         $rules = [
             'name' => 'sometimes|string|max:255',
-            'slug' => 'sometimes|string|unique:itineraries,slug,'.$itinerary->id,
-            'description' => 'nullable|string',
+            'slug' => 'sometimes|string|max:160|unique:itineraries,slug,'.$itinerary->id,
+            'description' => 'nullable|string|max:5000',
             'featured_itinerary' => 'boolean',
             'private_itinerary' => 'boolean',
             'locations' => 'nullable|array',

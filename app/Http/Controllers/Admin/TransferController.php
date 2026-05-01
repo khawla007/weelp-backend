@@ -229,9 +229,9 @@ class TransferController extends Controller
         // Base validation rules
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
-            'slug' => 'required|string|unique:transfers,slug',
-            'description' => 'nullable|string',
-            'transfer_type' => 'required|string',
+            'slug' => 'required|string|max:160|unique:transfers,slug',
+            'description' => 'nullable|string|max:5000',
+            'transfer_type' => 'required|string|max:50',
             'is_vendor' => 'required|boolean',
 
             // Vendor related
@@ -242,7 +242,7 @@ class TransferController extends Controller
             'pickup_location' => 'nullable|string|max:255',
             'dropoff_location' => 'nullable|string|max:255',
             'vehicle_type' => 'nullable|string|max:255',
-            'inclusion' => 'nullable|string',
+            'inclusion' => 'nullable|string|max:5000',
 
             // Vendor pricing/availability
             'pricing_tier_id' => 'nullable|integer|exists:vendor_pricing_tiers,id',
@@ -258,7 +258,7 @@ class TransferController extends Controller
             // Schedule fields
             'availability_type' => 'nullable|in:always_available,specific_date,custom_schedule',
             'available_days' => 'nullable|array',
-            'available_days.*' => 'string',
+            'available_days.*' => 'string|max:20',
             'time_slots' => 'nullable|array',
             'time_slots.*.start' => 'required_with:time_slots|date_format:H:i',
             'time_slots.*.end' => 'required_with:time_slots|date_format:H:i',
@@ -273,11 +273,11 @@ class TransferController extends Controller
             // SEO
             'seo' => 'array',
             'seo.meta_title' => 'nullable|string|max:255',
-            'seo.meta_description' => 'nullable|string',
-            'seo.keywords' => 'nullable|string',
-            'seo.og_image_url' => 'nullable|string',
-            'seo.canonical_url' => 'nullable|string',
-            'seo.schema_type' => 'nullable|string',
+            'seo.meta_description' => 'nullable|string|max:500',
+            'seo.keywords' => 'nullable|string|max:500',
+            'seo.og_image_url' => 'nullable|string|max:2048',
+            'seo.canonical_url' => 'nullable|string|max:2048',
+            'seo.schema_type' => 'nullable|string|max:50',
             'seo.schema_data' => 'nullable|array',
 
             // Addons
@@ -298,7 +298,7 @@ class TransferController extends Controller
                 'pickup_location' => 'required|string|max:255',
                 'dropoff_location' => 'required|string|max:255',
                 'vehicle_type' => 'required|string|max:255',
-                'inclusion' => 'required|string',
+                'inclusion' => 'required|string|max:5000',
                 'base_price' => 'required|numeric',
                 'currency' => 'required|string|max:10',
                 'price_type' => 'required|string|max:255',
@@ -489,9 +489,9 @@ class TransferController extends Controller
         // Validate only the fields coming in request
         $validatedData = $request->validate([
             'name' => 'sometimes|required|string|max:255',
-            'slug' => 'sometimes|required|string|unique:transfers,slug,'.$id,
-            'description' => 'sometimes|nullable|string',
-            'transfer_type' => 'sometimes|required|string',
+            'slug' => 'sometimes|required|string|max:160|unique:transfers,slug,'.$id,
+            'description' => 'sometimes|nullable|string|max:5000',
+            'transfer_type' => 'sometimes|required|string|max:50',
             'is_vendor' => 'sometimes|required|boolean',
 
             // Vendor related
@@ -502,7 +502,7 @@ class TransferController extends Controller
             'pickup_location' => 'sometimes|nullable|string|max:255',
             'dropoff_location' => 'sometimes|nullable|string|max:255',
             'vehicle_type' => 'sometimes|nullable|string|max:255',
-            'inclusion' => 'sometimes|nullable|string',
+            'inclusion' => 'sometimes|nullable|string|max:5000',
 
             // Vendor pricing/availability
             'pricing_tier_id' => 'sometimes|nullable|integer|exists:vendor_pricing_tiers,id',
@@ -518,7 +518,7 @@ class TransferController extends Controller
             // Schedule fields
             'availability_type' => 'sometimes|nullable|in:always_available,specific_date,custom_schedule',
             'available_days' => 'sometimes|nullable|array',
-            'available_days.*' => 'string',
+            'available_days.*' => 'string|max:20',
             'time_slots' => 'sometimes|nullable|array',
             'time_slots.*.start' => 'required_with:time_slots|date_format:H:i',
             'time_slots.*.end' => 'required_with:time_slots|date_format:H:i',
@@ -533,11 +533,11 @@ class TransferController extends Controller
             // SEO
             'seo' => 'sometimes|array',
             'seo.meta_title' => 'sometimes|nullable|string|max:255',
-            'seo.meta_description' => 'sometimes|nullable|string',
-            'seo.keywords' => 'sometimes|nullable|string',
-            'seo.og_image_url' => 'sometimes|nullable|string',
-            'seo.canonical_url' => 'sometimes|nullable|string',
-            'seo.schema_type' => 'sometimes|nullable|string',
+            'seo.meta_description' => 'sometimes|nullable|string|max:500',
+            'seo.keywords' => 'sometimes|nullable|string|max:500',
+            'seo.og_image_url' => 'sometimes|nullable|string|max:2048',
+            'seo.canonical_url' => 'sometimes|nullable|string|max:2048',
+            'seo.schema_type' => 'sometimes|nullable|string|max:50',
             'seo.schema_data' => 'sometimes|nullable|array',
 
             // Addons

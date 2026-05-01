@@ -177,7 +177,7 @@ class ReviewController extends Controller
     public function getItemsByType(Request $request)
     {
         $request->validate([
-            'item_type' => 'required|string|in:transfer,package,activity,itinerary',
+            'item_type' => 'required|string|max:50|in:transfer,package,activity,itinerary',
         ]);
 
         $itemType = $request->item_type;
@@ -211,12 +211,12 @@ class ReviewController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'item_type' => 'required|string',
+            'item_type' => 'required|string|max:50',
             'item_id' => 'required|integer',
             'user_id' => 'required|integer|exists:users,id',
             'order_id' => 'nullable|integer|exists:orders,id',  // NEW
             'rating' => 'required|integer|min:1|max:5',
-            'review_text' => 'nullable|string',
+            'review_text' => 'nullable|string|max:5000',
             'media_gallery' => 'nullable|array',
             'media_gallery.*' => 'integer|exists:media,id',
             'status' => 'nullable|in:approved,pending',
@@ -344,12 +344,12 @@ class ReviewController extends Controller
         $review = Review::findOrFail($id);
 
         $validated = $request->validate([
-            'item_type' => 'sometimes|string',
+            'item_type' => 'sometimes|string|max:50',
             'item_id' => 'sometimes|integer',
             'user_id' => 'sometimes|integer|exists:users,id',
             'order_id' => 'sometimes|integer|exists:orders,id',
             'rating' => 'sometimes|integer|min:1|max:5',
-            'review_text' => 'nullable|string',
+            'review_text' => 'nullable|string|max:5000',
             'media_gallery' => 'nullable|array',
             'media_gallery.*' => 'integer|exists:media,id',
             'status' => 'nullable|in:approved,pending',

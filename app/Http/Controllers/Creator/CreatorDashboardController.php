@@ -84,7 +84,7 @@ class CreatorDashboardController extends Controller
     public function resolveLink(Request $request)
     {
         $request->validate([
-            'url' => 'required|string|url',
+            'url' => 'required|string|max:2048|url',
         ]);
 
         $path = parse_url($request->url, PHP_URL_PATH);

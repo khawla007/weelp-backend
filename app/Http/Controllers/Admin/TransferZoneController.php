@@ -44,7 +44,7 @@ class TransferZoneController extends Controller
         $data = $request->validate([
             'name'        => 'required|string|max:255',
             'slug'        => 'nullable|string|max:255|unique:transfer_zones,slug',
-            'description' => 'nullable|string',
+            'description' => 'nullable|string|max:5000',
             'sort_order'  => 'nullable|integer',
             'is_active'   => 'nullable|boolean',
         ]);
@@ -73,7 +73,7 @@ class TransferZoneController extends Controller
         $data = $request->validate([
             'name'        => 'sometimes|required|string|max:255',
             'slug'        => ['sometimes', 'required', 'string', 'max:255', Rule::unique('transfer_zones', 'slug')->ignore($zone->id)],
-            'description' => 'nullable|string',
+            'description' => 'nullable|string|max:5000',
             'sort_order'  => 'nullable|integer',
             'is_active'   => 'nullable|boolean',
         ]);

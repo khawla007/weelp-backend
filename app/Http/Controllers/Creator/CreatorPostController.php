@@ -27,7 +27,7 @@ class CreatorPostController extends Controller
             'caption' => 'required|string|max:2000',
             'tagged_items' => 'nullable|array',
             'tagged_items.*.taggable_id' => 'required_with:tagged_items|integer',
-            'tagged_items.*.taggable_type' => 'required_with:tagged_items|string|in:App\\Models\\Activity,App\\Models\\Itinerary,App\\Models\\Package',
+            'tagged_items.*.taggable_type' => 'required_with:tagged_items|string|max:50|in:App\\Models\\Activity,App\\Models\\Itinerary,App\\Models\\Package',
         ]);
 
         $post = Post::create([
@@ -65,7 +65,7 @@ class CreatorPostController extends Controller
             'status' => 'sometimes|in:draft,published,archived',
             'tagged_items' => 'nullable|array',
             'tagged_items.*.taggable_id' => 'required_with:tagged_items|integer',
-            'tagged_items.*.taggable_type' => 'required_with:tagged_items|string|in:App\\Models\\Activity,App\\Models\\Itinerary,App\\Models\\Package',
+            'tagged_items.*.taggable_type' => 'required_with:tagged_items|string|max:50|in:App\\Models\\Activity,App\\Models\\Itinerary,App\\Models\\Package',
         ]);
 
         $post->update(collect($validated)->only(['media_id', 'caption', 'status'])->filter()->toArray());

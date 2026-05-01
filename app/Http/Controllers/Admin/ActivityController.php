@@ -204,9 +204,9 @@ class ActivityController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'slug' => 'required|string|unique:activities,slug',
-            'description' => 'nullable|string',
-            'short_description' => 'nullable|string',
+            'slug' => 'required|string|max:160|unique:activities,slug',
+            'description' => 'nullable|string|max:5000',
+            'short_description' => 'nullable|string|max:500',
             'featured_activity' => 'boolean',
             'categories' => 'nullable|array',
             'tags' => 'nullable|array',
@@ -519,9 +519,9 @@ class ActivityController extends Controller
 
         $rules = [
             'name' => 'sometimes|required|string|max:255',
-            'slug' => 'sometimes|required|string|unique:activities,slug,'.$activity->id,
-            'description' => 'nullable|string',
-            'short_description' => 'nullable|string',
+            'slug' => 'sometimes|required|string|max:160|unique:activities,slug,'.$activity->id,
+            'description' => 'nullable|string|max:5000',
+            'short_description' => 'nullable|string|max:500',
             'featured_activity' => 'boolean',
             'categories' => 'nullable|array',
             'tags' => 'nullable|array',

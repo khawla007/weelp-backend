@@ -46,10 +46,10 @@ class UserProfileController extends Controller
             'country' => 'nullable|string|max:255',
             'post_code' => 'nullable|string|max:20',
             'phone' => 'nullable|string|max:20',
-            'gender' => 'nullable|string|in:male,female,other',
+            'gender' => 'nullable|string|max:50|in:male,female,other',
             'username' => 'nullable|string|max:255',
-            'interest' => 'nullable|string',
-            'bio' => 'nullable|string',
+            'interest' => 'nullable|string|max:5000',
+            'bio' => 'nullable|string|max:5000',
 
             // URLs validation
             'urls' => 'nullable|array',
@@ -154,8 +154,8 @@ class UserProfileController extends Controller
     public function changePassword(Request $request)
     {
         $validated = $request->validate([
-            'current_password' => 'required|string',
-            'password' => 'required|string|min:8|confirmed',
+            'current_password' => 'required|string|max:128',
+            'password' => 'required|string|max:128|min:8|confirmed',
         ]);
 
         $user = $request->user();
@@ -390,11 +390,11 @@ class UserProfileController extends Controller
 
         // Validate review + optional file upload
         $request->validate([
-            'item_type' => 'required|string|in:activity,package,itinerary',
+            'item_type' => 'required|string|max:50|in:activity,package,itinerary',
             'item_id' => 'required|integer',
             'order_id' => 'nullable|integer|exists:orders,id',
             'rating' => 'required|integer|min:1|max:5',
-            'review_text' => 'required|string',
+            'review_text' => 'required|string|max:5000',
             'file' => 'nullable|array',
             'file.*' => UploadRules::reviewAttachment(),
         ]);
@@ -573,7 +573,7 @@ class UserProfileController extends Controller
             // Validate optional fields
             $request->validate([
                 'rating' => 'nullable|integer|min:1|max:5',
-                'review_text' => 'nullable|string',
+                'review_text' => 'nullable|string|max:5000',
                 'order_id' => 'nullable|integer|exists:orders,id',
                 'file' => 'nullable|array',
                 'file.*' => UploadRules::reviewAttachment(),
