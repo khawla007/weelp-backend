@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
@@ -25,6 +26,31 @@ class AppServiceProvider extends ServiceProvider
     {
         if ($this->app->environment('production') && config('app.debug') === true) {
             throw new \RuntimeException('APP_DEBUG must be false in production.');
+        }
+
+        $trustedProxies = config('security.trusted_proxies');
+
+        if ($this->app->environment('production') && empty($trustedProxies)) {
+            throw new \RuntimeException(
+                'TRUSTED_PROXIES must be a CIDR list (e.g. "10.0.0.0/8,192.168.0.0/16") '
+                .'or "*" in production. Without it request->ip() and request->isSecure() '
+                .'report the load balancer instead of the real client.'
+            );
+        }
+
+        if (! empty($trustedProxies)) {
+            $proxies = $trustedProxies === '*'
+                ? '*'
+                : array_map('trim', explode(',', $trustedProxies));
+
+            TrustProxies::at($proxies);
+            TrustProxies::withHeaders(
+                Request::HEADER_X_FORWARDED_FOR
+                | Request::HEADER_X_FORWARDED_HOST
+                | Request::HEADER_X_FORWARDED_PORT
+                | Request::HEADER_X_FORWARDED_PROTO
+                | Request::HEADER_X_FORWARDED_AWS_ELB,
+            );
         }
 
         RateLimiter::for('login', function (Request $request) {
