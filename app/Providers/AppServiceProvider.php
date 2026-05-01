@@ -28,6 +28,30 @@ class AppServiceProvider extends ServiceProvider
             throw new \RuntimeException('APP_DEBUG must be false in production.');
         }
 
+        if ($this->app->environment('production')) {
+            $origins = config('cors.allowed_origins', []);
+
+            if (config('cors.supports_credentials') === true && empty($origins)) {
+                throw new \RuntimeException(
+                    'CORS supports_credentials=true requires explicit allowed_origins in production.'
+                );
+            }
+
+            foreach ($origins as $origin) {
+                if (trim((string) $origin) === '') {
+                    throw new \RuntimeException('CORS allowed_origins contains empty entry in production.');
+                }
+                if ($origin === '*') {
+                    throw new \RuntimeException('CORS allowed_origins cannot be wildcard in production.');
+                }
+                if (str_starts_with($origin, 'http://')) {
+                    throw new \RuntimeException(
+                        'CORS allowed_origins must use https:// in production: '.$origin
+                    );
+                }
+            }
+        }
+
         $trustedProxies = config('security.trusted_proxies');
 
         if ($this->app->environment('production') && empty($trustedProxies)) {
