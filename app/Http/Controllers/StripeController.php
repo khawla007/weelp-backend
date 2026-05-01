@@ -13,6 +13,7 @@ use App\Models\Order;
 use App\Models\OrderPayment;
 use App\Models\User;
 use App\Services\ActivityDiscountService;
+use App\Services\PackagePricingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -46,6 +47,7 @@ class StripeController extends Controller
             'addons_amount' => 'nullable|numeric',
             'bag_count' => 'nullable|integer|min:0',
             'waiting_minutes' => 'nullable|integer|min:0',
+            'variation_id' => 'nullable|integer',
         ]);
 
         $userId = $request->user()->id;
@@ -157,18 +159,22 @@ class StripeController extends Controller
             $data['addons_amount'] = round($addonsAmount, 2);
         }
 
-        // Server-side enforcement: packages charge basePricing → first variation
-        // regular_price. Client-supplied amount is ignored.
-        // TODO: replace with a Package price service that handles seasonal/variant pricing.
+        // Server-side enforcement: packages charge the resolved variation's
+        // regular_price via PackagePricingService. Client-supplied amount is ignored.
         if ($orderable instanceof \App\Models\Package) {
-            $orderable->loadMissing('basePricing.variations');
-            $variation = $orderable->basePricing?->variations->first();
-            $packageBase = $variation ? (float) $variation->regular_price : 0.0;
-
-            if ($packageBase <= 0) {
+            try {
+                $packageBase = app(PackagePricingService::class)->priceFor(
+                    $orderable,
+                    isset($data['variation_id']) ? (int) $data['variation_id'] : null,
+                    \Carbon\CarbonImmutable::parse($data['travel_date']),
+                    (int) $data['number_of_adults'],
+                    (int) $data['number_of_children'],
+                    0,
+                );
+            } catch (\DomainException $e) {
                 return response()->json([
-                    'error' => 'package_pricing_missing',
-                    'message' => 'Package pricing is not available.',
+                    'error' => $e->getMessage(),
+                    'message' => 'Package pricing rejected the booking.',
                 ], 422);
             }
 
@@ -287,7 +293,7 @@ class StripeController extends Controller
                     ];
                 }),
                 'schedules' => $orderable->schedules,
-                'pricing' => $orderable->basePricing->priceVariations ?? [],
+                'pricing' => $orderable->basePricing->variations ?? [],
                 'coupons_applied' => $order->applied_coupons ?? [],
                 'media' => $orderable->mediaGallery->map(function ($mg) {
                     return [
@@ -604,6 +610,7 @@ class StripeController extends Controller
             'emergency_contact.name' => 'required|string|max:200',
             'emergency_contact.phone' => 'required|string|max:32',
             'emergency_contact.relationship' => 'required|string|max:100',
+            'variation_id' => 'nullable|integer',
         ]);
 
         $userId = $request->user()->id;
@@ -639,9 +646,18 @@ class StripeController extends Controller
                 (int) $data['number_of_children']
             );
         } elseif ($orderable instanceof \App\Models\Package) {
-            $orderable->loadMissing('basePricing.variations');
-            $variation = $orderable->basePricing?->variations->first();
-            $totalAmount = $variation ? (float) $variation->regular_price : 0.0;
+            try {
+                $totalAmount = app(PackagePricingService::class)->priceFor(
+                    $orderable,
+                    isset($data['variation_id']) ? (int) $data['variation_id'] : null,
+                    \Carbon\CarbonImmutable::parse($data['travel_date']),
+                    (int) $data['number_of_adults'],
+                    (int) $data['number_of_children'],
+                    0,
+                );
+            } catch (\DomainException $e) {
+                return response()->json(['error' => $e->getMessage()], 422);
+            }
         }
 
         if ($totalAmount <= 0) {
@@ -723,7 +739,7 @@ class StripeController extends Controller
                     ];
                 }),
                 'schedules' => $orderable->schedules,
-                'pricing' => $orderable->basePricing->priceVariations ?? [],
+                'pricing' => $orderable->basePricing->variations ?? [],
                 'coupons_applied' => $order->applied_coupons ?? [],
                 'media' => $orderable->mediaGallery->map(function ($mg) {
                     return [
@@ -834,7 +850,7 @@ class StripeController extends Controller
                 case 'Package':
                     $package = \App\Models\Package::with('basePricing.variations')->where('id', $orderableId)->first();
                     $itemName = $package?->name;
-                    $itemPrice = $package?->basePricing?->priceVariations?->first()?->regular_price;
+                    $itemPrice = $package?->basePricing?->variations?->first()?->regular_price;
                     break;
 
                 case 'Itinerary':
