@@ -86,6 +86,13 @@ class AppServiceProvider extends ServiceProvider
             ];
         });
 
+        RateLimiter::for('verify_email', function (Request $request) {
+            $email = mb_strtolower(trim((string) $request->input('email', '')));
+            $key = $email !== '' ? $email.'|'.$request->ip() : $request->ip();
+
+            return Limit::perMinute(5)->by($key);
+        });
+
         Relation::enforceMorphMap([
             'activity' => \App\Models\Activity::class,
             'package' => \App\Models\Package::class,

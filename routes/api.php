@@ -63,10 +63,6 @@ use App\Http\Controllers\UserProfileController;
 use Illuminate\Support\Facades\Route;
 use Stevebauman\Location\Facades\Location;
 
-Route::get('/test', function () {
-    return response()->json(['message' => 'Route Working!']);
-});
-
 // Login - named limiter: 5/min per email+IP and 20/min per IP
 Route::middleware('throttle:login')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
@@ -99,17 +95,17 @@ Route::middleware('throttle:10,1')->group(function () {
     Route::get('/check-username', [AuthController::class, 'checkUsername']);
 });
 
-Route::get('/verify-email', [AuthController::class, 'verifyEmail']);
-
-Route::middleware('throttle:5,1')->group(function () {
+// Email verification - named limiter: 5/min per email+IP (or per IP when email absent)
+Route::middleware('throttle:verify_email')->group(function () {
+    Route::get('/verify-email', [AuthController::class, 'verifyEmail']);
     Route::post('/resend-verification', [AuthController::class, 'resendVerification']);
 });
 
-// Role-agnostic authenticated routes
-Route::middleware(['auth:api'])->prefix('user')->group(function () {
+// Role-agnostic authenticated routes - 30/min baseline; avatar upload also capped at 10/min for MinIO write cost
+Route::middleware(['auth:api', 'throttle:30,1'])->prefix('user')->group(function () {
     Route::get('/profile', [UserProfileController::class, 'show']);
-    Route::post('/avatar', [UserProfileController::class, 'uploadAvatar']);
     Route::delete('/avatar', [UserProfileController::class, 'deleteAvatar']);
+    Route::middleware('throttle:10,1,avatar')->post('/avatar', [UserProfileController::class, 'uploadAvatar']);
 });
 
 // Route::middleware('auth:api')->group(function () {
@@ -217,7 +213,8 @@ Route::middleware(['auth:api', 'throttle:30,1'])->group(function () {
 // Stripe webhook stays PUBLIC — Stripe-Signature header is the auth.
 Route::post('/stripe/webhook', [StripeController::class, 'handleWebhook']);
 
-Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
+// Admin group - auth + role gate run before throttle so unauth requests bail before counting
+Route::middleware(['auth:api', 'admin', 'throttle:60,1'])->prefix('admin')->group(function () {
 
     // Dashboard Routes
     Route::prefix('dashboard')->group(function () {
