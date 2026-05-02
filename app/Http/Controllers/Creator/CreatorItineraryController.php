@@ -530,7 +530,7 @@ class CreatorItineraryController extends Controller
     {
         $query = \App\Models\Itinerary::creatorCopies()->approved()
             ->with([
-                'creator:users.id,users.name,users.email',
+                'creator:users.id,users.name',
                 'creator.profile:id,user_id,avatar',
                 'locations:id,itinerary_id,city_id',
                 'locations.city:id,name',
@@ -619,7 +619,7 @@ class CreatorItineraryController extends Controller
     {
         $itinerary = \App\Models\Itinerary::creatorCopies()->approved()
             ->with([
-                'creator:id,name,email',
+                'creator:users.id,users.name',
                 'creator.profile:id,user_id,avatar',
                 'locations.city',
                 'schedules.activities.activity',
