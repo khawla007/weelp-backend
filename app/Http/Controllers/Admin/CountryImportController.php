@@ -242,8 +242,9 @@ use App\Models\CountryLocationDetail;
 use App\Models\CountrySeason;
 use App\Models\CountrySeo;
 use App\Models\CountryTravelInfo;
+use App\Rules\SafeUrl;
+use App\Support\SafeHttp;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
 
 class CountryImportController extends Controller
@@ -252,7 +253,7 @@ class CountryImportController extends Controller
     {
         // Validate the request
         $validator = Validator::make($request->all(), [
-            'file' => 'required|url',
+            'file' => ['required', 'url', 'max:2048', new SafeUrl],
         ]);
 
         if ($validator->fails()) {
@@ -262,8 +263,12 @@ class CountryImportController extends Controller
         // Get the file URL from the request
         $fileUrl = $request->input('file');
 
-        // Download the file
-        $response = Http::get($fileUrl);
+        // Download the file (SSRF-hardened: blocks private/loopback IPs, caps size + redirects)
+        try {
+            $response = SafeHttp::fetch($fileUrl);
+        } catch (\DomainException $e) {
+            return response()->json(['error' => 'ssrf_blocked', 'message' => $e->getMessage()], 422);
+        }
 
         if (! $response->successful()) {
             return response()->json(['error' => 'Failed to download the file.'], 400);

@@ -186,8 +186,9 @@ use App\Models\StateLocationDetail;
 use App\Models\StateSeason;
 use App\Models\StateSeo;
 use App\Models\StateTravelInfo;
+use App\Rules\SafeUrl;
+use App\Support\SafeHttp;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
 
 class StateImportController extends Controller
@@ -196,7 +197,7 @@ class StateImportController extends Controller
     {
         // Validate the request
         $validator = Validator::make($request->all(), [
-            'file' => 'required|url',
+            'file' => ['required', 'url', 'max:2048', new SafeUrl],
         ]);
 
         if ($validator->fails()) {
@@ -206,8 +207,12 @@ class StateImportController extends Controller
         // Get the file URL from the request
         $fileUrl = $request->input('file');
 
-        // Download the file
-        $response = Http::get($fileUrl);
+        // Download the file (SSRF-hardened)
+        try {
+            $response = SafeHttp::fetch($fileUrl);
+        } catch (\DomainException $e) {
+            return response()->json(['error' => 'ssrf_blocked', 'message' => $e->getMessage()], 422);
+        }
 
         if (! $response->successful()) {
             return response()->json(['error' => 'Failed to download the file.'], 400);
