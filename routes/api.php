@@ -230,20 +230,20 @@ Route::middleware(['auth:api', 'admin', 'throttle:60,1'])->prefix('admin')->grou
         Route::post('/create', [UserController::class, 'createUser']);
         Route::get('{id}', [UserController::class, 'show']);
         Route::put('/update{id}', [UserController::class, 'update']);
-        Route::delete('{id}', [UserController::class, 'destroy']);
-        Route::post('/bulk-delete', [UserController::class, 'bulkDelete']);
+        Route::delete('{id}', [UserController::class, 'destroy'])->middleware('super_admin');
+        Route::post('/bulk-delete', [UserController::class, 'bulkDelete'])->middleware('super_admin');
         Route::post('{id}/avatar', [UserController::class, 'uploadUserAvatar']);
     });
 
     // Admin Side Category Routes
     Route::apiResource('/categories', CategoryController::class);
     Route::get('/categorylist', [CategoryController::class, 'getCatList']);
-    Route::post('/categories/bulk-delete', [CategoryController::class, 'bulkDelete']);
+    Route::post('/categories/bulk-delete', [CategoryController::class, 'bulkDelete'])->middleware('super_admin');
 
     // Admin Side Acitivty Tag Routes
     Route::apiResource('/tags', TagController::class);
     Route::get('/taglist', [TagController::class, 'getTagList']);
-    Route::post('/tags/bulk-delete', [TagController::class, 'bulkDelete']);
+    Route::post('/tags/bulk-delete', [TagController::class, 'bulkDelete'])->middleware('super_admin');
 
     Route::prefix('attributes')->group(function () {
         Route::get('/slug/{slug}', [AttributeController::class, 'getValuesBySlug']);
@@ -252,7 +252,7 @@ Route::middleware(['auth:api', 'admin', 'throttle:60,1'])->prefix('admin')->grou
         Route::post('/', [AttributeController::class, 'store']);
         Route::put('{id}', [AttributeController::class, 'update']);
         Route::delete('{id}', [AttributeController::class, 'destroy']);
-        Route::post('/bulk-delete', [AttributeController::class, 'bulkDelete']);
+        Route::post('/bulk-delete', [AttributeController::class, 'bulkDelete'])->middleware('super_admin');
     });
 
     // Admin Side Destination Countries Routes
@@ -273,7 +273,7 @@ Route::middleware(['auth:api', 'admin', 'throttle:60,1'])->prefix('admin')->grou
         Route::put('{id}', [CountryController::class, 'update']);
         Route::post('{id}/partial-remove', [CountryController::class, 'partialRemove']);
         Route::delete('{id}', [CountryController::class, 'destroy']);
-        Route::post('/bulk-delete', [CountryController::class, 'bulkDelete']);
+        Route::post('/bulk-delete', [CountryController::class, 'bulkDelete'])->middleware('super_admin');
     });
 
     Route::prefix('/states')->group(function () {
@@ -284,7 +284,7 @@ Route::middleware(['auth:api', 'admin', 'throttle:60,1'])->prefix('admin')->grou
         Route::put('{id}', [StateController::class, 'update']);
         Route::post('{id}/partial-remove', [StateController::class, 'partialRemove']);
         Route::delete('{id}', [StateController::class, 'destroy']);
-        Route::post('/bulk-delete', [StateController::class, 'bulkDelete']);
+        Route::post('/bulk-delete', [StateController::class, 'bulkDelete'])->middleware('super_admin');
     });
 
     Route::prefix('/cities')->group(function () {
@@ -295,7 +295,7 @@ Route::middleware(['auth:api', 'admin', 'throttle:60,1'])->prefix('admin')->grou
         Route::put('{id}', [CityController::class, 'update']);
         Route::post('{id}/partial-remove', [CityController::class, 'partialRemove']);
         Route::delete('{id}', [CityController::class, 'destroy']);
-        Route::post('/bulk-delete', [CityController::class, 'bulkDelete']);
+        Route::post('/bulk-delete', [CityController::class, 'bulkDelete'])->middleware('super_admin');
     });
 
     Route::prefix('/places')->group(function () {
@@ -307,7 +307,7 @@ Route::middleware(['auth:api', 'admin', 'throttle:60,1'])->prefix('admin')->grou
         Route::put('{id}', [PlaceController::class, 'update']);
         Route::post('{id}/partial-remove', [PlaceController::class, 'partialRemove']);
         Route::delete('{id}', [PlaceController::class, 'destroy']);
-        Route::post('/bulk-delete', [PlaceController::class, 'bulkDelete']);
+        Route::post('/bulk-delete', [PlaceController::class, 'bulkDelete'])->middleware('super_admin');
     });
 
     Route::prefix('/regions')->group(function () {
@@ -326,7 +326,7 @@ Route::middleware(['auth:api', 'admin', 'throttle:60,1'])->prefix('admin')->grou
         Route::post('/store', [MediaController::class, 'store']);
         Route::put('/update/{id}', [MediaController::class, 'update']);
         Route::delete('/delete/{id}', [MediaController::class, 'destroy']);
-        Route::post('/bulk-delete', [MediaController::class, 'bulkDestroy']);
+        Route::post('/bulk-delete', [MediaController::class, 'bulkDestroy'])->middleware('super_admin');
     });
 
     // Admin Side vendors route
@@ -364,14 +364,14 @@ Route::middleware(['auth:api', 'admin', 'throttle:60,1'])->prefix('admin')->grou
         Route::get('/', [TransferController::class, 'index']);
         Route::get('{id}', [TransferController::class, 'show']);
         Route::delete('{id}', [TransferController::class, 'destroy']);
-        Route::post('/bulk-delete', [TransferController::class, 'destroyMultiple']);
+        Route::post('/bulk-delete', [TransferController::class, 'destroyMultiple'])->middleware('super_admin');
     });
 
     // Admin Side Transfer Zones
     Route::prefix('/transfer-zones')->group(function () {
         Route::get('/', [TransferZoneController::class, 'index']);
         Route::post('/', [TransferZoneController::class, 'store']);
-        Route::post('/bulk-delete', [TransferZoneController::class, 'bulkDelete']);
+        Route::post('/bulk-delete', [TransferZoneController::class, 'bulkDelete'])->middleware('super_admin');
         Route::get('{id}', [TransferZoneController::class, 'show']);
         Route::put('{id}', [TransferZoneController::class, 'update']);
         Route::delete('{id}', [TransferZoneController::class, 'destroy']);
@@ -394,7 +394,7 @@ Route::middleware(['auth:api', 'admin', 'throttle:60,1'])->prefix('admin')->grou
         Route::get('/dropdown', [TransferRouteController::class, 'dropdown']);
         Route::get('/', [TransferRouteController::class, 'index']);
         Route::post('/', [TransferRouteController::class, 'store']);
-        Route::post('/bulk-delete', [TransferRouteController::class, 'bulkDelete']);
+        Route::post('/bulk-delete', [TransferRouteController::class, 'bulkDelete'])->middleware('super_admin');
         Route::get('{id}', [TransferRouteController::class, 'show']);
         Route::put('{id}', [TransferRouteController::class, 'update']);
         Route::delete('{id}', [TransferRouteController::class, 'destroy']);
@@ -415,7 +415,7 @@ Route::middleware(['auth:api', 'admin', 'throttle:60,1'])->prefix('admin')->grou
         Route::get('{id}', [ActivityController::class, 'show']); // Get single
         Route::delete('{id}', [ActivityController::class, 'destroy']); // Delete
         Route::delete('{id}/partial-delete', [ActivityController::class, 'partialDelete']); // partialDelete
-        Route::post('/bulk-delete', [ActivityController::class, 'bulkDestroy']);
+        Route::post('/bulk-delete', [ActivityController::class, 'bulkDestroy'])->middleware('super_admin');
     });
 
     // Admin Side Itinerary route
@@ -428,7 +428,7 @@ Route::middleware(['auth:api', 'admin', 'throttle:60,1'])->prefix('admin')->grou
         Route::get('{id}', [ItineraryController::class, 'show']); // Get single
         Route::delete('{id}', [ItineraryController::class, 'destroy']); // Delete
         Route::delete('{id}/partial-delete', [ItineraryController::class, 'partialDelete']); // partialDelete
-        Route::post('/bulk-delete', [ItineraryController::class, 'bulkDestroy']);
+        Route::post('/bulk-delete', [ItineraryController::class, 'bulkDestroy'])->middleware('super_admin');
     });
 
     // Admin Side Package route
@@ -441,7 +441,7 @@ Route::middleware(['auth:api', 'admin', 'throttle:60,1'])->prefix('admin')->grou
         Route::get('{id}', [PackageController::class, 'show']); // Get single
         Route::delete('{id}', [PackageController::class, 'destroy']); // Delete
         Route::delete('{id}/partial-delete', [PackageController::class, 'partialDelete']); // partialDelete
-        Route::post('/bulk-delete', [PackageController::class, 'bulkDestroy']);
+        Route::post('/bulk-delete', [PackageController::class, 'bulkDestroy'])->middleware('super_admin');
     });
 
     // Admin Side Order Create Update Delete route
@@ -459,7 +459,7 @@ Route::middleware(['auth:api', 'admin', 'throttle:60,1'])->prefix('admin')->grou
         Route::post('/', [BlogController::class, 'store']); // Store a new blog
         Route::put('{id}', [BlogController::class, 'update']); // Update an existing blog
         Route::delete('{id}', [BlogController::class, 'destroy']); // Delete a blog
-        Route::post('/bulk-delete', [BlogController::class, 'bulkDestroy']);
+        Route::post('/bulk-delete', [BlogController::class, 'bulkDestroy'])->middleware('super_admin');
     });
 
     Route::prefix('reviews')->group(function () {
@@ -469,7 +469,7 @@ Route::middleware(['auth:api', 'admin', 'throttle:60,1'])->prefix('admin')->grou
         Route::get('{id}', [ReviewController::class, 'show']); // single review detail
         Route::put('{id}', [ReviewController::class, 'update']); // review update
         Route::delete('{id}', [ReviewController::class, 'destroy']); // review delete
-        Route::post('/bulk-delete', [ReviewController::class, 'bulkDelete']);
+        Route::post('/bulk-delete', [ReviewController::class, 'bulkDelete'])->middleware('super_admin');
     });
 
     Route::prefix('addons')->group(function () {
@@ -484,7 +484,7 @@ Route::middleware(['auth:api', 'admin', 'throttle:60,1'])->prefix('admin')->grou
         Route::get('{id}', [AddonController::class, 'show']); // single review detail
         Route::put('{id}', [AddonController::class, 'update']); // review update
         Route::delete('{id}', [AddonController::class, 'destroy']); // review delete
-        Route::post('/bulk-delete', [AddonController::class, 'bulkDelete']);
+        Route::post('/bulk-delete', [AddonController::class, 'bulkDelete'])->middleware('super_admin');
     });
 
     // Admin Creator Application Management

@@ -71,11 +71,11 @@ class TransferZoneTest extends TestCase
 
     public function test_bulk_delete_removes_multiple_zones(): void
     {
-        $admin = $this->admin();
+        $superAdmin = User::factory()->create(['role' => User::ROLE_SUPER_ADMIN]);
         $z1 = TransferZone::create(['name' => 'Z1', 'slug' => 'z1']);
         $z2 = TransferZone::create(['name' => 'Z2', 'slug' => 'z2']);
 
-        $this->actingAs($admin, 'api')
+        $this->actingAs($superAdmin, 'api')
             ->postJson('/api/admin/transfer-zones/bulk-delete', ['ids' => [$z1->id, $z2->id]])
             ->assertStatus(200);
 

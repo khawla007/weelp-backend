@@ -16,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
+            'super_admin' => \App\Http\Middleware\SuperAdminMiddleware::class,
             'customer' => \App\Http\Middleware\CustomerMiddleware::class,
             'creator' => \App\Http\Middleware\CreatorMiddleware::class,
             'jwt.tv' => \App\Http\Middleware\VerifyTokenVersion::class,
