@@ -14,7 +14,9 @@ use App\Models\OrderPayment;
 use App\Models\User;
 use App\Services\ActivityDiscountService;
 use App\Services\PackagePricingService;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Stripe\Checkout\Session as StripeSession;
@@ -410,6 +412,27 @@ class StripeController extends Controller
             Log::error('Stripe webhook signature verification failed: '.$e->getMessage());
 
             return response('Invalid signature', 400);
+        }
+
+        $eventId = $event->id ?? null;
+
+        if ($eventId) {
+            if (DB::table('stripe_webhook_events')->where('id', $eventId)->exists()) {
+                return response()->json(['already_processed' => true], 200);
+            }
+
+            try {
+                DB::table('stripe_webhook_events')->insert([
+                    'id' => $eventId,
+                    'type' => $event->type,
+                    'processed_at' => now(),
+                ]);
+            } catch (QueryException $e) {
+                if ($e->getCode() === '23000') {
+                    return response()->json(['already_processed' => true], 200);
+                }
+                throw $e;
+            }
         }
 
         if ($event->type == 'payment_intent.succeeded') {

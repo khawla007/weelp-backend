@@ -105,11 +105,7 @@ class AuthController extends Controller
         ];
         $token = JWTAuth::customClaims($payload)->fromUser($user);
 
-        // Store hashed token
-        DB::table('email_verifications')->updateOrInsert(
-            ['email' => $user->email],
-            ['token' => Hash::make($token), 'created_at' => now()]
-        );
+        $this->issueVerificationToken($user->email, $token);
 
         // Send verification email
         Mail::to($user->email)->send(new VerifyEmailMail($user, $token));
@@ -125,33 +121,85 @@ class AuthController extends Controller
      */
     public function verifyEmail(Request $request)
     {
-        $token = $request->token;
+        $token = (string) $request->input('token', '');
 
-        try {
-            $payload = JWTAuth::setToken($token)->getPayload();
-            $email = $payload['email'];
-
-            $user = User::where('email', $email)->firstOrFail();
-
-            // Update email_verified_at
-            $user->email_verified_at = now();
-            $user->save();
-
-            // Delete verification token record
-            DB::table('email_verifications')->where('email', $email)->delete();
-
-            return response()->json([
-                'success' => true,
-                'email' => $email,
-                'message' => 'Email verified successfully!',
-            ]);
-        } catch (\Exception $e) {
+        if ($token === '') {
             return response()->json([
                 'success' => false,
                 'email' => null,
                 'message' => 'Invalid or expired token.',
             ], 400);
         }
+
+        $tokenHash = hash('sha256', $token);
+        $record = DB::table('email_verifications')->where('token', $tokenHash)->first();
+
+        if (! $record) {
+            return response()->json([
+                'success' => false,
+                'email' => null,
+                'message' => 'Invalid or expired token.',
+            ], 400);
+        }
+
+        if ($record->used_at !== null) {
+            return response()->json([
+                'success' => false,
+                'email' => null,
+                'error_code' => 'token_used',
+                'message' => 'This verification link has already been used.',
+            ], 410);
+        }
+
+        if (\Carbon\Carbon::parse($record->expires_at)->isPast()) {
+            return response()->json([
+                'success' => false,
+                'email' => null,
+                'error_code' => 'token_expired',
+                'message' => 'This verification link has expired.',
+            ], 410);
+        }
+
+        try {
+            $email = DB::transaction(function () use ($record) {
+                $user = User::where('email', $record->email)->lockForUpdate()->firstOrFail();
+
+                $claimed = DB::table('email_verifications')
+                    ->where('id', $record->id)
+                    ->whereNull('used_at')
+                    ->update(['used_at' => now()]);
+
+                if ($claimed === 0) {
+                    throw new \RuntimeException('token_used');
+                }
+
+                $user->email_verified_at = now();
+                $user->save();
+
+                return $user->email;
+            });
+        } catch (\RuntimeException $e) {
+            return response()->json([
+                'success' => false,
+                'email' => null,
+                'error_code' => 'token_used',
+                'message' => 'This verification link has already been used.',
+            ], 410);
+        } catch (\Exception $e) {
+            Log::error('verifyEmail unexpected failure: '.$e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'email' => null,
+                'message' => 'Invalid or expired token.',
+            ], 400);
+        }
+
+        return response()->json([
+            'success' => true,
+            'email' => $email,
+            'message' => 'Email verified successfully!',
+        ]);
     }
 
     public function resendVerification(Request $request)
@@ -175,10 +223,7 @@ class AuthController extends Controller
                 ];
                 $token = JWTAuth::customClaims($payload)->fromUser($user);
 
-                DB::table('email_verifications')->updateOrInsert(
-                    ['email' => $user->email],
-                    ['token' => Hash::make($token), 'created_at' => now()]
-                );
+                $this->issueVerificationToken($user->email, $token);
 
                 Mail::to($user->email)->send(new VerifyEmailMail($user, $token));
             } catch (\Throwable $e) {
@@ -187,6 +232,25 @@ class AuthController extends Controller
         }
 
         return $genericResponse;
+    }
+
+    private function issueVerificationToken(string $email, string $token): void
+    {
+        $now = now();
+
+        DB::table('email_verifications')
+            ->where('email', $email)
+            ->whereNull('used_at')
+            ->update(['used_at' => $now]);
+
+        DB::table('email_verifications')->insert([
+            'email' => $email,
+            'token' => hash('sha256', $token),
+            'expires_at' => $now->copy()->addDay(),
+            'used_at' => null,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
     }
 
     /**
