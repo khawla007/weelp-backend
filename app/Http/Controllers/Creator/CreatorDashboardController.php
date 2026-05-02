@@ -81,6 +81,81 @@ class CreatorDashboardController extends Controller
         ]);
     }
 
+    public function earnings(Request $request)
+    {
+        $request->validate([
+            'status' => 'sometimes|in:all,pending,paid,cancelled',
+            'from' => 'sometimes|date',
+            'to' => 'sometimes|date|after_or_equal:from',
+            'page' => 'sometimes|integer|min:1',
+            'per_page' => 'sometimes|integer|min:1|max:100',
+        ]);
+
+        $creatorId = Auth::id();
+        $status = $request->input('status', 'all');
+        $from = $request->input('from', now()->startOfMonth()->toDateString());
+        $to = $request->input('to', now()->toDateString());
+        $perPage = (int) $request->input('per_page', 20);
+
+        $base = Commission::where('creator_id', $creatorId);
+
+        $lifetime = (clone $base)->sum('commission_amount');
+        $pending = (clone $base)->where('status', 'pending')->sum('commission_amount');
+        $currentPeriod = (clone $base)
+            ->whereBetween('created_at', [$from . ' 00:00:00', $to . ' 23:59:59'])
+            ->sum('commission_amount');
+
+        $query = (clone $base)
+            ->with(['order' => fn($q) => $q->with(['payment', 'orderable'])])
+            ->whereBetween('created_at', [$from . ' 00:00:00', $to . ' 23:59:59']);
+
+        if ($status !== 'all') {
+            $query->where('status', $status);
+        }
+
+        $paginated = $query->orderByDesc('created_at')->paginate($perPage);
+
+        $rows = $paginated->getCollection()->map(function ($c) {
+            $order = $c->order;
+            $orderable = $order?->orderable;
+            $itinerary = $orderable instanceof Itinerary ? [
+                'id' => $orderable->id,
+                'name' => $orderable->name,
+                'slug' => $orderable->slug,
+            ] : null;
+            $gross = (float) ($order?->payment?->total_amount ?? $order?->payment?->amount ?? 0);
+
+            return [
+                'id' => $c->id,
+                'created_at' => $c->created_at?->toIso8601String(),
+                'order_id' => $c->order_id,
+                'itinerary' => $itinerary,
+                'gross_amount' => $gross,
+                'commission_rate' => (float) $c->commission_rate,
+                'commission_amount' => (string) $c->commission_amount,
+                'status' => $c->status,
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'summary' => [
+                    'lifetime' => (float) $lifetime,
+                    'current_period' => (float) $currentPeriod,
+                    'pending' => (float) $pending,
+                ],
+                'rows' => $rows->values(),
+                'pagination' => [
+                    'current_page' => $paginated->currentPage(),
+                    'last_page' => $paginated->lastPage(),
+                    'per_page' => $paginated->perPage(),
+                    'total' => $paginated->total(),
+                ],
+            ],
+        ]);
+    }
+
     public function resolveLink(Request $request)
     {
         $request->validate([

@@ -167,6 +167,7 @@ Route::middleware(['auth:api', 'creator'])->prefix('creator')->group(function ()
     // });
 
     Route::get('/dashboard/stats', [CreatorDashboardController::class, 'stats']);
+    Route::get('/dashboard/earnings', [CreatorDashboardController::class, 'earnings']);
     Route::get('/completed-bookings', [CreatorDashboardController::class, 'completedBookings']);
     Route::post('/resolve-link', [CreatorDashboardController::class, 'resolveLink']);
 
