@@ -3,13 +3,10 @@
 namespace App\Http\Controllers\Creator;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\StoreItineraryRequest;
 use App\Mail\ItineraryEditSubmittedMail;
 use App\Mail\ItineraryRemovalRequestedMail;
 use App\Mail\ItinerarySubmittedAdminMail;
-use App\Mail\ItinerarySubmittedCreatorMail;
 use App\Models\Itinerary;
-use App\Services\ItineraryDeepCopyService;
 use App\Services\ItineraryDraftService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -21,37 +18,6 @@ use Illuminate\Support\Str;
 
 class CreatorItineraryController extends Controller
 {
-    public function store(StoreItineraryRequest $request): JsonResponse
-    {
-        $validated = $request->validated();
-
-        $original = Itinerary::original()->findOrFail($validated['parent_itinerary_id']);
-
-        $service = new ItineraryDeepCopyService;
-        $copy = $service->deepCopy(
-            $original,
-            $validated['schedules'],
-            creatorId: Auth::id(),
-        );
-
-        $creator = Auth::user();
-        try {
-            Mail::to($creator->email)->send(new ItinerarySubmittedCreatorMail($copy, $creator));
-            Mail::to(config('mail.admin_address', 'khawla@fanaticcoders.com'))->send(new ItinerarySubmittedAdminMail($copy, $creator));
-        } catch (\Exception $e) {
-            Log::error('Failed to send itinerary submission emails', [
-                'itinerary_id' => $copy->id,
-                'error' => $e->getMessage(),
-            ]);
-        }
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Itinerary submitted for approval.',
-            'data' => $copy,
-        ], 201);
-    }
-
     public function myItineraries(): JsonResponse
     {
         $itineraries = Itinerary::whereHas('meta', fn ($q) => $q->where('creator_id', Auth::id()))

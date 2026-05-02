@@ -171,8 +171,7 @@ Route::middleware(['auth:api', 'creator'])->prefix('creator')->group(function ()
     Route::get('/completed-bookings', [CreatorDashboardController::class, 'completedBookings']);
     Route::post('/resolve-link', [CreatorDashboardController::class, 'resolveLink']);
 
-    // Creator Itinerary Submission
-    Route::post('/itineraries', [CreatorItineraryController::class, 'store']);
+    // Creator Itinerary
     Route::get('/my-itineraries', [CreatorItineraryController::class, 'myItineraries']);
 
     // Creator Itinerary Edit/Removal Requests
