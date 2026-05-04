@@ -36,8 +36,19 @@ class Commission extends Model
 {
     use HasFactory;
 
+    protected static function booted(): void
+    {
+        // Stamp paid_at the first time status flips to 'paid' so the Payouts view
+        // has an accurate event timestamp without a separate write path.
+        static::saving(function (Commission $commission) {
+            if ($commission->isDirty('status') && $commission->status === 'paid' && $commission->paid_at === null) {
+                $commission->paid_at = now();
+            }
+        });
+    }
+
     protected $fillable = [
-        'creator_id', 'order_id', 'commission_rate', 'commission_amount', 'status',
+        'creator_id', 'order_id', 'commission_rate', 'commission_amount', 'status', 'paid_at',
     ];
 
     protected function casts(): array
@@ -45,6 +56,7 @@ class Commission extends Model
         return [
             'commission_rate' => 'decimal:2',
             'commission_amount' => 'decimal:2',
+            'paid_at' => 'datetime',
         ];
     }
 

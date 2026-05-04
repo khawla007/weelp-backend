@@ -156,6 +156,62 @@ class CreatorDashboardController extends Controller
         ]);
     }
 
+    public function payouts(Request $request)
+    {
+        $request->validate([
+            'from' => 'sometimes|date',
+            'to' => 'sometimes|date|after_or_equal:from',
+            'page' => 'sometimes|integer|min:1',
+            'per_page' => 'sometimes|integer|min:1|max:100',
+        ]);
+
+        $creatorId = Auth::id();
+        $from = $request->input('from', now()->subMonths(3)->startOfDay()->toDateString());
+        $to = $request->input('to', now()->toDateString());
+        $perPage = (int) $request->input('per_page', 20);
+
+        $base = Commission::where('creator_id', $creatorId)
+            ->where('status', 'paid')
+            ->whereNotNull('paid_at');
+
+        $lifetime = (clone $base)->sum('commission_amount');
+        $currentPeriod = (clone $base)
+            ->whereBetween('paid_at', [$from . ' 00:00:00', $to . ' 23:59:59'])
+            ->sum('commission_amount');
+
+        // Group paid commissions by payout date (one row per day a creator was paid).
+        $rowsQuery = (clone $base)
+            ->whereBetween('paid_at', [$from . ' 00:00:00', $to . ' 23:59:59'])
+            ->selectRaw('DATE(paid_at) as payout_date, SUM(commission_amount) as total_amount, COUNT(*) as commission_count')
+            ->groupBy('payout_date')
+            ->orderByDesc('payout_date');
+
+        $paginated = $rowsQuery->paginate($perPage);
+
+        $rows = $paginated->getCollection()->map(fn ($row) => [
+            'payout_date' => $row->payout_date,
+            'total_amount' => (float) $row->total_amount,
+            'commission_count' => (int) $row->commission_count,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'summary' => [
+                    'lifetime' => (float) $lifetime,
+                    'current_period' => (float) $currentPeriod,
+                ],
+                'rows' => $rows->values(),
+                'pagination' => [
+                    'current_page' => $paginated->currentPage(),
+                    'last_page' => $paginated->lastPage(),
+                    'per_page' => $paginated->perPage(),
+                    'total' => $paginated->total(),
+                ],
+            ],
+        ]);
+    }
+
     public function resolveLink(Request $request)
     {
         $request->validate([
