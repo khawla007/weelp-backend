@@ -12,10 +12,13 @@ use App\Models\CityMediaGallery;
 use App\Models\CitySeason;
 use App\Models\CitySeo;
 use App\Models\CityTravelInfo;
+use App\Support\Traits\GeoContentRules;
 use Illuminate\Http\Request;
 
 class CityController extends Controller
 {
+    use GeoContentRules;
+
     /**
      * Display a listing of the resource.
      */
@@ -143,9 +146,6 @@ class CityController extends Controller
             'description' => 'nullable|string|max:5000',
             'featured_destination' => 'boolean',
 
-            // Media (array of objects)
-            'media_gallery' => 'nullable|array',
-
             // Location Details
             'location_details.latitude' => 'nullable|string|max:32',
             'location_details.longitude' => 'nullable|string|max:32',
@@ -155,55 +155,7 @@ class CityController extends Controller
             'location_details.timezone' => 'nullable|string|max:64',
             'location_details.language' => 'nullable|array',
             'location_details.local_cuisine' => 'nullable|array',
-
-            // Travel Info
-            'travel_info.airport' => 'nullable|string|max:255',
-            'travel_info.public_transportation' => 'nullable|array',
-            'travel_info.taxi_available' => 'boolean',
-            'travel_info.rental_cars_available' => 'boolean',
-            'travel_info.hotels' => 'boolean',
-            'travel_info.hostels' => 'boolean',
-            'travel_info.apartments' => 'boolean',
-            'travel_info.resorts' => 'boolean',
-            'travel_info.visa_requirements' => 'nullable|string|max:5000',
-            'travel_info.best_time_to_visit' => 'nullable|string|max:5000',
-            'travel_info.travel_tips' => 'nullable|string|max:5000',
-            'travel_info.safety_information' => 'nullable|string|max:5000',
-
-            // Season (array of objects)
-            'seasons' => 'nullable|array',
-            'seasons.*.name' => 'nullable|string|max:120',
-            'seasons.*.months' => 'nullable|array',
-            'seasons.*.weather' => 'nullable|string|max:5000',
-            'seasons.*.activities' => 'nullable|array',
-
-            // Event (array of objects)
-            'events' => 'nullable|array',
-            'events.*.name' => 'nullable|string|max:120',
-            'events.*.type' => 'nullable|array',
-            'events.*.date' => 'nullable|date',
-            'events.*.location' => 'nullable|string|max:255',
-            'events.*.description' => 'nullable|string|max:5000',
-
-            // Additional Info
-            'additional_info' => 'nullable|array',
-            'additional_info.*.title' => 'required|string|max:200',
-            'additional_info.*.content' => 'required|string|max:5000',
-
-            // FAQs
-            'faqs' => 'array',
-            'faqs.*.question' => 'required|string|max:200',
-            'faqs.*.answer' => 'required|string|max:5000',
-
-            // SEO
-            'seo.meta_title' => 'nullable|string|max:200',
-            'seo.meta_description' => 'nullable|string|max:500',
-            'seo.keywords' => 'nullable|string|max:500',
-            'seo.og_image_url' => 'nullable|url',
-            'seo.canonical_url' => 'nullable|url',
-            'seo.schema_type' => 'nullable|string|max:50',
-            'seo.schema_data' => 'nullable|array',
-        ]);
+        ] + $this->geoContentRules());
 
         $exists = City::where('name', $request->name)
             ->orWhere('slug', $request->slug)
@@ -371,9 +323,6 @@ class CityController extends Controller
             'description' => 'nullable|string|max:5000',
             'featured_destination' => 'boolean',
 
-            // Media (array of objects)
-            'media_gallery' => 'nullable|array',
-
             // Location Details
             'location_details.latitude' => 'nullable|string|max:32',
             'location_details.longitude' => 'nullable|string|max:32',
@@ -383,59 +332,7 @@ class CityController extends Controller
             'location_details.timezone' => 'nullable|string|max:64',
             'location_details.language' => 'nullable|array',
             'location_details.local_cuisine' => 'nullable|array',
-
-            // Travel Info
-            'travel_info.airport' => 'nullable|string|max:255',
-            'travel_info.public_transportation' => 'nullable|array',
-            'travel_info.taxi_available' => 'boolean',
-            'travel_info.rental_cars_available' => 'boolean',
-            'travel_info.hotels' => 'boolean',
-            'travel_info.hostels' => 'boolean',
-            'travel_info.apartments' => 'boolean',
-            'travel_info.resorts' => 'boolean',
-            'travel_info.visa_requirements' => 'nullable|string|max:5000',
-            'travel_info.best_time_to_visit' => 'nullable|string|max:5000',
-            'travel_info.travel_tips' => 'nullable|string|max:5000',
-            'travel_info.safety_information' => 'nullable|string|max:5000',
-
-            // Season (array of objects)
-            'seasons' => 'nullable|array',
-            'seasons.*.id' => 'nullable|integer|exists:city_seasons,id',
-            'seasons.*.name' => 'nullable|string|max:120',
-            'seasons.*.months' => 'nullable|array',
-            'seasons.*.weather' => 'nullable|string|max:5000',
-            'seasons.*.activities' => 'nullable|array',
-
-            // Event (array of objects)
-            'events' => 'nullable|array',
-            'events.*.id' => 'nullable|integer|exists:city_events,id',
-            'events.*.name' => 'nullable|string|max:120',
-            'events.*.type' => 'nullable|array',
-            'events.*.date' => 'nullable|date',
-            'events.*.location' => 'nullable|string|max:255',
-            'events.*.description' => 'nullable|string|max:5000',
-
-            // Additional Info
-            'additional_info' => 'nullable|array',
-            'additional_info.*.id' => 'nullable|integer|exists:city_additional_infos,id',
-            'additional_info.*.title' => 'required|string|max:200',
-            'additional_info.*.content' => 'required|string|max:5000',
-
-            // FAQs
-            'faqs' => 'nullable|array',
-            'faqs.*.id' => 'nullable|integer|exists:city_faqs,id',
-            'faqs.*.question' => 'required|string|max:200',
-            'faqs.*.answer' => 'required|string|max:5000',
-
-            // SEO
-            'seo.meta_title' => 'nullable|string|max:200',
-            'seo.meta_description' => 'nullable|string|max:500',
-            'seo.keywords' => 'nullable|string|max:500',
-            'seo.og_image_url' => 'nullable|url',
-            'seo.canonical_url' => 'nullable|url',
-            'seo.schema_type' => 'nullable|string|max:50',
-            'seo.schema_data' => 'nullable|array',
-        ]);
+        ] + $this->geoContentRules('city'));
 
         // === City main fields update ===
         $city->update([
