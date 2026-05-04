@@ -105,6 +105,57 @@ class StripePackagePricingTest extends TestCase
         $this->assertEquals(1200.00, $price);
     }
 
+    public function test_service_charges_sale_price_when_lower_than_regular(): void
+    {
+        $package = $this->makePackageWithVariations([
+            ['name' => 'Solo', 'regular_price' => 500, 'sale_price' => 400, 'max_guests' => 2],
+        ]);
+
+        $price = app(PackagePricingService::class)->priceFor(
+            $package, null, CarbonImmutable::now()->addDays(14), 1, 0, 0
+        );
+
+        $this->assertEquals(400.00, $price);
+    }
+
+    public function test_service_falls_back_to_regular_when_sale_zero(): void
+    {
+        $package = $this->makePackageWithVariations([
+            ['name' => 'Solo', 'regular_price' => 500, 'sale_price' => 0, 'max_guests' => 2],
+        ]);
+
+        $price = app(PackagePricingService::class)->priceFor(
+            $package, null, CarbonImmutable::now()->addDays(14), 1, 0, 0
+        );
+
+        $this->assertEquals(500.00, $price);
+    }
+
+    public function test_service_falls_back_to_regular_when_sale_above_regular(): void
+    {
+        $package = $this->makePackageWithVariations([
+            ['name' => 'Solo', 'regular_price' => 500, 'sale_price' => 600, 'max_guests' => 2],
+        ]);
+
+        $price = app(PackagePricingService::class)->priceFor(
+            $package, null, CarbonImmutable::now()->addDays(14), 1, 0, 0
+        );
+
+        $this->assertEquals(500.00, $price);
+    }
+
+    public function test_resolve_variation_for_returns_first_when_id_null(): void
+    {
+        $package = $this->makePackageWithVariations([
+            ['name' => 'Solo', 'regular_price' => 500, 'max_guests' => 2],
+            ['name' => 'Family', 'regular_price' => 1200, 'max_guests' => 6],
+        ]);
+
+        $resolved = app(PackagePricingService::class)->resolveVariationFor($package, null);
+
+        $this->assertEquals('Solo', $resolved->name);
+    }
+
     public function test_service_throws_for_invalid_variation_id(): void
     {
         $package = $this->makePackageWithVariations();

@@ -47,9 +47,37 @@ final class PackagePricingService
         $this->assertNotBlackout($base->blackoutDates, $travel);
         $this->assertCapacity($variation, $adults + $children);
 
-        // Charge regular_price by design — sale_price is display-only until product
-        // confirms a sale-pricing rule (e.g. "use sale_price when set and lower").
-        return round((float) $variation->regular_price, 2);
+        return round(self::effectivePrice($variation), 2);
+    }
+
+    /**
+     * Resolve which variation will be charged for a Package booking.
+     * Used by callers that need to persist the booked variation (e.g. Order.variation_id)
+     * without re-implementing the fallback rule.
+     *
+     * @throws DomainException
+     */
+    public function resolveVariationFor(Package $package, ?int $variationId): PackagePriceVariation
+    {
+        $package->loadMissing('basePricing.variations');
+        $base = $package->basePricing;
+        if (! $base || $base->variations->isEmpty()) {
+            throw new DomainException('package_pricing_missing');
+        }
+
+        return $this->resolveVariation($base->variations, $variationId);
+    }
+
+    /**
+     * Charge sale_price when it is a real discount; else regular_price.
+     * sale_price is non-nullable in schema, so 0 is treated as "unset".
+     */
+    private static function effectivePrice(PackagePriceVariation $variation): float
+    {
+        $regular = (float) $variation->regular_price;
+        $sale = (float) $variation->sale_price;
+
+        return ($sale > 0 && $sale < $regular) ? $sale : $regular;
     }
 
     private function resolveVariation($variations, ?int $variationId): PackagePriceVariation

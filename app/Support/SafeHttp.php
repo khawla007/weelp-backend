@@ -18,9 +18,28 @@ class SafeHttp
         $current = $url;
 
         for ($hop = 0; $hop < self::MAX_REDIRECTS; $hop++) {
-            self::assertSafe($current);
+            ['host' => $host, 'port' => $port, 'ip' => $ip] = self::assertSafeAndResolve($current);
 
-            $response = Http::withoutRedirecting()
+            // Pin curl to the validated IP so a hostile resolver cannot return a
+            // different (internal) IP on the second lookup Guzzle would otherwise
+            // perform — closes the DNS-rebinding window between assertSafe and Http::get.
+            // Progress callback aborts mid-stream when bytes exceed MAX_BYTES, so an
+            // attacker sending chunked-encoded payload without Content-Length cannot
+            // bypass the post-receipt size check.
+            $curlOptions = [];
+            if ($host !== $ip) {
+                $curlOptions[CURLOPT_RESOLVE] = ["{$host}:{$port}:{$ip}"];
+            }
+
+            $response = Http::withOptions([
+                'curl' => $curlOptions,
+                'progress' => static function ($_dlTotal, $dlBytes, $_ulTotal, $_ulBytes): void {
+                    if ($dlBytes > self::MAX_BYTES) {
+                        throw new \DomainException('ssrf_blocked: response too large');
+                    }
+                },
+            ])
+                ->withoutRedirecting()
                 ->timeout(self::TIMEOUT)
                 ->get($current);
 
@@ -96,7 +115,13 @@ class SafeHttp
         return false;
     }
 
-    private static function assertSafe(string $url): void
+    /**
+     * Validate URL and resolve hostname once; reject any IP that hits the blocklist.
+     * Returns the host, port, and the single IP curl should be pinned to via CURLOPT_RESOLVE.
+     *
+     * @return array{host: string, port: int, ip: string}
+     */
+    private static function assertSafeAndResolve(string $url): array
     {
         $parts = parse_url($url);
         if ($parts === false || ! isset($parts['scheme'], $parts['host'])) {
@@ -109,13 +134,14 @@ class SafeHttp
         }
 
         $host = trim($parts['host'], '[]');
+        $port = (int) ($parts['port'] ?? ($scheme === 'https' ? 443 : 80));
 
         if (filter_var($host, FILTER_VALIDATE_IP)) {
             if (self::isBlockedIp($host)) {
                 throw new \DomainException('ssrf_blocked: private or loopback ip');
             }
 
-            return;
+            return ['host' => $host, 'port' => $port, 'ip' => $host];
         }
 
         $ips = @gethostbynamel($host);
@@ -127,6 +153,8 @@ class SafeHttp
                 throw new \DomainException('ssrf_blocked: resolves to private or loopback');
             }
         }
+
+        return ['host' => $host, 'port' => $port, 'ip' => $ips[0]];
     }
 
     private static function assertSize(Response $response): void

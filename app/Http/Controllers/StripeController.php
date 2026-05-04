@@ -161,13 +161,22 @@ class StripeController extends Controller
             $data['addons_amount'] = round($addonsAmount, 2);
         }
 
-        // Server-side enforcement: packages charge the resolved variation's
-        // regular_price via PackagePricingService. Client-supplied amount is ignored.
+        // Server-side enforcement: packages charge the resolved variation via
+        // PackagePricingService (sale_price when discounted, else regular_price).
+        // Client-supplied amount is ignored.
+        $packageVariationId = null;
         if ($orderable instanceof \App\Models\Package) {
             try {
-                $packageBase = app(PackagePricingService::class)->priceFor(
+                $pricingService = app(PackagePricingService::class);
+                $variationModel = $pricingService->resolveVariationFor(
                     $orderable,
                     isset($data['variation_id']) ? (int) $data['variation_id'] : null,
+                );
+                $packageVariationId = $variationModel->id;
+
+                $packageBase = $pricingService->priceFor(
+                    $orderable,
+                    $packageVariationId,
                     \Carbon\CarbonImmutable::parse($data['travel_date']),
                     (int) $data['number_of_adults'],
                     (int) $data['number_of_children'],
@@ -244,6 +253,7 @@ class StripeController extends Controller
             'creator_id' => $creatorId,
             'orderable_type' => $orderableClass,
             'orderable_id' => $data['orderable_id'],
+            'variation_id' => $packageVariationId,
             'travel_date' => $data['travel_date'],
             'preferred_time' => $data['preferred_time'],
             'number_of_adults' => $data['number_of_adults'],
@@ -655,6 +665,7 @@ class StripeController extends Controller
         // TODO: replace with dedicated price services per type (currently
         // mirrors confirmPayment's read paths).
         $totalAmount = 0.0;
+        $packageVariationId = null;
         if ($orderable instanceof \App\Models\Activity) {
             $orderable->loadMissing(['pricing', 'earlyBirdDiscount', 'lastMinuteDiscount']);
             $headcount = max(1, (int) $data['number_of_adults'] + (int) $data['number_of_children']);
@@ -674,9 +685,16 @@ class StripeController extends Controller
             );
         } elseif ($orderable instanceof \App\Models\Package) {
             try {
-                $totalAmount = app(PackagePricingService::class)->priceFor(
+                $pricingService = app(PackagePricingService::class);
+                $variationModel = $pricingService->resolveVariationFor(
                     $orderable,
                     isset($data['variation_id']) ? (int) $data['variation_id'] : null,
+                );
+                $packageVariationId = $variationModel->id;
+
+                $totalAmount = $pricingService->priceFor(
+                    $orderable,
+                    $packageVariationId,
                     \Carbon\CarbonImmutable::parse($data['travel_date']),
                     (int) $data['number_of_adults'],
                     (int) $data['number_of_children'],
@@ -717,6 +735,7 @@ class StripeController extends Controller
             'user_id' => $userId,
             'orderable_type' => $orderableClass,
             'orderable_id' => $data['orderable_id'],
+            'variation_id' => $packageVariationId,
             'travel_date' => $data['travel_date'],
             'preferred_time' => $data['preferred_time'],
             'number_of_adults' => $data['number_of_adults'],
