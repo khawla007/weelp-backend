@@ -544,7 +544,7 @@ class StripeController extends Controller
         }
 
         if ($order->user_id !== $request->user()->id) {
-            return response()->json(['error' => 'Forbidden'], 403);
+            return response()->json(['error' => 'Order not found'], 404);
         }
 
         $user = $order->user ?? null;

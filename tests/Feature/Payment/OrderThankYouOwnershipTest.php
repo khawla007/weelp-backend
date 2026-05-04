@@ -31,7 +31,7 @@ class OrderThankYouOwnershipTest extends TestCase
             ->assertOk();
     }
 
-    public function test_other_user_is_forbidden(): void
+    public function test_other_user_gets_not_found(): void
     {
         $owner = User::factory()->customer()->create();
         $stranger = User::factory()->customer()->create();
@@ -40,7 +40,7 @@ class OrderThankYouOwnershipTest extends TestCase
 
         $this->actingAs($stranger, 'api')
             ->getJson('/api/order/thankyou?payment_intent='.$payment->payment_intent_id)
-            ->assertForbidden();
+            ->assertNotFound();
     }
 
     public function test_unauthenticated_is_unauthorized(): void
