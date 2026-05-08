@@ -44,8 +44,6 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
  * @property-read int|null $package_activity_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Package> $packages
  * @property-read int|null $packages_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\PostItemTag> $postTags
- * @property-read int|null $post_tags_count
  * @property-read \App\Models\ActivityPricing|null $pricing
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ActivityPromoCode> $promoCodes
  * @property-read int|null $promo_codes_count
@@ -193,8 +191,4 @@ class Activity extends Model
         return $this->hasMany(ActivityAddon::class);
     }
 
-    public function postTags(): MorphMany
-    {
-        return $this->morphMany(PostItemTag::class, 'taggable');
-    }
 }

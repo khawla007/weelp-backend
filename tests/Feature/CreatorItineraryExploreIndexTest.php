@@ -3,9 +3,11 @@
 namespace Tests\Feature;
 
 use App\Models\Activity;
+use App\Models\City;
 use App\Models\Itinerary;
 use App\Models\ItineraryActivity;
 use App\Models\ItineraryBasePricing;
+use App\Models\ItineraryLocation;
 use App\Models\ItineraryMeta;
 use App\Models\ItinerarySchedule;
 use App\Models\ItineraryTransfer;
@@ -120,5 +122,43 @@ class CreatorItineraryExploreIndexTest extends TestCase
         $this->assertNotNull($found, 'Seeded itinerary missing from response');
         $this->assertSame(155.00, (float) $found['display_price']);
         $this->assertNotSame(999.99, (float) $found['display_price']);
+    }
+
+    public function test_explore_index_filters_creator_itineraries_by_search(): void
+    {
+        $creator = User::factory()->creator()->create();
+        $city = City::factory()->create(['slug' => 'dubai']);
+
+        $matching = Itinerary::factory()->create([
+            'name' => 'Dubai Desert Family Plan',
+            'slug' => 'dubai-desert-family-plan',
+        ]);
+        ItineraryLocation::create([
+            'itinerary_id' => $matching->id,
+            'city_id' => $city->id,
+        ]);
+        ItineraryMeta::create([
+            'itinerary_id' => $matching->id,
+            'creator_id' => $creator->id,
+            'status' => 'approved',
+        ]);
+
+        $nonMatching = Itinerary::factory()->create([
+            'name' => 'Abu Dhabi Museum Day',
+            'slug' => 'abu-dhabi-museum-day',
+        ]);
+        ItineraryMeta::create([
+            'itinerary_id' => $nonMatching->id,
+            'creator_id' => $creator->id,
+            'status' => 'approved',
+        ]);
+
+        $response = $this->getJson('/api/creator/explore?search=desert&per_page=5');
+
+        $response->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.id', $matching->id)
+            ->assertJsonPath('data.0.name', 'Dubai Desert Family Plan')
+            ->assertJsonPath('data.0.locations.0.city.slug', 'dubai');
     }
 }

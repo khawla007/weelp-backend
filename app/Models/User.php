@@ -27,10 +27,6 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Commission> $commissions
  * @property-read int|null $commissions_count
  * @property-read \App\Models\UserMeta|null $meta
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\PostLike> $postLikes
- * @property-read int|null $post_likes_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Post> $posts
- * @property-read int|null $posts_count
  * @property-read \App\Models\UserProfile|null $profile
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Review> $reviews
  * @property-read int|null $reviews_count
@@ -209,19 +205,9 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany(Review::class, 'user_id');
     }
 
-    public function posts(): HasMany
-    {
-        return $this->hasMany(Post::class, 'creator_id');
-    }
-
     public function commissions(): HasMany
     {
         return $this->hasMany(Commission::class, 'creator_id');
-    }
-
-    public function postLikes(): HasMany
-    {
-        return $this->hasMany(PostLike::class);
     }
 
     public function creatorApplication(): HasOne

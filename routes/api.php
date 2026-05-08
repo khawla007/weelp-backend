@@ -38,7 +38,6 @@ use App\Http\Controllers\Creator\CreatorApplicationController;
 use App\Http\Controllers\Creator\CreatorDashboardController;
 use App\Http\Controllers\Creator\CreatorItineraryController;
 // Public
-use App\Http\Controllers\Creator\CreatorPostController;
 use App\Http\Controllers\Customer\CustomerItineraryController;
 use App\Http\Controllers\Guest\OtpController;
 use App\Http\Controllers\Guest\PublicActivityController;
@@ -50,15 +49,14 @@ use App\Http\Controllers\Guest\PublicItineraryController;
 use App\Http\Controllers\Guest\PublicLocationSearchController;
 use App\Http\Controllers\Guest\PublicMenuController;
 use App\Http\Controllers\Guest\PublicPackageController;
-use App\Http\Controllers\Guest\PublicPostController;
 use App\Http\Controllers\Guest\PublicRegionController;
 use App\Http\Controllers\Guest\PublicReviewController;
 use App\Http\Controllers\Guest\PublicShopController;
 use App\Http\Controllers\Guest\PublicTagController;
 use App\Http\Controllers\Guest\PublicToursSearchController;
 use App\Http\Controllers\Guest\PublicTransferController;
+use App\Http\Controllers\Shared\SharedItineraryResourcesController;
 use App\Http\Controllers\StripeController;
-use App\Http\Controllers\StripePaymentController;
 use App\Http\Controllers\UserProfileController;
 use Illuminate\Support\Facades\Route;
 use Stevebauman\Location\Facades\Location;
@@ -158,14 +156,6 @@ Route::prefix('creator')->group(function () {
 
 // Creator routes - require authentication and creator role
 Route::middleware(['auth:api', 'creator'])->prefix('creator')->group(function () {
-    // DEPRECATED: Replaced by creator itinerary system
-    // Route::prefix('posts')->group(function () {
-    //     Route::get('/', [CreatorPostController::class, 'index']);
-    //     Route::post('/', [CreatorPostController::class, 'store']);
-    //     Route::put('/{id}', [CreatorPostController::class, 'update']);
-    //     Route::delete('/{id}', [CreatorPostController::class, 'destroy']);
-    // });
-
     Route::get('/dashboard/stats', [CreatorDashboardController::class, 'stats']);
     Route::get('/dashboard/earnings', [CreatorDashboardController::class, 'earnings']);
     Route::get('/dashboard/payouts', [CreatorDashboardController::class, 'payouts']);
@@ -569,6 +559,7 @@ Route::prefix('transfers')->group(function () {
 
 // Public location search (used by transfers pickup/destination combobox)
 Route::get('/public/locations/search', [PublicLocationSearchController::class, 'search']);
+Route::get('/places', [SharedItineraryResourcesController::class, 'getPlaces']);
 
 // itineraries api
 Route::prefix('itineraries')->group(function () {
@@ -607,18 +598,6 @@ Route::prefix('reviews')->group(function () {
     Route::get('/activity/{activity_slug}', [PublicReviewController::class, 'getActivityReviews']);
     Route::get('/activity/{activity_slug}/featured', [PublicReviewController::class, 'getActivityFeaturedReviews']);
 });
-
-// DEPRECATED: Replaced by creator itinerary system
-// Route::prefix('posts')->group(function () {
-//     Route::get('/', [PublicPostController::class, 'index']);
-//     Route::get('/{id}', [PublicPostController::class, 'show']);
-// });
-
-// DEPRECATED: Replaced by creator itinerary system
-// Route::middleware('auth:api')->group(function () {
-//     Route::post('/posts/{id}/like', [PublicPostController::class, 'toggleLike']);
-//     Route::post('/posts/{id}/share', [PublicPostController::class, 'incrementShare']);
-// });
 
 // Notifications (all authenticated users)
 Route::middleware('auth:api')->group(function () {

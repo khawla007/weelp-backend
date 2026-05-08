@@ -47,8 +47,6 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
  * @property-read int|null $media_gallery_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Order> $orders
  * @property-read int|null $orders_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\PostItemTag> $postTags
- * @property-read int|null $post_tags_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Review> $reviews
  * @property-read int|null $reviews_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ItinerarySchedule> $schedules
@@ -316,11 +314,6 @@ class Itinerary extends Model
     public function addons(): HasMany
     {
         return $this->hasMany(ItineraryAddon::class);
-    }
-
-    public function postTags(): MorphMany
-    {
-        return $this->morphMany(PostItemTag::class, 'taggable');
     }
 
     public function copies()

@@ -499,7 +499,7 @@ class CreatorItineraryController extends Controller
                 'creator:users.id,users.name',
                 'creator.profile:id,user_id,avatar',
                 'locations:id,itinerary_id,city_id',
-                'locations.city:id,name',
+                'locations.city:id,name,slug',
                 'mediaGallery.media',
                 'basePricing.variations' => fn ($q) => $q->limit(1),
                 'schedules' => fn ($q) => $q->orderBy('day'),
@@ -520,6 +520,15 @@ class CreatorItineraryController extends Controller
                     'last_page' => 1,
                 ]);
             }
+        }
+
+        if ($request->filled('search')) {
+            $search = trim((string) $request->query('search'));
+            $query->where(function ($q) use ($search) {
+                $q->where('itineraries.name', 'like', "%{$search}%")
+                    ->orWhere('itineraries.description', 'like', "%{$search}%")
+                    ->orWhereHas('creator', fn ($creatorQuery) => $creatorQuery->where('users.name', 'like', "%{$search}%"));
+            });
         }
 
         switch ($request->query('sort', 'latest')) {
@@ -543,7 +552,8 @@ class CreatorItineraryController extends Controller
                 break;
         }
 
-        $paginated = $query->paginate(15);
+        $perPage = min(max((int) $request->query('per_page', 15), 1), 50);
+        $paginated = $query->paginate($perPage);
         $userId = Auth::guard('api')->id();
 
         $likedIds = $userId

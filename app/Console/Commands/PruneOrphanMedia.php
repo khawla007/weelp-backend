@@ -20,11 +20,10 @@ class PruneOrphanMedia extends Command
 
     /**
      * Tables that reference media.id; each entry is [table, foreign_key].
-     * Audit-doc enumerated: users.avatar + every *_media_gallery + posts.media_id.
+     * Audit-doc enumerated: users.avatar + every *_media_gallery table.
      */
     private const REFERENCE_MAP = [
         ['users', 'avatar'],
-        ['posts', 'media_id'],
         ['country_media_gallery', 'media_id'],
         ['state_media_gallery', 'media_id'],
         ['city_media_gallery', 'media_id'],
