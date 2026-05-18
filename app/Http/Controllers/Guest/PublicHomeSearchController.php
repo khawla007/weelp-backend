@@ -7,7 +7,6 @@ use App\Models\Activity;
 use App\Models\Category;
 use App\Models\City;
 use App\Models\Itinerary;
-use App\Models\Package;
 use App\Models\Region;
 use App\Models\Tag;
 use Illuminate\Http\Request;
@@ -57,7 +56,7 @@ class PublicHomeSearchController extends Controller
         ]);
     }
 
-    // Merging all activity, itinerary and packages in one function to return response in api
+    // Merging activity and itinerary results for the homepage filter preview.
     public function homeSearch(Request $request)
     {
 
@@ -87,7 +86,7 @@ class PublicHomeSearchController extends Controller
         $maxPrice = $request->max_price;
         $sortBy = $request->sort_by;
         $page = $request->page ?? 1;
-        $perPage = 4;
+        $perPage = 5;
         $itemType = $request->item_type;
 
         $cityIds = $this->getCityIdsFromLocationSlug($location);
@@ -104,12 +103,10 @@ class PublicHomeSearchController extends Controller
 
         $activities = $this->searchActivities($cityIds, $startDate, $endDate, $quantity, $categoryIds, $tagIds, $sortBy, $minPrice, $maxPrice, $featured, $itemType);
         $itineraries = $this->searchItineraries($cityIds, $startDate, $endDate, $quantity, $categoryIds, $tagIds, $sortBy, $minPrice, $maxPrice, $featured, $itemType);
-        $packages = $this->searchPackages($cityIds, $startDate, $endDate, $quantity, $categoryIds, $tagIds, $sortBy, $minPrice, $maxPrice, $featured, $itemType);
 
-        // Merge all items into a single list
+        // Merge filterable public items into a single list. Packages stay out of homesearch.
         $allItems = $activities
-            ->concat($itineraries)
-            ->concat($packages);
+            ->concat($itineraries);
 
         // Sorting
         switch ($sortBy) {
@@ -141,7 +138,7 @@ class PublicHomeSearchController extends Controller
                 $allItems = $allItems->sortByDesc('id'); // Default: Newest First
         }
 
-        // Paginate (4 items per page)
+        // Paginate preview rows.
         $paginatedItems = $allItems->forPage($page, $perPage)->values();
 
         // Get total pages
@@ -421,120 +418,4 @@ class PublicHomeSearchController extends Controller
         return $itineraries;
     }
 
-    // Package Search function
-
-    // private function searchPackages($cityIds, $startDate, $endDate, $quantity)
-    private function searchPackages($cityIds, $startDate, $endDate, $quantity, $categoryIds, $tagIds, $sortBy, $minPrice, $maxPrice, $featured, $itemType)
-    {
-        $query = Package::with([
-            'categories' => function ($q) {
-                $q->with('category:id,name');
-            },
-            // 'tags:id,name',
-            'locations.city',
-            'basePricing.variations',
-            'mediaGallery.media',
-        ])->whereHas('locations', function ($q) use ($cityIds) {
-            $q->whereIn('city_id', $cityIds);
-        });
-
-        if ($startDate && $endDate) {
-            $query->whereHas('availability', function ($q) use ($startDate, $endDate) {
-                $q->where('date_based_package', true)
-                    ->where('start_date', '<=', $startDate)
-                    ->where('end_date', '>=', $endDate);
-            });
-        }
-
-        if ($quantity) {
-            $query->whereHas('availability', function ($q) use ($quantity) {
-                $q->where(function ($q) use ($quantity) {
-                    $q->where('quantity_based_package', false)
-                        ->orWhere(function ($q) use ($quantity) {
-                            $q->where('quantity_based_package', true)
-                                ->where('max_quantity', '>=', $quantity);
-                        });
-                });
-            });
-        }
-
-        // **Min Price & Max Price Filtering**
-        if ($minPrice !== null || $maxPrice !== null) {
-            $query->whereHas('basePricing.variations', function ($q) use ($minPrice, $maxPrice) {
-                if ($minPrice !== null) {
-                    $q->where('regular_price', '>=', $minPrice);
-                }
-                if ($maxPrice !== null) {
-                    $q->where('regular_price', '<=', $maxPrice);
-                }
-            });
-        }
-
-        // **Featured filter**
-        if ($featured !== null) {
-            $query->where('featured_package', (bool) $featured);
-        }
-
-        if ($itemType) {
-            $query->where('item_type', $itemType);
-        }
-
-        // **Handle Category & Tag Filtering Correctly**
-        if (! empty($categoryIds)) {
-            $query->whereHas('categories', function ($q) use ($categoryIds) {
-                $q->whereIn('package_categories.category_id', $categoryIds);
-            });
-        }
-
-        if (! empty($tagIds)) {
-            $query->whereHas('tags', fn ($q) => $q->whereIn('tag_id', $tagIds));
-        }
-
-        // return $query->get();
-        $packages = $query->get();
-
-        $packages->transform(function ($package) {
-
-            $categories = $package->categories->map(function ($packageCategory) {
-                return [
-                    'id' => $packageCategory->category->id,
-                    'name' => $packageCategory->category->name,
-                ];
-            })->unique()->values();
-
-            return [
-                'id' => $package->id,
-                'name' => $package->name,
-                'slug' => $package->slug,
-                'item_type' => $package->item_type,
-                'featured' => $package->featured_package,
-                'featured_image' => $package->mediaGallery->where('is_featured', true)->first()?->media->url
-                    ?? $package->mediaGallery->first()?->media->url,
-                'city_slug' => $package->locations->first()?->city?->slug,
-                'categories' => $categories,
-                'tags' => $package->tags->map(fn ($tag) => [
-                    'slug' => $tag->tag->slug,
-                    'name' => $tag->tag->name,
-                ])->toArray(),
-                'base_pricing' => $package->basePricing ? [
-                    'currency' => $package->basePricing->currency,
-                    'availability' => $package->basePricing->availability,
-                    'start_date' => $package->basePricing->start_date,
-                    'end_date' => $package->basePricing->end_date,
-                    'variations' => $package->basePricing->variations->map(function ($variation) {
-                        return [
-                            'id' => $variation->id,
-                            'name' => $variation->name,
-                            'regular_price' => $variation->regular_price,
-                            'sale_price' => $variation->sale_price,
-                            'max_guests' => $variation->max_guests,
-                            'description' => $variation->description,
-                        ];
-                    })->toArray(),
-                ] : null,
-            ];
-        });
-
-        return $packages;
-    }
 }
