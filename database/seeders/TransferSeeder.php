@@ -15,7 +15,7 @@ class TransferSeeder extends Seeder
 {
     public function run()
     {
-        $mediaIds = Media::pluck('id')->toArray();
+        $mediaIds = Media::orderBy('id')->limit(161)->pluck('id')->toArray();
 
         // Resolve Dubai place IDs for transfer pickup/dropoff (admin-managed flow)
         $dubaiPlaces = Place::whereHas('city', fn($q) => $q->where('slug', 'dubai'))

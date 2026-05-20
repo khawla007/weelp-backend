@@ -45,7 +45,12 @@ class PublicReviewController extends Controller
 
         $reviews = $query->paginate($perPage);
 
-        $reviews->getCollection()->transform(fn ($review) => $this->transformReview($review));
+        $reviews->setCollection(
+            $reviews->getCollection()
+                ->map(fn ($review) => $this->transformReview($review))
+                ->filter()
+                ->values()
+        );
 
         return response()->json([
             'success' => true,
@@ -86,7 +91,10 @@ class PublicReviewController extends Controller
 
         $reviews = $query->get();
 
-        $data = $reviews->map(fn ($review) => $this->transformReview($review));
+        $data = $reviews
+            ->map(fn ($review) => $this->transformReview($review))
+            ->filter()
+            ->values();
 
         if ($data->isEmpty()) {
             return response()->json(['success' => false, 'message' => 'No featured reviews found']);
@@ -260,9 +268,13 @@ class PublicReviewController extends Controller
     /**
      * Transform a review into the public API response shape.
      */
-    private function transformReview(Review $review): array
+    private function transformReview(Review $review): ?array
     {
         $item = $review->item;
+        if (! $item || ! $review->user) {
+            return null;
+        }
+
         $citySlug = null;
 
         if (! ($item instanceof \App\Models\Transfer)) {
@@ -286,12 +298,15 @@ class PublicReviewController extends Controller
                 'id' => $review->user->id,
                 'name' => $review->user->name,
             ],
-            'media_gallery' => $review->mediaGallery->map(fn ($rmg) => [
-                'id' => $rmg->media->id,
-                'name' => $rmg->media->name,
-                'alt' => $rmg->media->alt_text,
-                'url' => $rmg->media->url,
-            ]),
+            'media_gallery' => $review->mediaGallery
+                ->filter(fn ($rmg) => $rmg->media)
+                ->map(fn ($rmg) => [
+                    'id' => $rmg->media->id,
+                    'name' => $rmg->media->name,
+                    'alt' => $rmg->media->alt_text,
+                    'url' => $rmg->media->url,
+                ])
+                ->values(),
             'created_at' => $review->created_at?->format('Y-m-d'),
         ];
     }

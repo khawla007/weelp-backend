@@ -34,7 +34,7 @@ class CountrySeeder extends Seeder
         Country::truncate();
         DB::statement('SET FOREIGN_KEY_CHECKS=1');
 
-        $mediaIds = Media::pluck('id')->toArray();
+        $mediaIds = Media::orderBy('id')->limit(161)->pluck('id')->toArray();
 
         $countries = [
             // MIDDLE EAST

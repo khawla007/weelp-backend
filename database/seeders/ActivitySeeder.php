@@ -47,7 +47,7 @@ class ActivitySeeder extends Seeder {
         // Re-enable foreign key checks
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
-        $mediaIds = Media::pluck('id')->toArray();
+        $mediaIds = Media::orderBy('id')->limit(161)->pluck('id')->toArray();
         $cityIds = \App\Models\City::pluck('id')->toArray();
 
         // Dubai places for Dubai-specific activities

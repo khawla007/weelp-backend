@@ -38,7 +38,7 @@ class StateSeeder extends Seeder
         DB::statement('SET FOREIGN_KEY_CHECKS=1');
         echo "All existing states deleted.\n";
 
-        $mediaIds = Media::pluck('id')->toArray();
+        $mediaIds = Media::orderBy('id')->limit(161)->pluck('id')->toArray();
 
         // Insert States
         $states = [

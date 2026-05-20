@@ -61,7 +61,8 @@ class Media extends Model
 
     protected $fillable = ['name', 'alt_text', 'url', 'file_size', 'width', 'height'];
 
-    // Note: 'url' column stores relative paths; getUrlAttribute accessor converts to full URLs automatically
+    // Note: 'url' column stores relative paths; getUrlAttribute exposes them through
+    // the public API media proxy so private MinIO objects are not linked directly.
 
     /**
      * Get the full URL for the media file.
@@ -73,9 +74,8 @@ class Media extends Model
             return null;
         }
 
-        // Legacy data: already a full URL (before migration cleanup)
-        if (str_starts_with($value, 'http')) {
-            return $value;
+        if ($this->getKey()) {
+            return "/api/media/{$this->getKey()}";
         }
 
         return Storage::disk('minio')->url($value);

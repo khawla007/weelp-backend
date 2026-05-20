@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\Storage;
 use App\Models\Media;
 
 class MediaSeeder extends Seeder
@@ -15,9 +14,8 @@ class MediaSeeder extends Seeder
      * Stores relative paths (not full URLs) — the Media model's
      * getUrlAttribute accessor converts them to full URLs automatically.
      *
-     * Paths are sourced dynamically from the MinIO bucket so newly uploaded
-     * files (e.g. via scripts/upload_designs_to_minio.php) get seeded without
-     * editing this file.
+     * The first 161 records are the curated random tourist-place objects
+     * uploaded under countries/random-tourist-places/.
      */
     public function run(): void
     {
@@ -29,7 +27,171 @@ class MediaSeeder extends Seeder
         }
         Schema::enableForeignKeyConstraints();
 
-        $hardcoded = [
+        $randomCountryTouristPlacePaths = [
+            'countries/random-tourist-places/argentina/01-argentina-tourist-place-1-52a7e30197.jpg',
+            'countries/random-tourist-places/argentina/02-argentina-tourist-place-2-60dd5d8cfd.jpg',
+            'countries/random-tourist-places/argentina/03-argentina-tourist-place-3-5daf8d5d08.jpg',
+            'countries/random-tourist-places/argentina/04-argentina-tourist-place-4-745e81731b.jpg',
+            'countries/random-tourist-places/argentina/05-argentina-tourist-place-5-9acafdcdb1.jpg',
+            'countries/random-tourist-places/australia/01-australia-tourist-place-1-7c17935f33.jpg',
+            'countries/random-tourist-places/australia/02-australia-tourist-place-2-a449a19163.jpg',
+            'countries/random-tourist-places/australia/03-australia-tourist-place-4-aa855290d4.jpg',
+            'countries/random-tourist-places/australia/04-australia-tourist-place-5-8694cdda90.jpg',
+            'countries/random-tourist-places/bahrain/01-bahrain-tourist-place-1-96e619cc6b.jpg',
+            'countries/random-tourist-places/bahrain/02-bahrain-tourist-place-2-e59c78b999.jpg',
+            'countries/random-tourist-places/bahrain/03-bahrain-tourist-place-3-b9dff3f037.jpg',
+            'countries/random-tourist-places/bahrain/04-bahrain-tourist-place-4-0f619c97c0.jpg',
+            'countries/random-tourist-places/bahrain/05-bahrain-tourist-place-5-24c5663095.jpg',
+            'countries/random-tourist-places/brazil/01-brazil-tourist-place-1-30a4cccb7e.jpg',
+            'countries/random-tourist-places/brazil/02-brazil-tourist-place-2-36623f92c6.jpg',
+            'countries/random-tourist-places/brazil/03-brazil-tourist-place-3-a4d25f4a9b.jpg',
+            'countries/random-tourist-places/brazil/04-brazil-tourist-place-4-204f79e3db.jpg',
+            'countries/random-tourist-places/brazil/05-brazil-tourist-place-5-886e25e6c9.jpg',
+            'countries/random-tourist-places/canada/01-canada-tourist-place-1-2322784b83.jpg',
+            'countries/random-tourist-places/canada/02-canada-tourist-place-2-a87390daf9.jpg',
+            'countries/random-tourist-places/canada/03-canada-tourist-place-3-bdbfca89ad.jpg',
+            'countries/random-tourist-places/canada/04-canada-tourist-place-4-d06c65cc24.jpg',
+            'countries/random-tourist-places/canada/05-canada-tourist-place-5-92026fbe68.jpg',
+            'countries/random-tourist-places/chile/01-chile-tourist-place-1-5e965953a2.jpg',
+            'countries/random-tourist-places/chile/02-chile-tourist-place-2-4d2866cc8a.jpg',
+            'countries/random-tourist-places/chile/03-chile-tourist-place-3-face4f3be5.jpg',
+            'countries/random-tourist-places/chile/04-chile-tourist-place-4-5c07126567.jpg',
+            'countries/random-tourist-places/chile/05-chile-tourist-place-5-0b12267fb7.jpg',
+            'countries/random-tourist-places/china/01-china-tourist-place-1-fc2f124b60.jpg',
+            'countries/random-tourist-places/china/02-china-tourist-place-2-e236564583.jpg',
+            'countries/random-tourist-places/china/03-china-tourist-place-3-187d68a4d8.jpg',
+            'countries/random-tourist-places/china/04-china-tourist-place-4-686d85b499.jpg',
+            'countries/random-tourist-places/china/05-china-tourist-place-5-5c750a0af9.jpg',
+            'countries/random-tourist-places/colombia/01-colombia-tourist-place-1-edff23ae7c.jpg',
+            'countries/random-tourist-places/colombia/02-colombia-tourist-place-2-3cdfb696cc.jpg',
+            'countries/random-tourist-places/colombia/03-colombia-tourist-place-3-0abf36a289.jpg',
+            'countries/random-tourist-places/colombia/04-colombia-tourist-place-4-57e13b607e.jpg',
+            'countries/random-tourist-places/colombia/05-colombia-tourist-place-5-57fbeab924.jpg',
+            'countries/random-tourist-places/egypt/01-egypt-tourist-place-1-f16c7bc947.jpg',
+            'countries/random-tourist-places/egypt/02-egypt-tourist-place-2-5ca39405fa.jpg',
+            'countries/random-tourist-places/egypt/03-egypt-tourist-place-3-a18ceabf03.jpg',
+            'countries/random-tourist-places/egypt/04-egypt-tourist-place-4-e18fe0f788.jpg',
+            'countries/random-tourist-places/egypt/05-egypt-tourist-place-5-9b2e6cc9fc.jpg',
+            'countries/random-tourist-places/france/01-france-tourist-place-1-9677f46125.jpg',
+            'countries/random-tourist-places/france/02-france-tourist-place-2-748fe8625a.jpg',
+            'countries/random-tourist-places/france/03-france-tourist-place-3-1eceb054f6.jpg',
+            'countries/random-tourist-places/france/04-france-tourist-place-4-ca57d68e94.jpg',
+            'countries/random-tourist-places/france/05-france-tourist-place-5-0e9ff2845d.jpg',
+            'countries/random-tourist-places/germany/01-germany-tourist-place-1-f9a4325033.jpg',
+            'countries/random-tourist-places/germany/02-germany-tourist-place-2-53f561cbea.jpg',
+            'countries/random-tourist-places/germany/03-germany-tourist-place-3-567fdda298.jpg',
+            'countries/random-tourist-places/germany/04-germany-tourist-place-4-3a0ce66461.jpg',
+            'countries/random-tourist-places/germany/05-germany-tourist-place-5-f907539bb1.jpg',
+            'countries/random-tourist-places/greece/01-greece-tourist-place-1-86e3f657e8.jpg',
+            'countries/random-tourist-places/greece/02-greece-tourist-place-2-53373ba2ea.jpg',
+            'countries/random-tourist-places/greece/03-greece-tourist-place-3-9bb62e45f9.jpg',
+            'countries/random-tourist-places/greece/04-greece-tourist-place-4-493af35d2e.jpg',
+            'countries/random-tourist-places/greece/05-greece-tourist-place-5-8b8c6319c7.jpg',
+            'countries/random-tourist-places/india/01-india-tourist-place-2-e400eb613d.jpg',
+            'countries/random-tourist-places/india/02-india-tourist-place-3-37081eb94f.jpg',
+            'countries/random-tourist-places/india/03-india-tourist-place-4-63ed531232.jpg',
+            'countries/random-tourist-places/india/04-india-tourist-place-5-a6d94bcad8.jpg',
+            'countries/random-tourist-places/indonesia/01-indonesia-tourist-place-1-8082b6546f.jpg',
+            'countries/random-tourist-places/indonesia/02-indonesia-tourist-place-2-7c6fc429f7.jpg',
+            'countries/random-tourist-places/indonesia/03-indonesia-tourist-place-3-f657262276.jpg',
+            'countries/random-tourist-places/indonesia/04-indonesia-tourist-place-4-e010263287.jpg',
+            'countries/random-tourist-places/indonesia/05-indonesia-tourist-place-5-b7d3d1dd7a.jpg',
+            'countries/random-tourist-places/italy/01-italy-tourist-place-1-027bd10e9a.jpg',
+            'countries/random-tourist-places/italy/02-italy-tourist-place-2-9bc6fba6e4.jpg',
+            'countries/random-tourist-places/italy/03-italy-tourist-place-3-9f66a74b9a.jpg',
+            'countries/random-tourist-places/italy/04-italy-tourist-place-4-7591e7cd03.jpg',
+            'countries/random-tourist-places/italy/05-italy-tourist-place-5-77328b4d61.jpg',
+            'countries/random-tourist-places/japan/01-japan-tourist-place-1-f35e66765f.jpg',
+            'countries/random-tourist-places/japan/02-japan-tourist-place-2-881b4ae83f.jpg',
+            'countries/random-tourist-places/japan/03-japan-tourist-place-3-499d7e2358.jpg',
+            'countries/random-tourist-places/japan/04-japan-tourist-place-4-9bb977bc62.jpg',
+            'countries/random-tourist-places/japan/05-japan-tourist-place-5-07fc21937b.jpg',
+            'countries/random-tourist-places/kenya/01-kenya-tourist-place-1-03bc67f3ad.jpg',
+            'countries/random-tourist-places/kenya/02-kenya-tourist-place-2-0bd0b1d6ff.jpg',
+            'countries/random-tourist-places/kenya/03-kenya-tourist-place-3-d7e42b4090.jpg',
+            'countries/random-tourist-places/kenya/04-kenya-tourist-place-4-da43cc9f17.jpg',
+            'countries/random-tourist-places/kenya/05-kenya-tourist-place-5-9c1a709c9c.jpg',
+            'countries/random-tourist-places/kuwait/01-kuwait-tourist-place-1-89a6c71efd.jpg',
+            'countries/random-tourist-places/kuwait/02-kuwait-tourist-place-2-c14183320b.jpg',
+            'countries/random-tourist-places/kuwait/03-kuwait-tourist-place-3-d194d1b718.jpg',
+            'countries/random-tourist-places/kuwait/04-kuwait-tourist-place-4-c58d69c656.jpg',
+            'countries/random-tourist-places/kuwait/05-kuwait-tourist-place-5-c78aab177f.jpg',
+            'countries/random-tourist-places/mexico/01-mexico-tourist-place-1-ac00712807.jpg',
+            'countries/random-tourist-places/mexico/02-mexico-tourist-place-2-c76311ee7d.jpg',
+            'countries/random-tourist-places/mexico/03-mexico-tourist-place-3-e6d9dbc218.jpg',
+            'countries/random-tourist-places/mexico/04-mexico-tourist-place-4-ef7bfe3b64.jpg',
+            'countries/random-tourist-places/mexico/05-mexico-tourist-place-5-af627cee8a.jpg',
+            'countries/random-tourist-places/morocco/01-morocco-tourist-place-1-5587a3bd06.jpg',
+            'countries/random-tourist-places/morocco/02-morocco-tourist-place-2-6b91cba643.jpg',
+            'countries/random-tourist-places/morocco/03-morocco-tourist-place-3-003e5bbb6a.jpg',
+            'countries/random-tourist-places/morocco/04-morocco-tourist-place-4-6adb676ab6.jpg',
+            'countries/random-tourist-places/morocco/05-morocco-tourist-place-5-ff9e06f4e0.jpg',
+            'countries/random-tourist-places/netherlands/01-netherlands-tourist-place-1-cf4ff95fc4.jpg',
+            'countries/random-tourist-places/netherlands/02-netherlands-tourist-place-2-2d678ff390.jpg',
+            'countries/random-tourist-places/netherlands/03-netherlands-tourist-place-3-ee22e8a9e5.jpg',
+            'countries/random-tourist-places/netherlands/04-netherlands-tourist-place-4-a664e53fde.jpg',
+            'countries/random-tourist-places/netherlands/05-netherlands-tourist-place-5-fce08d2e48.jpg',
+            'countries/random-tourist-places/new-zealand/01-new-zealand-tourist-place-1-968b98dde6.jpg',
+            'countries/random-tourist-places/new-zealand/02-new-zealand-tourist-place-2-410e14ddc3.jpg',
+            'countries/random-tourist-places/new-zealand/03-new-zealand-tourist-place-3-0dc598296e.jpg',
+            'countries/random-tourist-places/new-zealand/04-new-zealand-tourist-place-4-a049de8229.jpg',
+            'countries/random-tourist-places/new-zealand/05-new-zealand-tourist-place-5-a78fdbe5d2.jpg',
+            'countries/random-tourist-places/oman/01-oman-tourist-place-1-d67d86792d.jpg',
+            'countries/random-tourist-places/oman/02-oman-tourist-place-2-b22ba08990.jpg',
+            'countries/random-tourist-places/oman/03-oman-tourist-place-3-b9c3c06f6e.jpg',
+            'countries/random-tourist-places/oman/04-oman-tourist-place-4-d99217d99e.jpg',
+            'countries/random-tourist-places/oman/05-oman-tourist-place-5-1f6844be7c.jpg',
+            'countries/random-tourist-places/peru/01-peru-tourist-place-1-a40205dd29.jpg',
+            'countries/random-tourist-places/peru/02-peru-tourist-place-2-bb535eec67.jpg',
+            'countries/random-tourist-places/peru/03-peru-tourist-place-3-c62b94b151.jpg',
+            'countries/random-tourist-places/peru/04-peru-tourist-place-4-55b976034b.jpg',
+            'countries/random-tourist-places/peru/05-peru-tourist-place-5-a28ee201f1.jpg',
+            'countries/random-tourist-places/portugal/01-portugal-tourist-place-1-ca13490c8a.jpg',
+            'countries/random-tourist-places/portugal/02-portugal-tourist-place-2-2f638d8a21.jpg',
+            'countries/random-tourist-places/portugal/03-portugal-tourist-place-3-1976694839.jpg',
+            'countries/random-tourist-places/portugal/04-portugal-tourist-place-4-76c9ca1b5f.jpg',
+            'countries/random-tourist-places/portugal/05-portugal-tourist-place-5-55ee719862.jpg',
+            'countries/random-tourist-places/qatar/01-qatar-tourist-place-1-7dfbc10f35.jpg',
+            'countries/random-tourist-places/qatar/02-qatar-tourist-place-2-82e77a2e05.jpg',
+            'countries/random-tourist-places/qatar/03-qatar-tourist-place-3-f201be2bcc.jpg',
+            'countries/random-tourist-places/qatar/04-qatar-tourist-place-4-f2f3f202c2.jpg',
+            'countries/random-tourist-places/qatar/05-qatar-tourist-place-5-e36006cac7.jpg',
+            'countries/random-tourist-places/saudi-arabia/01-saudi-arabia-tourist-place-1-e45ae332f6.jpg',
+            'countries/random-tourist-places/saudi-arabia/02-saudi-arabia-tourist-place-2-c0c57bbc48.jpg',
+            'countries/random-tourist-places/saudi-arabia/03-saudi-arabia-tourist-place-3-4accfbcffe.jpg',
+            'countries/random-tourist-places/saudi-arabia/04-saudi-arabia-tourist-place-4-c5d5091cc8.jpg',
+            'countries/random-tourist-places/saudi-arabia/05-saudi-arabia-tourist-place-5-582a86931a.jpg',
+            'countries/random-tourist-places/singapore/01-singapore-tourist-place-1-2972582615.jpg',
+            'countries/random-tourist-places/singapore/02-singapore-tourist-place-2-76beeb7a18.jpg',
+            'countries/random-tourist-places/singapore/03-singapore-tourist-place-3-dbd8e93cbc.jpg',
+            'countries/random-tourist-places/singapore/04-singapore-tourist-place-4-ea26f7fa37.jpg',
+            'countries/random-tourist-places/singapore/05-singapore-tourist-place-5-2120a8ca58.jpg',
+            'countries/random-tourist-places/south-africa/01-south-africa-tourist-place-1-10d6862baa.jpg',
+            'countries/random-tourist-places/south-africa/02-south-africa-tourist-place-2-3be3780f69.jpg',
+            'countries/random-tourist-places/south-africa/03-south-africa-tourist-place-3-7008a4d675.jpg',
+            'countries/random-tourist-places/south-africa/04-south-africa-tourist-place-4-b13833a417.jpg',
+            'countries/random-tourist-places/south-africa/05-south-africa-tourist-place-5-7ec961c814.jpg',
+            'countries/random-tourist-places/south-korea/01-south-korea-tourist-place-1-7b2e2c00c3.jpg',
+            'countries/random-tourist-places/south-korea/02-south-korea-tourist-place-2-6e7916defa.jpg',
+            'countries/random-tourist-places/south-korea/03-south-korea-tourist-place-3-5ce4e3d95e.jpg',
+            'countries/random-tourist-places/south-korea/04-south-korea-tourist-place-4-62d4c5cb6d.jpg',
+            'countries/random-tourist-places/south-korea/05-south-korea-tourist-place-5-15006a5099.jpg',
+            'countries/random-tourist-places/spain/01-spain-tourist-place-1-37a7ba381b.jpg',
+            'countries/random-tourist-places/spain/02-spain-tourist-place-2-742a948faa.jpg',
+            'countries/random-tourist-places/spain/03-spain-tourist-place-3-1d579c9bd5.jpg',
+            'countries/random-tourist-places/spain/04-spain-tourist-place-4-b95e1885d4.jpg',
+            'countries/random-tourist-places/spain/05-spain-tourist-place-5-2eace89c46.jpg',
+            'countries/random-tourist-places/switzerland/01-switzerland-tourist-place-1-ace29d6b9e.jpg',
+            'countries/random-tourist-places/switzerland/02-switzerland-tourist-place-2-75595639e7.jpg',
+            'countries/random-tourist-places/switzerland/03-switzerland-tourist-place-3-64f487f05e.jpg',
+            'countries/random-tourist-places/switzerland/04-switzerland-tourist-place-4-37b26e8fbb.jpg',
+            'countries/random-tourist-places/switzerland/05-switzerland-tourist-place-5-3f8ccc4f96.jpg',
+            'countries/random-tourist-places/tanzania/01-tanzania-tourist-place-1-ff72a8fd5b.jpg',
+            'countries/random-tourist-places/tanzania/02-tanzania-tourist-place-2-60e7366eaf.jpg',
+            'countries/random-tourist-places/tanzania/03-tanzania-tourist-place-3-1043394d05.jpg',
+        ];
+
+        $hardcoded = array_merge($randomCountryTouristPlacePaths, [
             // ── Avatars ──
             'avatars/4.webp',
 
@@ -515,14 +677,9 @@ class MediaSeeder extends Seeder
             'states/tuscany_2_1773040690.jpg',
             'states/tuscany_2_1773043986.jpg',
             'states/tuscany_3_1773043987.jpg',
-        ];
+        ]);
 
-        // Pull every file currently in the MinIO bucket (includes uploads under designs/).
-        // Merge with hardcoded list + dedupe so the seeder remains deterministic even if
-        // the bucket is empty in some environments.
-        $fromBucket = Storage::disk('minio')->allFiles();
-        $paths = array_values(array_unique(array_merge($hardcoded, $fromBucket)));
-        sort($paths);
+        $paths = array_values(array_unique($hardcoded));
 
         foreach ($paths as $path) {
             Media::create([
@@ -545,6 +702,14 @@ class MediaSeeder extends Seeder
         $filename = pathinfo($path, PATHINFO_FILENAME);
         $parts = explode('/', $path);
         $folder = ucfirst($parts[0]);
+
+        if (str_starts_with($path, 'countries/random-tourist-places/')) {
+            $country = ucwords(str_replace('-', ' ', $parts[2] ?? 'country'));
+            if (preg_match('/^(\d+)-/', $filename, $m)) {
+                return "{$country} Tourist Place {$m[1]}";
+            }
+            return "{$country} Tourist Place";
+        }
 
         // designs: "image-import-10" → "Design Image 10"
         if (str_starts_with($path, 'designs/') && preg_match('/^image-import-(\d+)$/i', $filename, $m)) {
@@ -583,6 +748,12 @@ class MediaSeeder extends Seeder
     private static function generateAltText(string $path): string
     {
         $filename = pathinfo($path, PATHINFO_FILENAME);
+
+        if (str_starts_with($path, 'countries/random-tourist-places/')) {
+            $parts = explode('/', $path);
+            $country = ucwords(str_replace('-', ' ', $parts[2] ?? 'country'));
+            return "{$country} tourist place image";
+        }
 
         if (str_starts_with($path, 'designs/')) {
             return 'Weelp design image';

@@ -54,7 +54,7 @@ class ItinerarySeeder extends Seeder
         // Foreign key checks ko wapas enable karo
         DB::statement('SET FOREIGN_KEY_CHECKS=1');
 
-        $mediaIds = Media::pluck('id')->toArray();
+        $mediaIds = Media::orderBy('id')->limit(161)->pluck('id')->toArray();
         $cityIds = \App\Models\City::pluck('id')->toArray();
         $activityIds = \App\Models\Activity::pluck('id')->toArray();
         $transferIds = \App\Models\Transfer::pluck('id')->toArray();

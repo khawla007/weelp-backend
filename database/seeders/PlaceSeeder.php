@@ -85,7 +85,7 @@ class PlaceSeeder extends Seeder
             ['city_slug' => 'dubai', 'name' => 'Dubai Creek', 'code' => 'DC', 'slug' => 'dubai-creek', 'description' => 'Historic saltwater creek dividing the city into Deira and Bur Dubai, offering traditional abra boat rides, gold and spice souks, and a glimpse into old Dubai heritage.'],
         ];
 
-        $mediaIds = Media::pluck('id')->toArray();
+        $mediaIds = Media::orderBy('id')->limit(161)->pluck('id')->toArray();
 
         $createdCount = 0;
         foreach ($placesData as $data) {

@@ -19,7 +19,7 @@ class BlogSeeder extends Seeder
         // Get all ids
         $allCategoryIds = Category::pluck('id')->toArray();
         $allTagIds = Tag::pluck('id')->toArray();
-        $allMediaIds = Media::pluck('id')->toArray();
+        $allMediaIds = Media::orderBy('id')->limit(161)->pluck('id')->toArray();
 
         // Safety check
         if (empty($allCategoryIds) || empty($allTagIds) || empty($allMediaIds)) {

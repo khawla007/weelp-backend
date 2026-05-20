@@ -143,7 +143,7 @@ class AdminTransferSeeder extends Seeder
         ];
 
         $addonIds = Addon::pluck('id')->all();
-        $mediaIds = Media::pluck('id')->all();
+        $mediaIds = Media::orderBy('id')->limit(161)->pluck('id')->all();
 
         foreach ($transferDefs as $def) {
             $route = $routes[$def['route']] ?? null;

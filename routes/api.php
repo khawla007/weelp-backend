@@ -40,6 +40,7 @@ use App\Http\Controllers\Creator\CreatorItineraryController;
 // Public
 use App\Http\Controllers\Creator\CreatorPostController;
 use App\Http\Controllers\Customer\CustomerItineraryController;
+use App\Http\Controllers\Guest\MediaFileController;
 use App\Http\Controllers\Guest\OtpController;
 use App\Http\Controllers\Guest\PublicActivityController;
 use App\Http\Controllers\Guest\PublicBlogController;
@@ -599,6 +600,7 @@ Route::get('/shop', [PublicShopController::class, 'index']);
 
 Route::get('blogs', [PublicBlogController::class, 'index']);
 Route::get('blogs/{slug}', [PublicBlogController::class, 'show']);
+Route::get('media/{media}', [MediaFileController::class, 'show']);
 
 // Public reviews api
 Route::prefix('reviews')->group(function () {

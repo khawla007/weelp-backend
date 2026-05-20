@@ -14,7 +14,7 @@ class ReviewSeeder extends Seeder
     {
         $itemTypes = ['activity', 'itinerary', 'package', 'transfer'];
         $statuses = ['approved', 'pending'];
-        $mediaIds = Media::pluck('id')->toArray();
+        $mediaIds = Media::orderBy('id')->limit(161)->pluck('id')->toArray();
 
         for ($i = 1; $i <= 11; $i++) {
             $review = Review::create([

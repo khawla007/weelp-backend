@@ -28,6 +28,27 @@ class ReviewEndpointTest extends TestCase
         $response->assertOk();
     }
 
+    public function test_list_reviews_skips_orphaned_review_items(): void
+    {
+        $user = User::factory()->create();
+
+        Review::factory()->create([
+            'user_id' => $user->id,
+            'item_type' => 'activity',
+            'item_id' => 999999,
+            'status' => 'approved',
+        ]);
+
+        $response = $this->getJson('/api/reviews');
+
+        $response
+            ->assertOk()
+            ->assertJson([
+                'success' => true,
+                'data' => [],
+            ]);
+    }
+
     public function test_list_reviews_returns_empty_for_no_reviews(): void
     {
         $response = $this->getJson('/api/reviews');

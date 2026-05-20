@@ -47,7 +47,7 @@ class CitySeeder extends Seeder
         DB::statement('SET FOREIGN_KEY_CHECKS=1');
         echo "All existing cities and related data deleted.\n";
 
-        $mediaIds = Media::pluck('id')->toArray();
+        $mediaIds = Media::orderBy('id')->limit(161)->pluck('id')->toArray();
 
         // Cities array - 58 cities across 20 states
         $cities = [
