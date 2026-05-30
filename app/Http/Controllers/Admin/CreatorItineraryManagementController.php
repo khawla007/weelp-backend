@@ -47,7 +47,7 @@ class CreatorItineraryManagementController extends Controller
                 'locations.city',
                 'schedules.activities.activity.locations.city',
                 'schedules.activities.activity.mediaGallery.media',
-                'schedules.transfers.transfer',
+                'schedules.transfers.transfer.mediaGallery.media',
                 'basePricing.variations',
                 'basePricing.blackoutDates',
                 'inclusionsExclusions',
@@ -70,16 +70,10 @@ class CreatorItineraryManagementController extends Controller
         $data['featured_image'] = $itinerary->featured_image;
         $data['gallery_images'] = $itinerary->gallery_images;
 
-        // Flatten media_gallery: { media: { url } } → { url }
-        $data['media_gallery'] = $itinerary->mediaGallery->map(function ($media) {
-            return [
-                'id' => $media->media->id,
-                'name' => $media->media->name,
-                'alt_text' => $media->media->alt_text,
-                'url' => $media->media->url,
-                'is_featured' => (bool) $media->is_featured,
-            ];
-        })->toArray();
+        // Resolve gallery with the same fallback chain the public itinerary page uses:
+        // itinerary media → activity media → transfer media. Creator itineraries carry no
+        // own itinerary-level media, so without the fallback the review gallery is empty.
+        $data['media_gallery'] = $this->resolveGalleryWithFallback($itinerary);
 
         // Transform schedules with flattened activities and transfers
         $data['schedules'] = $itinerary->schedules->map(function ($schedule) {
@@ -503,5 +497,69 @@ class CreatorItineraryManagementController extends Controller
         }
 
         return response()->json(['success' => true, 'message' => 'Removal rejected.']);
+    }
+
+    /**
+     * Resolve the media_gallery for the admin review/preview of a creator itinerary.
+     * Mirrors PublicItineraryController::resolveGalleryWithFallback so the review page
+     * shows the same images the public page will once approved.
+     * Fallback chain: itinerary media → activity media → transfer media. Dedupes by URL.
+     */
+    private function resolveGalleryWithFallback(Itinerary $itinerary): array
+    {
+        $ownGallery = $itinerary->mediaGallery
+            ->filter(fn ($mg) => $mg->media?->url)
+            ->map(fn ($mg) => [
+                'id' => $mg->media->id,
+                'name' => $mg->media->name,
+                'alt_text' => $mg->media->alt_text,
+                'url' => $mg->media->url,
+                'is_featured' => (bool) $mg->is_featured,
+            ])
+            ->values()
+            ->toArray();
+
+        if (! empty($ownGallery)) {
+            return $ownGallery;
+        }
+
+        $collectFrom = function ($items) {
+            $seen = [];
+            $out = [];
+            foreach ($items as $mg) {
+                $media = $mg->media ?? null;
+                if (! $media?->url || in_array($media->url, $seen, true)) {
+                    continue;
+                }
+                $seen[] = $media->url;
+                $out[] = [
+                    'id' => $media->id,
+                    'name' => $media->name,
+                    'alt_text' => $media->alt_text,
+                    'url' => $media->url,
+                    'is_featured' => false,
+                ];
+            }
+
+            return $out;
+        };
+
+        $activityMedia = $itinerary->schedules->flatMap(
+            fn ($schedule) => $schedule->activities->flatMap(
+                fn ($activity) => $activity->activity?->mediaGallery ?? collect()
+            )
+        );
+        $activityGallery = $collectFrom($activityMedia);
+        if (! empty($activityGallery)) {
+            return $activityGallery;
+        }
+
+        $transferMedia = $itinerary->schedules->flatMap(
+            fn ($schedule) => $schedule->transfers->flatMap(
+                fn ($transfer) => $transfer->transfer?->mediaGallery ?? collect()
+            )
+        );
+
+        return $collectFrom($transferMedia);
     }
 }
