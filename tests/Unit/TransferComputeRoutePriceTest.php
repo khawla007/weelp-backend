@@ -43,7 +43,6 @@ class TransferComputeRoutePriceTest extends TestCase
         $transfer = new Transfer();
         $refClass = new \ReflectionClass($transfer);
         $resolvedProperty = $refClass->getProperty('resolvedZonePrice');
-        $resolvedProperty->setAccessible(true);
         $resolvedProperty->setValue($transfer, $zonePricing);
 
         // Set pricingAvailability as a relation (circumvent lazy loading)
@@ -77,7 +76,6 @@ class TransferComputeRoutePriceTest extends TestCase
         // Use reflection to set resolvedZonePrice to null
         $refClass = new \ReflectionClass($transfer);
         $resolvedProperty = $refClass->getProperty('resolvedZonePrice');
-        $resolvedProperty->setAccessible(true);
         $resolvedProperty->setValue($transfer, null);
 
         // Set pricingAvailability relation
@@ -104,7 +102,6 @@ class TransferComputeRoutePriceTest extends TestCase
         // Use reflection to set resolvedZonePrice to null
         $refClass = new \ReflectionClass($transfer);
         $resolvedProperty = $refClass->getProperty('resolvedZonePrice');
-        $resolvedProperty->setAccessible(true);
         $resolvedProperty->setValue($transfer, null);
 
         // Set pricingAvailability relation to null to prevent lazy loading
@@ -141,7 +138,6 @@ class TransferComputeRoutePriceTest extends TestCase
         // Use reflection to inject the zone price with null currency
         $refClass = new \ReflectionClass($transfer);
         $resolvedProperty = $refClass->getProperty('resolvedZonePrice');
-        $resolvedProperty->setAccessible(true);
         $resolvedProperty->setValue($transfer, $zonePricing);
 
         // Set pricingAvailability relation
@@ -174,7 +170,6 @@ class TransferComputeRoutePriceTest extends TestCase
 
         $refClass = new \ReflectionClass($transfer);
         $resolvedProperty = $refClass->getProperty('resolvedZonePrice');
-        $resolvedProperty->setAccessible(true);
         $resolvedProperty->setValue($transfer, $zonePricing);
 
         $transfer->setRelation('pricingAvailability', $pricingAvailability);
@@ -202,7 +197,6 @@ class TransferComputeRoutePriceTest extends TestCase
         $transfer = new Transfer();
         $ref = new \ReflectionClass($transfer);
         $prop = $ref->getProperty('resolvedZonePrice');
-        $prop->setAccessible(true);
         $prop->setValue($transfer, $zonePricing);
         $transfer->setRelation('pricingAvailability', $perPerson);
 
@@ -227,7 +221,6 @@ class TransferComputeRoutePriceTest extends TestCase
         $transfer = new Transfer();
         $ref = new \ReflectionClass($transfer);
         $prop = $ref->getProperty('resolvedZonePrice');
-        $prop->setAccessible(true);
         $prop->setValue($transfer, $zonePricing);
         $transfer->setRelation('pricingAvailability', $perVehicle);
 
@@ -262,7 +255,6 @@ class TransferComputeRoutePriceTest extends TestCase
         // Use reflection to inject the zone price
         $refClass = new \ReflectionClass($transfer);
         $resolvedProperty = $refClass->getProperty('resolvedZonePrice');
-        $resolvedProperty->setAccessible(true);
         $resolvedProperty->setValue($transfer, $zonePricing);
 
         // Set pricingAvailability relation
