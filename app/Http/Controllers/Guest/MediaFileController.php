@@ -24,6 +24,14 @@ class MediaFileController extends Controller
             }
         }
 
+        // Guard against rows pointing at a deleted/missing bucket object:
+        // FilesystemAdapter::response() eagerly reads fileSize() for the
+        // Content-Length header, which throws UnableToRetrieveMetadata (500)
+        // when the object is gone. A missing object is a 404, not a server error.
+        if (! Storage::disk('minio')->exists($path)) {
+            abort(404);
+        }
+
         return Storage::disk('minio')->response($path);
     }
 }
