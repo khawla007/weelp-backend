@@ -31,4 +31,33 @@ class AnnouncementPublicTest extends TestCase
 
         $this->assertSame([$shown->id], $ids);
     }
+
+    public function test_public_endpoint_returns_only_visible_without_auth(): void
+    {
+        Announcement::create([
+            'type' => 'offer', 'title' => 'Live offer', 'message' => 'Save 20%',
+            'link' => 'https://example.com/deal', 'is_active' => true,
+        ]);
+        Announcement::create([
+            'type' => 'update', 'title' => 'Hidden', 'message' => 'm', 'is_active' => false,
+        ]);
+
+        $response = $this->getJson('/api/announcements');
+
+        $response->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment(['title' => 'Live offer'])
+            ->assertJsonMissing(['title' => 'Hidden']);
+
+        $response->assertJsonStructure([
+            'success',
+            'data' => [
+                ['id', 'type', 'title', 'message', 'link', 'created_at'],
+            ],
+        ]);
+        $response->assertJsonMissingPath('data.0.is_active');
+        $response->assertJsonMissingPath('data.0.publish_at');
+        $response->assertJsonMissingPath('data.0.expires_at');
+        $response->assertJsonMissingPath('data.0.created_by');
+    }
 }

@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\AddonController;
 use App\Http\Controllers\Admin\AdminLocationSearchController;
 use App\Http\Controllers\Admin\AttributeController;
 use App\Http\Controllers\Admin\BlogController;
+use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CityController;
 // use App\Http\Controllers\Admin\UserProfileController;
@@ -621,6 +622,9 @@ Route::prefix('reviews')->group(function () {
 //     Route::post('/posts/{id}/like', [PublicPostController::class, 'toggleLike']);
 //     Route::post('/posts/{id}/share', [PublicPostController::class, 'incrementShare']);
 // });
+
+// Public site-wide announcements (no auth — visible to all visitors)
+Route::get('/announcements', [AnnouncementController::class, 'index']);
 
 // Notifications (all authenticated users)
 Route::middleware('auth:api')->group(function () {
