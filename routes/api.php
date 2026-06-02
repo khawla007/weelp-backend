@@ -3,6 +3,7 @@
 // Admin
 use App\Http\Controllers\Admin\ActivityController;
 use App\Http\Controllers\Admin\AddonController;
+use App\Http\Controllers\Admin\AnnouncementController as AdminAnnouncementController;
 use App\Http\Controllers\Admin\AdminLocationSearchController;
 use App\Http\Controllers\Admin\AttributeController;
 use App\Http\Controllers\Admin\BlogController;
@@ -236,6 +237,14 @@ Route::middleware(['auth:api', 'admin', 'throttle:60,1'])->prefix('admin')->grou
         Route::delete('{id}', [UserController::class, 'destroy'])->middleware('super_admin');
         Route::post('/bulk-delete', [UserController::class, 'bulkDelete'])->middleware('super_admin');
         Route::post('{id}/avatar', [UserController::class, 'uploadUserAvatar']);
+    });
+
+    // Admin Side Announcements Routes
+    Route::prefix('announcements')->group(function () {
+        Route::get('/', [AdminAnnouncementController::class, 'index']);
+        Route::post('/', [AdminAnnouncementController::class, 'store']);
+        Route::put('{id}', [AdminAnnouncementController::class, 'update']);
+        Route::delete('{id}', [AdminAnnouncementController::class, 'destroy']);
     });
 
     // Admin Side Category Routes
