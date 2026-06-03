@@ -22,6 +22,7 @@ class NotificationController extends Controller
             'image_media_ids.*' => 'integer|exists:media,id',
             'action_url' => ['nullable', 'string', 'max:2048', 'regex:/^(\/(?!\/)|https?:\/\/)/i'],
             'display_style' => 'nullable|in:inline,popup',
+            'coupon_code' => 'nullable|string|max:64',
             'target_type' => 'required|in:user,role',
             'target_user_id' => 'required_if:target_type,user|integer|exists:users,id',
             'target_role' => 'required_if:target_type,role|in:customer,creator,admin',
@@ -33,11 +34,14 @@ class NotificationController extends Controller
 
         $v = $validator->validated();
 
-        $data = null;
+        $data = [];
         if (!empty($v['image_media_ids'])) {
-            $urls = Media::whereIn('id', $v['image_media_ids'])->get()->pluck('url')->all();
-            $data = ['images' => $urls];
+            $data['images'] = Media::whereIn('id', $v['image_media_ids'])->get()->pluck('url')->all();
         }
+        if (!empty($v['coupon_code'])) {
+            $data['coupon_code'] = $v['coupon_code'];
+        }
+        $data = $data ?: null;
 
         $now = now();
         $base = [

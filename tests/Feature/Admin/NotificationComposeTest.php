@@ -194,4 +194,28 @@ class NotificationComposeTest extends TestCase
 
         $this->assertSame(2, Notification::where('display_style', 'popup')->count());
     }
+
+    public function test_compose_stores_coupon_code_in_data(): void
+    {
+        $admin = $this->admin();
+        $target = User::factory()->create();
+
+        $this->withHeaders($this->header($admin))->postJson('/api/admin/notifications', [
+            'title' => 'Coupon', 'message' => 'Save big', 'display_style' => 'popup',
+            'coupon_code' => 'SUMMER50',
+            'target_type' => 'user', 'target_user_id' => $target->id,
+        ])->assertOk();
+
+        $this->assertSame('SUMMER50', Notification::where('user_id', $target->id)->first()->data['coupon_code']);
+    }
+
+    public function test_coupon_code_too_long_rejected(): void
+    {
+        $admin = $this->admin();
+        $target = User::factory()->create();
+        $this->withHeaders($this->header($admin))->postJson('/api/admin/notifications', [
+            'title' => 'x', 'message' => 'y', 'coupon_code' => str_repeat('A', 65),
+            'target_type' => 'user', 'target_user_id' => $target->id,
+        ])->assertStatus(422);
+    }
 }
