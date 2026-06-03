@@ -37,7 +37,7 @@ class NotificationSeenTest extends TestCase
             'created_at' => now()->subMinutes(5),
         ]);
 
-        $seen = $this->withHeaders($this->authHeader($user))->postJson('/api/notifications/seen');
+        $seen = $this->withHeaders($this->authHeader($user))->putJson('/api/notifications/seen');
         $seen->assertOk()->assertJson(['success' => true]);
 
         $this->assertNotNull($user->fresh()->notifications_last_seen_at);
@@ -72,6 +72,6 @@ class NotificationSeenTest extends TestCase
 
     public function test_seen_requires_auth(): void
     {
-        $this->postJson('/api/notifications/seen')->assertUnauthorized();
+        $this->putJson('/api/notifications/seen')->assertUnauthorized();
     }
 }

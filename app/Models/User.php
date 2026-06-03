@@ -20,6 +20,7 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
  * @property int $is_creator
  * @property int|null $avatar
  * @property \Illuminate\Support\Carbon|null $email_verified_at
+ * @property \Illuminate\Support\Carbon|null $notifications_last_seen_at
  * @property string $password
  * @property string|null $remember_token
  * @property \Illuminate\Support\Carbon|null $created_at

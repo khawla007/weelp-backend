@@ -641,5 +641,5 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/notifications/unread-count', [App\Http\Controllers\NotificationController::class, 'unreadCount']);
     Route::put('/notifications/{id}/read', [App\Http\Controllers\NotificationController::class, 'markAsRead']);
     Route::put('/notifications/read-all', [App\Http\Controllers\NotificationController::class, 'markAllAsRead']);
-    Route::post('/notifications/seen', [App\Http\Controllers\NotificationController::class, 'markSeen']);
+    Route::put('/notifications/seen', [App\Http\Controllers\NotificationController::class, 'markSeen']);
 });

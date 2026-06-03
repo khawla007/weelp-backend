@@ -22,12 +22,12 @@ class NotificationController extends Controller
 
     public function unreadCount(): JsonResponse
     {
-        $user = Auth::user();
+        $lastSeen = Auth::user()->notifications_last_seen_at;
 
-        $query = Notification::where('user_id', $user->id)->unread();
+        $query = Notification::where('user_id', Auth::id())->unread();
 
-        if ($user->notifications_last_seen_at) {
-            $query->where('created_at', '>', $user->notifications_last_seen_at);
+        if ($lastSeen) {
+            $query->where('created_at', '>', $lastSeen);
         }
 
         return response()->json([
@@ -38,9 +38,7 @@ class NotificationController extends Controller
 
     public function markSeen(): JsonResponse
     {
-        $user = Auth::user();
-        $user->notifications_last_seen_at = now();
-        $user->save();
+        Auth::user()->update(['notifications_last_seen_at' => now()]);
 
         return response()->json([
             'success' => true,
