@@ -88,6 +88,7 @@ class User extends Authenticatable implements JWTSubject
         'email',
         'password',
         'status',
+        'notifications_last_seen_at',
     ];
 
     /**
@@ -113,6 +114,7 @@ class User extends Authenticatable implements JWTSubject
             'locked_until' => 'datetime',
             'failed_login_attempts' => 'integer',
             'token_version' => 'integer',
+            'notifications_last_seen_at' => 'datetime',
         ];
     }
 
