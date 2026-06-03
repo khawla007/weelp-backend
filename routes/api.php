@@ -239,6 +239,9 @@ Route::middleware(['auth:api', 'admin', 'throttle:60,1'])->prefix('admin')->grou
         Route::post('{id}/avatar', [UserController::class, 'uploadUserAvatar']);
     });
 
+    // Admin Side Custom Notifications
+    Route::post('/notifications', [App\Http\Controllers\Admin\NotificationController::class, 'store']);
+
     // Admin Side Announcements Routes
     Route::prefix('announcements')->group(function () {
         Route::get('/', [AdminAnnouncementController::class, 'index']);
