@@ -65,6 +65,25 @@ class NotificationController extends Controller
         ]);
     }
 
+    public function markUnread($id): JsonResponse
+    {
+        $notification = Notification::where('user_id', Auth::id())->find($id);
+
+        if (!$notification) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Notification not found',
+            ], 404);
+        }
+
+        $notification->update(['read_at' => null]);
+
+        return response()->json([
+            'success' => true,
+            'data' => $notification,
+        ]);
+    }
+
     public function markAllAsRead(): JsonResponse
     {
         Notification::where('user_id', Auth::id())
