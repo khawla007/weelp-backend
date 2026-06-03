@@ -142,4 +142,56 @@ class NotificationComposeTest extends TestCase
         $this->refreshApplication();
         $this->postJson('/api/admin/notifications', [])->assertUnauthorized();
     }
+
+    public function test_compose_persists_display_style_popup(): void
+    {
+        $admin = $this->admin();
+        $target = User::factory()->create();
+
+        $res = $this->withHeaders($this->header($admin))->postJson('/api/admin/notifications', [
+            'title' => 'Coupon', 'message' => 'Body',
+            'display_style' => 'popup',
+            'target_type' => 'user', 'target_user_id' => $target->id,
+        ]);
+
+        $res->assertOk();
+        $this->assertSame('popup', Notification::where('user_id', $target->id)->first()->display_style);
+    }
+
+    public function test_compose_defaults_display_style_to_inline(): void
+    {
+        $admin = $this->admin();
+        $target = User::factory()->create();
+
+        $this->withHeaders($this->header($admin))->postJson('/api/admin/notifications', [
+            'title' => 'x', 'message' => 'y',
+            'target_type' => 'user', 'target_user_id' => $target->id,
+        ])->assertOk();
+
+        $this->assertSame('inline', Notification::where('user_id', $target->id)->first()->display_style);
+    }
+
+    public function test_compose_rejects_bad_display_style(): void
+    {
+        $admin = $this->admin();
+        $target = User::factory()->create();
+
+        $this->withHeaders($this->header($admin))->postJson('/api/admin/notifications', [
+            'title' => 'x', 'message' => 'y', 'display_style' => 'banner',
+            'target_type' => 'user', 'target_user_id' => $target->id,
+        ])->assertStatus(422);
+    }
+
+    public function test_segment_compose_persists_display_style(): void
+    {
+        $admin = $this->admin();
+        User::factory()->count(2)->create(['role' => 'customer']);
+
+        $this->withHeaders($this->header($admin))->postJson('/api/admin/notifications', [
+            'title' => 'Promo', 'message' => 'Body', 'display_style' => 'popup',
+            'target_type' => 'role', 'target_role' => 'customer',
+        ])->assertOk();
+
+        $this->assertSame(2, Notification::where('display_style', 'popup')->count());
+    }
 }
