@@ -36,6 +36,21 @@ class NotificationController extends Controller
         ]);
     }
 
+    public function popup(): JsonResponse
+    {
+        $rows = Notification::where('user_id', Auth::id())
+            ->where('display_style', 'popup')
+            ->unread()
+            ->latest()
+            ->limit(5)
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $rows,
+        ]);
+    }
+
     public function markSeen(): JsonResponse
     {
         Auth::user()->update(['notifications_last_seen_at' => now()]);
