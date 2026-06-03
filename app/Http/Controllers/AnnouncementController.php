@@ -19,4 +19,18 @@ class AnnouncementController extends Controller
             'data' => $announcements,
         ]);
     }
+
+    public function popup(): JsonResponse
+    {
+        $announcements = Announcement::visible()
+            ->where('display_style', 'popup')
+            ->latest()
+            ->limit(5)
+            ->get(['id', 'type', 'title', 'message', 'link', 'image_url', 'coupon_code', 'display_style', 'created_at']);
+
+        return response()->json([
+            'success' => true,
+            'data' => $announcements,
+        ]);
+    }
 }

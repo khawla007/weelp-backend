@@ -16,6 +16,9 @@ class Announcement extends Model
         'publish_at',
         'expires_at',
         'created_by',
+        'display_style',
+        'image_url',
+        'coupon_code',
     ];
 
     protected $casts = [

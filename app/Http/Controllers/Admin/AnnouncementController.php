@@ -103,6 +103,9 @@ class AnnouncementController extends Controller
                     }
                 },
             ],
+            'display_style' => 'nullable|in:inline,popup',
+            'image_url' => 'nullable|string|max:2048',
+            'coupon_code' => 'nullable|string|max:64',
         ];
     }
 }

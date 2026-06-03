@@ -637,6 +637,7 @@ Route::prefix('reviews')->group(function () {
 
 // Public site-wide announcements (no auth — visible to all visitors)
 Route::get('/announcements', [AnnouncementController::class, 'index']);
+Route::get('/announcements/popup', [AnnouncementController::class, 'popup']);
 
 // Notifications (all authenticated users)
 Route::middleware('auth:api')->group(function () {
