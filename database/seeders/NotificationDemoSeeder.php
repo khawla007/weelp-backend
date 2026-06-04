@@ -43,9 +43,10 @@ class NotificationDemoSeeder extends Seeder
 
         // Snapshot Media URLs the same way the admin compose path does; tolerate
         // an empty Media table by falling back to no image.
-        $mediaUrls = Media::query()->orderBy('id')->take(2)->pluck('url')->all();
+        $mediaUrls = Media::query()->orderBy('id')->take(3)->pluck('url')->all();
         $img1 = $mediaUrls[0] ?? null;
         $img2 = $mediaUrls[1] ?? $img1;
+        $img3 = $mediaUrls[2] ?? $img2;
 
         // ---- Clean slate (idempotent re-runs) ----
         $deletedNotifs = Notification::where('user_id', $user->id)->delete();
@@ -62,7 +63,7 @@ class NotificationDemoSeeder extends Seeder
             ]));
         }
 
-        foreach ($this->announcements($adminId, $img1) as $a) {
+        foreach ($this->announcements($adminId, $img1, $img3) as $a) {
             Announcement::create(array_merge($a, [
                 'is_active' => true,
                 'publish_at' => null,
@@ -146,7 +147,7 @@ class NotificationDemoSeeder extends Seeder
     /**
      * @return array<int, array<string, mixed>>
      */
-    private function announcements(int $adminId, ?string $img1): array
+    private function announcements(int $adminId, ?string $img1, ?string $img3): array
     {
         return [
             // ---- VISIT-target announcements (have a page link, click Visit → navigate) ----
@@ -181,11 +182,11 @@ class NotificationDemoSeeder extends Seeder
                 'title' => 'Welcome Offer for Everyone', 'message' => 'New here? Take 20% off your first booking with the code below.',
                 'link' => null, 'image_url' => $img1, 'coupon_code' => 'WELCOME20',
             ],
-            // Maintenance popup (informational, no CTA)
+            // Maintenance popup (informational + hero image, no CTA)
             [
                 'type' => 'update', 'display_style' => 'popup',
                 'title' => 'Scheduled Maintenance', 'message' => 'Weelp will be briefly unavailable 02:00-03:00 UTC tonight for routine maintenance. Bookings in progress will be paused and resumed automatically.',
-                'link' => null, 'image_url' => null, 'coupon_code' => null,
+                'link' => null, 'image_url' => $img3, 'coupon_code' => null,
             ],
         ];
     }
