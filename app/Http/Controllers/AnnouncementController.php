@@ -12,7 +12,7 @@ class AnnouncementController extends Controller
         $announcements = Announcement::visible()
             ->latest()
             ->limit(20)
-            ->get(['id', 'type', 'title', 'message', 'link', 'created_at']);
+            ->get(['id', 'type', 'title', 'message', 'link', 'display_style', 'image_url', 'coupon_code', 'created_at']);
 
         return response()->json([
             'success' => true,

@@ -60,4 +60,22 @@ class AnnouncementPublicTest extends TestCase
         $response->assertJsonMissingPath('data.0.expires_at');
         $response->assertJsonMissingPath('data.0.created_by');
     }
+
+    public function test_index_returns_popup_styling_fields(): void
+    {
+        Announcement::create([
+            'type' => 'offer', 'title' => 'Coupon', 'message' => 'm', 'is_active' => true,
+            'display_style' => 'popup', 'image_url' => '/img.jpg', 'coupon_code' => 'WELCOME20',
+        ]);
+
+        $response = $this->getJson('/api/announcements');
+
+        $response->assertOk()
+            ->assertJsonStructure([
+                'data' => [
+                    ['id', 'type', 'title', 'message', 'link', 'display_style', 'image_url', 'coupon_code', 'created_at'],
+                ],
+            ])
+            ->assertJsonFragment(['coupon_code' => 'WELCOME20', 'display_style' => 'popup']);
+    }
 }
