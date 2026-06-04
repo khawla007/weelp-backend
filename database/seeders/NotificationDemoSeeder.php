@@ -149,34 +149,42 @@ class NotificationDemoSeeder extends Seeder
     private function announcements(int $adminId, ?string $img1): array
     {
         return [
-            // offer inline (link row)
+            // ---- VISIT-target announcements (have a page link, click Visit → navigate) ----
+            // Item in discount (sale on a specific activity)
             [
                 'type' => 'offer', 'display_style' => 'inline',
-                'title' => 'Summer Sale', 'message' => 'Up to 30% off summer trips booked this week.',
+                'title' => 'Summer Sale: Desert Safari', 'message' => 'Up to 30% off our most-booked Dubai activity this week.',
                 'link' => '/cities/dubai/activities/desert-safari', 'image_url' => null, 'coupon_code' => null,
             ],
-            // update inline
-            [
-                'type' => 'update', 'display_style' => 'inline',
-                'title' => 'Faster Search', 'message' => 'We rolled out a faster, smarter search across all destinations.',
-                'link' => null, 'image_url' => null, 'coupon_code' => null,
-            ],
-            // news inline
+            // New destination added
             [
                 'type' => 'news', 'display_style' => 'inline',
-                'title' => 'New Destinations Added', 'message' => 'Five new cities just landed on Weelp. Go explore them.',
+                'title' => 'New Destination: Marseille', 'message' => 'Marseille just landed on Weelp — itineraries, activities, transfers all live.',
+                'link' => '/cities/marseille', 'image_url' => null, 'coupon_code' => null,
+            ],
+            // New item / package added
+            [
+                'type' => 'news', 'display_style' => 'inline',
+                'title' => 'New Package: Romantic Paris Tour', 'message' => 'A curated 3-day Paris package is now bookable. Check it out.',
+                'link' => '/cities/paris/packages/romantic-paris-tour', 'image_url' => null, 'coupon_code' => null,
+            ],
+            // ---- DETAIL-target announcements (no page link OR popup OR coupon → View detail opens modal) ----
+            // New feature announcement (no specific page link → View detail)
+            [
+                'type' => 'update', 'display_style' => 'inline',
+                'title' => 'New Feature: Smarter Search', 'message' => 'We rolled out a faster, semantic search across activities, packages, and itineraries. Try it from any destination page.',
                 'link' => null, 'image_url' => null, 'coupon_code' => null,
             ],
-            // offer popup + coupon + image (site-wide guest coupon, Copy-code)
+            // Site-wide guest coupon popup (image + Copy code)
             [
                 'type' => 'offer', 'display_style' => 'popup',
                 'title' => 'Welcome Offer for Everyone', 'message' => 'New here? Take 20% off your first booking with the code below.',
                 'link' => null, 'image_url' => $img1, 'coupon_code' => 'WELCOME20',
             ],
-            // update popup (maintenance)
+            // Maintenance popup (informational, no CTA)
             [
                 'type' => 'update', 'display_style' => 'popup',
-                'title' => 'Scheduled Maintenance', 'message' => 'Weelp will be briefly unavailable 02:00-03:00 UTC tonight for maintenance.',
+                'title' => 'Scheduled Maintenance', 'message' => 'Weelp will be briefly unavailable 02:00-03:00 UTC tonight for routine maintenance. Bookings in progress will be paused and resumed automatically.',
                 'link' => null, 'image_url' => null, 'coupon_code' => null,
             ],
         ];
