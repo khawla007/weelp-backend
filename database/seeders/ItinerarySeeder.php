@@ -21,6 +21,7 @@ use App\Models\ItineraryAttribute;
 use App\Models\ItineraryTag;
 use App\Models\ItineraryAvailability;
 use App\Models\Addon;
+use App\Models\ItineraryFaq;
 use App\Models\ItineraryAddon;
 use App\Models\Media;
 use App\Models\ItineraryMeta;
@@ -36,6 +37,7 @@ class ItinerarySeeder extends Seeder
 
         // Tables ko truncate ki jagah delete karo
         ItineraryMeta::query()->delete();
+        ItineraryFaq::query()->delete();
         Itinerary::query()->delete();
         ItinerarySchedule::query()->delete();
         ItineraryLocation::query()->delete();
@@ -459,6 +461,41 @@ class ItinerarySeeder extends Seeder
                     'itinerary_id' => $itinerary->id,   // ✅ correct foreign key
                     'addon_id'     => $addonId,
                 ]);
+            }
+
+            if ($itinerary->faqs()->doesntExist()) {
+                $itineraryFaqTemplates = [
+                    [
+                        'question' => "What is included in {$itinerary->name}?",
+                        'answer' => "{$itinerary->name} includes the planned schedule, listed activities or transfers, and any inclusions shown on the itinerary page.",
+                    ],
+                    [
+                        'question' => "Can {$itinerary->name} be customized?",
+                        'answer' => "Yes, guests can review the schedule and request adjustments before booking when customization is available.",
+                    ],
+                    [
+                        'question' => "When should I book {$itinerary->name}?",
+                        'answer' => "Book as early as possible to secure availability, especially during weekends, holidays, and peak travel dates.",
+                    ],
+                    [
+                        'question' => "Are transfers included in {$itinerary->name}?",
+                        'answer' => "Transfers are included when they appear in the itinerary schedule or inclusions section.",
+                    ],
+                    [
+                        'question' => "Can I join {$itinerary->name} with children?",
+                        'answer' => "Children can join when the listed activities and transfer capacity support the selected guest count.",
+                    ],
+                    [
+                        'question' => "What happens if an activity changes during {$itinerary->name}?",
+                        'answer' => "The team will help adjust the schedule or suggest a suitable alternative when availability changes.",
+                    ],
+                ];
+
+                foreach (array_values(Arr::random($itineraryFaqTemplates, 3)) as $index => $faq) {
+                    $itinerary->faqs()->create(array_merge($faq, [
+                        'question_number' => $index + 1,
+                    ]));
+                }
             }
         }
     }

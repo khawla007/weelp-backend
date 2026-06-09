@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Activity;
 use App\Models\City;
 use App\Services\ActivityDiscountService;
+use App\Support\SeoPayload;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -243,6 +244,9 @@ class PublicActivityController extends Controller
             'promoCodes',
             'mediaGallery.media',
             'addons.addon',
+            'seo',
+            'faqs',
+            'reviews' => fn ($query) => $query->where('status', 'approved')->with('user')->latest()->limit(5),
         ])->where('slug', $activityslug)->first();
 
         if (! $activity) {
@@ -257,6 +261,7 @@ class PublicActivityController extends Controller
             'description' => $activity->description,
             'item_type' => $activity->item_type,
             'short_description' => $activity->short_description,
+            'seo' => SeoPayload::fromModel($activity->seo),
             'featured_image' => $activity->mediaGallery->where('is_featured', true)->first()?->media->url
                 ?? $activity->mediaGallery->first()?->media->url,
             // 'categories' => $activity->categories->pluck('category.name')->join(', '),
@@ -303,6 +308,14 @@ class PublicActivityController extends Controller
             'earlyBirdDiscount' => $activity->earlyBirdDiscount,
             'lastMinuteDiscount' => $activity->lastMinuteDiscount,
             'promoCodes' => $activity->promoCodes,
+            'faqs' => $activity->faqs->sortBy('question_number')->values()->map(fn ($faq) => [
+                'id' => $faq->id,
+                'question_number' => $faq->question_number,
+                'question' => $faq->question,
+                'answer' => $faq->answer,
+                'title' => $faq->question,
+                'content' => $faq->answer,
+            ])->toArray(),
 
             'media_gallery' => $activity->mediaGallery->map(function ($media) {
                 return [
@@ -340,6 +353,12 @@ class PublicActivityController extends Controller
                         ->where('status', 'approved')
                 )->count(),
             ],
+            'reviews' => $activity->reviews->map(fn ($review) => [
+                'rating' => $review->rating,
+                'review_text' => $review->review_text,
+                'user_name' => $review->user?->name,
+                'created_at' => $review->created_at?->toDateString(),
+            ])->toArray(),
         ];
 
         return response()->json([

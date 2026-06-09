@@ -23,6 +23,7 @@ use App\Models\ItinerarySchedule;
 use App\Models\ItinerarySeo;
 use App\Models\ItineraryTag;
 use App\Models\ItineraryTransfer;
+use App\Support\SeoPayload;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -202,7 +203,7 @@ class ItineraryController extends Controller
      */
     public function store(Request $request)
     {
-        $rules = [
+        $rules = array_merge([
             'name' => 'required|string|max:255',
             'slug' => 'required|string|max:160|unique:itineraries,slug',
             'description' => 'nullable|string|max:5000',
@@ -219,13 +220,17 @@ class ItineraryController extends Controller
             'inclusions_exclusions' => 'nullable|array',
             'media_gallery' => 'nullable|array',
             'faqs' => 'nullable|array',
+            'faqs.*.id' => 'nullable|integer',
+            'faqs.*.question_number' => 'nullable|integer',
+            'faqs.*.question' => 'required_with:faqs|string|max:255',
+            'faqs.*.answer' => 'nullable|string',
             'seo' => 'nullable|array',
             'categories' => 'nullable|array',
             'attributes' => 'nullable|array',
             'tags' => 'nullable|array',
             'addons' => 'nullable|array',
             'availability' => 'nullable|array',
-        ];
+        ], SeoPayload::rules());
 
         $request->validate($rules);
 
@@ -394,25 +399,14 @@ class ItineraryController extends Controller
                         'itinerary_id' => $itinerary->id,
                         'question_number' => $faq['question_number'] ?? null,
                         'question' => $faq['question'],
-                        'answer' => $faq['answer'],
+                        'answer' => $faq['answer'] ?? null,
                     ]);
                 }
             }
 
             // === SEO ===
             if ($request->has('seo')) {
-                ItinerarySeo::create([
-                    'itinerary_id' => $itinerary->id,
-                    'meta_title' => $request->seo['meta_title'],
-                    'meta_description' => $request->seo['meta_description'],
-                    'keywords' => $request->seo['keywords'],
-                    'og_image_url' => $request->seo['og_image_url'],
-                    'canonical_url' => $request->seo['canonical_url'],
-                    'schema_type' => $request->seo['schema_type'],
-                    'schema_data' => is_array($request->seo['schema_data'])
-                        ? json_encode($request->seo['schema_data'])
-                        : $request->seo['schema_data'],
-                ]);
+                SeoPayload::saveRelation($itinerary->seo(), (array) $request->input('seo', []));
             }
 
             // === Categories ===
@@ -504,6 +498,8 @@ class ItineraryController extends Controller
             'mediaGallery.media',
             'availability', 'addons.addon',
             'seo',
+            'faqs',
+            'reviews' => fn ($query) => $query->where('status', 'approved')->with('user')->latest()->limit(5),
         ])->find($id);
 
         if (! $itinerary) {
@@ -680,6 +676,29 @@ class ItineraryController extends Controller
             ];
         });
 
+        $itineraryData['faqs'] = collect($itinerary->faqs)->sortBy('question_number')->values()->map(function ($faq) {
+            return [
+                'id' => $faq->id,
+                'question_number' => $faq->question_number,
+                'question' => $faq->question,
+                'answer' => $faq->answer,
+                'title' => $faq->question,
+                'content' => $faq->answer,
+            ];
+        });
+
+        $itineraryData['review_summary'] = [
+            'average_rating' => round($itinerary->reviews()->where('status', 'approved')->avg('rating') ?? 0, 1),
+            'total_reviews' => $itinerary->reviews()->where('status', 'approved')->count(),
+        ];
+
+        $itineraryData['reviews'] = collect($itinerary->reviews)->map(fn ($review) => [
+            'rating' => $review->rating,
+            'review_text' => $review->review_text,
+            'user_name' => $review->user?->name,
+            'created_at' => $review->created_at?->toDateString(),
+        ])->toArray();
+
         return response()->json($itineraryData);
     }
 
@@ -690,7 +709,7 @@ class ItineraryController extends Controller
     {
         $itinerary = Itinerary::findOrFail($id);
 
-        $rules = [
+        $rules = array_merge([
             'name' => 'sometimes|string|max:255',
             'slug' => 'sometimes|string|max:160|unique:itineraries,slug,'.$itinerary->id,
             'description' => 'nullable|string|max:5000',
@@ -708,13 +727,17 @@ class ItineraryController extends Controller
             'inclusions_exclusions' => 'nullable|array',
             'media_gallery' => 'nullable|array',
             'faqs' => 'nullable|array',
+            'faqs.*.id' => 'nullable|integer',
+            'faqs.*.question_number' => 'nullable|integer',
+            'faqs.*.question' => 'required_with:faqs|string|max:255',
+            'faqs.*.answer' => 'nullable|string',
             'seo' => 'nullable|array',
             'categories' => 'nullable|array',
             'attributes' => 'nullable|array',
             'tags' => 'nullable|array',
             'addons' => 'nullable|array',
             'availability' => 'nullable|array',
-        ];
+        ], SeoPayload::rules());
 
         $request->validate($rules);
 
@@ -781,9 +804,37 @@ class ItineraryController extends Controller
             };
 
             // foreach (['information', 'locations', 'faqs', 'inclusionsExclusions', 'mediaGallery'] as $relation) {
-            foreach (['information', 'faqs', 'inclusionsExclusions', 'mediaGallery'] as $relation) {
+            foreach (['information', 'inclusionsExclusions', 'mediaGallery'] as $relation) {
                 if ($request->has(Str::snake($relation))) {
                     $updateOrCreateRelation($relation, $request->{Str::snake($relation)});
+                }
+            }
+
+            if ($request->has('faqs')) {
+                $incomingIds = collect($request->faqs)->pluck('id')->filter()->toArray();
+                $ownedIncomingIds = $itinerary->faqs()
+                    ->whereIn('id', $incomingIds)
+                    ->pluck('id')
+                    ->toArray();
+
+                $itinerary->faqs()
+                    ->when(! empty($ownedIncomingIds), fn ($query) => $query->whereNotIn('id', $ownedIncomingIds))
+                    ->delete();
+
+                foreach ($request->faqs as $faq) {
+                    $attributes = [
+                        'question_number' => $faq['question_number'] ?? null,
+                        'question' => $faq['question'],
+                        'answer' => $faq['answer'] ?? null,
+                    ];
+
+                    if (! empty($faq['id']) && in_array((int) $faq['id'], $ownedIncomingIds, true)) {
+                        $itinerary->faqs()
+                            ->where('id', $faq['id'])
+                            ->update($attributes);
+                    } else {
+                        $itinerary->faqs()->create($attributes);
+                    }
                 }
             }
 
@@ -954,11 +1005,7 @@ class ItineraryController extends Controller
             }
 
             if ($request->has('seo')) {
-                $seoData = $request->seo;
-                if (isset($seoData['schema_data']) && is_array($seoData['schema_data'])) {
-                    $seoData['schema_data'] = json_encode($seoData['schema_data']);
-                }
-                $itinerary->seo()->updateOrCreate([], $seoData);
+                SeoPayload::saveRelation($itinerary->seo(), (array) $request->input('seo', []));
             }
 
             DB::commit();
@@ -1047,6 +1094,12 @@ class ItineraryController extends Controller
         if ($request->has('deleted_inclusion_exclusion_ids')) {
             $itinerary->inclusionsExclusions()
                 ->whereIn('id', $request->deleted_inclusion_exclusion_ids)
+                ->delete();
+        }
+
+        if ($request->has('deleted_faq_ids')) {
+            $itinerary->faqs()
+                ->whereIn('id', $request->deleted_faq_ids)
                 ->delete();
         }
 

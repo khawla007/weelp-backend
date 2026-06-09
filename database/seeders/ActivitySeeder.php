@@ -14,6 +14,7 @@ use App\Models\ActivityPricing;
 use App\Models\ActivitySeasonalPricing;
 use App\Models\ActivityGroupDiscount;
 use App\Models\ActivityEarlyBirdDiscount;
+use App\Models\ActivityFaq;
 use App\Models\ActivityLastMinuteDiscount;
 use App\Models\ActivityPromoCode;
 use App\Models\ActivityMediaGallery;
@@ -42,6 +43,7 @@ class ActivitySeeder extends Seeder {
         ActivityAttribute::truncate();
         ActivityTag::truncate();
         ActivityCategory::truncate();
+        ActivityFaq::truncate();
         Activity::truncate();
 
         // Re-enable foreign key checks
@@ -556,6 +558,41 @@ class ActivitySeeder extends Seeder {
                     'activity_id' => $activity->id,
                     'addon_id'    => $addonId,
                 ]);
+            }
+
+            if ($activity->faqs()->doesntExist()) {
+                $activityFaqTemplates = [
+                    [
+                        'question' => "What should I bring for {$activity->name}?",
+                        'answer' => "Bring comfortable clothing, valid ID, sunscreen, water, and any personal essentials for {$activity->name}.",
+                    ],
+                    [
+                        'question' => "Is {$activity->name} suitable for beginners?",
+                        'answer' => "Yes, {$activity->name} is guided and can be adjusted for first-time guests unless a specific skill level is stated.",
+                    ],
+                    [
+                        'question' => "How early should I arrive for {$activity->name}?",
+                        'answer' => "Plan to arrive 15 to 20 minutes before the scheduled start time for check-in and briefing.",
+                    ],
+                    [
+                        'question' => "Can I cancel or change {$activity->name}?",
+                        'answer' => "Cancellation and change options depend on the booking policy shown before checkout.",
+                    ],
+                    [
+                        'question' => "Is transport included for {$activity->name}?",
+                        'answer' => "Transport is included only when pickup or transfer details are listed in the activity inclusions.",
+                    ],
+                    [
+                        'question' => "Do I need prior experience for {$activity->name}?",
+                        'answer' => "Most guests can join without prior experience, and the guide will explain the safety steps before the activity starts.",
+                    ],
+                ];
+
+                foreach (array_values(Arr::random($activityFaqTemplates, 3)) as $index => $faq) {
+                    $activity->faqs()->create(array_merge($faq, [
+                        'question_number' => $index + 1,
+                    ]));
+                }
             }
         }
     }

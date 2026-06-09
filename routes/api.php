@@ -17,6 +17,7 @@ use App\Http\Controllers\Admin\CountryImportController;
 use App\Http\Controllers\Admin\CreatorApplicationManagementController;
 use App\Http\Controllers\Admin\CreatorItineraryManagementController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\GlobalScriptSettingController;
 use App\Http\Controllers\Admin\ItineraryController;
 use App\Http\Controllers\Admin\MediaController;
 use App\Http\Controllers\Admin\OrderController;
@@ -48,6 +49,7 @@ use App\Http\Controllers\Guest\PublicActivityController;
 use App\Http\Controllers\Guest\PublicBlogController;
 use App\Http\Controllers\Guest\PublicCategoryController;
 use App\Http\Controllers\Guest\PublicCitiesController;
+use App\Http\Controllers\Guest\PublicGlobalScriptController;
 use App\Http\Controllers\Guest\PublicHomeSearchController;
 use App\Http\Controllers\Guest\PublicItineraryController;
 use App\Http\Controllers\Guest\PublicLocationSearchController;
@@ -241,6 +243,9 @@ Route::middleware(['auth:api', 'admin', 'throttle:60,1'])->prefix('admin')->grou
 
     // Admin Side Custom Notifications
     Route::post('/notifications', [App\Http\Controllers\Admin\NotificationController::class, 'store']);
+
+    Route::get('/global-scripts', [GlobalScriptSettingController::class, 'show']);
+    Route::put('/global-scripts', [GlobalScriptSettingController::class, 'update']);
 
     // Admin Side Announcements Routes
     Route::prefix('announcements')->group(function () {
@@ -541,6 +546,7 @@ Route::prefix('menu')->group(function () {
 });
 
 Route::get('/mega-menu', [PublicMenuController::class, 'getMegaMenuData']);
+Route::get('/global-scripts', [PublicGlobalScriptController::class, 'show']);
 
 Route::get('/categories', [PublicCategoryController::class, 'getAllCategories']);
 Route::get('/tags', [PublicTagController::class, 'getAllTags']);

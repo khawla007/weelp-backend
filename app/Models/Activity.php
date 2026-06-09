@@ -27,6 +27,8 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ActivityCategory> $categories
  * @property-read int|null $categories_count
  * @property-read \App\Models\ActivityEarlyBirdDiscount|null $earlyBirdDiscount
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ActivityFaq> $faqs
+ * @property-read int|null $faqs_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ActivityGroupDiscount> $groupDiscounts
  * @property-read int|null $group_discounts_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Itinerary> $itineraries
@@ -139,6 +141,11 @@ class Activity extends Model
         return $this->hasOne(ActivityAvailability::class);
     }
 
+    public function seo(): HasOne
+    {
+        return $this->hasOne(ActivitySeo::class);
+    }
+
     public function mediaGallery(): HasMany
     {
         return $this->hasMany(ActivityMediaGallery::class);
@@ -162,6 +169,11 @@ class Activity extends Model
     public function packages(): HasManyThrough
     {
         return $this->hasManyThrough(Package::class, PackageActivity::class, 'activity_id', 'id', 'id', 'package_id');
+    }
+
+    public function faqs(): HasMany
+    {
+        return $this->hasMany(ActivityFaq::class);
     }
 
     // public function blogs()

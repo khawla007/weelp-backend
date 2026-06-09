@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Blog;
 use App\Models\Category;
 use App\Models\Tag;
+use App\Support\SeoPayload;
 use Illuminate\Http\Request;
 
 class PublicBlogController extends Controller
@@ -165,6 +166,7 @@ class PublicBlogController extends Controller
             'content' => $blog->content,
             'excerpt' => $blog->excerpt,
             'publish' => $blog->publish,
+            'seo' => SeoPayload::fromModel($blog),
 
             // ⭐ multiple media (gallery)
             'media_gallery' => $blog->media->map(function ($m) {

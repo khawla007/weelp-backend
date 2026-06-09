@@ -22,8 +22,10 @@ class PublicItineraryController extends Controller
             'basePricing.variations',
             'basePricing.blackoutDates',
             'inclusionsExclusions',
+            'faqs',
             'mediaGallery.media',
             'seo',
+            'reviews' => fn ($query) => $query->where('status', 'approved')->with('user')->latest()->limit(5),
             'categories.category',
             'attributes',
             'tags',
@@ -88,6 +90,14 @@ class PublicItineraryController extends Controller
                         'is_featured' => (bool) $media->is_featured,
                     ];
                 })->toArray(),
+                'faqs' => $itinerary->faqs->sortBy('question_number')->values()->map(fn ($faq) => [
+                    'id' => $faq->id,
+                    'question_number' => $faq->question_number,
+                    'question' => $faq->question,
+                    'answer' => $faq->answer,
+                    'title' => $faq->question,
+                    'content' => $faq->answer,
+                ])->toArray(),
                 'seo' => $itinerary->seo ? [
                     'meta_title' => $itinerary->seo->meta_title,
                     'meta_description' => $itinerary->seo->meta_description,
@@ -126,6 +136,7 @@ class PublicItineraryController extends Controller
             'basePricing.variations',
             'basePricing.blackoutDates',
             'inclusionsExclusions',
+            'faqs',
             'mediaGallery.media',
             'seo',
             'categories.category',
@@ -214,6 +225,14 @@ class PublicItineraryController extends Controller
                         'is_featured' => (bool) $media->is_featured,
                     ];
                 })->toArray(),
+                'faqs' => $itinerary->faqs->sortBy('question_number')->values()->map(fn ($faq) => [
+                    'id' => $faq->id,
+                    'question_number' => $faq->question_number,
+                    'question' => $faq->question,
+                    'answer' => $faq->answer,
+                    'title' => $faq->question,
+                    'content' => $faq->answer,
+                ])->toArray(),
                 'seo' => $itinerary->seo ? [
                     'meta_title' => $itinerary->seo->meta_title,
                     'meta_description' => $itinerary->seo->meta_description,
@@ -267,6 +286,7 @@ class PublicItineraryController extends Controller
             'basePricing.variations',
             'basePricing.blackoutDates',
             'inclusionsExclusions',
+            'faqs',
             'mediaGallery.media',
             'seo',
             'categories.category',
@@ -387,6 +407,26 @@ class PublicItineraryController extends Controller
             })->toArray(),
             'base_pricing' => $itinerary->basePricing,
             'inclusions_exclusions' => $itinerary->inclusionsExclusions,
+            'faqs' => $itinerary->faqs->sortBy('question_number')->values()->map(fn ($faq) => [
+                'id' => $faq->id,
+                'question_number' => $faq->question_number,
+                'question' => $faq->question,
+                'answer' => $faq->answer,
+                'title' => $faq->question,
+                'content' => $faq->answer,
+            ])->toArray(),
+            'review_summary' => [
+                'average_rating' => round(
+                    $itinerary->reviews()->where('status', 'approved')->avg('rating') ?? 0, 1
+                ),
+                'total_reviews' => $itinerary->reviews()->where('status', 'approved')->count(),
+            ],
+            'reviews' => $itinerary->reviews->map(fn ($review) => [
+                'rating' => $review->rating,
+                'review_text' => $review->review_text,
+                'user_name' => $review->user?->name,
+                'created_at' => $review->created_at?->toDateString(),
+            ])->toArray(),
             'media_gallery' => $this->resolveGalleryWithFallback($itinerary),
             'seo' => $itinerary->seo,
         ];

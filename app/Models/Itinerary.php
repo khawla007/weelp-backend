@@ -268,6 +268,11 @@ class Itinerary extends Model
         return $this->hasMany(ItineraryInclusionExclusion::class);
     }
 
+    public function faqs(): HasMany
+    {
+        return $this->hasMany(ItineraryFaq::class);
+    }
+
     public function mediaGallery(): HasMany
     {
         return $this->hasMany(ItineraryMediaGallery::class);

@@ -10,6 +10,7 @@ use App\Models\TransferPricingAvailability;
 use App\Models\TransferSchedule;
 use App\Models\TransferSeo;
 use App\Models\TransferVendorRoute;
+use App\Support\SeoPayload;
 use Illuminate\Http\Request;
 
 class TransferController extends Controller
@@ -227,7 +228,7 @@ class TransferController extends Controller
     public function store(Request $request)
     {
         // Base validation rules
-        $validatedData = $request->validate([
+        $validatedData = $request->validate(array_merge([
             'name' => 'required|string|max:255',
             'slug' => 'required|string|max:160|unique:transfers,slug',
             'description' => 'nullable|string|max:5000',
@@ -270,20 +271,10 @@ class TransferController extends Controller
             // Media
             'media_gallery' => 'nullable|array',
 
-            // SEO
-            'seo' => 'array',
-            'seo.meta_title' => 'nullable|string|max:255',
-            'seo.meta_description' => 'nullable|string|max:500',
-            'seo.keywords' => 'nullable|string|max:500',
-            'seo.og_image_url' => 'nullable|string|max:2048',
-            'seo.canonical_url' => 'nullable|string|max:2048',
-            'seo.schema_type' => 'nullable|string|max:50',
-            'seo.schema_data' => 'nullable|array',
-
             // Addons
             'addons' => 'nullable|array',
             'addons.*' => 'integer|exists:addons,id',
-        ]);
+        ], SeoPayload::rules()));
 
         // Conditional validations
         if ($validatedData['is_vendor']) {
@@ -381,20 +372,8 @@ class TransferController extends Controller
         }
 
         // Create SEO
-        if (! empty($validatedData['seo'])) {
-            TransferSeo::create([
-                'transfer_id' => $transfer->id,
-                'meta_title' => $validatedData['seo']['meta_title'] ?? '',
-                'meta_description' => $validatedData['seo']['meta_description'] ?? '',
-                'keywords' => $validatedData['seo']['keywords'] ?? '',
-                'og_image_url' => $validatedData['seo']['og_image_url'] ?? null,
-                'canonical_url' => $validatedData['seo']['canonical_url'] ?? null,
-                'schema_type' => $validatedData['seo']['schema_type'] ?? null,
-                // 'schema_data' => $validatedData['seo']['schema_data'] ?? null,
-                'schema_data' => is_array($validatedData['seo']['schema_data'] ?? null)
-                    ? json_encode($validatedData['seo']['schema_data'])
-                    : ($validatedData['seo']['schema_data'] ?? null),
-            ]);
+        if ($request->has('seo')) {
+            SeoPayload::saveRelation($transfer->seo(), (array) $request->input('seo', []));
         }
 
         // Create Addons
@@ -487,7 +466,7 @@ class TransferController extends Controller
         $transfer = Transfer::findOrFail($id);
 
         // Validate only the fields coming in request
-        $validatedData = $request->validate([
+        $validatedData = $request->validate(array_merge([
             'name' => 'sometimes|required|string|max:255',
             'slug' => 'sometimes|required|string|max:160|unique:transfers,slug,'.$id,
             'description' => 'sometimes|nullable|string|max:5000',
@@ -530,20 +509,10 @@ class TransferController extends Controller
             // Media
             'media_gallery' => 'sometimes|nullable|array',
 
-            // SEO
-            'seo' => 'sometimes|array',
-            'seo.meta_title' => 'sometimes|nullable|string|max:255',
-            'seo.meta_description' => 'sometimes|nullable|string|max:500',
-            'seo.keywords' => 'sometimes|nullable|string|max:500',
-            'seo.og_image_url' => 'sometimes|nullable|string|max:2048',
-            'seo.canonical_url' => 'sometimes|nullable|string|max:2048',
-            'seo.schema_type' => 'sometimes|nullable|string|max:50',
-            'seo.schema_data' => 'sometimes|nullable|array',
-
             // Addons
             'addons' => 'sometimes|nullable|array',
             'addons.*' => 'integer|exists:addons,id',
-        ]);
+        ], SeoPayload::rules()));
 
         // === Update Transfer ===
         $transfer->fill($validatedData);
@@ -642,21 +611,8 @@ class TransferController extends Controller
         }
 
         // === Update SEO ===
-        if (isset($validatedData['seo'])) {
-            $seo = TransferSeo::where('transfer_id', $transfer->id)->first();
-            if ($seo) {
-                $seo->update([
-                    'meta_title' => $validatedData['seo']['meta_title'] ?? $seo->meta_title,
-                    'meta_description' => $validatedData['seo']['meta_description'] ?? $seo->meta_description,
-                    'keywords' => $validatedData['seo']['keywords'] ?? $seo->keywords,
-                    'og_image_url' => $validatedData['seo']['og_image_url'] ?? $seo->og_image_url,
-                    'canonical_url' => $validatedData['seo']['canonical_url'] ?? $seo->canonical_url,
-                    'schema_type' => $validatedData['seo']['schema_type'] ?? $seo->schema_type,
-                    'schema_data' => isset($validatedData['seo']['schema_data'])
-                                            ? json_encode($validatedData['seo']['schema_data'])
-                                            : $seo->schema_data,
-                ]);
-            }
+        if ($request->has('seo')) {
+            SeoPayload::saveRelation($transfer->seo(), (array) $request->input('seo', []));
         }
 
         // === Update Addons ===

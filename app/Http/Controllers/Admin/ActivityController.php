@@ -9,6 +9,7 @@ use App\Models\ActivityAttribute;
 use App\Models\ActivityAvailability;
 use App\Models\ActivityCategory;
 use App\Models\ActivityEarlyBirdDiscount;
+use App\Models\ActivityFaq;
 use App\Models\ActivityGroupDiscount;
 use App\Models\ActivityLastMinuteDiscount;
 use App\Models\ActivityLocation;
@@ -19,6 +20,7 @@ use App\Models\ActivitySeasonalPricing;
 use App\Models\ActivityTag;
 use App\Models\Attribute;
 use App\Models\Category;
+use App\Support\SeoPayload;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -202,7 +204,7 @@ class ActivityController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
+        $request->validate(array_merge([
             'name' => 'required|string|max:255',
             'slug' => 'required|string|max:160|unique:activities,slug',
             'description' => 'nullable|string|max:5000',
@@ -221,7 +223,11 @@ class ActivityController extends Controller
             'media_gallery' => 'nullable|array',
             'addons' => 'nullable|array',
             'availability' => 'nullable|array',
-        ]);
+            'faqs' => 'nullable|array',
+            'faqs.*.question_number' => 'nullable|integer',
+            'faqs.*.question' => 'required_with:faqs|string|max:255',
+            'faqs.*.answer' => 'nullable|string',
+        ], SeoPayload::rules()));
 
         try {
             DB::beginTransaction();
@@ -233,6 +239,10 @@ class ActivityController extends Controller
                 'short_description' => $request->short_description,
                 'featured_activity' => $request->featured_activity ?? false,
             ]);
+
+            if ($request->has('seo')) {
+                SeoPayload::saveRelation($activity->seo(), (array) $request->input('seo', []));
+            }
 
             // Categories
             if ($request->has('categories')) {
@@ -388,6 +398,17 @@ class ActivityController extends Controller
                 }
             }
 
+            if ($request->has('faqs')) {
+                foreach ($request->faqs as $faq) {
+                    ActivityFaq::create([
+                        'activity_id' => $activity->id,
+                        'question_number' => $faq['question_number'] ?? null,
+                        'question' => $faq['question'],
+                        'answer' => $faq['answer'] ?? null,
+                    ]);
+                }
+            }
+
             // Availability
             if ($request->has('availability')) {
                 ActivityAvailability::create([
@@ -426,6 +447,8 @@ class ActivityController extends Controller
             'groupDiscounts', 'earlyBirdDiscount',
             'lastMinuteDiscount', 'promoCodes',
             'mediaGallery.media', 'availability', 'addons.addon',
+            'faqs',
+            'reviews' => fn ($query) => $query->where('status', 'approved')->with('user')->latest()->limit(5),
         ])->find($id);
 
         if (! $activity) {
@@ -507,6 +530,29 @@ class ActivityController extends Controller
         $featuredImage = $activity->mediaGallery->firstWhere('is_featured', true);
         $activityData['feature_image'] = $featuredImage?->media->url ?? null;
 
+        $activityData['faqs'] = collect($activity->faqs)->sortBy('question_number')->values()->map(function ($faq) {
+            return [
+                'id' => $faq->id,
+                'question_number' => $faq->question_number,
+                'question' => $faq->question,
+                'answer' => $faq->answer,
+                'title' => $faq->question,
+                'content' => $faq->answer,
+            ];
+        });
+
+        $activityData['review_summary'] = [
+            'average_rating' => round($activity->reviews()->where('status', 'approved')->avg('rating') ?? 0, 1),
+            'total_reviews' => $activity->reviews()->where('status', 'approved')->count(),
+        ];
+
+        $activityData['reviews'] = collect($activity->reviews)->map(fn ($review) => [
+            'rating' => $review->rating,
+            'review_text' => $review->review_text,
+            'user_name' => $review->user?->name,
+            'created_at' => $review->created_at?->toDateString(),
+        ])->toArray();
+
         return response()->json($activityData, 200);
     }
 
@@ -517,7 +563,7 @@ class ActivityController extends Controller
     {
         $activity = Activity::findOrFail($id);
 
-        $rules = [
+        $rules = array_merge([
             'name' => 'sometimes|required|string|max:255',
             'slug' => 'sometimes|required|string|max:160|unique:activities,slug,'.$activity->id,
             'description' => 'nullable|string|max:5000',
@@ -536,7 +582,12 @@ class ActivityController extends Controller
             'media_gallery' => 'nullable|array',
             'addons' => 'nullable|array',
             'availability' => 'nullable|array',
-        ];
+            'faqs' => 'nullable|array',
+            'faqs.*.id' => 'nullable|integer',
+            'faqs.*.question_number' => 'nullable|integer',
+            'faqs.*.question' => 'required_with:faqs|string|max:255',
+            'faqs.*.answer' => 'nullable|string',
+        ], SeoPayload::rules());
 
         $request->validate($rules);
 
@@ -552,6 +603,10 @@ class ActivityController extends Controller
             }
 
             $activity->save();
+
+            if ($request->has('seo')) {
+                SeoPayload::saveRelation($activity->seo(), (array) $request->input('seo', []));
+            }
 
             $fullDeleteRelations = [
                 'categories' => 'category_id',
@@ -714,6 +769,34 @@ class ActivityController extends Controller
                 $updateOrCreateChild($request->promo_codes, \App\Models\ActivityPromoCode::class, 'base_pricing_id');
             }
 
+            if ($request->has('faqs')) {
+                $incomingIds = collect($request->faqs)->pluck('id')->filter()->toArray();
+                $ownedIncomingIds = $activity->faqs()
+                    ->whereIn('id', $incomingIds)
+                    ->pluck('id')
+                    ->toArray();
+
+                $activity->faqs()
+                    ->when(! empty($ownedIncomingIds), fn ($query) => $query->whereNotIn('id', $ownedIncomingIds))
+                    ->delete();
+
+                foreach ($request->faqs as $faq) {
+                    $attributes = [
+                        'question_number' => $faq['question_number'] ?? null,
+                        'question' => $faq['question'],
+                        'answer' => $faq['answer'] ?? null,
+                    ];
+
+                    if (! empty($faq['id']) && in_array((int) $faq['id'], $ownedIncomingIds, true)) {
+                        $activity->faqs()
+                            ->where('id', $faq['id'])
+                            ->update($attributes);
+                    } else {
+                        $activity->faqs()->create($attributes);
+                    }
+                }
+            }
+
             if ($request->has('availability')) {
                 $availabilityData = $request->availability;
 
@@ -798,6 +881,12 @@ class ActivityController extends Controller
         if ($request->has('deleted_promo_codes_ids')) {
             $activity->promoCodes()
                 ->whereIn('id', $request->deleted_promo_codes_ids)
+                ->delete();
+        }
+
+        if ($request->has('deleted_faq_ids')) {
+            $activity->faqs()
+                ->whereIn('id', $request->deleted_faq_ids)
                 ->delete();
         }
 

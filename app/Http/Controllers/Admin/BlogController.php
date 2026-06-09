@@ -7,6 +7,7 @@ use App\Models\Blog;
 use App\Models\BlogMedia;
 use App\Models\Category;
 use App\Models\Tag;
+use App\Support\SeoPayload;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -16,7 +17,7 @@ class BlogController extends Controller
 {
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        $validator = Validator::make($request->all(), array_merge([
             'name' => 'required|string|max:255',
             'content' => 'required|string|max:5000',
             'publish' => 'required|boolean',
@@ -32,19 +33,25 @@ class BlogController extends Controller
             'tags.*' => 'required|exists:tags,id',
 
             'excerpt' => 'required|string|max:5000',
-        ]);
+        ], SeoPayload::rules()));
 
         if ($validator->fails()) {
             return response()->json($validator->errors(), 400);
         }
 
-        $blog = Blog::create([
+        $blogData = [
             'name' => $request->name,
             'slug' => Str::slug($request->name),
             'content' => $request->content,
             'publish' => $request->publish,
             'excerpt' => $request->excerpt,
-        ]);
+        ];
+
+        if ($request->has('seo')) {
+            $blogData = array_merge($blogData, SeoPayload::normalize((array) $request->input('seo', [])));
+        }
+
+        $blog = Blog::create($blogData);
 
         $blog->categories()->sync($request->categories);
         $blog->tags()->sync($request->tags);
@@ -82,7 +89,7 @@ class BlogController extends Controller
     // Update an existing blog
     public function update(Request $request, $id)
     {
-        $validator = Validator::make($request->all(), [
+        $validator = Validator::make($request->all(), array_merge([
             'name' => 'sometimes|string|max:255',
             'slug' => 'sometimes|string|max:255',
             'content' => 'sometimes|string|max:5000',
@@ -99,7 +106,7 @@ class BlogController extends Controller
             'tags.*' => 'required|exists:tags,id',
 
             'excerpt' => 'sometimes|string|max:5000',
-        ]);
+        ], SeoPayload::rules()));
 
         if ($validator->fails()) {
             return response()->json($validator->errors(), 400);
@@ -111,6 +118,10 @@ class BlogController extends Controller
             if (in_array($key, $blog->getFillable())) {
                 $blog->$key = $value;
             }
+        }
+
+        if ($request->has('seo')) {
+            $blog->fill(SeoPayload::normalize((array) $request->input('seo', []), false));
         }
 
         $blog->save();

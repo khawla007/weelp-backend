@@ -44,6 +44,7 @@ class ItinerarySeo extends Model
         'itinerary_id', 'meta_title', 'meta_description',
         'keywords', 'og_image_url', 'canonical_url',
         'schema_type', 'schema_data',
+        'head_code', 'body_code', 'footer_code',
     ];
 
     protected $casts = [

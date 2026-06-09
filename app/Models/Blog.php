@@ -43,10 +43,14 @@ class Blog extends Model
 
     protected $fillable = [
         'name', 'slug', 'content', 'publish', 'excerpt',
+        'meta_title', 'meta_description', 'keywords',
+        'og_image_url', 'canonical_url', 'schema_type',
+        'schema_data', 'head_code', 'body_code', 'footer_code',
     ];
 
     protected $casts = [
         'publish' => 'boolean',
+        'schema_data' => 'array',
     ];
 
     public function media(): BelongsToMany
