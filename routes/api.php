@@ -22,6 +22,7 @@ use App\Http\Controllers\Admin\ItineraryController;
 use App\Http\Controllers\Admin\MediaController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\PackageController;
+use App\Http\Controllers\Admin\PageController;
 use App\Http\Controllers\Admin\PlaceController;
 use App\Http\Controllers\Admin\PlaceImportController;
 use App\Http\Controllers\Admin\RegionController;
@@ -55,6 +56,7 @@ use App\Http\Controllers\Guest\PublicItineraryController;
 use App\Http\Controllers\Guest\PublicLocationSearchController;
 use App\Http\Controllers\Guest\PublicMenuController;
 use App\Http\Controllers\Guest\PublicPackageController;
+use App\Http\Controllers\Guest\PublicPageController;
 use App\Http\Controllers\Guest\PublicPostController;
 use App\Http\Controllers\Guest\PublicRegionController;
 use App\Http\Controllers\Guest\PublicReviewController;
@@ -482,6 +484,15 @@ Route::middleware(['auth:api', 'admin', 'throttle:60,1'])->prefix('admin')->grou
         Route::post('/bulk-delete', [BlogController::class, 'bulkDestroy'])->middleware('super_admin');
     });
 
+    Route::prefix('pages')->group(function () {
+        Route::get('/', [PageController::class, 'index']);
+        Route::get('{id}', [PageController::class, 'show']);
+        Route::post('/', [PageController::class, 'store']);
+        Route::put('{id}', [PageController::class, 'update']);
+        Route::delete('{id}', [PageController::class, 'destroy']);
+        Route::post('/bulk-delete', [PageController::class, 'bulkDestroy'])->middleware('super_admin');
+    });
+
     Route::prefix('reviews')->group(function () {
         Route::get('/', [ReviewController::class, 'index']); // सब reviews की list
         Route::get('/items', [ReviewController::class, 'getItemsByType']);
@@ -619,6 +630,7 @@ Route::get('/shop', [PublicShopController::class, 'index']);
 
 Route::get('blogs', [PublicBlogController::class, 'index']);
 Route::get('blogs/{slug}', [PublicBlogController::class, 'show']);
+Route::get('pages/{slug}', [PublicPageController::class, 'show']);
 Route::get('media/{media}', [MediaFileController::class, 'show']);
 
 // Public reviews api

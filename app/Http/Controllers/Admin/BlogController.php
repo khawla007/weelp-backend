@@ -7,8 +7,10 @@ use App\Models\Blog;
 use App\Models\BlogMedia;
 use App\Models\Category;
 use App\Models\Tag;
+use App\Support\RichTextContent;
 use App\Support\SeoPayload;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
@@ -19,7 +21,8 @@ class BlogController extends Controller
     {
         $validator = Validator::make($request->all(), array_merge([
             'name' => 'required|string|max:255',
-            'content' => 'required|string|max:5000',
+            'slug' => ['nullable', 'string', 'max:255', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/', Rule::unique('blogs', 'slug')],
+            'content' => ['required', 'string', fn ($attribute, $value, $fail) => RichTextContent::hasContent($value) ?: $fail('The content field is required.')],
             'publish' => 'required|boolean',
 
             'media_gallery' => 'required|array',
@@ -41,7 +44,7 @@ class BlogController extends Controller
 
         $blogData = [
             'name' => $request->name,
-            'slug' => Str::slug($request->name),
+            'slug' => Str::slug($request->input('slug') ?: $request->name),
             'content' => $request->content,
             'publish' => $request->publish,
             'excerpt' => $request->excerpt,
@@ -91,8 +94,8 @@ class BlogController extends Controller
     {
         $validator = Validator::make($request->all(), array_merge([
             'name' => 'sometimes|string|max:255',
-            'slug' => 'sometimes|string|max:255',
-            'content' => 'sometimes|string|max:5000',
+            'slug' => ['sometimes', 'string', 'max:255', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/', Rule::unique('blogs', 'slug')->ignore($id)],
+            'content' => ['sometimes', 'string', fn ($attribute, $value, $fail) => RichTextContent::hasContent($value) ?: $fail('The content field is required.')],
             'publish' => 'sometimes|boolean',
 
             'media_gallery' => 'sometimes|array',
@@ -221,10 +224,12 @@ class BlogController extends Controller
         switch ($sortBy) {
 
             case 'name_asc':
+            case 'title_asc':
                 $query->orderBy('name', 'asc');
                 break;
 
             case 'name_desc':
+            case 'title_desc':
                 $query->orderBy('name', 'desc');
                 break;
 
@@ -331,6 +336,7 @@ class BlogController extends Controller
             'excerpt' => $blog->excerpt,
             'publish' => $blog->publish,
             'feature_image' => $featuredImage->url ?? null,
+            'seo' => SeoPayload::fromModel($blog),
 
             // multiple media (gallery)
             'media_gallery' => $blog->media->map(function ($m) {
