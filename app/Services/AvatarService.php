@@ -72,7 +72,10 @@ class AvatarService
         $profile->avatar = $storagePath;
         $profile->save();
 
-        return Storage::disk('minio')->url($storagePath);
+        // Mirror UserProfile::getAvatarAttribute — the app exposes MinIO
+        // objects through the `/api/media/{path}` proxy so the URL works on
+        // any client host.
+        return '/api/media/'.$storagePath;
     }
 
     /**

@@ -66,9 +66,15 @@ use App\Http\Controllers\Guest\PublicToursSearchController;
 use App\Http\Controllers\Guest\PublicTransferController;
 use App\Http\Controllers\StripeController;
 use App\Http\Controllers\StripePaymentController;
+use App\Http\Controllers\MediaController as PublicMediaController;
 use App\Http\Controllers\UserProfileController;
 use Illuminate\Support\Facades\Route;
 use Stevebauman\Location\Facades\Location;
+
+// Public MinIO object proxy — avatars and other public assets are linked as
+// `/api/media/{path}` so the browser hits this app origin instead of the MinIO
+// endpoint host (which is often only reachable from the server).
+Route::get('/media/{path}', [PublicMediaController::class, 'show'])->where('path', '.*');
 
 // Login - named limiter: 5/min per email+IP and 20/min per IP
 Route::middleware('throttle:login')->group(function () {

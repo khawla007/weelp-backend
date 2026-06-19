@@ -62,8 +62,11 @@ class UserProfile extends Model
     protected $appends = [];
 
     /**
-     * Get the full URL for the avatar.
-     * Converts stored relative path to full URL using Storage facade.
+     * Resolve the stored avatar path to a browser-safe URL.
+     *
+     * Avatars are served through the app's media proxy (`/api/media/{path}`)
+     * so the URL works regardless of which host the browser is on. The MinIO
+     * endpoint is reachable from the server but not always from LAN clients.
      */
     public function getAvatarAttribute($value)
     {
@@ -71,12 +74,19 @@ class UserProfile extends Model
             return null;
         }
 
-        // Legacy data: already a full URL (before migration cleanup)
+        // Legacy rows that stored an absolute MinIO URL: strip the host/bucket
+        // and serve through the same proxy so LAN clients can resolve it.
         if (str_starts_with($value, 'http')) {
-            return $value;
+            $path = ltrim(parse_url($value, PHP_URL_PATH) ?? '', '/');
+            $bucket = config('filesystems.disks.minio.bucket');
+            if ($bucket && str_starts_with($path, "{$bucket}/")) {
+                $path = substr($path, strlen($bucket) + 1);
+            }
+
+            return $path !== '' ? '/api/media/'.$path : null;
         }
 
-        return Storage::disk('minio')->url($value);
+        return '/api/media/'.ltrim($value, '/');
     }
 
     public function user(): BelongsTo
