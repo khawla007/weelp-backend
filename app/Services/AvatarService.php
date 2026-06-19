@@ -89,11 +89,7 @@ class AvatarService
             return;
         }
 
-        $storagePath = $profile->getRawOriginal('avatar');
-
-        if (!str_starts_with($storagePath, 'http')) {
-            Storage::disk('minio')->delete($storagePath);
-        }
+        Storage::disk('minio')->delete($profile->getRawOriginal('avatar'));
 
         $profile->avatar = null;
         $profile->save();

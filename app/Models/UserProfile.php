@@ -74,18 +74,6 @@ class UserProfile extends Model
             return null;
         }
 
-        // Legacy rows that stored an absolute MinIO URL: strip the host/bucket
-        // and serve through the same proxy so LAN clients can resolve it.
-        if (str_starts_with($value, 'http')) {
-            $path = ltrim(parse_url($value, PHP_URL_PATH) ?? '', '/');
-            $bucket = config('filesystems.disks.minio.bucket');
-            if ($bucket && str_starts_with($path, "{$bucket}/")) {
-                $path = substr($path, strlen($bucket) + 1);
-            }
-
-            return $path !== '' ? '/api/media/'.$path : null;
-        }
-
         return '/api/media/'.ltrim($value, '/');
     }
 
