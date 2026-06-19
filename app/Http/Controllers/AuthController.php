@@ -282,6 +282,11 @@ class AuthController extends Controller
                         'locked_until' => now()->addMinutes(30),
                         'failed_login_attempts' => 0,
                     ]);
+
+                    return response()->json([
+                        'success' => false,
+                        'error' => 'Account temporarily locked. Try again later.',
+                    ], 423);
                 }
             }
 

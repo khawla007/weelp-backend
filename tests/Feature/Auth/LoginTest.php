@@ -90,4 +90,29 @@ class LoginTest extends TestCase
 
         $response->assertStatus(429);
     }
+
+    public function test_login_returns_locked_status_when_failed_attempt_threshold_is_reached(): void
+    {
+        $user = User::factory()->create([
+            'password' => Hash::make('Password@123'),
+            'email_verified_at' => now(),
+            'failed_login_attempts' => 9,
+        ]);
+
+        $response = $this->postJson('/api/login', [
+            'email' => $user->email,
+            'password' => 'WrongPassword@1',
+        ]);
+
+        $response->assertStatus(423)
+            ->assertJson([
+                'success' => false,
+                'error' => 'Account temporarily locked. Try again later.',
+            ]);
+
+        $this->assertDatabaseHas('users', [
+            'id' => $user->id,
+            'failed_login_attempts' => 0,
+        ]);
+    }
 }
