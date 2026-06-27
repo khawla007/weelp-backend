@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Media;
+use App\Support\MediaStorage;
 use App\Support\UploadRules;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use RuntimeException;
 
 class MediaController extends Controller
 {
@@ -74,14 +76,14 @@ class MediaController extends Controller
                     // Generate UUID-based object key — never trust client filename in path.
                     $extension = strtolower($file->getClientOriginalExtension());
                     $fileName = Str::uuid().'.'.$extension;
-                    $filePath = $file->storeAs('media', $fileName, 'minio');
-
-                    // Check if filePath is valid
-                    if (! $filePath) {
+                    try {
+                        $filePath = MediaStorage::storeUploadedFile($file, 'media', $fileName);
+                    } catch (RuntimeException $exception) {
                         info('[Media Upload] Storage failed:', [
                             'file' => $file->getClientOriginalName(),
                             'size' => $file->getSize(),
                             'mime' => $file->getMimeType(),
+                            'error' => $exception->getMessage(),
                         ]);
 
                         return response()->json([

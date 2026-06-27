@@ -7,11 +7,13 @@ use App\Models\Review;
 use App\Models\User;
 use App\Models\UserMeta;
 use App\Models\UserProfile;
+use App\Support\MediaStorage;
 use App\Support\UploadRules;
 use Illuminate\Http\Request;  // Import UserMeta model
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use RuntimeException;
 
 class UserProfileController extends Controller
 {
@@ -407,9 +409,9 @@ class UserProfileController extends Controller
                 // UUID-based key — original filename never enters object path.
                 $extension = strtolower($file->getClientOriginalExtension());
                 $fileName = Str::uuid().'.'.$extension;
-                $filePath = $file->storeAs('media', $fileName, 'minio');
-
-                if (! $filePath) {
+                try {
+                    $filePath = MediaStorage::storeUploadedFile($file, 'media', $fileName);
+                } catch (RuntimeException) {
                     return response()->json([
                         'message' => 'File upload failed.',
                     ], 500);
@@ -625,9 +627,9 @@ class UserProfileController extends Controller
                     // UUID-based key — original filename never enters object path.
                     $extension = strtolower($file->getClientOriginalExtension());
                     $fileName = Str::uuid().'.'.$extension;
-                    $filePath = $file->storeAs('media', $fileName, 'minio');
-
-                    if (! $filePath) {
+                    try {
+                        $filePath = MediaStorage::storeUploadedFile($file, 'media', $fileName);
+                    } catch (RuntimeException) {
                         return response()->json(['message' => 'File upload failed.'], 500);
                     }
 

@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\Country;
 use App\Models\CountryMediaGallery;
 use App\Models\Media;
+use App\Support\MediaStorage;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
@@ -379,7 +380,7 @@ class ImportCountryImages extends Command
             $path = "countries/{$filename}";
 
             // Upload to MinIO
-            $path = Storage::disk('minio')->put($path, $imageData);
+            MediaStorage::putObject($path, $imageData);
             $publicUrl = Storage::disk('minio')->url($path);
 
             $this->stats['images_uploaded']++;

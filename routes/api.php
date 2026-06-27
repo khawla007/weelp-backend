@@ -3,15 +3,14 @@
 // Admin
 use App\Http\Controllers\Admin\ActivityController;
 use App\Http\Controllers\Admin\AddonController;
-use App\Http\Controllers\Admin\AnnouncementController as AdminAnnouncementController;
 use App\Http\Controllers\Admin\AdminLocationSearchController;
+use App\Http\Controllers\Admin\AnnouncementController as AdminAnnouncementController;
 use App\Http\Controllers\Admin\AttributeController;
 use App\Http\Controllers\Admin\BlogController;
-use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CityController;
-// use App\Http\Controllers\Admin\UserProfileController;
 use App\Http\Controllers\Admin\CityImportController;
+// use App\Http\Controllers\Admin\UserProfileController;
 use App\Http\Controllers\Admin\CountryController;
 use App\Http\Controllers\Admin\CountryImportController;
 use App\Http\Controllers\Admin\CreatorApplicationManagementController;
@@ -37,6 +36,7 @@ use App\Http\Controllers\Admin\TransferZoneLocationController;
 use App\Http\Controllers\Admin\TransferZonePriceController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\VendorController;
+use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Creator\CreatorApplicationController;
 use App\Http\Controllers\Creator\CreatorDashboardController;
@@ -64,16 +64,16 @@ use App\Http\Controllers\Guest\PublicShopController;
 use App\Http\Controllers\Guest\PublicTagController;
 use App\Http\Controllers\Guest\PublicToursSearchController;
 use App\Http\Controllers\Guest\PublicTransferController;
+use App\Http\Controllers\MediaController as PublicMediaController;
 use App\Http\Controllers\StripeController;
 use App\Http\Controllers\StripePaymentController;
-use App\Http\Controllers\MediaController as PublicMediaController;
 use App\Http\Controllers\UserProfileController;
 use Illuminate\Support\Facades\Route;
 use Stevebauman\Location\Facades\Location;
 
-// Public MinIO object proxy — avatars and other public assets are linked as
-// `/api/media/{path}` so the browser hits this app origin instead of the MinIO
-// endpoint host (which is often only reachable from the server).
+// Numeric media-library IDs are optimized by MediaFileController. Path-based
+// MinIO objects (avatars, logos) fall through to the public object proxy.
+Route::get('media/{media}', [MediaFileController::class, 'show'])->whereNumber('media');
 Route::get('/media/{path}', [PublicMediaController::class, 'show'])->where('path', '.*');
 
 // Login - named limiter: 5/min per email+IP and 20/min per IP
@@ -637,8 +637,6 @@ Route::get('/shop', [PublicShopController::class, 'index']);
 Route::get('blogs', [PublicBlogController::class, 'index']);
 Route::get('blogs/{slug}', [PublicBlogController::class, 'show']);
 Route::get('pages/{slug}', [PublicPageController::class, 'show']);
-Route::get('media/{media}', [MediaFileController::class, 'show']);
-
 // Public reviews api
 Route::prefix('reviews')->group(function () {
     Route::get('/', [PublicReviewController::class, 'index']);
