@@ -121,4 +121,21 @@ class BlogAdminTest extends TestCase
         ])->assertStatus(400)
             ->assertJson(fn (AssertableJson $json) => $json->has('content')->etc());
     }
+
+    public function test_admin_validation_rejects_empty_blog_publish_dependencies(): void
+    {
+        $admin = $this->admin();
+
+        $this->actingAs($admin, 'api')->postJson('/api/admin/blogs', $this->validPayload([
+            'media_gallery' => [],
+            'categories' => [],
+            'tags' => [],
+        ]))->assertStatus(400)
+            ->assertJson(fn (AssertableJson $json) => $json
+                ->has('media_gallery')
+                ->has('categories')
+                ->has('tags')
+                ->etc()
+            );
+    }
 }
