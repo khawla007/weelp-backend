@@ -16,7 +16,7 @@ class PruneOrphanMedia extends Command
                             {--execute : Perform the deletes (default is dry-run)}
                             {--days=7 : Only consider media older than N days}';
 
-    protected $description = 'Find media rows with zero references older than --days and delete the row + MinIO object';
+    protected $description = 'Find media rows with zero references older than --days and delete the row + any MinIO object';
 
     /**
      * Tables that reference media.id; each entry is [table, foreign_key].
@@ -50,10 +50,17 @@ class PruneOrphanMedia extends Command
         }
 
         $cutoff = now()->subDays($days);
-        $orphans = $this->findOrphans($cutoff);
+        $orphans = $this->findOrphans($cutoff)->map(fn ($row) => $this->withStorageState($row));
         $count = $orphans->count();
+        $missingObjects = $orphans->where('storage_exists', false)->count();
 
-        $this->line(sprintf('Found %d orphan media rows older than %d day(s) (cutoff: %s)', $count, $days, $cutoff->toDateTimeString()));
+        $this->line(sprintf(
+            'Found %d orphan media rows older than %d day(s) (cutoff: %s); missing storage objects: %d',
+            $count,
+            $days,
+            $cutoff->toDateTimeString(),
+            $missingObjects,
+        ));
 
         if ($count === 0) {
             return self::SUCCESS;
@@ -80,8 +87,7 @@ class PruneOrphanMedia extends Command
                         return;
                     }
 
-                    $path = $media->getRawOriginal('url');
-                    $path = $this->normalizePath($path);
+                    $path = $row->storage_path ?? $this->normalizePath($media->getRawOriginal('url'));
 
                     if ($path) {
                         try {
@@ -152,5 +158,15 @@ class PruneOrphanMedia extends Command
         }
 
         return $path ?: null;
+    }
+
+    private function withStorageState(object $row): object
+    {
+        $path = $this->normalizePath($row->url ?? null);
+
+        $row->storage_path = $path;
+        $row->storage_exists = $path ? Storage::disk('minio')->exists($path) : false;
+
+        return $row;
     }
 }

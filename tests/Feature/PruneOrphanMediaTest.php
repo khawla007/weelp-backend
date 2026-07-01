@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Media;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
@@ -49,6 +50,27 @@ class PruneOrphanMediaTest extends TestCase
 
         $this->assertDatabaseMissing('media', ['id' => $orphan->id]);
         Storage::disk('minio')->assertMissing('orphans/orphan-exec.jpg');
+    }
+
+    public function test_dry_run_reports_orphans_with_missing_storage_objects(): void
+    {
+        Storage::fake('minio');
+
+        $orphan = Media::create([
+            'name' => 'orphan-missing-file',
+            'url' => 'orphans/missing-file.jpg',
+        ]);
+        DB::table('media')->where('id', $orphan->id)->update(['created_at' => now()->subDays(30)]);
+
+        $exitCode = Artisan::call('media:prune-orphans');
+        $output = Artisan::output();
+
+        $this->assertSame(0, $exitCode);
+        $this->assertStringContainsString('Found 1 orphan media rows', $output);
+        $this->assertStringContainsString('missing storage objects: 1', $output);
+        $this->assertStringContainsString('Dry-run mode', $output);
+
+        $this->assertDatabaseHas('media', ['id' => $orphan->id]);
     }
 
     public function test_referenced_media_is_not_pruned(): void
