@@ -52,6 +52,30 @@ class PageAdminTest extends TestCase
             'hero_text' => 'Understand how Weelp handles your information.',
             'hero_button_label' => 'Contact support',
             'hero_button_url' => '/contact',
+            'hero_overlay_color' => '#000000',
+            'hero_overlay_opacity' => 0.5,
+            'hero_content_vertical_position' => 'middle',
+            'hero_heading_size' => '56px',
+            'hero_heading_color' => '#ffffff',
+            'hero_heading_align' => 'center',
+            'hero_heading_bold' => true,
+            'hero_heading_italic' => true,
+            'hero_heading_underline' => false,
+            'hero_text_size' => '20px',
+            'hero_text_color' => '#f8fafc',
+            'hero_text_align' => 'center',
+            'hero_text_bold' => false,
+            'hero_text_italic' => true,
+            'hero_text_underline' => false,
+            'hero_button_radius' => '999px',
+            'hero_button_border_width' => '2px',
+            'hero_button_padding' => '14px 28px',
+            'hero_button_margin' => '24px 0 0',
+            'hero_button_text_color' => '#111827',
+            'hero_button_bg_color' => '#ffffff',
+            'hero_button_border_color' => '#ffffff',
+            'hero_button_text_size' => '16px',
+            'hero_button_align' => 'center',
             'seo' => [
                 'meta_title' => 'Privacy SEO title',
                 'meta_description' => 'Privacy SEO description',
@@ -68,6 +92,15 @@ class PageAdminTest extends TestCase
             ->assertJsonPath('data.hero_text', 'Understand how Weelp handles your information.')
             ->assertJsonPath('data.hero_button_label', 'Contact support')
             ->assertJsonPath('data.hero_button_url', '/contact')
+            ->assertJsonPath('data.hero_overlay_color', '#000000')
+            ->assertJsonPath('data.hero_overlay_opacity', 0.5)
+            ->assertJsonPath('data.hero_content_vertical_position', 'middle')
+            ->assertJsonPath('data.hero_heading_size', '56px')
+            ->assertJsonPath('data.hero_heading_align', 'center')
+            ->assertJsonPath('data.hero_heading_bold', true)
+            ->assertJsonPath('data.hero_text_italic', true)
+            ->assertJsonPath('data.hero_button_radius', '999px')
+            ->assertJsonPath('data.hero_button_align', 'center')
             ->assertJsonPath('data.seo.meta_title', 'Privacy SEO title');
 
         $page = Page::where('slug', 'privacy-policy')->firstOrFail();
@@ -78,6 +111,12 @@ class PageAdminTest extends TestCase
         $this->assertSame('Understand how Weelp handles your information.', $page->hero_text);
         $this->assertSame('Contact support', $page->hero_button_label);
         $this->assertSame('/contact', $page->hero_button_url);
+        $this->assertSame('#000000', $page->hero_overlay_color);
+        $this->assertSame(0.5, $page->hero_overlay_opacity);
+        $this->assertSame('center', $page->hero_heading_align);
+        $this->assertTrue($page->hero_heading_bold);
+        $this->assertTrue($page->hero_text_italic);
+        $this->assertSame('999px', $page->hero_button_radius);
 
         $this->actingAs($admin, 'api')->getJson("/api/admin/pages/{$page->id}")
             ->assertOk()
@@ -87,6 +126,9 @@ class PageAdminTest extends TestCase
             ->assertJsonPath('data.hero_text', 'Understand how Weelp handles your information.')
             ->assertJsonPath('data.hero_button_label', 'Contact support')
             ->assertJsonPath('data.hero_button_url', '/contact')
+            ->assertJsonPath('data.hero_overlay_color', '#000000')
+            ->assertJsonPath('data.hero_heading_color', '#ffffff')
+            ->assertJsonPath('data.hero_button_text_size', '16px')
             ->assertJsonPath('data.seo.schema_data.@type', 'WebPage');
 
         $this->actingAs($admin, 'api')->putJson("/api/admin/pages/{$page->id}", [
@@ -94,6 +136,10 @@ class PageAdminTest extends TestCase
             'status' => 'draft',
             'hero_heading' => 'Privacy Updated',
             'hero_button_label' => null,
+            'hero_overlay_opacity' => 0.7,
+            'hero_heading_align' => 'right',
+            'hero_heading_underline' => true,
+            'hero_button_align' => 'right',
             'seo' => [
                 'footer_code' => '<script>window.pageFooter=true</script>',
             ],
@@ -102,12 +148,20 @@ class PageAdminTest extends TestCase
             ->assertJsonPath('data.status', 'draft')
             ->assertJsonPath('data.hero_heading', 'Privacy Updated')
             ->assertJsonPath('data.hero_button_label', null)
+            ->assertJsonPath('data.hero_overlay_opacity', 0.7)
+            ->assertJsonPath('data.hero_heading_align', 'right')
+            ->assertJsonPath('data.hero_heading_underline', true)
+            ->assertJsonPath('data.hero_button_align', 'right')
             ->assertJsonPath('data.seo.footer_code', '<script>window.pageFooter=true</script>');
 
         $page->refresh();
         $this->assertSame('Privacy SEO title', $page->meta_title);
         $this->assertSame('Privacy Updated', $page->hero_heading);
         $this->assertNull($page->hero_button_label);
+        $this->assertSame(0.7, $page->hero_overlay_opacity);
+        $this->assertSame('right', $page->hero_heading_align);
+        $this->assertTrue($page->hero_heading_underline);
+        $this->assertSame('right', $page->hero_button_align);
 
         $this->actingAs($admin, 'api')->deleteJson("/api/admin/pages/{$page->id}")
             ->assertOk();

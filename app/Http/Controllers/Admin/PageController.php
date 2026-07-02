@@ -12,6 +12,33 @@ use Illuminate\Validation\Rule;
 
 class PageController extends Controller
 {
+    private const HERO_STYLE_FIELDS = [
+        'hero_overlay_color',
+        'hero_overlay_opacity',
+        'hero_content_vertical_position',
+        'hero_heading_size',
+        'hero_heading_color',
+        'hero_heading_align',
+        'hero_heading_bold',
+        'hero_heading_italic',
+        'hero_heading_underline',
+        'hero_text_size',
+        'hero_text_color',
+        'hero_text_align',
+        'hero_text_bold',
+        'hero_text_italic',
+        'hero_text_underline',
+        'hero_button_radius',
+        'hero_button_border_width',
+        'hero_button_padding',
+        'hero_button_margin',
+        'hero_button_text_color',
+        'hero_button_bg_color',
+        'hero_button_border_color',
+        'hero_button_text_size',
+        'hero_button_align',
+    ];
+
     public function index(Request $request): JsonResponse
     {
         $perPage = min(max((int) $request->get('per_page', 3), 1), 3);
@@ -64,7 +91,7 @@ class PageController extends Controller
             'hero_text' => ['sometimes', 'nullable', 'string'],
             'hero_button_label' => ['sometimes', 'nullable', 'string', 'max:255'],
             'hero_button_url' => ['sometimes', 'nullable', 'string'],
-        ], SeoPayload::rules()));
+        ], $this->heroStyleRules(), SeoPayload::rules()));
 
         $page = Page::create(array_merge(
             collect($validated)->except('seo')->all(),
@@ -102,7 +129,7 @@ class PageController extends Controller
             'hero_text' => ['sometimes', 'nullable', 'string'],
             'hero_button_label' => ['sometimes', 'nullable', 'string', 'max:255'],
             'hero_button_url' => ['sometimes', 'nullable', 'string'],
-        ], SeoPayload::rules()));
+        ], $this->heroStyleRules(), SeoPayload::rules()));
 
         $page->fill(collect($validated)->except('seo')->all());
 
@@ -148,7 +175,7 @@ class PageController extends Controller
 
     private function serialize(Page $page, bool $includeContent = true): array
     {
-        return array_filter([
+        $payload = [
             'id' => $page->id,
             'title' => $page->title,
             'slug' => $page->slug,
@@ -164,6 +191,42 @@ class PageController extends Controller
             'seo' => SeoPayload::fromModel($page),
             'created_at' => $page->created_at,
             'updated_at' => $page->updated_at,
-        ], fn ($value, string $key): bool => str_starts_with($key, 'hero_') || $value !== null, ARRAY_FILTER_USE_BOTH);
+        ];
+
+        foreach (self::HERO_STYLE_FIELDS as $field) {
+            $payload[$field] = $page->{$field};
+        }
+
+        return array_filter($payload, fn ($value, string $key): bool => str_starts_with($key, 'hero_') || $value !== null, ARRAY_FILTER_USE_BOTH);
+    }
+
+    private function heroStyleRules(): array
+    {
+        return [
+            'hero_overlay_color' => ['sometimes', 'nullable', 'string', 'max:32'],
+            'hero_overlay_opacity' => ['sometimes', 'nullable', 'numeric', 'min:0', 'max:1'],
+            'hero_content_vertical_position' => ['sometimes', 'nullable', Rule::in(['top', 'middle', 'bottom'])],
+            'hero_heading_size' => ['sometimes', 'nullable', 'string', 'max:32'],
+            'hero_heading_color' => ['sometimes', 'nullable', 'string', 'max:32'],
+            'hero_heading_align' => ['sometimes', 'nullable', Rule::in(['left', 'center', 'right'])],
+            'hero_heading_bold' => ['sometimes', 'nullable', 'boolean'],
+            'hero_heading_italic' => ['sometimes', 'nullable', 'boolean'],
+            'hero_heading_underline' => ['sometimes', 'nullable', 'boolean'],
+            'hero_text_size' => ['sometimes', 'nullable', 'string', 'max:32'],
+            'hero_text_color' => ['sometimes', 'nullable', 'string', 'max:32'],
+            'hero_text_align' => ['sometimes', 'nullable', Rule::in(['left', 'center', 'right'])],
+            'hero_text_bold' => ['sometimes', 'nullable', 'boolean'],
+            'hero_text_italic' => ['sometimes', 'nullable', 'boolean'],
+            'hero_text_underline' => ['sometimes', 'nullable', 'boolean'],
+            'hero_button_radius' => ['sometimes', 'nullable', 'string', 'max:32'],
+            'hero_button_border_width' => ['sometimes', 'nullable', 'string', 'max:32'],
+            'hero_button_padding' => ['sometimes', 'nullable', 'string', 'max:64'],
+            'hero_button_margin' => ['sometimes', 'nullable', 'string', 'max:64'],
+            'hero_button_text_color' => ['sometimes', 'nullable', 'string', 'max:32'],
+            'hero_button_bg_color' => ['sometimes', 'nullable', 'string', 'max:32'],
+            'hero_button_border_color' => ['sometimes', 'nullable', 'string', 'max:32'],
+            'hero_button_text_size' => ['sometimes', 'nullable', 'string', 'max:32'],
+            'hero_button_align' => ['sometimes', 'nullable', Rule::in(['left', 'center', 'right'])],
+        ];
     }
 }
