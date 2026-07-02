@@ -14,7 +14,7 @@ class PageController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $perPage = (int) $request->get('per_page', 15);
+        $perPage = min(max((int) $request->get('per_page', 3), 1), 3);
         $page = (int) $request->get('page', 1);
         $search = $request->get('search');
         $status = $request->get('status');
@@ -59,6 +59,11 @@ class PageController extends Controller
             'excerpt' => ['sometimes', 'nullable', 'string'],
             'status' => ['required', Rule::in([Page::STATUS_DRAFT, Page::STATUS_PUBLISHED])],
             'published_at' => ['sometimes', 'nullable', 'date'],
+            'hero_background_image_url' => ['sometimes', 'nullable', 'string'],
+            'hero_heading' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'hero_text' => ['sometimes', 'nullable', 'string'],
+            'hero_button_label' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'hero_button_url' => ['sometimes', 'nullable', 'string'],
         ], SeoPayload::rules()));
 
         $page = Page::create(array_merge(
@@ -92,6 +97,11 @@ class PageController extends Controller
             'excerpt' => ['sometimes', 'nullable', 'string'],
             'status' => ['sometimes', Rule::in([Page::STATUS_DRAFT, Page::STATUS_PUBLISHED])],
             'published_at' => ['sometimes', 'nullable', 'date'],
+            'hero_background_image_url' => ['sometimes', 'nullable', 'string'],
+            'hero_heading' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'hero_text' => ['sometimes', 'nullable', 'string'],
+            'hero_button_label' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'hero_button_url' => ['sometimes', 'nullable', 'string'],
         ], SeoPayload::rules()));
 
         $page->fill(collect($validated)->except('seo')->all());
@@ -146,9 +156,14 @@ class PageController extends Controller
             'excerpt' => $page->excerpt,
             'status' => $page->status,
             'published_at' => $page->published_at,
+            'hero_background_image_url' => $page->hero_background_image_url,
+            'hero_heading' => $page->hero_heading,
+            'hero_text' => $page->hero_text,
+            'hero_button_label' => $page->hero_button_label,
+            'hero_button_url' => $page->hero_button_url,
             'seo' => SeoPayload::fromModel($page),
             'created_at' => $page->created_at,
             'updated_at' => $page->updated_at,
-        ], fn ($value): bool => $value !== null);
+        ], fn ($value, string $key): bool => str_starts_with($key, 'hero_') || $value !== null, ARRAY_FILTER_USE_BOTH);
     }
 }

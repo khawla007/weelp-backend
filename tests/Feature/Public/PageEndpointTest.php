@@ -17,6 +17,11 @@ class PageEndpointTest extends TestCase
             'slug' => 'privacy-policy',
             'status' => 'published',
             'content' => '{"type":"doc","content":[]}',
+            'hero_background_image_url' => '/storage/pages/privacy-hero.jpg',
+            'hero_heading' => 'Privacy at Weelp',
+            'hero_text' => 'Understand how Weelp handles your information.',
+            'hero_button_label' => 'Contact support',
+            'hero_button_url' => '/contact',
             'meta_title' => 'Privacy SEO title',
             'schema_data' => ['@context' => 'https://schema.org', '@type' => 'WebPage'],
         ]);
@@ -24,6 +29,9 @@ class PageEndpointTest extends TestCase
         $this->getJson('/api/pages/privacy-policy')
             ->assertOk()
             ->assertJsonPath('data.slug', 'privacy-policy')
+            ->assertJsonPath('data.hero_background_image_url', '/storage/pages/privacy-hero.jpg')
+            ->assertJsonPath('data.hero_heading', 'Privacy at Weelp')
+            ->assertJsonPath('data.hero_button_url', '/contact')
             ->assertJsonPath('data.seo.meta_title', 'Privacy SEO title')
             ->assertJsonPath('data.seo.schema_data.@type', 'WebPage');
     }

@@ -27,6 +27,11 @@ class PageFactory extends Factory
             'excerpt' => fake()->sentence(),
             'status' => Page::STATUS_DRAFT,
             'published_at' => null,
+            'hero_background_image_url' => null,
+            'hero_heading' => null,
+            'hero_text' => null,
+            'hero_button_label' => null,
+            'hero_button_url' => null,
         ];
     }
 

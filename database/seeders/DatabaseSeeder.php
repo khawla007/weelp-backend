@@ -42,6 +42,7 @@ class DatabaseSeeder extends Seeder
             PackageSeeder::class,
             ReviewSeeder::class,
             BlogSeeder::class,
+            LegalPageSeeder::class,
         ]);
     }
 }

@@ -47,6 +47,11 @@ class PageAdminTest extends TestCase
             'excerpt' => 'How Weelp handles privacy.',
             'status' => 'published',
             'published_at' => '2026-06-10 10:00:00',
+            'hero_background_image_url' => '/storage/pages/privacy-hero.jpg',
+            'hero_heading' => 'Privacy at Weelp',
+            'hero_text' => 'Understand how Weelp handles your information.',
+            'hero_button_label' => 'Contact support',
+            'hero_button_url' => '/contact',
             'seo' => [
                 'meta_title' => 'Privacy SEO title',
                 'meta_description' => 'Privacy SEO description',
@@ -58,30 +63,51 @@ class PageAdminTest extends TestCase
 
         $createResponse->assertCreated()
             ->assertJsonPath('data.title', 'Privacy Policy')
+            ->assertJsonPath('data.hero_background_image_url', '/storage/pages/privacy-hero.jpg')
+            ->assertJsonPath('data.hero_heading', 'Privacy at Weelp')
+            ->assertJsonPath('data.hero_text', 'Understand how Weelp handles your information.')
+            ->assertJsonPath('data.hero_button_label', 'Contact support')
+            ->assertJsonPath('data.hero_button_url', '/contact')
             ->assertJsonPath('data.seo.meta_title', 'Privacy SEO title');
 
         $page = Page::where('slug', 'privacy-policy')->firstOrFail();
         $this->assertSame($largeTiptapJson, $page->content);
         $this->assertSame('WebPage', $page->schema_type);
+        $this->assertSame('/storage/pages/privacy-hero.jpg', $page->hero_background_image_url);
+        $this->assertSame('Privacy at Weelp', $page->hero_heading);
+        $this->assertSame('Understand how Weelp handles your information.', $page->hero_text);
+        $this->assertSame('Contact support', $page->hero_button_label);
+        $this->assertSame('/contact', $page->hero_button_url);
 
         $this->actingAs($admin, 'api')->getJson("/api/admin/pages/{$page->id}")
             ->assertOk()
             ->assertJsonPath('data.slug', 'privacy-policy')
+            ->assertJsonPath('data.hero_background_image_url', '/storage/pages/privacy-hero.jpg')
+            ->assertJsonPath('data.hero_heading', 'Privacy at Weelp')
+            ->assertJsonPath('data.hero_text', 'Understand how Weelp handles your information.')
+            ->assertJsonPath('data.hero_button_label', 'Contact support')
+            ->assertJsonPath('data.hero_button_url', '/contact')
             ->assertJsonPath('data.seo.schema_data.@type', 'WebPage');
 
         $this->actingAs($admin, 'api')->putJson("/api/admin/pages/{$page->id}", [
             'title' => 'Privacy Policy Updated',
             'status' => 'draft',
+            'hero_heading' => 'Privacy Updated',
+            'hero_button_label' => null,
             'seo' => [
                 'footer_code' => '<script>window.pageFooter=true</script>',
             ],
         ])->assertOk()
             ->assertJsonPath('data.title', 'Privacy Policy Updated')
             ->assertJsonPath('data.status', 'draft')
+            ->assertJsonPath('data.hero_heading', 'Privacy Updated')
+            ->assertJsonPath('data.hero_button_label', null)
             ->assertJsonPath('data.seo.footer_code', '<script>window.pageFooter=true</script>');
 
         $page->refresh();
         $this->assertSame('Privacy SEO title', $page->meta_title);
+        $this->assertSame('Privacy Updated', $page->hero_heading);
+        $this->assertNull($page->hero_button_label);
 
         $this->actingAs($admin, 'api')->deleteJson("/api/admin/pages/{$page->id}")
             ->assertOk();
@@ -100,6 +126,19 @@ class PageAdminTest extends TestCase
             ->assertOk()
             ->assertJsonPath('data.0.slug', 'privacy-policy')
             ->assertJsonPath('total', 1);
+    }
+
+    public function test_admin_index_returns_max_three_pages_per_page(): void
+    {
+        $admin = $this->admin();
+        Page::factory()->count(5)->create();
+
+        $response = $this->actingAs($admin, 'api')->getJson('/api/admin/pages?per_page=10');
+
+        $response->assertOk()
+            ->assertJsonCount(3, 'data')
+            ->assertJsonPath('per_page', 3)
+            ->assertJsonPath('total', 5);
     }
 
     public function test_admin_validation_rejects_duplicate_slug_and_invalid_status(): void
