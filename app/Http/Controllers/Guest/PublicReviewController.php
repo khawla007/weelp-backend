@@ -62,8 +62,9 @@ class PublicReviewController extends Controller
     }
 
     /**
-     * Get featured (is_featured = true) approved reviews with optional city filter.
-     * Used on: City page featured review slider.
+     * Get the public review showcase with optional city filter.
+     * Featured reviews appear first, then the remaining slots are filled by top-rated reviews.
+     * Used on: City page review slider.
      *
      * Query params:
      *   ?city=slug — filter to items in that city
@@ -78,8 +79,9 @@ class PublicReviewController extends Controller
 
         $query = Review::with(['user', 'item', 'mediaGallery.media'])
             ->where('status', 'approved')
-            ->where('is_featured', true)
-            ->orderBy('created_at', 'desc');
+            ->orderByDesc('is_featured')
+            ->orderByDesc('rating')
+            ->orderByDesc('created_at');
 
         if ($citySlug) {
             $city = City::where('slug', $citySlug)->first();
@@ -89,7 +91,11 @@ class PublicReviewController extends Controller
             $this->applyCityFilter($query, $city->id);
         }
 
-        $reviews = $query->get();
+        $summaryQuery = clone $query;
+        $totalReviews = (clone $summaryQuery)->count();
+        $averageRating = $totalReviews > 0 ? round((clone $summaryQuery)->avg('rating'), 1) : 0;
+
+        $reviews = $query->limit(10)->get();
 
         $data = $reviews
             ->map(fn ($review) => $this->transformReview($review))
@@ -97,11 +103,23 @@ class PublicReviewController extends Controller
             ->values();
 
         if ($data->isEmpty()) {
-            return response()->json(['success' => false, 'message' => 'No featured reviews found']);
+            return response()->json([
+                'success' => false,
+                'message' => 'No reviews found',
+                'summary' => [
+                    'average_rating' => 0,
+                    'total_reviews' => 0,
+                ],
+                'data' => [],
+            ]);
         }
 
         return response()->json([
             'success' => true,
+            'summary' => [
+                'average_rating' => $averageRating,
+                'total_reviews' => $totalReviews,
+            ],
             'data' => $data,
         ]);
     }
