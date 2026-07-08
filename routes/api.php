@@ -44,6 +44,7 @@ use App\Http\Controllers\Creator\CreatorItineraryController;
 // Public
 use App\Http\Controllers\Creator\CreatorPostController;
 use App\Http\Controllers\Customer\CustomerItineraryController;
+use App\Http\Controllers\Customer\WishlistController;
 use App\Http\Controllers\Guest\MediaFileController;
 use App\Http\Controllers\Guest\OtpController;
 use App\Http\Controllers\Guest\PublicActivityController;
@@ -129,6 +130,13 @@ Route::middleware(['auth:api', 'customer'])->prefix('customer')->group(function 
     Route::get('/profile', [UserProfileController::class, 'show']);
     Route::put('/profile', [UserProfileController::class, 'update']);
     Route::put('/password', [UserProfileController::class, 'changePassword']);
+
+    Route::get('/wishlist', [WishlistController::class, 'index']);
+    Route::post('/wishlist', [WishlistController::class, 'store']);
+    Route::delete('/wishlist/{wishlistItem}', [WishlistController::class, 'destroy'])
+        ->whereNumber('wishlistItem');
+    Route::delete('/wishlist/item/{itemType}/{itemId}', [WishlistController::class, 'destroyByItem'])
+        ->whereNumber('itemId');
 
     // 👇 Logged-in user ke orders
     Route::get('/userorders', [UserProfileController::class, 'getUserOrders']);

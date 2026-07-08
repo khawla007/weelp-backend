@@ -246,4 +246,9 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->hasMany(Itinerary::class, 'user_id');
     }
+
+    public function wishlistItems(): HasMany
+    {
+        return $this->hasMany(WishlistItem::class);
+    }
 }
