@@ -353,6 +353,70 @@ class SeoPersistenceTest extends TestCase
         $this->assertSame(1, ActivitySeo::where('activity_id', $activity->id)->count());
     }
 
+    public function test_admin_activity_show_returns_seo_payload_after_update(): void
+    {
+        $activity = Activity::factory()->create();
+
+        $this->actingAs($this->adminUser(), 'api')
+            ->putJson("/api/admin/activities/{$activity->id}", [
+                'seo' => [
+                    'meta_title' => 'Visible activity SEO title',
+                    'meta_description' => 'Visible activity SEO description',
+                    'schema_type' => 'Product',
+                    'schema_data' => [
+                        '@context' => 'https://schema.org',
+                        '@type' => 'Product',
+                        'name' => 'Visible activity SEO title',
+                    ],
+                ],
+            ])
+            ->assertOk();
+
+        $this->actingAs($this->adminUser(), 'api')
+            ->getJson("/api/admin/activities/{$activity->id}")
+            ->assertOk()
+            ->assertJsonPath('seo.meta_title', 'Visible activity SEO title')
+            ->assertJsonPath('seo.meta_description', 'Visible activity SEO description')
+            ->assertJsonPath('seo.schema_data.name', 'Visible activity SEO title');
+    }
+
+    public function test_admin_activity_update_persists_featured_media_in_show_payload(): void
+    {
+        $activity = Activity::factory()->create();
+        $firstMedia = Media::create([
+            'name' => 'First activity media',
+            'url' => 'activity/first.jpg',
+        ]);
+        $featuredMedia = Media::create([
+            'name' => 'Featured activity media',
+            'url' => 'activity/featured.jpg',
+        ]);
+
+        $this->actingAs($this->adminUser(), 'api')
+            ->putJson("/api/admin/activities/{$activity->id}", [
+                'media_gallery' => [
+                    ['media_id' => $firstMedia->id, 'is_featured' => false],
+                    ['media_id' => $featuredMedia->id, 'is_featured' => true],
+                ],
+            ])
+            ->assertOk();
+
+        $this->assertDatabaseHas('activity_media_gallery', [
+            'activity_id' => $activity->id,
+            'media_id' => $featuredMedia->id,
+            'is_featured' => true,
+        ]);
+
+        $this->actingAs($this->adminUser(), 'api')
+            ->getJson("/api/admin/activities/{$activity->id}")
+            ->assertOk()
+            ->assertJsonPath('feature_image', "/api/media/{$featuredMedia->id}")
+            ->assertJsonFragment([
+                'media_id' => $featuredMedia->id,
+                'is_featured' => 1,
+            ]);
+    }
+
     public function test_blog_seo_update_persists_on_existing_blog_row(): void
     {
         $blog = Blog::factory()->create([

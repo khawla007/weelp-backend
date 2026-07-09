@@ -447,6 +447,7 @@ class ActivityController extends Controller
             'groupDiscounts', 'earlyBirdDiscount',
             'lastMinuteDiscount', 'promoCodes',
             'mediaGallery.media', 'availability', 'addons.addon',
+            'seo',
             'faqs',
             'reviews' => fn ($query) => $query->where('status', 'approved')->with('user')->latest()->limit(5),
         ])->find($id);
