@@ -246,6 +246,7 @@ class PublicActivityController extends Controller
             'addons.addon',
             'seo',
             'faqs',
+            'inclusionsExclusions',
             'reviews' => fn ($query) => $query->where('status', 'approved')->with('user')->latest()->limit(5),
         ])->where('slug', $activityslug)->first();
 
@@ -315,6 +316,13 @@ class PublicActivityController extends Controller
                 'answer' => $faq->answer,
                 'title' => $faq->question,
                 'content' => $faq->answer,
+            ])->toArray(),
+            'inclusions_exclusions' => $activity->inclusionsExclusions->values()->map(fn ($item) => [
+                'id' => $item->id,
+                'type' => $item->type,
+                'title' => $item->title,
+                'description' => $item->description,
+                'included' => (bool) $item->included,
             ])->toArray(),
 
             'media_gallery' => $activity->mediaGallery->map(function ($media) {

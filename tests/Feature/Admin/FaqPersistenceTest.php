@@ -71,6 +71,80 @@ class FaqPersistenceTest extends TestCase
         $this->assertDatabaseMissing('activity_faqs', ['id' => $newFaq->id]);
     }
 
+    public function test_activity_create_show_update_and_partial_delete_inclusions_exclusions(): void
+    {
+        $this->actingAs($this->adminUser(), 'api')
+            ->postJson('/api/admin/activities', [
+                'name' => 'Included Activity',
+                'slug' => 'included-activity',
+                'description' => 'Activity with inclusion rows',
+                'inclusions_exclusions' => [
+                    [
+                        'type' => 'transfer',
+                        'title' => 'Hotel pickup',
+                        'description' => 'Shared pickup from selected hotels.',
+                        'included' => true,
+                    ],
+                    [
+                        'type' => 'other',
+                        'title' => 'Tips',
+                        'description' => 'Optional gratuities are not covered.',
+                        'included' => false,
+                    ],
+                ],
+            ])
+            ->assertCreated();
+
+        $activity = Activity::where('slug', 'included-activity')->firstOrFail();
+        $keepRow = $activity->inclusionsExclusions()->where('title', 'Hotel pickup')->firstOrFail();
+        $deleteRow = $activity->inclusionsExclusions()->where('title', 'Tips')->firstOrFail();
+
+        $this->actingAs($this->adminUser(), 'api')
+            ->getJson("/api/admin/activities/{$activity->id}")
+            ->assertOk()
+            ->assertJsonPath('inclusions_exclusions.0.title', 'Hotel pickup')
+            ->assertJsonPath('inclusions_exclusions.0.included', true);
+
+        $this->actingAs($this->adminUser(), 'api')
+            ->putJson("/api/admin/activities/{$activity->id}", [
+                'inclusions_exclusions' => [
+                    [
+                        'id' => $keepRow->id,
+                        'type' => 'transfer',
+                        'title' => 'Private hotel pickup',
+                        'description' => 'Pickup details are confirmed after booking.',
+                        'included' => true,
+                    ],
+                    [
+                        'type' => 'equipment',
+                        'title' => 'Safety equipment',
+                        'description' => 'Helmet and basic safety gear.',
+                        'included' => true,
+                    ],
+                ],
+            ])
+            ->assertOk();
+
+        $this->assertDatabaseHas('activity_inclusions_exclusions', [
+            'id' => $keepRow->id,
+            'activity_id' => $activity->id,
+            'title' => 'Private hotel pickup',
+            'included' => true,
+        ]);
+        $this->assertDatabaseMissing('activity_inclusions_exclusions', ['id' => $deleteRow->id]);
+
+        $newRow = $activity->inclusionsExclusions()->where('title', 'Safety equipment')->firstOrFail();
+
+        $this->actingAs($this->adminUser(), 'api')
+            ->deleteJson("/api/admin/activities/{$activity->id}/partial-delete", [
+                'deleted_inclusion_exclusion_ids' => [$newRow->id],
+            ])
+            ->assertOk();
+
+        $this->assertSame(1, $activity->inclusionsExclusions()->count());
+        $this->assertDatabaseMissing('activity_inclusions_exclusions', ['id' => $newRow->id]);
+    }
+
     public function test_activity_show_returns_approved_reviews_for_schema_generation(): void
     {
         $activity = Activity::factory()->create();

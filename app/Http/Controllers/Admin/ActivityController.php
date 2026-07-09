@@ -11,6 +11,7 @@ use App\Models\ActivityCategory;
 use App\Models\ActivityEarlyBirdDiscount;
 use App\Models\ActivityFaq;
 use App\Models\ActivityGroupDiscount;
+use App\Models\ActivityInclusionExclusion;
 use App\Models\ActivityLastMinuteDiscount;
 use App\Models\ActivityLocation;
 use App\Models\ActivityMediaGallery;
@@ -56,7 +57,7 @@ class ActivityController extends Controller
         $query = Activity::query()
             ->select('activities.*')  // Select all fields from activities
             ->leftJoin('activity_pricing', 'activity_pricing.activity_id', '=', 'activities.id') // Left join so activities without pricing still show
-            ->with(['categories.category', 'tags.tag', 'locations.city', 'locations.place', 'pricing', 'attributes', 'mediaGallery.media', 'addons.addon']) // Eager load relationships
+            ->with(['categories.category', 'tags.tag', 'locations.city', 'locations.place', 'pricing', 'attributes', 'mediaGallery.media', 'addons.addon', 'inclusionsExclusions']) // Eager load relationships
 
             ->when($cityIds, fn ($query) => $query->whereHas('locations', fn ($q) => $q->whereIn('city_id', array_map('intval', explode(',', $cityIds)))
             )
@@ -227,6 +228,11 @@ class ActivityController extends Controller
             'faqs.*.question_number' => 'nullable|integer',
             'faqs.*.question' => 'required_with:faqs|string|max:255',
             'faqs.*.answer' => 'nullable|string',
+            'inclusions_exclusions' => 'nullable|array',
+            'inclusions_exclusions.*.type' => 'required_with:inclusions_exclusions|string|max:255',
+            'inclusions_exclusions.*.title' => 'required_with:inclusions_exclusions|string|max:255',
+            'inclusions_exclusions.*.description' => 'nullable|string',
+            'inclusions_exclusions.*.included' => 'required_with:inclusions_exclusions|boolean',
         ], SeoPayload::rules()));
 
         try {
@@ -409,6 +415,18 @@ class ActivityController extends Controller
                 }
             }
 
+            if ($request->has('inclusions_exclusions')) {
+                foreach ($request->inclusions_exclusions as $item) {
+                    ActivityInclusionExclusion::create([
+                        'activity_id' => $activity->id,
+                        'type' => $item['type'],
+                        'title' => $item['title'],
+                        'description' => $item['description'] ?? null,
+                        'included' => $item['included'],
+                    ]);
+                }
+            }
+
             // Availability
             if ($request->has('availability')) {
                 ActivityAvailability::create([
@@ -449,6 +467,7 @@ class ActivityController extends Controller
             'mediaGallery.media', 'availability', 'addons.addon',
             'seo',
             'faqs',
+            'inclusionsExclusions',
             'reviews' => fn ($query) => $query->where('status', 'approved')->with('user')->latest()->limit(5),
         ])->find($id);
 
@@ -542,6 +561,16 @@ class ActivityController extends Controller
             ];
         });
 
+        $activityData['inclusions_exclusions'] = collect($activity->inclusionsExclusions)->values()->map(function ($item) {
+            return [
+                'id' => $item->id,
+                'type' => $item->type,
+                'title' => $item->title,
+                'description' => $item->description,
+                'included' => (bool) $item->included,
+            ];
+        });
+
         $activityData['review_summary'] = [
             'average_rating' => round($activity->reviews()->where('status', 'approved')->avg('rating') ?? 0, 1),
             'total_reviews' => $activity->reviews()->where('status', 'approved')->count(),
@@ -588,6 +617,12 @@ class ActivityController extends Controller
             'faqs.*.question_number' => 'nullable|integer',
             'faqs.*.question' => 'required_with:faqs|string|max:255',
             'faqs.*.answer' => 'nullable|string',
+            'inclusions_exclusions' => 'nullable|array',
+            'inclusions_exclusions.*.id' => 'nullable|integer',
+            'inclusions_exclusions.*.type' => 'required_with:inclusions_exclusions|string|max:255',
+            'inclusions_exclusions.*.title' => 'required_with:inclusions_exclusions|string|max:255',
+            'inclusions_exclusions.*.description' => 'nullable|string',
+            'inclusions_exclusions.*.included' => 'required_with:inclusions_exclusions|boolean',
         ], SeoPayload::rules());
 
         $request->validate($rules);
@@ -798,6 +833,35 @@ class ActivityController extends Controller
                 }
             }
 
+            if ($request->has('inclusions_exclusions')) {
+                $incomingIds = collect($request->inclusions_exclusions)->pluck('id')->filter()->toArray();
+                $ownedIncomingIds = $activity->inclusionsExclusions()
+                    ->whereIn('id', $incomingIds)
+                    ->pluck('id')
+                    ->toArray();
+
+                $activity->inclusionsExclusions()
+                    ->when(! empty($ownedIncomingIds), fn ($query) => $query->whereNotIn('id', $ownedIncomingIds))
+                    ->delete();
+
+                foreach ($request->inclusions_exclusions as $item) {
+                    $attributes = [
+                        'type' => $item['type'],
+                        'title' => $item['title'],
+                        'description' => $item['description'] ?? null,
+                        'included' => $item['included'],
+                    ];
+
+                    if (! empty($item['id']) && in_array((int) $item['id'], $ownedIncomingIds, true)) {
+                        $activity->inclusionsExclusions()
+                            ->where('id', $item['id'])
+                            ->update($attributes);
+                    } else {
+                        $activity->inclusionsExclusions()->create($attributes);
+                    }
+                }
+            }
+
             if ($request->has('availability')) {
                 $availabilityData = $request->availability;
 
@@ -888,6 +952,12 @@ class ActivityController extends Controller
         if ($request->has('deleted_faq_ids')) {
             $activity->faqs()
                 ->whereIn('id', $request->deleted_faq_ids)
+                ->delete();
+        }
+
+        if ($request->has('deleted_inclusion_exclusion_ids')) {
+            $activity->inclusionsExclusions()
+                ->whereIn('id', $request->deleted_inclusion_exclusion_ids)
                 ->delete();
         }
 

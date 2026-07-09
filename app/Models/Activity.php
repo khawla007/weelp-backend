@@ -31,6 +31,8 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
  * @property-read int|null $faqs_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ActivityGroupDiscount> $groupDiscounts
  * @property-read int|null $group_discounts_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ActivityInclusionExclusion> $inclusionsExclusions
+ * @property-read int|null $inclusions_exclusions_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Itinerary> $itineraries
  * @property-read int|null $itineraries_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ItineraryActivity> $itineraryActivity
@@ -174,6 +176,11 @@ class Activity extends Model
     public function faqs(): HasMany
     {
         return $this->hasMany(ActivityFaq::class);
+    }
+
+    public function inclusionsExclusions(): HasMany
+    {
+        return $this->hasMany(ActivityInclusionExclusion::class);
     }
 
     // public function blogs()
