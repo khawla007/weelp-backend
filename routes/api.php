@@ -651,6 +651,8 @@ Route::prefix('reviews')->group(function () {
     Route::get('/featured-reviews', [PublicReviewController::class, 'getFeaturedReviews']);
     Route::get('/activity/{activity_slug}', [PublicReviewController::class, 'getActivityReviews']);
     Route::get('/activity/{activity_slug}/featured', [PublicReviewController::class, 'getActivityFeaturedReviews']);
+    Route::get('/itinerary/{itinerary_slug}', [PublicReviewController::class, 'getItineraryReviews']);
+    Route::get('/itinerary/{itinerary_slug}/featured', [PublicReviewController::class, 'getItineraryFeaturedReviews']);
 });
 
 // DEPRECATED: Replaced by creator itinerary system

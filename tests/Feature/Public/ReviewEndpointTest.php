@@ -7,9 +7,11 @@ use App\Models\ActivityLocation;
 use App\Models\City;
 use App\Models\Itinerary;
 use App\Models\ItineraryLocation;
+use App\Models\Media;
 use App\Models\Package;
 use App\Models\PackageLocation;
 use App\Models\Review;
+use App\Models\ReviewMediaGallery;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -68,6 +70,86 @@ class ReviewEndpointTest extends TestCase
         $response = $this->getJson('/api/reviews/featured-reviews');
 
         $response->assertOk();
+    }
+
+    public function test_itinerary_reviews_include_media_gallery(): void
+    {
+        $itinerary = Itinerary::factory()->create(['slug' => 'adventure-tour-in-dubai']);
+        $user = User::factory()->create(['name' => 'Aisha Khan']);
+        $review = Review::factory()->create([
+            'user_id' => $user->id,
+            'item_type' => 'itinerary',
+            'item_id' => $itinerary->id,
+            'rating' => 5,
+            'review_text' => 'The schedule was clear and every stop felt worth it.',
+            'status' => 'approved',
+            'is_featured' => true,
+        ]);
+        $media = Media::create([
+            'name' => 'Dubai itinerary review',
+            'alt_text' => 'Dubai itinerary guest photo',
+            'url' => 'reviews/dubai-itinerary.jpg',
+        ]);
+
+        ReviewMediaGallery::create([
+            'review_id' => $review->id,
+            'media_id' => $media->id,
+            'sort_order' => 0,
+        ]);
+
+        $response = $this->getJson('/api/reviews/itinerary/adventure-tour-in-dubai?photos_only=true');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('summary.total_reviews', 1)
+            ->assertJsonPath('summary.total_photos', 1)
+            ->assertJsonPath('data.0.id', $review->id)
+            ->assertJsonPath('data.0.user.name', 'Aisha Khan')
+            ->assertJsonPath('data.0.media_gallery.0.id', $media->id)
+            ->assertJsonPath('data.0.media_gallery.0.url', "/api/media/{$media->id}");
+    }
+
+    public function test_itinerary_featured_reviews_include_media_gallery(): void
+    {
+        $itinerary = Itinerary::factory()->create(['slug' => 'adventure-tour-in-dubai']);
+        $user = User::factory()->create();
+        $featuredReview = Review::factory()->create([
+            'user_id' => $user->id,
+            'item_type' => 'itinerary',
+            'item_id' => $itinerary->id,
+            'status' => 'approved',
+            'is_featured' => true,
+        ]);
+        $nonFeaturedReview = Review::factory()->create([
+            'user_id' => $user->id,
+            'item_type' => 'itinerary',
+            'item_id' => $itinerary->id,
+            'status' => 'approved',
+            'is_featured' => false,
+        ]);
+        $media = Media::create([
+            'name' => 'Featured itinerary review',
+            'alt_text' => 'Featured itinerary guest photo',
+            'url' => 'reviews/featured-itinerary.jpg',
+        ]);
+
+        ReviewMediaGallery::create([
+            'review_id' => $featuredReview->id,
+            'media_id' => $media->id,
+            'sort_order' => 0,
+        ]);
+
+        $response = $this->getJson('/api/reviews/itinerary/adventure-tour-in-dubai/featured');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.id', $featuredReview->id)
+            ->assertJsonPath('data.0.media_gallery.0.url', "/api/media/{$media->id}");
+
+        $this->assertNotSame($nonFeaturedReview->id, $response->json('data.0.id'));
     }
 
     public function test_city_review_showcase_returns_featured_then_top_rated_reviews_with_limit(): void
