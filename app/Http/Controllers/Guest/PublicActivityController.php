@@ -27,78 +27,91 @@ class PublicActivityController extends Controller
             'promoCodes',
             'availability',
             'mediaGallery.media',
-        ])->get()->map(function (Activity $activity, int $key) {
-            return [
-                'id' => $activity->id,
-                'name' => $activity->name,
-                'slug' => $activity->slug,
-                'featured_activity' => $activity->featured_activity,
-                'description' => $activity->description,
-                'item_type' => $activity->item_type,
-                'short_description' => $activity->short_description,
-                'featured_image' => $activity->mediaGallery->where('is_featured', true)->first()?->media->url
-                    ?? $activity->mediaGallery->first()?->media->url,
-                // 'categories' => $activity->categories->pluck('category.name')->join(', '),
-                'categories' => $activity->categories->map(function ($category) {
-                    return [
-                        'id' => $category->category->id,
-                        'name' => $category->category->name,
-                    ];
-                })->toArray(),
-                'attributes' => $activity->attributes->map(function ($attribute) {
-                    return [
-                        'name' => $attribute->attribute->name,
-                        'attribute_value' => $attribute->attribute_value,
-                    ];
-                }),
+        ])
+            ->withCount(['reviews as reviews_count' => fn ($query) => $query->where('status', 'approved')])
+            ->withAvg(['reviews as average_rating' => fn ($query) => $query->where('status', 'approved')], 'rating')
+            ->get()
+            ->map(function (Activity $activity, int $key) {
+                $averageRating = round((float) ($activity->average_rating ?? 0), 1);
+                $reviewsCount = (int) ($activity->reviews_count ?? 0);
 
-                'locations' => $activity->locations->map(function ($location) {
-                    $city = $location->city;
+                return [
+                    'id' => $activity->id,
+                    'name' => $activity->name,
+                    'slug' => $activity->slug,
+                    'featured_activity' => $activity->featured_activity,
+                    'description' => $activity->description,
+                    'item_type' => $activity->item_type,
+                    'short_description' => $activity->short_description,
+                    'featured_image' => $activity->mediaGallery->where('is_featured', true)->first()?->media->url
+                        ?? $activity->mediaGallery->first()?->media->url,
+                    // 'categories' => $activity->categories->pluck('category.name')->join(', '),
+                    'categories' => $activity->categories->map(function ($category) {
+                        return [
+                            'id' => $category->category->id,
+                            'name' => $category->category->name,
+                        ];
+                    })->toArray(),
+                    'attributes' => $activity->attributes->map(function ($attribute) {
+                        return [
+                            'name' => $attribute->attribute->name,
+                            'attribute_value' => $attribute->attribute_value,
+                        ];
+                    }),
 
-                    return [
-                        'location_type' => $location->location_type,
-                        'location_label' => $location->location_label,
-                        'duration' => $location->duration,
-                        'city_id' => $city->id,
-                        'city' => $city->name,
-                        'state_id' => $city->state->id,
-                        'state' => $city->state->name,
-                        'country_id' => $city->state->country->id,
-                        'country' => $city->state->country->name,
-                        'region_id' => $city->state->country->regions->isNotEmpty()
-                            ? $city->state->country->regions->first()->id
-                            : null,
-                        'region' => $city->state->country->regions->isNotEmpty()
-                            ? $city->state->country->regions->first()->name
-                            : null,
+                    'locations' => $activity->locations->map(function ($location) {
+                        $city = $location->city;
 
-                    ];
-                }),
-                'pricing' => $activity->pricing,
-                'seasonalPricing' => $activity->seasonalPricing,
-                'groupDiscounts' => $activity->groupDiscounts,
-                'earlyBirdDiscount' => $activity->earlyBirdDiscount,
-                'lastMinuteDiscount' => $activity->lastMinuteDiscount,
-                'promoCodes' => $activity->promoCodes,
-                'availability' => $activity->availability ? [
-                    'date_based_activity' => $activity->availability->date_based_activity,
-                    'start_date' => $activity->availability->start_date,
-                    'end_date' => $activity->availability->end_date,
-                    'quantity_based_activity' => $activity->availability->quantity_based_activity,
-                    'max_quantity' => $activity->availability->max_quantity,
-                ] : null,
+                        return [
+                            'location_type' => $location->location_type,
+                            'location_label' => $location->location_label,
+                            'duration' => $location->duration,
+                            'city_id' => $city->id,
+                            'city' => $city->name,
+                            'state_id' => $city->state->id,
+                            'state' => $city->state->name,
+                            'country_id' => $city->state->country->id,
+                            'country' => $city->state->country->name,
+                            'region_id' => $city->state->country->regions->isNotEmpty()
+                                ? $city->state->country->regions->first()->id
+                                : null,
+                            'region' => $city->state->country->regions->isNotEmpty()
+                                ? $city->state->country->regions->first()->name
+                                : null,
 
-                'media_gallery' => $activity->mediaGallery->map(function ($media) {
-                    return [
-                        'id' => $media->media->id,
-                        'name' => $media->media->name,
-                        'alt_text' => $media->media->alt_text,
-                        'url' => $media->media->url,
-                        'is_featured' => (bool) $media->is_featured,
-                    ];
-                })->toArray(),
-            ];
-        });
+                        ];
+                    }),
+                    'pricing' => $activity->pricing,
+                    'average_rating' => $averageRating,
+                    'reviews_count' => $reviewsCount,
+                    'review_summary' => [
+                        'average_rating' => $averageRating,
+                        'total_reviews' => $reviewsCount,
+                    ],
+                    'seasonalPricing' => $activity->seasonalPricing,
+                    'groupDiscounts' => $activity->groupDiscounts,
+                    'earlyBirdDiscount' => $activity->earlyBirdDiscount,
+                    'lastMinuteDiscount' => $activity->lastMinuteDiscount,
+                    'promoCodes' => $activity->promoCodes,
+                    'availability' => $activity->availability ? [
+                        'date_based_activity' => $activity->availability->date_based_activity,
+                        'start_date' => $activity->availability->start_date,
+                        'end_date' => $activity->availability->end_date,
+                        'quantity_based_activity' => $activity->availability->quantity_based_activity,
+                        'max_quantity' => $activity->availability->max_quantity,
+                    ] : null,
+
+                    'media_gallery' => $activity->mediaGallery->map(function ($media) {
+                        return [
+                            'id' => $media->media->id,
+                            'name' => $media->media->name,
+                            'alt_text' => $media->media->alt_text,
+                            'url' => $media->media->url,
+                            'is_featured' => (bool) $media->is_featured,
+                        ];
+                    })->toArray(),
+                ];
+            });
 
         // return response()->json($activities);
         if ($activities->isEmpty()) {
@@ -132,6 +145,8 @@ class PublicActivityController extends Controller
             'availability',
             'mediaGallery.media',
         ])
+            ->withCount(['reviews as reviews_count' => fn ($query) => $query->where('status', 'approved')])
+            ->withAvg(['reviews as average_rating' => fn ($query) => $query->where('status', 'approved')], 'rating')
             ->where('featured_activity', true);
 
         if ($citySlug) {
@@ -144,6 +159,9 @@ class PublicActivityController extends Controller
 
         $activities = $query->get()
             ->map(function (Activity $activity, int $key) {
+                $averageRating = round((float) ($activity->average_rating ?? 0), 1);
+                $reviewsCount = (int) ($activity->reviews_count ?? 0);
+
                 return [
                     'id' => $activity->id,
                     'name' => $activity->name,
@@ -190,6 +208,12 @@ class PublicActivityController extends Controller
                         ];
                     }),
                     'pricing' => $activity->pricing,
+                    'average_rating' => $averageRating,
+                    'reviews_count' => $reviewsCount,
+                    'review_summary' => [
+                        'average_rating' => $averageRating,
+                        'total_reviews' => $reviewsCount,
+                    ],
                     'seasonalPricing' => $activity->seasonalPricing,
                     'groupDiscounts' => $activity->groupDiscounts,
                     'earlyBirdDiscount' => $activity->earlyBirdDiscount,

@@ -208,9 +208,12 @@ class PublicHomeSearchController extends Controller
             'earlyBirdDiscount',
             'locations.city',
             'mediaGallery.media',
-        ])->whereHas('locations', function ($q) use ($cityIds) {
-            $q->whereIn('city_id', $cityIds);
-        });
+        ])
+            ->withCount(['reviews as reviews_count' => fn ($query) => $query->where('status', 'approved')])
+            ->withAvg(['reviews as average_rating' => fn ($query) => $query->where('status', 'approved')], 'rating')
+            ->whereHas('locations', function ($q) use ($cityIds) {
+                $q->whereIn('city_id', $cityIds);
+            });
 
         if ($startDate && $endDate) {
             $query->whereHas('availability', function ($q) use ($startDate, $endDate) {
@@ -260,6 +263,8 @@ class PublicHomeSearchController extends Controller
 
         // return $query->get();
         return $query->get()->map(function ($activity) {
+            $averageRating = round((float) ($activity->average_rating ?? 0), 1);
+            $reviewsCount = (int) ($activity->reviews_count ?? 0);
             $categories = $activity->categories->map(function ($activityCategory) {
                 return [
                     'id' => $activityCategory->category->id,
@@ -276,6 +281,12 @@ class PublicHomeSearchController extends Controller
                 'featured_image' => $activity->mediaGallery->where('is_featured', true)->first()?->media->url
                     ?? $activity->mediaGallery->first()?->media->url,
                 'city_slug' => $activity->locations->first()?->city?->slug,
+                'average_rating' => $averageRating,
+                'reviews_count' => $reviewsCount,
+                'review_summary' => [
+                    'average_rating' => $averageRating,
+                    'total_reviews' => $reviewsCount,
+                ],
                 'categories' => $categories,
                 'pricing' => $activity->pricing ? [
                     'regular_price' => $activity->pricing->regular_price,
@@ -313,9 +324,12 @@ class PublicHomeSearchController extends Controller
             'schedules.activities',
             'schedules.transfers.transfer.route',
             'schedules.transfers.transfer.pricingAvailability',
-        ])->whereHas('locations', function ($q) use ($cityIds) {
-            $q->whereIn('city_id', $cityIds);
-        });
+        ])
+            ->withCount(['reviews as reviews_count' => fn ($query) => $query->where('status', 'approved')])
+            ->withAvg(['reviews as average_rating' => fn ($query) => $query->where('status', 'approved')], 'rating')
+            ->whereHas('locations', function ($q) use ($cityIds) {
+                $q->whereIn('city_id', $cityIds);
+            });
 
         if ($startDate && $endDate) {
             $query->whereHas('availability', function ($q) use ($startDate, $endDate) {
@@ -372,6 +386,8 @@ class PublicHomeSearchController extends Controller
         $itineraries = $query->get();
 
         $itineraries->transform(function ($itinerary) {
+            $averageRating = round((float) ($itinerary->average_rating ?? 0), 1);
+            $reviewsCount = (int) ($itinerary->reviews_count ?? 0);
 
             $categories = $itinerary->categories->map(function ($itineraryCategory) {
                 return [
@@ -389,6 +405,12 @@ class PublicHomeSearchController extends Controller
                 'featured_image' => $itinerary->mediaGallery->where('is_featured', true)->first()?->media->url
                     ?? $itinerary->mediaGallery->first()?->media->url,
                 'city_slug' => $itinerary->locations->first()?->city?->slug,
+                'average_rating' => $averageRating,
+                'reviews_count' => $reviewsCount,
+                'review_summary' => [
+                    'average_rating' => $averageRating,
+                    'total_reviews' => $reviewsCount,
+                ],
                 'categories' => $categories,
                 'tags' => $itinerary->tags->map(fn ($tag) => [
                     'slug' => $tag->tag->slug,
@@ -417,5 +439,4 @@ class PublicHomeSearchController extends Controller
 
         return $itineraries;
     }
-
 }

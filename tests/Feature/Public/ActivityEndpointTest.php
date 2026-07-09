@@ -3,6 +3,7 @@
 namespace Tests\Feature\Public;
 
 use App\Models\Activity;
+use App\Models\Review;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -33,6 +34,46 @@ class ActivityEndpointTest extends TestCase
         $response = $this->getJson('/api/activities/nonexistent-slug');
 
         $response->assertNotFound();
+    }
+
+    public function test_featured_activities_include_approved_review_summary(): void
+    {
+        $activity = Activity::factory()->featured()->create([
+            'name' => 'Reviewed Activity',
+            'slug' => 'reviewed-activity',
+        ]);
+
+        Review::factory()->create([
+            'item_type' => 'activity',
+            'item_id' => $activity->id,
+            'item_name_snapshot' => $activity->name,
+            'item_slug_snapshot' => $activity->slug,
+            'rating' => 5,
+            'status' => 'approved',
+        ]);
+        Review::factory()->create([
+            'item_type' => 'activity',
+            'item_id' => $activity->id,
+            'item_name_snapshot' => $activity->name,
+            'item_slug_snapshot' => $activity->slug,
+            'rating' => 4,
+            'status' => 'approved',
+        ]);
+        Review::factory()->create([
+            'item_type' => 'activity',
+            'item_id' => $activity->id,
+            'item_name_snapshot' => $activity->name,
+            'item_slug_snapshot' => $activity->slug,
+            'rating' => 1,
+            'status' => 'pending',
+        ]);
+
+        $this->getJson('/api/activities/featured-activities')
+            ->assertOk()
+            ->assertJsonPath('data.0.average_rating', 4.5)
+            ->assertJsonPath('data.0.reviews_count', 2)
+            ->assertJsonPath('data.0.review_summary.average_rating', 4.5)
+            ->assertJsonPath('data.0.review_summary.total_reviews', 2);
     }
 
     public function test_activity_can_have_inclusions_and_exclusions_relation(): void

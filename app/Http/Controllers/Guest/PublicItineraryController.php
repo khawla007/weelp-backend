@@ -143,6 +143,8 @@ class PublicItineraryController extends Controller
             'attributes',
             'tags.tag',
         ])
+            ->withCount(['reviews as reviews_count' => fn ($query) => $query->where('status', 'approved')])
+            ->withAvg(['reviews as average_rating' => fn ($query) => $query->where('status', 'approved')], 'rating')
             ->where('featured_itinerary', true);
 
         if ($citySlug) {
@@ -169,6 +171,9 @@ class PublicItineraryController extends Controller
             ->values();
 
         $formattedItineraries = $itineraries->map(function ($itinerary) {
+            $averageRating = round((float) ($itinerary->average_rating ?? 0), 1);
+            $reviewsCount = (int) ($itinerary->reviews_count ?? 0);
+
             return [
                 'id' => $itinerary->id,
                 'name' => $itinerary->name,
@@ -180,6 +185,12 @@ class PublicItineraryController extends Controller
                 'item_type' => $itinerary->item_type,
                 'featured_image' => $itinerary->featured_image,
                 'city_slug' => $itinerary->locations->first()?->city?->slug,
+                'average_rating' => $averageRating,
+                'reviews_count' => $reviewsCount,
+                'review_summary' => [
+                    'average_rating' => $averageRating,
+                    'total_reviews' => $reviewsCount,
+                ],
                 'locations' => $itinerary->locations->map(function ($location) {
                     $city = $location->city;
 

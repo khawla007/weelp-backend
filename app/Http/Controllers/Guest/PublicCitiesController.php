@@ -68,6 +68,7 @@ class PublicCitiesController extends Controller
                 $featuredImage = $city->mediaGallery->firstWhere('is_featured', true)
                     ?? $city->mediaGallery->first();
                 $featureImageUrl = $featuredImage?->media->url ?? null;
+
                 return [
                     'id' => $city->id,
                     'name' => $city->name,
@@ -88,14 +89,14 @@ class PublicCitiesController extends Controller
                             'id' => $region->id,
                             'name' => $region->name,
                         ];
-                    })
+                    }),
                 ];
             });
 
         if ($cities->isEmpty()) {
             return response()->json([
                 'success' => false,
-                'message' => 'No featured cities found'
+                'message' => 'No featured cities found',
             ]);
         }
 
@@ -110,49 +111,49 @@ class PublicCitiesController extends Controller
     {
         $cities = City::with([
             'state.country.regions',
-            'mediaGallery.media'
+            'mediaGallery.media',
         ])
-        ->withCount('activities')
-        ->where('featured_destination', true)
-        ->get()
-        ->map(function ($city) {
-            $featuredImage = $city->mediaGallery->firstWhere('is_featured', true)
-                ?? $city->mediaGallery->first();
-            $featureImageUrl = $featuredImage?->media->url ?? null;
+            ->withCount('activities')
+            ->where('featured_destination', true)
+            ->get()
+            ->map(function ($city) {
+                $featuredImage = $city->mediaGallery->firstWhere('is_featured', true)
+                    ?? $city->mediaGallery->first();
+                $featureImageUrl = $featuredImage?->media->url ?? null;
 
-            // Get the lowest starting price and currency for this city
-            $priceData = $city->lowestStartingPrice();
+                // Get the lowest starting price and currency for this city
+                $priceData = $city->lowestStartingPrice();
 
-            return [
-                'id' => $city->id,
-                'name' => $city->name,
-                'slug' => $city->slug,
-                'description' => $city->description,
-                'featured_image' => $featureImageUrl,
-                'activities_count' => $city->activities_count,
-                'state' => [
-                    'id' => $city->state->id ?? null,
-                    'name' => $city->state->name ?? null,
-                ],
-                'country' => [
-                    'id' => $city->state->country->id ?? null,
-                    'name' => $city->state->country->name ?? null,
-                ],
-                'region' => $city->state->country->regions->map(function ($region) {
-                    return [
-                        'id' => $region->id,
-                        'name' => $region->name,
-                    ];
-                }),
-                'starting_price' => $priceData['starting_price'],
-                'currency' => $priceData['currency'],
-            ];
-        });
+                return [
+                    'id' => $city->id,
+                    'name' => $city->name,
+                    'slug' => $city->slug,
+                    'description' => $city->description,
+                    'featured_image' => $featureImageUrl,
+                    'activities_count' => $city->activities_count,
+                    'state' => [
+                        'id' => $city->state->id ?? null,
+                        'name' => $city->state->name ?? null,
+                    ],
+                    'country' => [
+                        'id' => $city->state->country->id ?? null,
+                        'name' => $city->state->country->name ?? null,
+                    ],
+                    'region' => $city->state->country->regions->map(function ($region) {
+                        return [
+                            'id' => $region->id,
+                            'name' => $region->name,
+                        ];
+                    }),
+                    'starting_price' => $priceData['starting_price'],
+                    'currency' => $priceData['currency'],
+                ];
+            });
 
         if ($cities->isEmpty()) {
             return response()->json([
                 'success' => false,
-                'message' => 'No featured cities found'
+                'message' => 'No featured cities found',
             ]);
         }
 
@@ -169,17 +170,18 @@ class PublicCitiesController extends Controller
 
         $cities = City::with([
             'state.country',
-            'mediaGallery.media'
+            'mediaGallery.media',
         ])
-        ->withCount('activities')
-        ->orderBy('name')
-        ->orderBy('id')
-        ->paginate($perPage, ['*'], 'page', $request->input('page', 1));
+            ->withCount('activities')
+            ->orderBy('name')
+            ->orderBy('id')
+            ->paginate($perPage, ['*'], 'page', $request->input('page', 1));
 
         $mapped = $cities->getCollection()->map(function ($city) {
             $featuredImage = $city->mediaGallery->firstWhere('is_featured', true)
                 ?? $city->mediaGallery->first();
             $featureImageUrl = $featuredImage?->media->url ?? null;
+
             return [
                 'id' => $city->id,
                 'name' => $city->name,
@@ -223,13 +225,13 @@ class PublicCitiesController extends Controller
             'events',
             'additionalInfo',
             'faqs',
-            'seo'
+            'seo',
         ])->where('slug', $slug)->first();
 
         if (! $city) {
             return response()->json([
                 'success' => false,
-                'message' => 'City not found'
+                'message' => 'City not found',
             ], 404);
         }
 
@@ -263,15 +265,15 @@ class PublicCitiesController extends Controller
                 'featured_destination' => $city->featured_destination,
                 'state' => $city->state ? [
                     'id' => $city->state->id,
-                    'name' => $city->state->name
+                    'name' => $city->state->name,
                 ] : null,
                 'country' => $city->country ? [
                     'id' => $city->country->id,
-                    'name' => $city->country->name
+                    'name' => $city->country->name,
                 ] : null,
                 'region' => $city->region ? [
                     'id' => $city->region->id,
-                    'name' => $city->region->name
+                    'name' => $city->region->name,
                 ] : null,
                 'location_details' => $city->locationDetails,
                 'travel_info' => $city->travelInfo,
@@ -279,8 +281,8 @@ class PublicCitiesController extends Controller
                 'events' => $city->events,
                 'additional_info' => $city->additionalInfo,
                 'faqs' => $city->faqs,
-                'seo' => $city->seo
-            ]
+                'seo' => $city->seo,
+            ],
         ], 200);
     }
 
@@ -315,6 +317,8 @@ class PublicCitiesController extends Controller
         $activities = (! $itemType || $itemType === 'activity')
             ? Activity::whereHas('locations', fn ($query) => $query->where('city_id', $city->id))
                 ->with(['pricing', 'groupDiscounts', 'categories.category', 'locations.city.state.country.regions', 'mediaGallery.media'])
+                ->withCount(['reviews as reviews_count' => fn ($query) => $query->where('status', 'approved')])
+                ->withAvg(['reviews as average_rating' => fn ($query) => $query->where('status', 'approved')], 'rating')
             : null;
 
         $itineraries = (! $itemType || $itemType === 'itinerary')
@@ -328,6 +332,8 @@ class PublicCitiesController extends Controller
                     'schedules.transfers.transfer.route',
                     'schedules.transfers.transfer.pricingAvailability',
                 ])
+                ->withCount(['reviews as reviews_count' => fn ($query) => $query->where('status', 'approved')])
+                ->withAvg(['reviews as average_rating' => fn ($query) => $query->where('status', 'approved')], 'rating')
             : null;
 
         if (! empty($categoryIds)) {
@@ -348,41 +354,63 @@ class PublicCitiesController extends Controller
         $itineraries = $itineraries?->get() ?? collect();
 
         $allItems = collect()
-            ->merge($activities->map(fn ($activity) => [
-                'id' => $activity->id,
-                'name' => $activity->name,
-                'slug' => $activity->slug,
-                'item_type' => 'activity',
-                'city_slug' => $city_slug,
-                'featured' => $activity->featured_activity,
-                'featured_image' => $activity->mediaGallery->where('is_featured', true)->first()?->media?->url
-                    ?? $activity->mediaGallery->first()?->media?->url,
-                'pricing' => $activity->pricing,
-                'categories' => $activity->categories->map(fn ($category) => [
-                    'slug' => $category->category->slug,
-                    'name' => $category->category->name,
-                ])->toArray(),
-            ]))
-            ->merge($itineraries->map(fn ($itinerary) => [
-                'id' => $itinerary->id,
-                'name' => $itinerary->name,
-                'slug' => $itinerary->slug,
-                'item_type' => 'itinerary',
-                'city_slug' => $city_slug,
-                'featured' => $itinerary->featured_itinerary,
-                'featured_image' => $itinerary->featured_image,
-                'base_pricing' => $itinerary->basePricing,
-                'schedule_total_price' => $itinerary->schedule_total_price,
-                'schedule_total_currency' => $itinerary->schedule_total_currency,
-                'categories' => $itinerary->categories->map(fn ($category) => [
-                    'slug' => $category->category->slug,
-                    'name' => $category->category->name,
-                ])->toArray(),
-                'tags' => $itinerary->tags->map(fn ($tag) => [
-                    'slug' => $tag->slug,
-                    'name' => $tag->name,
-                ])->toArray(),
-            ]));
+            ->merge($activities->map(function ($activity) use ($city_slug) {
+                $averageRating = round((float) ($activity->average_rating ?? 0), 1);
+                $reviewsCount = (int) ($activity->reviews_count ?? 0);
+
+                return [
+                    'id' => $activity->id,
+                    'name' => $activity->name,
+                    'slug' => $activity->slug,
+                    'item_type' => 'activity',
+                    'city_slug' => $city_slug,
+                    'featured' => $activity->featured_activity,
+                    'featured_image' => $activity->mediaGallery->where('is_featured', true)->first()?->media?->url
+                        ?? $activity->mediaGallery->first()?->media?->url,
+                    'pricing' => $activity->pricing,
+                    'average_rating' => $averageRating,
+                    'reviews_count' => $reviewsCount,
+                    'review_summary' => [
+                        'average_rating' => $averageRating,
+                        'total_reviews' => $reviewsCount,
+                    ],
+                    'categories' => $activity->categories->map(fn ($category) => [
+                        'slug' => $category->category->slug,
+                        'name' => $category->category->name,
+                    ])->toArray(),
+                ];
+            }))
+            ->merge($itineraries->map(function ($itinerary) use ($city_slug) {
+                $averageRating = round((float) ($itinerary->average_rating ?? 0), 1);
+                $reviewsCount = (int) ($itinerary->reviews_count ?? 0);
+
+                return [
+                    'id' => $itinerary->id,
+                    'name' => $itinerary->name,
+                    'slug' => $itinerary->slug,
+                    'item_type' => 'itinerary',
+                    'city_slug' => $city_slug,
+                    'featured' => $itinerary->featured_itinerary,
+                    'featured_image' => $itinerary->featured_image,
+                    'base_pricing' => $itinerary->basePricing,
+                    'schedule_total_price' => $itinerary->schedule_total_price,
+                    'schedule_total_currency' => $itinerary->schedule_total_currency,
+                    'average_rating' => $averageRating,
+                    'reviews_count' => $reviewsCount,
+                    'review_summary' => [
+                        'average_rating' => $averageRating,
+                        'total_reviews' => $reviewsCount,
+                    ],
+                    'categories' => $itinerary->categories->map(fn ($category) => [
+                        'slug' => $category->category->slug,
+                        'name' => $category->category->name,
+                    ])->toArray(),
+                    'tags' => $itinerary->tags->map(fn ($tag) => [
+                        'slug' => $tag->slug,
+                        'name' => $tag->name,
+                    ])->toArray(),
+                ];
+            }));
 
         // Sorting
         $allItems = match ($sortBy) {

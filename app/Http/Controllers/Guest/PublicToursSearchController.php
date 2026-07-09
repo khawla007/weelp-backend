@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Guest;
 
 use App\Http\Controllers\Controller;
 use App\Models\Activity;
-use App\Models\Itinerary;
 use App\Models\City;
+use App\Models\Itinerary;
 use Illuminate\Http\Request;
 
 class PublicToursSearchController extends Controller
@@ -20,18 +20,18 @@ class PublicToursSearchController extends Controller
     public function search(Request $request)
     {
         $request->validate([
-            'from'       => 'nullable|string|max:200',
-            'to'         => 'nullable|string|max:200',
+            'from' => 'nullable|string|max:200',
+            'to' => 'nullable|string|max:200',
             'start_date' => 'nullable|date',
-            'end_date'   => 'nullable|date|after_or_equal:start_date',
-            'quantity'   => 'nullable|integer|min:1',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+            'quantity' => 'nullable|integer|min:1',
         ]);
 
-        $from      = $request->query('from');        // city slug (origin)
-        $to        = $request->query('to');          // city slug (destination)
+        $from = $request->query('from');        // city slug (origin)
+        $to = $request->query('to');          // city slug (destination)
         $startDate = $request->query('start_date');
-        $endDate   = $request->query('end_date');
-        $quantity  = $request->query('quantity');
+        $endDate = $request->query('end_date');
+        $quantity = $request->query('quantity');
 
         // Get city IDs from destination slug
         $toCityIds = $to ? $this->getCityIdsFromSlug($to) : [];
@@ -39,25 +39,25 @@ class PublicToursSearchController extends Controller
         // Get city ID from origin slug
         $fromCityId = $from ? $this->getCityIdFromSlug($from) : null;
 
-        $activities  = $this->buildActivityQuery($toCityIds, $fromCityId, $startDate, $endDate, $quantity)->get();
+        $activities = $this->buildActivityQuery($toCityIds, $fromCityId, $startDate, $endDate, $quantity)->get();
         $itineraries = $this->buildItineraryQuery($toCityIds, $startDate, $endDate, $quantity)->get();
 
         // Serialize and tag with type
-        $activityRows   = $activities->map(fn($a) => $this->serializeActivity($a));
-        $itineraryRows  = $itineraries->map(fn($i) => $this->serializeItinerary($i));
+        $activityRows = $activities->map(fn ($a) => $this->serializeActivity($a));
+        $itineraryRows = $itineraries->map(fn ($i) => $this->serializeItinerary($i));
 
         $rows = $activityRows->concat($itineraryRows)->values();
 
         if ($rows->isEmpty()) {
             return response()->json([
                 'success' => false,
-                'message' => 'No items found'
+                'message' => 'No items found',
             ]);
         }
 
         return response()->json([
             'success' => true,
-            'data' => $rows
+            'data' => $rows,
         ]);
     }
 
@@ -66,7 +66,7 @@ class PublicToursSearchController extends Controller
      */
     private function getCityIdsFromSlug(?string $slug): array
     {
-        if (!$slug) {
+        if (! $slug) {
             return [];
         }
 
@@ -96,11 +96,12 @@ class PublicToursSearchController extends Controller
      */
     private function getCityIdFromSlug(?string $slug): ?int
     {
-        if (!$slug) {
+        if (! $slug) {
             return null;
         }
 
         $city = City::where('slug', $slug)->first();
+
         return $city?->id;
     }
 
@@ -118,10 +119,12 @@ class PublicToursSearchController extends Controller
             'earlyBirdDiscount',
             'locations.city',
             'mediaGallery.media',
-        ]);
+        ])
+            ->withCount(['reviews as reviews_count' => fn ($query) => $query->where('status', 'approved')])
+            ->withAvg(['reviews as average_rating' => fn ($query) => $query->where('status', 'approved')], 'rating');
 
         // Destination filter (to)
-        if (!empty($toCityIds)) {
+        if (! empty($toCityIds)) {
             $query->whereHas('locations', function ($q) use ($toCityIds) {
                 $q->whereIn('city_id', $toCityIds);
             });
@@ -131,7 +134,7 @@ class PublicToursSearchController extends Controller
         if ($fromCityId) {
             $query->whereHas('locations', function ($ql) use ($fromCityId) {
                 $ql->where('location_type', 'primary')
-                   ->where('city_id', $fromCityId);
+                    ->where('city_id', $fromCityId);
             });
         }
 
@@ -139,8 +142,8 @@ class PublicToursSearchController extends Controller
         if ($startDate && $endDate) {
             $query->whereHas('availability', function ($q) use ($startDate, $endDate) {
                 $q->where('date_based_activity', true)
-                  ->where('start_date', '<=', $startDate)
-                  ->where('end_date', '>=', $endDate);
+                    ->where('start_date', '<=', $startDate)
+                    ->where('end_date', '>=', $endDate);
             });
         }
 
@@ -149,10 +152,10 @@ class PublicToursSearchController extends Controller
             $query->whereHas('availability', function ($q) use ($quantity) {
                 $q->where(function ($q) use ($quantity) {
                     $q->where('quantity_based_activity', false)
-                      ->orWhere(function ($q) use ($quantity) {
-                          $q->where('quantity_based_activity', true)
-                            ->where('max_quantity', '>=', $quantity);
-                      });
+                        ->orWhere(function ($q) use ($quantity) {
+                            $q->where('quantity_based_activity', true)
+                                ->where('max_quantity', '>=', $quantity);
+                        });
                 });
             });
         }
@@ -176,10 +179,12 @@ class PublicToursSearchController extends Controller
             'schedules.activities',
             'schedules.transfers.transfer.route',
             'schedules.transfers.transfer.pricingAvailability',
-        ]);
+        ])
+            ->withCount(['reviews as reviews_count' => fn ($query) => $query->where('status', 'approved')])
+            ->withAvg(['reviews as average_rating' => fn ($query) => $query->where('status', 'approved')], 'rating');
 
         // Destination filter (to)
-        if (!empty($toCityIds)) {
+        if (! empty($toCityIds)) {
             $query->whereHas('locations', function ($q) use ($toCityIds) {
                 $q->whereIn('city_id', $toCityIds);
             });
@@ -189,8 +194,8 @@ class PublicToursSearchController extends Controller
         if ($startDate && $endDate) {
             $query->whereHas('availability', function ($q) use ($startDate, $endDate) {
                 $q->where('date_based_itinerary', true)
-                  ->where('start_date', '<=', $startDate)
-                  ->where('end_date', '>=', $endDate);
+                    ->where('start_date', '<=', $startDate)
+                    ->where('end_date', '>=', $endDate);
             });
         }
 
@@ -199,10 +204,10 @@ class PublicToursSearchController extends Controller
             $query->whereHas('availability', function ($q) use ($quantity) {
                 $q->where(function ($q) use ($quantity) {
                     $q->where('quantity_based_itinerary', false)
-                      ->orWhere(function ($q) use ($quantity) {
-                          $q->where('quantity_based_itinerary', true)
-                            ->where('max_quantity', '>=', $quantity);
-                      });
+                        ->orWhere(function ($q) use ($quantity) {
+                            $q->where('quantity_based_itinerary', true)
+                                ->where('max_quantity', '>=', $quantity);
+                        });
                 });
             });
         }
@@ -215,6 +220,8 @@ class PublicToursSearchController extends Controller
      */
     private function serializeActivity($activity): array
     {
+        $averageRating = round((float) ($activity->average_rating ?? 0), 1);
+        $reviewsCount = (int) ($activity->reviews_count ?? 0);
         $categories = $activity->categories->map(function ($activityCategory) {
             return [
                 'id' => $activityCategory->category->id,
@@ -228,10 +235,16 @@ class PublicToursSearchController extends Controller
             'name' => $activity->name,
             'slug' => $activity->slug,
             'item_type' => $activity->item_type,
-            'featured'  => $activity->featured_activity,
+            'featured' => $activity->featured_activity,
             'featured_image' => $activity->mediaGallery->where('is_featured', true)->first()?->media?->url
                 ?? $activity->mediaGallery->first()?->media?->url,
             'city_slug' => $activity->locations->first()?->city?->slug,
+            'average_rating' => $averageRating,
+            'reviews_count' => $reviewsCount,
+            'review_summary' => [
+                'average_rating' => $averageRating,
+                'total_reviews' => $reviewsCount,
+            ],
             'categories' => $categories,
             'pricing' => $activity->pricing ? [
                 'regular_price' => $activity->pricing->regular_price,
@@ -257,6 +270,8 @@ class PublicToursSearchController extends Controller
      */
     private function serializeItinerary($itinerary): array
     {
+        $averageRating = round((float) ($itinerary->average_rating ?? 0), 1);
+        $reviewsCount = (int) ($itinerary->reviews_count ?? 0);
         $categories = $itinerary->categories->map(function ($itineraryCategory) {
             return $itineraryCategory->category ? [
                 'id' => $itineraryCategory->category->id,
@@ -270,10 +285,16 @@ class PublicToursSearchController extends Controller
             'name' => $itinerary->name,
             'slug' => $itinerary->slug,
             'item_type' => $itinerary->item_type,
-            'featured'  => $itinerary->featured_itinerary,
+            'featured' => $itinerary->featured_itinerary,
             'featured_image' => $itinerary->mediaGallery->where('is_featured', true)->first()?->media?->url
                 ?? $itinerary->mediaGallery->first()?->media?->url,
             'city_slug' => $itinerary->locations->first()?->city?->slug,
+            'average_rating' => $averageRating,
+            'reviews_count' => $reviewsCount,
+            'review_summary' => [
+                'average_rating' => $averageRating,
+                'total_reviews' => $reviewsCount,
+            ],
             'categories' => $categories,
             'tags' => $itinerary->tags->map(fn ($tag) => [
                 'slug' => $tag->slug,
