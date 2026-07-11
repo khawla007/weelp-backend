@@ -4,10 +4,17 @@ namespace App\Http\Controllers\Guest;
 
 use App\Http\Controllers\Controller;
 use App\Models\Activity;
+use App\Models\ActivityCategory;
+use App\Models\ActivityTag;
 use App\Models\Category;
 use App\Models\City;
 use App\Models\Country;
 use App\Models\Itinerary;
+use App\Models\ItineraryCategory;
+use App\Models\ItineraryTag;
+use App\Models\Package;
+use App\Models\PackageCategory;
+use App\Models\PackageTag;
 use App\Models\State;
 use App\Models\Tag;
 use Illuminate\Http\Request;
@@ -290,12 +297,16 @@ class PublicCitiesController extends Controller
     public function getAllItemsByCity($city_slug)
     {
         request()->validate([
-            'categories' => 'nullable|string|max:500',
-            'tags' => 'nullable|string|max:500',
+            'search' => 'nullable|string|max:100',
+            'categories' => ['nullable', 'string', 'max:500', 'regex:/^[A-Za-z0-9-]+(?:,[A-Za-z0-9-]+)*$/'],
+            'tags' => ['nullable', 'string', 'max:500', 'regex:/^[A-Za-z0-9-]+(?:,[A-Za-z0-9-]+)*$/'],
             'min_price' => 'nullable|numeric|min:0',
-            'max_price' => 'nullable|numeric|min:0',
-            'sort_by' => 'nullable|in:name_asc,name_desc,price_asc,price_desc,id_asc,id_desc',
-            'item_type' => 'nullable|in:activity,itinerary',
+            'max_price' => 'nullable|numeric|min:0|gte:min_price',
+            'min_rating' => 'nullable|numeric|min:0|max:5',
+            'sort_by' => 'nullable|in:name_asc,name_desc,price_asc,price_desc,rating_desc,id_asc,id_desc',
+            'item_type' => 'nullable|in:activity,itinerary,package',
+            'page' => 'nullable|integer|min:1',
+            'per_page' => 'nullable|integer|min:1|max:100',
         ]);
 
         $city = City::with('state.country.regions')->where('slug', $city_slug)->first();
@@ -308,15 +319,17 @@ class PublicCitiesController extends Controller
         $tagSlugs = request()->has('tags') ? explode(',', request()->get('tags')) : [];
         $minPrice = request()->get('min_price', 0);
         $maxPrice = request()->get('max_price', null);
+        $minRating = (float) request()->get('min_rating', 0);
         $sortBy = request()->get('sort_by', 'id_desc');
         $itemType = request()->get('item_type', null);
+        $search = request()->get('search');
 
         $categoryIds = ! empty($categorySlugs) ? Category::whereIn('slug', $categorySlugs)->pluck('id')->toArray() : [];
         $tagIds = ! empty($tagSlugs) ? Tag::whereIn('slug', $tagSlugs)->pluck('id')->toArray() : [];
 
         $activities = (! $itemType || $itemType === 'activity')
             ? Activity::whereHas('locations', fn ($query) => $query->where('city_id', $city->id))
-                ->with(['pricing', 'groupDiscounts', 'categories.category', 'locations.city.state.country.regions', 'mediaGallery.media'])
+                ->with(['pricing', 'groupDiscounts', 'categories.category', 'tags.tag', 'locations.city.state.country.regions', 'mediaGallery.media'])
                 ->withCount(['reviews as reviews_count' => fn ($query) => $query->where('status', 'approved')])
                 ->withAvg(['reviews as average_rating' => fn ($query) => $query->where('status', 'approved')], 'rating')
             : null;
@@ -327,7 +340,7 @@ class PublicCitiesController extends Controller
                     'basePricing.variations',
                     'mediaGallery.media',
                     'categories.category',
-                    'tags',
+                    'tags.tag',
                     'schedules.activities',
                     'schedules.transfers.transfer.route',
                     'schedules.transfers.transfer.pricingAvailability',
@@ -336,22 +349,84 @@ class PublicCitiesController extends Controller
                 ->withAvg(['reviews as average_rating' => fn ($query) => $query->where('status', 'approved')], 'rating')
             : null;
 
-        if (! empty($categoryIds)) {
+        $packages = (! $itemType || $itemType === 'package')
+            ? Package::whereHas('locations', fn ($query) => $query->where('city_id', $city->id))
+                ->where('private_package', false)
+                ->with(['basePricing.variations', 'mediaGallery.media', 'categories.category', 'tags.tag'])
+                ->withCount(['reviews as reviews_count' => fn ($query) => $query->where('status', 'approved')])
+                ->withAvg(['reviews as average_rating' => fn ($query) => $query->where('status', 'approved')], 'rating')
+            : null;
+
+        $categoryPivots = collect();
+        $tagPivots = collect();
+        if (! $itemType || $itemType === 'activity') {
+            $categoryPivots = $categoryPivots->merge(ActivityCategory::whereHas('activity.locations', fn ($query) => $query->where('city_id', $city->id))->with('category')->get());
+            $tagPivots = $tagPivots->merge(ActivityTag::whereHas('activity.locations', fn ($query) => $query->where('city_id', $city->id))->with('tag')->get());
+        }
+        if (! $itemType || $itemType === 'itinerary') {
+            $categoryPivots = $categoryPivots->merge(ItineraryCategory::whereHas('itinerary.locations', fn ($query) => $query->where('city_id', $city->id))->with('category')->get());
+            $tagPivots = $tagPivots->merge(ItineraryTag::whereHas('itinerary.locations', fn ($query) => $query->where('city_id', $city->id))->with('tag')->get());
+        }
+        if (! $itemType || $itemType === 'package') {
+            $categoryPivots = $categoryPivots->merge(PackageCategory::whereHas('package', fn ($query) => $query->where('private_package', false)->whereHas('locations', fn ($location) => $location->where('city_id', $city->id)))->with('category')->get());
+            $tagPivots = $tagPivots->merge(PackageTag::whereHas('package', fn ($query) => $query->where('private_package', false)->whereHas('locations', fn ($location) => $location->where('city_id', $city->id)))->with('tag')->get());
+        }
+
+        $availableCategories = $categoryPivots
+            ->map(fn ($pivot) => $pivot->category)
+            ->filter()
+            ->unique('id')
+            ->sortBy('name')
+            ->values()
+            ->map(fn ($category) => ['slug' => $category->slug, 'name' => $category->name]);
+
+        $availableTags = $tagPivots
+            ->map(fn ($pivot) => $pivot->tag)
+            ->filter()
+            ->unique('id')
+            ->sortBy('name')
+            ->values()
+            ->map(fn ($tag) => ['slug' => $tag->slug, 'name' => $tag->name]);
+
+        if ($search) {
+            $activities?->where('name', 'like', "%{$search}%");
+            $itineraries?->where('name', 'like', "%{$search}%");
+            $packages?->where('name', 'like', "%{$search}%");
+        }
+
+        $hasUnknownCategories = count(array_unique($categorySlugs)) !== count($categoryIds);
+        $hasUnknownTags = count(array_unique($tagSlugs)) !== count($tagIds);
+
+        if ($hasUnknownCategories || $hasUnknownTags) {
+            $activities?->whereRaw('1 = 0');
+            $itineraries?->whereRaw('1 = 0');
+            $packages?->whereRaw('1 = 0');
+        } elseif (! empty($categoryIds)) {
             $activities?->whereHas('categories', fn ($q) => $q->whereIn('category_id', $categoryIds));
             $itineraries?->whereHas('categories', fn ($q) => $q->whereIn('category_id', $categoryIds));
+            $packages?->whereHas('categories', fn ($q) => $q->whereIn('category_id', $categoryIds));
         }
 
-        if (! empty($tagIds)) {
-            $itineraries?->whereHas('tags', fn ($q) => $q->whereIn('tags.id', $tagIds));
+        if (! $hasUnknownCategories && ! $hasUnknownTags && ! empty($tagIds)) {
+            $activities?->whereHas('tags', fn ($q) => $q->whereIn('tag_id', $tagIds));
+            $itineraries?->whereHas('tags', fn ($q) => $q->whereIn('tag_id', $tagIds));
+            $packages?->whereHas('tags', fn ($q) => $q->whereIn('tag_id', $tagIds));
         }
 
+        if ($minPrice > 0) {
+            $activities?->whereHas('pricing', fn ($query) => $query->where('regular_price', '>=', $minPrice));
+            $itineraries?->whereHas('basePricing.variations')->whereDoesntHave('basePricing.variations', fn ($query) => $query->where('regular_price', '<', $minPrice));
+            $packages?->whereHas('basePricing.variations')->whereDoesntHave('basePricing.variations', fn ($query) => $query->where('regular_price', '<', $minPrice));
+        }
         if ($maxPrice !== null) {
-            $activities?->whereHas('pricing', fn ($q) => $q->whereBetween('regular_price', [$minPrice, $maxPrice]));
-            $itineraries?->whereHas('basePricing.variations', fn ($q) => $q->whereBetween('regular_price', [$minPrice, $maxPrice]));
+            $activities?->whereHas('pricing', fn ($query) => $query->where('regular_price', '<=', $maxPrice));
+            $itineraries?->whereHas('basePricing.variations', fn ($query) => $query->where('regular_price', '<=', $maxPrice));
+            $packages?->whereHas('basePricing.variations', fn ($query) => $query->where('regular_price', '<=', $maxPrice));
         }
 
         $activities = $activities?->get() ?? collect();
         $itineraries = $itineraries?->get() ?? collect();
+        $packages = $packages?->get() ?? collect();
 
         $allItems = collect()
             ->merge($activities->map(function ($activity) use ($city_slug) {
@@ -378,6 +453,12 @@ class PublicCitiesController extends Controller
                         'slug' => $category->category->slug,
                         'name' => $category->category->name,
                     ])->toArray(),
+                    'tags' => $activity->tags->map(fn ($pivot) => [
+                        'slug' => $pivot->tag?->slug,
+                        'name' => $pivot->tag?->name,
+                    ])->filter(fn ($tag) => $tag['slug'])->values()->toArray(),
+                    '_sort_price' => (float) ($activity->pricing?->regular_price ?? 0),
+                    'listing_price' => (float) ($activity->pricing?->regular_price ?? 0),
                 ];
             }))
             ->merge($itineraries->map(function ($itinerary) use ($city_slug) {
@@ -405,20 +486,64 @@ class PublicCitiesController extends Controller
                         'slug' => $category->category->slug,
                         'name' => $category->category->name,
                     ])->toArray(),
-                    'tags' => $itinerary->tags->map(fn ($tag) => [
-                        'slug' => $tag->slug,
-                        'name' => $tag->name,
+                    'tags' => $itinerary->tags->map(fn ($pivot) => [
+                        'slug' => $pivot->tag?->slug,
+                        'name' => $pivot->tag?->name,
+                    ])->filter(fn ($tag) => $tag['slug'])->values()->toArray(),
+                    '_sort_price' => (float) ($itinerary->schedule_total_price
+                        ?? $itinerary->basePricing?->variations?->min('regular_price')
+                        ?? 0),
+                    'listing_price' => (float) ($itinerary->schedule_total_price
+                        ?? $itinerary->basePricing?->variations?->min('regular_price')
+                        ?? 0),
+                ];
+            }))
+            ->merge($packages->map(function ($package) use ($city_slug) {
+                $averageRating = round((float) ($package->average_rating ?? 0), 1);
+                $reviewsCount = (int) ($package->reviews_count ?? 0);
+
+                return [
+                    'id' => $package->id,
+                    'name' => $package->name,
+                    'slug' => $package->slug,
+                    'item_type' => 'package',
+                    'city_slug' => $city_slug,
+                    'featured' => $package->featured_package,
+                    'featured_image' => $package->mediaGallery->where('is_featured', true)->first()?->media?->url
+                        ?? $package->mediaGallery->first()?->media?->url,
+                    'base_pricing' => $package->basePricing,
+                    'average_rating' => $averageRating,
+                    'reviews_count' => $reviewsCount,
+                    'review_summary' => [
+                        'average_rating' => $averageRating,
+                        'total_reviews' => $reviewsCount,
+                    ],
+                    'categories' => $package->categories->map(fn ($category) => [
+                        'slug' => $category->category->slug,
+                        'name' => $category->category->name,
                     ])->toArray(),
+                    'tags' => $package->tags->map(fn ($pivot) => [
+                        'slug' => $pivot->tag?->slug,
+                        'name' => $pivot->tag?->name,
+                    ])->filter(fn ($tag) => $tag['slug'])->values()->toArray(),
+                    '_sort_price' => (float) ($package->basePricing?->variations?->min('regular_price') ?? 0),
+                    'listing_price' => (float) ($package->basePricing?->variations?->min('regular_price') ?? 0),
                 ];
             }));
+
+        if ($minRating > 0) {
+            $allItems = $allItems
+                ->filter(fn ($item) => (float) ($item['average_rating'] ?? 0) >= $minRating)
+                ->values();
+        }
 
         // Sorting
         $allItems = match ($sortBy) {
             'name_asc' => $allItems->sortBy('name'),
             'name_desc' => $allItems->sortByDesc('name'),
-            'price_asc' => $allItems->sortBy(fn ($item) => $item['base_pricing']['regular_price'] ?? $item['pricing']['regular_price'] ?? 0),
-            'price_desc' => $allItems->sortByDesc(fn ($item) => $item['base_pricing']['regular_price'] ?? $item['pricing']['regular_price'] ?? 0),
-            'rating_desc' => $allItems->sortByDesc('rating'),
+            'price_asc' => $allItems->sortBy('_sort_price'),
+            'price_desc' => $allItems->sortByDesc('_sort_price'),
+            'rating_desc' => $allItems->sortByDesc('average_rating'),
             'id_asc' => $allItems->sortBy('id'),
             default => $allItems->sortByDesc('id'),
         };
@@ -427,7 +552,11 @@ class PublicCitiesController extends Controller
         $perPage = (int) request()->get('per_page', 8);
         $page = (int) request()->get('page', 1);
         $total = $allItems->count();
-        $paginatedItems = $allItems->forPage($page, $perPage)->values();
+        $paginatedItems = $allItems->forPage($page, $perPage)->values()->map(function ($item) {
+            unset($item['_sort_price']);
+
+            return $item;
+        });
 
         return response()->json([
             'success' => true,
@@ -436,6 +565,8 @@ class PublicCitiesController extends Controller
             'last_page' => (int) ceil($total / $perPage) ?: 1,
             'per_page' => $perPage,
             'total' => $total,
+            'available_categories' => $availableCategories,
+            'available_tags' => $availableTags,
         ], 200);
     }
 }
