@@ -38,6 +38,7 @@ class PublicBlogController extends Controller
         // ⭐ Main Query
         $query = Blog::query()
             ->with(['media', 'categories', 'tags'])
+            ->where('publish', true)
 
             // 🔍 SEARCH (same style)
             ->when($search, fn ($query) => $query->where(function ($q) use ($search) {
@@ -156,6 +157,7 @@ class PublicBlogController extends Controller
             'categories',
             'tags',
         ])
+            ->where('publish', true)
             ->where('slug', $slug)
             ->firstOrFail();
 

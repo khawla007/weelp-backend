@@ -10,22 +10,33 @@ class BlogEndpointTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_list_blogs(): void
+    public function test_list_blogs_only_returns_published_items(): void
     {
-        Blog::factory()->count(2)->create();
+        $published = Blog::factory()->create(['slug' => 'published-blog', 'publish' => true]);
+        $draft = Blog::factory()->create(['slug' => 'draft-blog', 'publish' => false]);
 
         $response = $this->getJson('/api/blogs');
 
-        $response->assertOk();
+        $response->assertOk()
+            ->assertJsonPath('total', 1)
+            ->assertJsonFragment(['id' => $published->id, 'slug' => 'published-blog'])
+            ->assertJsonMissing(['id' => $draft->id, 'slug' => 'draft-blog']);
     }
 
     public function test_show_blog_by_slug(): void
     {
-        $blog = Blog::factory()->create(['slug' => 'test-blog']);
+        $blog = Blog::factory()->create(['slug' => 'test-blog', 'publish' => true]);
 
         $response = $this->getJson('/api/blogs/test-blog');
 
         $response->assertOk();
+    }
+
+    public function test_show_blog_returns_404_for_draft_slug(): void
+    {
+        Blog::factory()->create(['slug' => 'draft-blog', 'publish' => false]);
+
+        $this->getJson('/api/blogs/draft-blog')->assertNotFound();
     }
 
     public function test_show_blog_returns_404_for_missing_slug(): void
