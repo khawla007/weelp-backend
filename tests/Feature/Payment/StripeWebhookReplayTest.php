@@ -149,4 +149,54 @@ class StripeWebhookReplayTest extends TestCase
             'payment_intent_id' => $base['payment']->payment_intent_id,
         ]);
     }
+
+    #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
+    #[\PHPUnit\Framework\Attributes\PreserveGlobalState(false)]
+    public function test_failed_webhook_persists_supported_terminal_status_atomically(): void
+    {
+        Mail::fake();
+        $intentId = 'pi_failed_'.uniqid();
+        $eventId = 'evt_failed_'.uniqid();
+        $data = $this->createOrderWithPayment($intentId);
+        $this->mockStripeEvent($eventId, 'payment_intent.payment_failed', $intentId);
+
+        $response = $this->postWebhook($eventId, 'payment_intent.payment_failed', $intentId);
+        $response->assertOk();
+        $this->assertSame('Webhook Handled', $response->getContent());
+
+        $this->assertDatabaseHas('stripe_webhook_events', ['id' => $eventId, 'type' => 'payment_intent.payment_failed']);
+        $this->assertDatabaseHas('order_payments', ['id' => $data['payment']->id, 'payment_status' => 'failed']);
+        $this->assertDatabaseHas('orders', ['id' => $data['order']->id, 'status' => 'failed']);
+        $this->assertDatabaseHas('stripe_webhook_events', ['id' => $eventId]);
+    }
+
+    #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
+    #[\PHPUnit\Framework\Attributes\PreserveGlobalState(false)]
+    public function test_cancelled_webhook_persists_supported_terminal_status_atomically(): void
+    {
+        Mail::fake();
+        $intentId = 'pi_cancelled_'.uniqid();
+        $eventId = 'evt_cancelled_'.uniqid();
+        $data = $this->createOrderWithPayment($intentId);
+        $this->mockStripeEvent($eventId, 'payment_intent.canceled', $intentId);
+
+        $this->postWebhook($eventId, 'payment_intent.canceled', $intentId)->assertOk();
+
+        $this->assertDatabaseHas('order_payments', ['id' => $data['payment']->id, 'payment_status' => 'cancelled']);
+        $this->assertDatabaseHas('orders', ['id' => $data['order']->id, 'status' => 'cancelled']);
+        $this->assertDatabaseHas('stripe_webhook_events', ['id' => $eventId]);
+    }
+
+    #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
+    #[\PHPUnit\Framework\Attributes\PreserveGlobalState(false)]
+    public function test_missing_payment_rolls_back_webhook_receipt_for_safe_retry(): void
+    {
+        $intentId = 'pi_missing_'.uniqid();
+        $eventId = 'evt_missing_'.uniqid();
+        $this->mockStripeEvent($eventId, 'payment_intent.succeeded', $intentId);
+
+        $this->postWebhook($eventId, 'payment_intent.succeeded', $intentId)->assertNotFound();
+
+        $this->assertDatabaseMissing('stripe_webhook_events', ['id' => $eventId]);
+    }
 }

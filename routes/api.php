@@ -228,6 +228,7 @@ Route::middleware(['auth:api', 'creator'])->prefix('creator')->group(function ()
 Route::middleware(['auth:api', 'throttle:30,1'])->group(function () {
     Route::post('/create-checkout-session', [StripeController::class, 'createCheckoutSession']);
     Route::post('/confirm-payment', [StripeController::class, 'confirmPayment']);
+    Route::post('/stripe/initialize-payment', [StripeController::class, 'initializePayment']);
     Route::post('/stripe/create-order', [StripeController::class, 'createOrder']);
     Route::get('/order/thankyou', [StripeController::class, 'getOrderByPaymentIntent']);
 });

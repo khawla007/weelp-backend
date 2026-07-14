@@ -2,18 +2,25 @@
 
 namespace App\Http\Controllers;
 
+use App\Contracts\StripePaymentIntentGateway;
 use App\Mail\AdminNewOrderMail;
 use App\Mail\CustomerCancelledOrderMail;
 use App\Mail\CustomerFailedOrderMail;
 use App\Mail\CustomerProcessingOrderMail;
 use App\Mail\CustomerRefundedOrderMail;
+use App\Models\Activity;
 use App\Models\Commission;
+use App\Models\Itinerary;
 use App\Models\Notification;
 use App\Models\Order;
 use App\Models\OrderPayment;
+use App\Models\Package;
+use App\Models\Transfer;
 use App\Models\User;
 use App\Services\ActivityDiscountService;
+use App\Services\CheckoutQuoteService;
 use App\Services\PackagePricingService;
+use DomainException;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -24,384 +31,333 @@ use Stripe\Stripe;
 
 class StripeController extends Controller
 {
-    public function createOrder(Request $request)
-    {
-        $data = $request->validate([
-            'order_type' => 'required|in:activity,package,itinerary,transfer',
-            'orderable_id' => 'required|integer',
-            'travel_date' => 'required|date',
-            'preferred_time' => 'required',
-            'number_of_adults' => 'required|integer',
-            'number_of_children' => 'required|integer',
-            'special_requirements' => 'nullable|string|max:5000',
-            'customer_email' => 'required|email',
-            'currency' => 'required|string|max:8',
-            'payment_intent_id' => 'required|string|max:255',
-            'emergency_contact.name' => 'required|string|max:200',
-            'emergency_contact.phone' => 'required|string|max:32',
-            'emergency_contact.relationship' => 'required|string|max:100',
-            'addons' => 'nullable|array',
-            'addons.*.addon_id' => 'required_with:addons|integer',
-            'addons.*.addon_name' => 'required_with:addons|string|max:200',
-            'addons.*.price' => 'required_with:addons|numeric',
-            'base_amount' => 'nullable|numeric',
-            'creator_id' => 'nullable|integer',
-            'addons_amount' => 'nullable|numeric',
-            'bag_count' => 'nullable|integer|min:0',
-            'waiting_minutes' => 'nullable|integer|min:0',
-            'variation_id' => 'nullable|integer',
-        ]);
+    public function initializePayment(
+        Request $request,
+        CheckoutQuoteService $quotes,
+        StripePaymentIntentGateway $stripe,
+    ) {
+        $selection = $this->validateSelection($request);
 
-        $userId = $request->user()->id;
-
-        $orderableMap = [
-            'activity' => \App\Models\Activity::class,
-            'package' => \App\Models\Package::class,
-            'itinerary' => \App\Models\Itinerary::class,
-            'transfer' => \App\Models\Transfer::class,
-        ];
-        $orderableClass = $orderableMap[$data['order_type']];
-        $orderable = $orderableClass::find($data['orderable_id']);
-        if (! $orderable) {
+        try {
+            $quote = $quotes->quote($selection);
+            $selectionHash = $this->selectionHash($selection);
+            $intent = $stripe->create(
+                $this->toSmallestUnit($quote['amount'], $quote['currency']),
+                strtolower($quote['currency']),
+                [
+                    'user_id' => (string) $request->user()->id,
+                    'selection_hash' => $selectionHash,
+                ],
+            );
+        } catch (DomainException $e) {
+            return $this->quoteError($e);
+        } catch (\Throwable) {
             return response()->json([
                 'success' => false,
-                'message' => 'The selected item is no longer available.',
-            ], 404);
-        }
-
-        $addonsAmount = collect($data['addons'] ?? [])->sum('price');
-        $totalAmount = 0.0;
-
-        if ($orderable instanceof \App\Models\Activity) {
-            $adults = (int) $data['number_of_adults'];
-            $children = (int) $data['number_of_children'];
-            $headcount = $adults + $children;
-
-            if ($headcount === 0) {
-                return response()->json([
-                    'error' => 'invalid_headcount',
-                    'message' => 'At least one adult or child is required.',
-                ], 422);
-            }
-
-            // Require explicit base_amount so addon-inclusive `amount` can't bypass the check.
-            if (! array_key_exists('base_amount', $data) || $data['base_amount'] === null) {
-                return response()->json([
-                    'error' => 'base_amount_required',
-                    'message' => 'base_amount is required for activity orders.',
-                ], 422);
-            }
-
-            // Eager-load EB/LM relations to avoid N+1 queries in service.
-            $orderable->loadMissing(['pricing', 'groupDiscounts', 'earlyBirdDiscount', 'lastMinuteDiscount']);
-
-            $submittedBaseAmount = (float) $data['base_amount'];
-
-            // Re-validate: fetch expected price from service, using travel_date for EB/LM recompute.
-            try {
-                $service = app(ActivityDiscountService::class);
-                $travelDate = ! empty($data['travel_date'])
-                    ? \Carbon\CarbonImmutable::parse($data['travel_date'])
-                    : null;
-                $quote = $service->quote($orderable, $headcount, $travelDate);
-                $expectedBaseAmount = (float) $quote['final_amount'];
-            } catch (\RuntimeException $e) {
-                return response()->json([
-                    'error' => 'activity_pricing_missing',
-                    'message' => 'Activity pricing is not available.',
-                ], 422);
-            }
-
-            // Tolerance: 0.01 (one cent)
-            $tolerance = 0.01;
-            if (abs($submittedBaseAmount - $expectedBaseAmount) > $tolerance) {
-                return response()->json([
-                    'error' => 'activity_price_mismatch',
-                    'expected' => $expectedBaseAmount,
-                    'submitted' => $submittedBaseAmount,
-                ], 422);
-            }
-
-            // TODO: addon prices are still client-supplied; replace with server-side
-            // addon catalog lookup once an addon price service exists.
-            $totalAmount = round($expectedBaseAmount + $addonsAmount, 2);
-            $data['base_amount'] = $expectedBaseAmount;
-            $data['addons_amount'] = round($addonsAmount, 2);
-        }
-
-        // Server-side enforcement: itineraries charge priceForGuests(adults, children),
-        // ignoring any client-supplied amount. Prevents tampering.
-        if ($orderable instanceof \App\Models\Itinerary) {
-            $orderable->loadMissing(
-                'schedules.activities.activity.pricing',
-                'schedules.transfers.transfer.route',
-                'schedules.transfers.transfer.pricingAvailability',
-                'schedules.transfers.transfer.schedule',
-            );
-
-            $bookingAdults = (int) $data['number_of_adults'];
-            $bookingChildren = (int) $data['number_of_children'];
-
-            // Cap booking guest count by smallest transfer capacity in the itinerary.
-            // Adults + children only; infants excluded.
-            $maxGuests = $orderable->max_guests;
-            if ($maxGuests !== null) {
-                $bookingGuests = $bookingAdults + $bookingChildren;
-                if ($bookingGuests > $maxGuests) {
-                    return response()->json([
-                        'error' => 'guests_exceed_transfer_capacity',
-                        'max_guests' => $maxGuests,
-                        'submitted_guests' => $bookingGuests,
-                    ], 422);
-                }
-            }
-
-            $totalAmount = round($orderable->priceForGuests($bookingAdults, $bookingChildren) + $addonsAmount, 2);
-            $data['base_amount'] = $orderable->priceForGuests($bookingAdults, $bookingChildren);
-            $data['addons_amount'] = round($addonsAmount, 2);
-        }
-
-        // Server-side enforcement: packages charge the resolved variation via
-        // PackagePricingService (sale_price when discounted, else regular_price).
-        // Client-supplied amount is ignored.
-        $packageVariationId = null;
-        if ($orderable instanceof \App\Models\Package) {
-            try {
-                $pricingService = app(PackagePricingService::class);
-                $variationModel = $pricingService->resolveVariationFor(
-                    $orderable,
-                    isset($data['variation_id']) ? (int) $data['variation_id'] : null,
-                );
-                $packageVariationId = $variationModel->id;
-
-                $packageBase = $pricingService->priceFor(
-                    $orderable,
-                    $packageVariationId,
-                    \Carbon\CarbonImmutable::parse($data['travel_date']),
-                    (int) $data['number_of_adults'],
-                    (int) $data['number_of_children'],
-                    0,
-                );
-            } catch (\DomainException $e) {
-                return response()->json([
-                    'error' => $e->getMessage(),
-                    'message' => 'Package pricing rejected the booking.',
-                ], 422);
-            }
-
-            $totalAmount = round($packageBase + $addonsAmount, 2);
-            $data['base_amount'] = $packageBase;
-            $data['addons_amount'] = round($addonsAmount, 2);
-        }
-
-        // Server-side enforcement: transfers recompute final amount from DB rates ×
-        // posted bag/minute quantities. Client-supplied amount is not trusted.
-        $transferQuantities = null;
-        if ($orderable instanceof \App\Models\Transfer) {
-            $orderable->loadMissing('pricingAvailability', 'route');
-
-            $bagCount = (int) ($data['bag_count'] ?? 0);
-            $waitingMinutes = (int) ($data['waiting_minutes'] ?? 0);
-            $headcount = max(1, (int) $data['number_of_adults'] + (int) $data['number_of_children']);
-
-            $routePrice = $orderable->computeRoutePrice($headcount);
-            $luggageRate = $orderable->luggagePerBagRate();
-            $waitingRate = $orderable->waitingPerMinuteRate();
-
-            $luggageAmount = round($luggageRate * $bagCount, 2);
-            $waitingAmount = round($waitingRate * $waitingMinutes, 2);
-            $expected = round($routePrice + $luggageAmount + $waitingAmount, 2);
-
-            $totalAmount = $expected;
-            // Keep `snapshot.base_amount` consistent with the server-recomputed total
-            // so the order record never carries a tampered client value.
-            $data['base_amount'] = $routePrice;
-            $data['addons_amount'] = round($luggageAmount + $waitingAmount, 2);
-
-            $transferQuantities = [
-                'bag_count' => $bagCount,
-                'waiting_minutes' => $waitingMinutes,
-                'headcount' => $headcount,
-                'price_type' => $orderable->pricingPriceType(),
-                'luggage_per_bag_rate' => $luggageRate,
-                'waiting_per_minute_rate' => $waitingRate,
-                'luggage_amount' => $luggageAmount,
-                'waiting_amount' => $waitingAmount,
-                'base_amount' => $routePrice,
-            ];
-        }
-
-        if ($totalAmount <= 0) {
-            return response()->json([
-                'error' => 'amount_unresolved',
-                'message' => 'Server could not compute order amount.',
-            ], 422);
-        }
-
-        // Validate creator if provided
-        $creatorId = null;
-        if (! empty($data['creator_id'])) {
-            $creator = User::where('id', $data['creator_id'])->where('is_creator', true)->first();
-            if ($creator) {
-                $creatorId = $creator->id;
-            }
-        }
-
-        // ✅ Create order
-        $order = Order::create([
-            'user_id' => $userId,
-            'creator_id' => $creatorId,
-            'orderable_type' => $orderableClass,
-            'orderable_id' => $data['orderable_id'],
-            'variation_id' => $packageVariationId,
-            'travel_date' => $data['travel_date'],
-            'preferred_time' => $data['preferred_time'],
-            'number_of_adults' => $data['number_of_adults'],
-            'number_of_children' => $data['number_of_children'],
-            'special_requirements' => $data['special_requirements'],
-        ]);
-
-        // ✅ Save emergency contact
-        $order->emergencyContact()->create([
-            'contact_name' => $data['emergency_contact']['name'],
-            'contact_phone' => $data['emergency_contact']['phone'],
-            'relationship' => $data['emergency_contact']['relationship'],
-        ]);
-
-        // ✅ Snapshot (optional but useful)
-        if ($orderable instanceof \App\Models\Activity) {
-            $snapshot = [
-                'name' => $orderable->name,
-                'slug' => $orderable->slug,
-                'item_type' => $orderable->item_type,
-                'location' => $orderable->locations->map(function ($loc) {
-                    return [
-                        'location_type' => $loc->location_type,
-                        'city' => $loc->city?->name,
-                        'state' => $loc->city?->state?->name,
-                        'country' => $loc->city?->state?->country?->name,
-                    ];
-                }),
-                'pricing' => $orderable->pricings,
-                'coupons_applied' => $order->applied_coupons ?? [],
-                'media' => $orderable->mediaGallery->map(function ($mg) {
-                    return [
-                        'id' => $mg->media?->id,
-                        'name' => $mg->media?->name,
-                        'url' => $mg->media?->url,
-                        'alt' => $mg->media?->alt_text,
-                    ];
-                }),
-            ];
-        } elseif ($orderable instanceof \App\Models\Package || $orderable instanceof \App\Models\Itinerary) {
-            $snapshot = [
-                'name' => $orderable->name,
-                'slug' => $orderable->slug,
-                'locations' => $orderable->locations->map(function ($loc) {
-                    return [
-                        'city' => $loc->city?->name,
-                        'state' => $loc->city?->state?->name,
-                        'country' => $loc->city?->state?->country?->name,
-                    ];
-                }),
-                'schedules' => $orderable->schedules,
-                'pricing' => $orderable->basePricing->variations ?? [],
-                'coupons_applied' => $order->applied_coupons ?? [],
-                'media' => $orderable->mediaGallery->map(function ($mg) {
-                    return [
-                        'url' => $mg->media?->url,
-                        'alt' => $mg->media?->alt_text,
-                    ];
-                }),
-            ];
-
-            if ($orderable instanceof \App\Models\Itinerary) {
-                $snapshot['max_guests'] = $orderable->max_guests;
-
-                // Forensic: capture per-transfer extras explicitly so future
-                // schema changes to schedules/$with don't silently lose them.
-                $snapshot['transfers_extras'] = $orderable->schedules
-                    ->flatMap(fn ($schedule) => $schedule->transfers->map(fn ($row) => [
-                        'itinerary_transfer_id' => $row->id,
-                        'transfer_id' => $row->transfer_id,
-                        'pax' => $row->pax,
-                        'bag_count' => (int) ($row->bag_count ?? 0),
-                        'waiting_minutes' => (int) ($row->waiting_minutes ?? 0),
-                    ]))
-                    ->values()
-                    ->all();
-            }
-        } elseif ($orderable instanceof \App\Models\Transfer) {
-            $orderable->loadMissing('vendorRoutes.route.origin', 'vendorRoutes.route.destination', 'pricingAvailability', 'mediaGallery.media');
-            $route = $orderable->vendorRoutes?->route;
-            $snapshot = [
-                'name' => $orderable->name,
-                'slug' => $orderable->slug,
-                'item_type' => 'transfer',
-                'transfer_type' => $orderable->transfer_type,
-                'vehicle_type' => $orderable->vendorRoutes?->vehicle_type,
-                'inclusion' => $orderable->vendorRoutes?->inclusion,
-                'route_name' => $route?->name,
-                'origin_name' => $route?->origin?->name,
-                'destination_name' => $route?->destination?->name,
-                'pricing' => $orderable->pricingAvailability,
-                'coupons_applied' => $order->applied_coupons ?? [],
-                'media' => $orderable->mediaGallery->map(function ($mg) {
-                    return [
-                        'url' => $mg->media?->url,
-                        'alt' => $mg->media?->alt_text,
-                    ];
-                }),
-                // Capture per-unit semantics so the snapshot remains forensically clear
-                // even after column meanings drift in future schema work.
-                'transfer_quantities' => $transferQuantities,
-            ];
-        }
-
-        if (isset($snapshot)) {
-            $snapshot['addons'] = $data['addons'] ?? [];
-            $snapshot['base_amount'] = $data['base_amount'] ?? $totalAmount;
-            $snapshot['addons_amount'] = $data['addons_amount'] ?? 0;
-            $order->item_snapshot_json = json_encode(collect($snapshot)->toArray());
-            $order->save();
-        }
-
-        // ✅ Save payment info (based on PaymentIntent, not session)
-        $order->payment()->create([
-            'payment_status' => 'pending',
-            'payment_method' => 'credit_card',
-            'amount' => $totalAmount,
-            'is_custom_amount' => false,
-            'custom_amount' => null,
-            'total_amount' => $totalAmount,
-            'currency' => $data['currency'],
-            'payment_intent_id' => $data['payment_intent_id'],
-        ]);
-
-        // Create affiliate commission if order is from a creator referral
-        if ($creatorId) {
-            $commissionRate = config('services.creator.commission_rate', 10.00);
-            Commission::create([
-                'creator_id' => $creatorId,
-                'order_id' => $order->id,
-                'commission_rate' => $commissionRate,
-                'commission_amount' => round($totalAmount * ($commissionRate / 100), 2),
-                'status' => 'pending',
-            ]);
-
-            Notification::create([
-                'user_id' => $creatorId,
-                'type' => 'new_booking',
-                'title' => 'New Booking',
-                'message' => "Someone booked your itinerary! Order total: {$data['currency']} {$totalAmount}",
-                'data' => ['order_id' => $order->id],
-            ]);
+                'message' => 'Payment could not be initialized.',
+            ], 500);
         }
 
         return response()->json([
             'success' => true,
-            'order_id' => $order->id,
+            'clientSecret' => $intent->client_secret,
+            'paymentIntent' => $intent->id,
+            'quote' => $this->publicQuote($quote),
         ]);
+    }
+
+    public function createOrder(
+        Request $request,
+        CheckoutQuoteService $quotes,
+        StripePaymentIntentGateway $stripe,
+    ) {
+        $selection = $this->validateSelection($request);
+        $data = $request->validate([
+            'payment_intent_id' => ['required', 'string', 'max:255'],
+            'special_requirements' => ['nullable', 'string', 'max:5000'],
+            'creator_id' => ['nullable', 'integer'],
+            'emergency_contact.name' => ['required', 'string', 'max:200'],
+            'emergency_contact.phone' => ['required', 'string', 'max:32'],
+            'emergency_contact.relationship' => ['required', 'string', 'max:100'],
+        ]);
+        $user = $request->user();
+        $selectionHash = $this->selectionHash($selection);
+        $paymentIntentId = $data['payment_intent_id'];
+
+        $existing = OrderPayment::with('order')->where('payment_intent_id', $paymentIntentId)->first();
+        if ($existing) {
+            return $this->idempotentOrderResponse($existing, $user->id, $selectionHash);
+        }
+
+        try {
+            $quote = $quotes->quote($selection);
+            $intent = $stripe->retrieve($paymentIntentId);
+        } catch (DomainException $e) {
+            return $this->quoteError($e);
+        } catch (\Throwable) {
+            return response()->json([
+                'success' => false,
+                'error' => 'payment_intent_unavailable',
+                'message' => 'Payment details could not be verified.',
+            ], 422);
+        }
+
+        if (! $this->intentMatches($intent, $quote, $user->id, $selectionHash)) {
+            return response()->json([
+                'success' => false,
+                'error' => 'payment_intent_mismatch',
+                'message' => 'Payment details do not match this booking.',
+            ], 422);
+        }
+
+        $class = $this->orderableClass($selection['order_type']);
+        $creatorId = User::query()
+            ->whereKey($data['creator_id'] ?? null)
+            ->where('is_creator', true)
+            ->value('id');
+
+        try {
+            $order = DB::transaction(function () use ($selection, $selectionHash, $quote, $data, $user, $class, $creatorId, $paymentIntentId): Order {
+                $orderable = $class::findOrFail($selection['orderable_id']);
+                $snapshot = $this->orderSnapshot($orderable, $selection, $quote, $selectionHash);
+                $order = Order::create([
+                    'user_id' => $user->id,
+                    'creator_id' => $creatorId,
+                    'orderable_type' => $class,
+                    'orderable_id' => $selection['orderable_id'],
+                    'variation_id' => $quote['variation_id'],
+                    'travel_date' => $selection['travel_date'],
+                    'preferred_time' => $selection['preferred_time'],
+                    'number_of_adults' => $selection['number_of_adults'],
+                    'number_of_children' => $selection['number_of_children'],
+                    'special_requirements' => $data['special_requirements'] ?? null,
+                    'item_snapshot_json' => json_encode($snapshot, JSON_THROW_ON_ERROR),
+                ]);
+                $order->emergencyContact()->create([
+                    'contact_name' => $data['emergency_contact']['name'],
+                    'contact_phone' => $data['emergency_contact']['phone'],
+                    'relationship' => $data['emergency_contact']['relationship'],
+                ]);
+                $order->payment()->create([
+                    'payment_status' => 'pending',
+                    'payment_method' => 'credit_card',
+                    'amount' => $quote['amount'],
+                    'is_custom_amount' => false,
+                    'custom_amount' => null,
+                    'total_amount' => $quote['amount'],
+                    'currency' => $quote['currency'],
+                    'payment_intent_id' => $paymentIntentId,
+                ]);
+
+                if ($creatorId) {
+                    $rate = (float) config('services.creator.commission_rate', 10.00);
+                    Commission::create([
+                        'creator_id' => $creatorId,
+                        'order_id' => $order->id,
+                        'commission_rate' => $rate,
+                        'commission_amount' => round($quote['amount'] * ($rate / 100), 2),
+                        'status' => 'pending',
+                    ]);
+                    Notification::create([
+                        'user_id' => $creatorId,
+                        'type' => 'new_booking',
+                        'title' => 'New Booking',
+                        'message' => 'A new booking was placed.',
+                        'data' => ['order_id' => $order->id],
+                    ]);
+                }
+
+                return $order;
+            }, 3);
+        } catch (QueryException) {
+            $existing = OrderPayment::with('order')->where('payment_intent_id', $paymentIntentId)->first();
+            if ($existing) {
+                return $this->idempotentOrderResponse($existing, $user->id, $selectionHash);
+            }
+
+            return response()->json([
+                'success' => false,
+                'error' => 'order_creation_failed',
+                'message' => 'The order could not be created.',
+            ], 500);
+        } catch (\Throwable) {
+            return response()->json([
+                'success' => false,
+                'error' => 'order_creation_failed',
+                'message' => 'The order could not be created.',
+            ], 500);
+        }
+
+        return response()->json(['success' => true, 'order_id' => $order->id]);
+    }
+
+    private function validateSelection(Request $request): array
+    {
+        return $request->validate([
+            'order_type' => ['required', 'in:activity,package,itinerary,transfer'],
+            'orderable_id' => ['required', 'integer'],
+            'travel_date' => ['required', 'date', 'after_or_equal:today'],
+            'preferred_time' => ['required', 'string', 'max:100'],
+            'number_of_adults' => ['required', 'integer', 'min:0'],
+            'number_of_children' => ['required', 'integer', 'min:0'],
+            'addon_ids' => ['sometimes', 'array'],
+            'addon_ids.*' => ['integer'],
+            'variation_id' => ['nullable', 'integer'],
+            'bag_count' => ['nullable', 'integer', 'min:0'],
+            'waiting_minutes' => ['nullable', 'integer', 'min:0'],
+        ]);
+    }
+
+    private function publicQuote(array $quote): array
+    {
+        return [
+            'amount' => $quote['amount'],
+            'currency' => $quote['currency'],
+            'base_amount' => $quote['base_amount'],
+            'addons' => $quote['addons'],
+            'addons_amount' => $quote['addons_amount'],
+        ];
+    }
+
+    private function selectionHash(array $selection): string
+    {
+        if (isset($selection['addon_ids'])) {
+            $selection['addon_ids'] = array_values(array_unique(array_map('intval', $selection['addon_ids'])));
+            sort($selection['addon_ids']);
+        }
+
+        return hash('sha256', json_encode($selection, JSON_THROW_ON_ERROR));
+    }
+
+    private function orderableClass(string $orderType): string
+    {
+        return [
+            'activity' => \App\Models\Activity::class,
+            'package' => \App\Models\Package::class,
+            'itinerary' => \App\Models\Itinerary::class,
+            'transfer' => \App\Models\Transfer::class,
+        ][$orderType];
+    }
+
+    private function orderSnapshot(object $orderable, array $selection, array $quote, string $selectionHash): array
+    {
+        $snapshot = [
+            'name' => $orderable->name,
+            'slug' => $orderable->slug,
+            'item_type' => $selection['order_type'],
+            'addons' => $quote['addons'],
+            'base_amount' => $quote['base_amount'],
+            'addons_amount' => $quote['addons_amount'],
+            'checkout_selection_hash' => $selectionHash,
+        ];
+
+        if ($orderable instanceof Activity || $orderable instanceof Package || $orderable instanceof Itinerary) {
+            $orderable->loadMissing(['locations.city.state.country', 'mediaGallery.media']);
+            $snapshot['location'] = $orderable->locations->map(fn ($location) => [
+                'location_type' => $location->location_type ?? null,
+                'city' => $location->city?->name,
+                'state' => $location->city?->state?->name,
+                'country' => $location->city?->state?->country?->name,
+            ])->values()->all();
+            $snapshot['media'] = $orderable->mediaGallery->map(fn ($gallery) => [
+                'id' => $gallery->media?->id,
+                'name' => $gallery->media?->name,
+                'url' => $gallery->media?->url,
+                'alt' => $gallery->media?->alt_text,
+            ])->values()->all();
+        }
+
+        if ($orderable instanceof Transfer) {
+            $orderable->loadMissing(['route.origin', 'route.destination', 'vendorRoutes', 'mediaGallery.media']);
+            $snapshot += [
+                'transfer_type' => $orderable->transfer_type,
+                'vehicle_type' => $orderable->vendorRoutes?->vehicle_type,
+                'inclusion' => $orderable->vendorRoutes?->inclusion,
+                'route_name' => $orderable->route?->name,
+                'origin_name' => $orderable->route?->origin?->name,
+                'destination_name' => $orderable->route?->destination?->name,
+                'transfer_quantities' => [
+                    'bag_count' => (int) ($selection['bag_count'] ?? 0),
+                    'waiting_minutes' => (int) ($selection['waiting_minutes'] ?? 0),
+                ],
+                'media' => $orderable->mediaGallery->map(fn ($gallery) => [
+                    'id' => $gallery->media?->id,
+                    'name' => $gallery->media?->name,
+                    'url' => $gallery->media?->url,
+                    'alt' => $gallery->media?->alt_text,
+                ])->values()->all(),
+            ];
+        }
+
+        return $snapshot;
+    }
+
+    private function intentMatches(object $intent, array $quote, int $userId, string $selectionHash): bool
+    {
+        $metadata = $intent->metadata ?? null;
+        $metadataUser = is_array($metadata) ? ($metadata['user_id'] ?? null) : ($metadata->user_id ?? null);
+        $metadataHash = is_array($metadata) ? ($metadata['selection_hash'] ?? null) : ($metadata->selection_hash ?? null);
+        $allowedStatuses = ['requires_payment_method', 'requires_confirmation', 'requires_action', 'processing', 'succeeded'];
+
+        return (int) ($intent->amount ?? -1) === $this->toSmallestUnit($quote['amount'], $quote['currency'])
+            && strtolower((string) ($intent->currency ?? '')) === strtolower($quote['currency'])
+            && (string) $metadataUser === (string) $userId
+            && hash_equals($selectionHash, (string) $metadataHash)
+            && in_array((string) ($intent->status ?? ''), $allowedStatuses, true);
+    }
+
+    private function toSmallestUnit(float $amount, string $currency): int
+    {
+        $zeroDecimalCurrencies = [
+            'BIF', 'CLP', 'DJF', 'GNF', 'JPY', 'KMF', 'KRW', 'MGA',
+            'PYG', 'RWF', 'UGX', 'VND', 'VUV', 'XAF', 'XOF', 'XPF',
+        ];
+        $multiplier = in_array(strtoupper($currency), $zeroDecimalCurrencies, true) ? 1 : 100;
+
+        return (int) round($amount * $multiplier);
+    }
+
+    private function stripeTestSecret(): string
+    {
+        $secret = (string) config('services.stripe.secret');
+        if (! str_starts_with($secret, 'sk_test_')) {
+            throw new \RuntimeException('Stripe test mode is required for checkout operations.');
+        }
+
+        return $secret;
+    }
+
+    private function idempotentOrderResponse(OrderPayment $payment, int $userId, string $selectionHash)
+    {
+        $snapshot = json_decode((string) $payment->order?->item_snapshot_json, true);
+        $storedHash = is_array($snapshot) ? ($snapshot['checkout_selection_hash'] ?? null) : null;
+        if (! $payment->order || $payment->order->user_id !== $userId || ! is_string($storedHash) || ! hash_equals($storedHash, $selectionHash)) {
+            return response()->json([
+                'success' => false,
+                'error' => 'payment_intent_mismatch',
+                'message' => 'Payment details do not match this booking.',
+            ], 422);
+        }
+
+        return response()->json([
+            'success' => true,
+            'order_id' => $payment->order->id,
+            'idempotent' => true,
+        ]);
+    }
+
+    private function quoteError(DomainException $exception)
+    {
+        $code = $exception->getMessage();
+        $status = $code === 'item_unavailable' ? 404 : 422;
+
+        return response()->json([
+            'success' => false,
+            'error' => $code,
+            'message' => $status === 404
+                ? 'The selected item is no longer available.'
+                : 'The booking selection could not be quoted.',
+        ], $status);
     }
 
     public function handleWebhook(Request $request)
@@ -426,110 +382,86 @@ class StripeController extends Controller
 
         $eventId = $event->id ?? null;
 
-        if ($eventId) {
-            if (DB::table('stripe_webhook_events')->where('id', $eventId)->exists()) {
+        if ($eventId && DB::table('stripe_webhook_events')->where('id', $eventId)->exists()) {
+            return response()->json(['already_processed' => true], 200);
+        }
+
+        try {
+            DB::transaction(function () use ($event, $eventId): void {
+                if ($eventId) {
+                    DB::table('stripe_webhook_events')->insert([
+                        'id' => $eventId,
+                        'type' => $event->type,
+                        'processed_at' => now(),
+                    ]);
+                }
+
+                $this->applyStripeEvent($event);
+            });
+        } catch (QueryException $e) {
+            if ($e->getCode() === '23000' && $eventId && DB::table('stripe_webhook_events')->where('id', $eventId)->exists()) {
                 return response()->json(['already_processed' => true], 200);
             }
 
-            try {
-                DB::table('stripe_webhook_events')->insert([
-                    'id' => $eventId,
-                    'type' => $event->type,
-                    'processed_at' => now(),
-                ]);
-            } catch (QueryException $e) {
-                if ($e->getCode() === '23000') {
-                    return response()->json(['already_processed' => true], 200);
-                }
-                throw $e;
-            }
-        }
-
-        if ($event->type == 'payment_intent.succeeded') {
-            $intent_id = $event->data->object->id;
-
-            $payment = OrderPayment::where('payment_intent_id', $intent_id)->first();
-
-            if (! $payment) {
+            throw $e;
+        } catch (\RuntimeException $e) {
+            if ($e->getMessage() === 'payment_record_not_found') {
                 return response()->json(['error' => 'Payment record not found'], 404);
             }
 
-            // Update payment status
-            $payment->update([
-                'payment_status' => 'paid',
-            ]);
-
-            $order = Order::with(['user', 'emergencyContact', 'payment'])->find($payment->order_id);
-
-            if ($payment->fresh()->payment_status === 'paid' && $order) {
-
-                $order->update([
-                    'status' => 'processing',
-                ]);
-
-                // Send customer mail
-                Mail::to($order->user->email)->send(new CustomerProcessingOrderMail($order));
-                // Send admin mail
-                Mail::to(config('mail.admin_address', 'khawla@fanaticcoders.com'))->send(new AdminNewOrderMail($order));
-
-            }
-        }
-
-        // ❌ Payment failed
-        elseif ($event->type == 'payment_intent.payment_failed') {
-            $intent_id = $event->data->object->id;
-
-            $payment = OrderPayment::where('payment_intent_id', $intent_id)->first();
-            if ($payment) {
-                $payment->update(['payment_status' => 'failed']);
-                $order = Order::with(['user'])->find($payment->order_id);
-
-                if ($order) {
-                    $order->update(['status' => 'failed']);
-
-                    // Customer mail
-                    Mail::to($order->user->email)->send(new CustomerFailedOrderMail($order));
-                }
-            }
-        }
-
-        // 💸 Refunded
-        elseif ($event->type == 'charge.refunded') {
-            $intent_id = $event->data->object->payment_intent;
-
-            $payment = OrderPayment::where('payment_intent_id', $intent_id)->first();
-            if ($payment) {
-                $payment->update(['payment_status' => 'refunded']);
-                $order = Order::with(['user'])->find($payment->order_id);
-
-                if ($order) {
-                    $order->update(['status' => 'refunded']);
-
-                    // Customer mail
-                    Mail::to($order->user->email)->send(new CustomerRefundedOrderMail($order));
-                }
-            }
-        }
-
-        // ❌ Payment canceled
-        elseif ($event->type == 'payment_intent.canceled') {
-            $intent_id = $event->data->object->id;
-
-            $payment = OrderPayment::where('payment_intent_id', $intent_id)->first();
-            if ($payment) {
-                $payment->update(['payment_status' => 'cancelled']);
-                $order = Order::with(['user'])->find($payment->order_id);
-
-                if ($order) {
-                    $order->update(['status' => 'cancelled']);
-
-                    // Customer mail
-                    Mail::to($order->user->email)->send(new CustomerCancelledOrderMail($order));
-                }
-            }
+            throw $e;
         }
 
         return response('Webhook Handled', 200);
+    }
+
+    private function applyStripeEvent(object $event): void
+    {
+        if (! in_array($event->type, ['payment_intent.succeeded', 'payment_intent.payment_failed', 'charge.refunded', 'payment_intent.canceled'], true)) {
+            return;
+        }
+
+        $intentId = $event->type === 'charge.refunded'
+            ? $event->data->object->payment_intent
+            : $event->data->object->id;
+        $payment = OrderPayment::where('payment_intent_id', $intentId)->first();
+        if (! $payment) {
+            throw new \RuntimeException('payment_record_not_found');
+        }
+
+        $order = Order::with(['user', 'emergencyContact', 'payment'])->find($payment->order_id);
+        if (! $order) {
+            throw new \RuntimeException('payment_record_not_found');
+        }
+
+        if ($event->type === 'payment_intent.succeeded') {
+            $payment->update(['payment_status' => 'paid']);
+            $order->update(['status' => 'processing']);
+            Mail::to($order->user->email)->send(new CustomerProcessingOrderMail($order));
+            Mail::to(config('mail.admin_address', 'khawla@fanaticcoders.com'))->send(new AdminNewOrderMail($order));
+
+            return;
+        }
+
+        if ($event->type === 'payment_intent.payment_failed') {
+            $payment->update(['payment_status' => 'failed']);
+            $order->update(['status' => 'failed']);
+            Mail::to($order->user->email)->send(new CustomerFailedOrderMail($order));
+
+            return;
+        }
+
+        if ($event->type === 'charge.refunded') {
+            $payment->update(['payment_status' => 'refunded']);
+            $order->update(['status' => 'refunded']);
+            Mail::to($order->user->email)->send(new CustomerRefundedOrderMail($order));
+
+            return;
+        }
+
+        $payment->update(['payment_status' => 'cancelled']);
+        $order->update(['status' => 'cancelled']);
+        Mail::to($order->user->email)->send(new CustomerCancelledOrderMail($order));
     }
 
     // thanku page get order details api
@@ -802,8 +734,7 @@ class StripeController extends Controller
         }
 
         // ✅ Setup Stripe
-        Stripe::setApiKey(config('services.stripe.secret'));
-        // \Stripe\Stripe::setApiKey(config('services.stripe.secret'));
+        Stripe::setApiKey($this->stripeTestSecret());
 
         $checkoutSession = StripeSession::create([
             'payment_method_types' => ['card'],
@@ -843,23 +774,25 @@ class StripeController extends Controller
 
     public function confirmPayment(Request $request)
     {
-        Stripe::setApiKey(config('services.stripe.secret'));
-        // \Stripe\Stripe::setApiKey(config('services.stripe.secret'));
+        $data = $request->validate([
+            'session_id' => ['required', 'string', 'max:255'],
+        ]);
+        $sessionId = $data['session_id'];
+        $payment = OrderPayment::with(['order.emergencyContact', 'order.payment'])
+            ->where('stripe_session_id', $sessionId)
+            ->whereHas('order', fn ($query) => $query->where('user_id', $request->user()->id))
+            ->first();
 
-        $sessionId = $request->input('session_id');
+        if (! $payment || ! $payment->order) {
+            return response()->json(['error' => 'Payment confirmation not found'], 404);
+        }
 
         try {
+            Stripe::setApiKey($this->stripeTestSecret());
             $session = StripeSession::retrieve($sessionId);
 
             if ($session->payment_status !== 'paid') {
                 return response()->json(['error' => 'Payment not completed'], 400);
-            }
-
-            // Find the order_payment record using session_id
-            $payment = OrderPayment::where('stripe_session_id', $sessionId)->first();
-
-            if (! $payment) {
-                return response()->json(['error' => 'Payment record not found'], 404);
             }
 
             // Update payment status
@@ -869,7 +802,7 @@ class StripeController extends Controller
 
             // Fetch associated order
             // $order = Order::find($payment->order_id);
-            $order = Order::with(['emergencyContact', 'payment'])->find($payment->order_id);
+            $order = $payment->order;
 
             if ($payment->fresh()->payment_status === 'paid' && $order) {
                 $order->update([
@@ -929,8 +862,8 @@ class StripeController extends Controller
                 'data' => $orderDetail,
             ]);
 
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'Something went wrong: '.$e->getMessage()], 500);
+        } catch (\Throwable) {
+            return response()->json(['error' => 'Payment confirmation failed'], 500);
         }
     }
 }

@@ -2,14 +2,17 @@
 
 namespace Tests\Feature;
 
+use App\Contracts\StripePaymentIntentGateway;
 use App\Models\Package;
 use App\Models\PackageBasePricing;
 use App\Models\PackageBlackoutDate;
 use App\Models\PackagePriceVariation;
 use App\Models\User;
+use App\Services\CheckoutQuoteService;
 use App\Services\PackagePricingService;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Mockery;
 use Tests\TestCase;
 
 class StripePackagePricingTest extends TestCase
@@ -74,6 +77,25 @@ class StripePackagePricingTest extends TestCase
             ],
             'base_amount' => 500.00,
         ], $overrides);
+    }
+
+    private function allowIntent(User $user, array $payload): void
+    {
+        $selection = array_intersect_key($payload, array_flip([
+            'order_type', 'orderable_id', 'travel_date', 'preferred_time',
+            'number_of_adults', 'number_of_children', 'addon_ids', 'variation_id',
+            'bag_count', 'waiting_minutes',
+        ]));
+        $quote = app(CheckoutQuoteService::class)->quote($selection);
+        $hash = hash('sha256', json_encode($selection, JSON_THROW_ON_ERROR));
+        $gateway = Mockery::mock(StripePaymentIntentGateway::class);
+        $gateway->shouldReceive('retrieve')->once()->with($payload['payment_intent_id'])->andReturn((object) [
+            'amount' => (int) round($quote['amount'] * 100),
+            'currency' => strtolower($quote['currency']),
+            'status' => 'requires_payment_method',
+            'metadata' => (object) ['user_id' => (string) $user->id, 'selection_hash' => $hash],
+        ]);
+        $this->app->instance(StripePaymentIntentGateway::class, $gateway);
     }
 
     public function test_service_returns_first_variation_when_variation_id_null(): void
@@ -233,6 +255,7 @@ class StripePackagePricingTest extends TestCase
         $payload = $this->buildPackageOrderPayload($package, [
             'base_amount' => 100.00, // tampered — server should ignore
         ]);
+        $this->allowIntent($user, $payload);
 
         $response = $this->postJson('/api/stripe/create-order', $payload);
 
