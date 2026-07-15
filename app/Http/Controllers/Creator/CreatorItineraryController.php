@@ -499,7 +499,7 @@ class CreatorItineraryController extends Controller
                 'creator:users.id,users.name',
                 'creator.profile:id,user_id,avatar',
                 'locations:id,itinerary_id,city_id',
-                'locations.city:id,name',
+                'locations.city:id,name,slug',
                 'mediaGallery.media',
                 'basePricing.variations' => fn ($q) => $q->limit(1),
                 'schedules' => fn ($q) => $q->orderBy('day'),
