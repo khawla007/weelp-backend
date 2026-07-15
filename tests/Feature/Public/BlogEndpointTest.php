@@ -3,6 +3,7 @@
 namespace Tests\Feature\Public;
 
 use App\Models\Blog;
+use Database\Seeders\RichContentFixtureSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -44,5 +45,30 @@ class BlogEndpointTest extends TestCase
         $response = $this->getJson('/api/blogs/nonexistent-slug');
 
         $response->assertNotFound();
+    }
+
+    public function test_rich_content_fixtures_are_visible_only_when_published(): void
+    {
+        $this->seed(RichContentFixtureSeeder::class);
+
+        $response = $this->getJson('/api/blogs/'.RichContentFixtureSeeder::RICH_BLOG_SLUG)
+            ->assertOk()
+            ->assertJsonPath('slug', RichContentFixtureSeeder::RICH_BLOG_SLUG)
+            ->assertJsonPath('publish', true)
+            ->assertSee('blockquote')
+            ->assertSee('iframe')
+            ->assertSee('video');
+
+        $this->assertStringContainsString(
+            'https://example.com/travel/research/step-six-rich-content-browser-coverage',
+            str_replace('\\/', '/', $response->json('content')),
+        );
+
+        $this->getJson('/api/blogs/'.RichContentFixtureSeeder::SIMPLE_BLOG_SLUG)
+            ->assertOk()
+            ->assertJsonPath('slug', RichContentFixtureSeeder::SIMPLE_BLOG_SLUG);
+
+        $this->getJson('/api/blogs/'.RichContentFixtureSeeder::DRAFT_BLOG_SLUG)
+            ->assertNotFound();
     }
 }

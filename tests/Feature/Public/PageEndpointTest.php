@@ -3,6 +3,7 @@
 namespace Tests\Feature\Public;
 
 use App\Models\Page;
+use Database\Seeders\RichContentFixtureSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -69,5 +70,31 @@ class PageEndpointTest extends TestCase
     public function test_show_missing_page_returns_404(): void
     {
         $this->getJson('/api/pages/missing-page')->assertNotFound();
+    }
+
+    public function test_rich_content_fixtures_are_visible_only_when_published(): void
+    {
+        $this->seed(RichContentFixtureSeeder::class);
+
+        $response = $this->getJson('/api/pages/'.RichContentFixtureSeeder::RICH_PAGE_SLUG)
+            ->assertOk()
+            ->assertJsonPath('data.slug', RichContentFixtureSeeder::RICH_PAGE_SLUG)
+            ->assertJsonPath('data.status', Page::STATUS_PUBLISHED)
+            ->assertJsonPath('data.hero_button_url', '/pages/'.RichContentFixtureSeeder::SIMPLE_PAGE_SLUG)
+            ->assertSee('blockquote')
+            ->assertSee('iframe')
+            ->assertSee('video');
+
+        $this->assertStringContainsString(
+            'https://example.com/travel/research/step-six-rich-content-browser-coverage',
+            str_replace('\\/', '/', $response->json('data.content')),
+        );
+
+        $this->getJson('/api/pages/'.RichContentFixtureSeeder::SIMPLE_PAGE_SLUG)
+            ->assertOk()
+            ->assertJsonPath('data.slug', RichContentFixtureSeeder::SIMPLE_PAGE_SLUG);
+
+        $this->getJson('/api/pages/'.RichContentFixtureSeeder::DRAFT_PAGE_SLUG)
+            ->assertNotFound();
     }
 }

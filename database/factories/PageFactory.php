@@ -66,4 +66,29 @@ class PageFactory extends Factory
             'published_at' => now(),
         ]);
     }
+
+    public function richContentFixture(): static
+    {
+        return $this->state(fn (array $attributes): array => [
+            'title' => 'Rich CMS fixture',
+            'slug' => fake()->unique()->slug(),
+            'content' => json_encode([
+                'type' => 'doc',
+                'content' => [
+                    [
+                        'type' => 'heading',
+                        'attrs' => ['level' => 2],
+                        'content' => [['type' => 'text', 'text' => 'Rich CMS fixture']],
+                    ],
+                    [
+                        'type' => 'video',
+                        'attrs' => [
+                            'src' => 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4',
+                            'title' => 'Fixture video',
+                        ],
+                    ],
+                ],
+            ], JSON_THROW_ON_ERROR),
+        ]);
+    }
 }
