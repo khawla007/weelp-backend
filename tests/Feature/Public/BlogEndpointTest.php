@@ -3,6 +3,8 @@
 namespace Tests\Feature\Public;
 
 use App\Models\Blog;
+use App\Models\Category;
+use App\Models\Tag;
 use Database\Seeders\RichContentFixtureSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -31,6 +33,38 @@ class BlogEndpointTest extends TestCase
         $response = $this->getJson('/api/blogs/test-blog');
 
         $response->assertOk();
+    }
+
+    public function test_list_blogs_can_filter_by_category_slug(): void
+    {
+        $category = Category::factory()->create(['slug' => 'travel-tips']);
+        $matching = Blog::factory()->create(['slug' => 'category-match', 'publish' => true]);
+        $other = Blog::factory()->create(['slug' => 'category-other', 'publish' => true]);
+
+        $matching->categories()->attach($category->id);
+
+        $response = $this->getJson('/api/blogs?category=travel-tips');
+
+        $response->assertOk()
+            ->assertJsonPath('total', 1)
+            ->assertJsonFragment(['id' => $matching->id, 'slug' => 'category-match'])
+            ->assertJsonMissing(['id' => $other->id, 'slug' => 'category-other']);
+    }
+
+    public function test_list_blogs_can_filter_by_tag_slug(): void
+    {
+        $tag = Tag::factory()->create(['slug' => 'family']);
+        $matching = Blog::factory()->create(['slug' => 'tag-match', 'publish' => true]);
+        $other = Blog::factory()->create(['slug' => 'tag-other', 'publish' => true]);
+
+        $matching->tags()->attach($tag->id);
+
+        $response = $this->getJson('/api/blogs?tag=family');
+
+        $response->assertOk()
+            ->assertJsonPath('total', 1)
+            ->assertJsonFragment(['id' => $matching->id, 'slug' => 'tag-match'])
+            ->assertJsonMissing(['id' => $other->id, 'slug' => 'tag-other']);
     }
 
     public function test_show_blog_returns_404_for_draft_slug(): void
