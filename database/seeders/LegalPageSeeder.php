@@ -71,9 +71,17 @@ class LegalPageSeeder extends Seeder
                         'Gift card or voucher purchases',
                     ]),
                     $this->heading('How to Request a Cancellation'),
-                    $this->paragraph('To cancel a booking, log in to your account dashboard and use the Cancel Booking option on your booking details page, or email support@weelp.com with your cancellation request. Please include your booking reference number.'),
+                    $this->emailParagraph(
+                        'To cancel a booking, log in to your account dashboard and use the Cancel Booking option on your booking details page, or email ',
+                        'support@weelp.com',
+                        ' with your cancellation request. Please include your booking reference number.'
+                    ),
                     $this->heading('Contact Us'),
-                    $this->paragraph('If you have any questions about this Cancellation Policy or need assistance with a booking, please reach out to us at support@weelp.com. We are here to help.'),
+                    $this->emailParagraph(
+                        'If you have any questions about this Cancellation Policy or need assistance with a booking, please reach out to us at ',
+                        'support@weelp.com',
+                        '. We are here to help.'
+                    ),
                 ]),
             ],
             [
@@ -126,7 +134,11 @@ class LegalPageSeeder extends Seeder
                     $this->heading('Modifications to Terms'),
                     $this->paragraph('Weelp reserves the right to modify these Terms of Service at any time. We will notify you of changes by updating this page with a revised Last updated date. Your continued use of the Platform following the posting of any changes constitutes your acceptance of the revised Terms.'),
                     $this->heading('Contact Information'),
-                    $this->paragraph('If you have any questions about these Terms of Service, please contact our legal team at legal@weelp.com.'),
+                    $this->emailParagraph(
+                        'If you have any questions about these Terms of Service, please contact our legal team at ',
+                        'legal@weelp.com',
+                        '.'
+                    ),
                 ]),
             ],
             [
@@ -157,7 +169,11 @@ class LegalPageSeeder extends Seeder
                     $this->paragraph('We implement industry-standard security measures to protect your personal information, including SSL/TLS encryption, encrypted storage for sensitive data, PCI-compliant payment partners, and role-based access controls.'),
                     $this->paragraph('No method of transmission over the internet or electronic storage is 100% secure. In the event of a data breach, we will act promptly to assess and address the impact in accordance with applicable laws.'),
                     $this->heading('Your Rights'),
-                    $this->paragraph('Depending on your location, you may have rights to access, correct, delete, port, or restrict use of your personal data, and to opt out of marketing or withdraw consent where processing is based on consent. To exercise these rights, contact privacy@weelp.com.'),
+                    $this->emailParagraph(
+                        'Depending on your location, you may have rights to access, correct, delete, port, or restrict use of your personal data, and to opt out of marketing or withdraw consent where processing is based on consent. To exercise these rights, contact ',
+                        'privacy@weelp.com',
+                        '.'
+                    ),
                     $this->heading('Cookies'),
                     $this->paragraph('We use essential, analytics, and marketing cookies. Essential cookies are required for authentication and platform security. Analytics cookies help us understand usage, and marketing cookies are enabled only with your consent.'),
                     $this->heading("Children's Privacy"),
@@ -165,7 +181,11 @@ class LegalPageSeeder extends Seeder
                     $this->heading('Changes to This Policy'),
                     $this->paragraph('We may update this Privacy Policy from time to time to reflect changes in our practices, technology, or legal requirements. We encourage you to review this page periodically.'),
                     $this->heading('Contact Us'),
-                    $this->paragraph('If you have any questions, concerns, or requests regarding this Privacy Policy or the way we handle your personal data, please reach out to us at privacy@weelp.com.'),
+                    $this->emailParagraph(
+                        'If you have any questions, concerns, or requests regarding this Privacy Policy or the way we handle your personal data, please reach out to us at ',
+                        'privacy@weelp.com',
+                        '.'
+                    ),
                 ]),
             ],
         ];
@@ -193,6 +213,18 @@ class LegalPageSeeder extends Seeder
         return [
             'type' => 'paragraph',
             'content' => [$this->text($text)],
+        ];
+    }
+
+    private function emailParagraph(string $before, string $email, string $after): array
+    {
+        return [
+            'type' => 'paragraph',
+            'content' => [
+                $this->text($before),
+                $this->linkedEmail($email),
+                $this->text($after),
+            ],
         ];
     }
 
@@ -237,6 +269,18 @@ class LegalPageSeeder extends Seeder
         return [
             'type' => 'text',
             'text' => $text,
+        ];
+    }
+
+    private function linkedEmail(string $email): array
+    {
+        return [
+            'type' => 'text',
+            'text' => $email,
+            'marks' => [[
+                'type' => 'link',
+                'attrs' => ['href' => "mailto:{$email}"],
+            ]],
         ];
     }
 }

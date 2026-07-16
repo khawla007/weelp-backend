@@ -3,6 +3,7 @@
 namespace Tests\Feature\Public;
 
 use App\Models\Page;
+use Database\Seeders\LegalPageSeeder;
 use Database\Seeders\RichContentFixtureSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -96,5 +97,27 @@ class PageEndpointTest extends TestCase
 
         $this->getJson('/api/pages/'.RichContentFixtureSeeder::DRAFT_PAGE_SLUG)
             ->assertNotFound();
+    }
+
+    public function test_legal_seeded_contact_emails_are_mailto_links(): void
+    {
+        $this->seed(LegalPageSeeder::class);
+
+        foreach ([
+            'cancellation' => ['support@weelp.com'],
+            'terms' => ['legal@weelp.com'],
+            'privacy' => ['privacy@weelp.com'],
+        ] as $slug => $emails) {
+            $response = $this->getJson("/api/pages/{$slug}")
+                ->assertOk()
+                ->assertJsonPath('data.slug', $slug);
+
+            $content = str_replace('\\/', '/', $response->json('data.content'));
+
+            foreach ($emails as $email) {
+                $this->assertStringContainsString('"text":"'.$email.'"', $content);
+                $this->assertStringContainsString('"href":"mailto:'.$email.'"', $content);
+            }
+        }
     }
 }
