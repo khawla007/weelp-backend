@@ -8,6 +8,7 @@ use App\Models\ActivityCategory;
 use App\Models\ActivityTag;
 use App\Models\Category;
 use App\Models\City;
+use App\Models\CitySeason;
 use App\Models\Country;
 use App\Models\Itinerary;
 use App\Models\ItineraryCategory;
@@ -18,6 +19,7 @@ use App\Models\PackageTag;
 use App\Models\State;
 use App\Models\Tag;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class PublicCitiesController extends Controller
 {
@@ -173,16 +175,59 @@ class PublicCitiesController extends Controller
     // ---------------------------getting all cities with pagination-------------------------
     public function index(Request $request)
     {
-        $perPage = min((int) $request->get('per_page', 8), 50);
+        $validated = $request->validate([
+            'search' => 'nullable|string|max:100',
+            'country' => ['nullable', 'string', 'max:120', 'regex:/^[A-Za-z0-9-]+$/'],
+            'season' => ['nullable', 'string', 'max:120', 'regex:/^[A-Za-z0-9-]+$/'],
+            'sort_by' => 'nullable|in:name_asc,name_desc,activities_desc,country_asc,id_desc',
+            'page' => 'nullable|integer|min:1',
+            'per_page' => 'nullable|integer|min:1|max:50',
+        ]);
 
-        $cities = City::with([
+        $perPage = min((int) $request->get('per_page', 8), 50);
+        $sortBy = $validated['sort_by'] ?? 'name_asc';
+
+        $query = City::with([
             'state.country',
             'mediaGallery.media',
+            'seasons',
         ])
-            ->withCount('activities')
-            ->orderBy('name')
-            ->orderBy('id')
-            ->paginate($perPage, ['*'], 'page', $request->input('page', 1));
+            ->withCount('activities');
+
+        if (! empty($validated['search'])) {
+            $search = $validated['search'];
+            $query->where('name', 'like', "%{$search}%");
+        }
+
+        if (! empty($validated['country'])) {
+            $countrySlug = $validated['country'];
+            $query->whereHas('state.country', fn ($countryQuery) => $countryQuery->where('slug', $countrySlug));
+        }
+
+        if (! empty($validated['season'])) {
+            $seasonSlug = $validated['season'];
+            $query->whereHas('seasons', function ($seasonQuery) use ($seasonSlug) {
+                $seasonQuery
+                    ->whereRaw("LOWER(REPLACE(name, ' ', '-')) = ?", [$seasonSlug])
+                    ->orWhere('name', $seasonSlug);
+            });
+        }
+
+        match ($sortBy) {
+            'name_desc' => $query->orderByDesc('name')->orderByDesc('id'),
+            'activities_desc' => $query->orderByDesc('activities_count')->orderBy('name')->orderBy('id'),
+            'country_asc' => $query
+                ->join('states', 'cities.state_id', '=', 'states.id')
+                ->join('countries', 'states.country_id', '=', 'countries.id')
+                ->orderBy('countries.name')
+                ->orderBy('cities.name')
+                ->orderBy('cities.id')
+                ->select('cities.*'),
+            'id_desc' => $query->orderByDesc('id'),
+            default => $query->orderBy('name')->orderBy('id'),
+        };
+
+        $cities = $query->paginate($perPage, ['*'], 'page', $request->input('page', 1));
 
         $mapped = $cities->getCollection()->map(function ($city) {
             $featuredImage = $city->mediaGallery->firstWhere('is_featured', true)
@@ -203,9 +248,37 @@ class PublicCitiesController extends Controller
                 'country' => [
                     'id' => $city->state->country->id ?? null,
                     'name' => $city->state->country->name ?? null,
+                    'slug' => $city->state->country->slug ?? null,
                 ],
+                'seasons' => $city->seasons->map(fn ($season) => [
+                    'name' => $season->name,
+                    'slug' => Str::slug($season->name),
+                ])->unique('slug')->values(),
             ];
         });
+
+        $availableCountries = Country::whereHas('states.cities')
+            ->orderBy('name')
+            ->get(['id', 'name', 'slug'])
+            ->map(fn ($country) => [
+                'id' => $country->id,
+                'name' => $country->name,
+                'slug' => $country->slug,
+            ])
+            ->values();
+
+        $availableSeasons = CitySeason::query()
+            ->select('name')
+            ->whereNotNull('name')
+            ->distinct()
+            ->orderBy('name')
+            ->get()
+            ->map(fn ($season) => [
+                'name' => $season->name,
+                'slug' => Str::slug($season->name),
+            ])
+            ->unique('slug')
+            ->values();
 
         return response()->json([
             'success' => true,
@@ -214,6 +287,8 @@ class PublicCitiesController extends Controller
             'last_page' => $cities->lastPage(),
             'per_page' => $cities->perPage(),
             'total' => $cities->total(),
+            'available_countries' => $availableCountries,
+            'available_seasons' => $availableSeasons,
         ]);
     }
 

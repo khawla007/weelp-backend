@@ -3,7 +3,9 @@
 namespace Tests\Feature\Public;
 
 use App\Models\City;
+use App\Models\CitySeason;
 use App\Models\Category;
+use App\Models\Country;
 use App\Models\Package;
 use App\Models\PackageBasePricing;
 use App\Models\PackageCategory;
@@ -11,6 +13,7 @@ use App\Models\PackageLocation;
 use App\Models\PackagePriceVariation;
 use App\Models\PackageTag;
 use App\Models\Review;
+use App\Models\State;
 use App\Models\Tag;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -27,6 +30,32 @@ class CityEndpointTest extends TestCase
         $response = $this->getJson('/api/cities');
 
         $response->assertOk();
+    }
+
+    public function test_list_cities_filters_by_country_season_search_and_sort(): void
+    {
+        $uae = Country::factory()->create(['name' => 'United Arab Emirates', 'slug' => 'united-arab-emirates']);
+        $france = Country::factory()->create(['name' => 'France', 'slug' => 'france']);
+        $uaeState = State::factory()->create(['country_id' => $uae->id]);
+        $franceState = State::factory()->create(['country_id' => $france->id]);
+        $abuDhabi = City::factory()->create(['name' => 'Abu Dhabi', 'slug' => 'abu-dhabi', 'state_id' => $uaeState->id]);
+        City::factory()->create(['name' => 'Dubai', 'slug' => 'dubai', 'state_id' => $uaeState->id]);
+        City::factory()->create(['name' => 'Paris', 'slug' => 'paris', 'state_id' => $franceState->id]);
+        CitySeason::create(['city_id' => $abuDhabi->id, 'name' => 'Winter']);
+
+        $this->getJson('/api/cities?country=united-arab-emirates&season=winter&search=abu')
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.name', 'Abu Dhabi')
+            ->assertJsonPath('data.0.country.slug', 'united-arab-emirates')
+            ->assertJsonPath('data.0.seasons.0.slug', 'winter')
+            ->assertJsonPath('available_countries.0.slug', 'france')
+            ->assertJsonPath('available_countries.1.slug', 'united-arab-emirates')
+            ->assertJsonPath('available_seasons.0.slug', 'winter');
+
+        $this->getJson('/api/cities?sort_by=name_desc')
+            ->assertOk()
+            ->assertJsonPath('data.0.name', 'Paris');
     }
 
     public function test_show_city_by_slug(): void
