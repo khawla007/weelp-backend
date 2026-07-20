@@ -95,6 +95,12 @@ class AppServiceProvider extends ServiceProvider
             return Limit::perMinute(5)->by($key);
         });
 
+        RateLimiter::for('creator_explore_view', function (Request $request) {
+            $itineraryId = (string) $request->route('id');
+
+            return Limit::perMinute(10)->by($itineraryId.'|'.$request->ip());
+        });
+
         Relation::enforceMorphMap([
             'activity' => \App\Models\Activity::class,
             'package' => \App\Models\Package::class,

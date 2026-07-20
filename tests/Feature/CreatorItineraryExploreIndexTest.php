@@ -16,6 +16,7 @@ use App\Models\TransferZonePrice;
 use App\Models\TransferPricingAvailability;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\RateLimiter;
 use Tests\TestCase;
 
 class CreatorItineraryExploreIndexTest extends TestCase
@@ -120,5 +121,58 @@ class CreatorItineraryExploreIndexTest extends TestCase
         $this->assertNotNull($found, 'Seeded itinerary missing from response');
         $this->assertSame(155.00, (float) $found['display_price']);
         $this->assertNotSame(999.99, (float) $found['display_price']);
+    }
+
+    public function test_public_view_endpoint_increments_creator_itinerary_seen_count(): void
+    {
+        $creator = User::factory()->create();
+
+        $itinerary = Itinerary::factory()->create();
+        $meta = ItineraryMeta::create([
+            'itinerary_id' => $itinerary->id,
+            'creator_id' => $creator->id,
+            'status' => 'approved',
+            'views_count' => 4,
+        ]);
+
+        $response = $this->postJson("/api/creator/explore/{$itinerary->id}/view");
+
+        $response->assertOk()
+            ->assertJson([
+                'success' => true,
+                'views_count' => 5,
+            ]);
+
+        $this->assertSame(5, $meta->fresh()->views_count);
+    }
+
+    public function test_public_view_endpoint_has_named_throttle_middleware(): void
+    {
+        $route = collect(app('router')->getRoutes())
+            ->first(fn ($route) => $route->uri() === 'api/creator/explore/{id}/view');
+
+        $this->assertNotNull($route, 'Creator explore view route is not registered');
+        $this->assertContains('throttle:creator_explore_view', $route->gatherMiddleware());
+    }
+
+    public function test_public_view_endpoint_throttles_repeated_hits_per_itinerary_and_ip(): void
+    {
+        $creator = User::factory()->create();
+
+        $itinerary = Itinerary::factory()->create();
+        ItineraryMeta::create([
+            'itinerary_id' => $itinerary->id,
+            'creator_id' => $creator->id,
+            'status' => 'approved',
+            'views_count' => 0,
+        ]);
+
+        RateLimiter::clear($itinerary->id.'|127.0.0.1');
+
+        for ($i = 0; $i < 10; $i++) {
+            $this->postJson("/api/creator/explore/{$itinerary->id}/view")->assertOk();
+        }
+
+        $this->postJson("/api/creator/explore/{$itinerary->id}/view")->assertTooManyRequests();
     }
 }

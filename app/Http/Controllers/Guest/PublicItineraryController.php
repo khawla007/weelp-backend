@@ -324,6 +324,7 @@ class PublicItineraryController extends Controller
             'id' => $itinerary->id,
             'name' => $itinerary->name,
             'slug' => $itinerary->slug,
+            'is_creator_itinerary' => $itinerary->creator_id !== null && $itinerary->status === 'approved',
             'featured_itinerary' => $itinerary->featured_itinerary,
             'description' => $itinerary->description,
             'schedule_total_price' => $itinerary->schedule_total_price,

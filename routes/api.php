@@ -175,6 +175,7 @@ Route::middleware(['auth:api', 'customer'])->prefix('customer')->group(function 
 Route::prefix('creator')->group(function () {
     Route::get('/explore', [CreatorItineraryController::class, 'exploreIndex']);
     Route::get('/explore/{id}', [CreatorItineraryController::class, 'exploreShow']);
+    Route::post('/explore/{id}/view', [CreatorItineraryController::class, 'recordView'])->middleware('throttle:creator_explore_view');
 });
 
 // Creator routes - require authentication and creator role
@@ -206,9 +207,8 @@ Route::middleware(['auth:api', 'creator'])->prefix('creator')->group(function ()
     // Creator Itineraries - Create new draft from Explore page
     Route::post('/itineraries/create', [CreatorItineraryController::class, 'createDraft']);
 
-    // Creator Itineraries - Explore (write operations require auth)
+    // Creator Itineraries - Explore (likes require auth)
     Route::post('/explore/{id}/like', [CreatorItineraryController::class, 'toggleLike']);
-    Route::post('/explore/{id}/view', [CreatorItineraryController::class, 'recordView']);
 
     // Creator Resources
     Route::get('/cities', [CreatorItineraryController::class, 'getCities']);
