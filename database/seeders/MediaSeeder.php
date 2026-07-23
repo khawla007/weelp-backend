@@ -2,10 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 use App\Models\Media;
+use Illuminate\Database\Seeder;
 
 class MediaSeeder extends Seeder
 {
@@ -16,17 +14,10 @@ class MediaSeeder extends Seeder
      *
      * The first 161 records are the curated random tourist-place objects
      * uploaded under countries/random-tourist-places/.
+     * Existing rows are updated by path so their IDs and associations survive.
      */
     public function run(): void
     {
-        // Wipe media + cascade-dependent pivot rows so this seeder is idempotent.
-        Schema::disableForeignKeyConstraints();
-        DB::table('media')->truncate();
-        foreach (['country_media_gallery', 'state_media_gallery', 'city_media_gallery', 'place_media_gallery', 'blog_media_gallery', 'activity_media_gallery', 'itinerary_media_gallery', 'package_media_gallery', 'transfer_media_gallery'] as $pivot) {
-            if (Schema::hasTable($pivot)) DB::table($pivot)->truncate();
-        }
-        Schema::enableForeignKeyConstraints();
-
         $randomCountryTouristPlacePaths = [
             'countries/random-tourist-places/argentina/01-argentina-tourist-place-1-52a7e30197.jpg',
             'countries/random-tourist-places/argentina/02-argentina-tourist-place-2-60dd5d8cfd.jpg',
@@ -682,14 +673,16 @@ class MediaSeeder extends Seeder
         $paths = array_values(array_unique($hardcoded));
 
         foreach ($paths as $path) {
-            Media::create([
-                'name'     => self::generateName($path),
-                'alt_text' => self::generateAltText($path),
-                'url'      => $path,
-            ]);
+            Media::updateOrCreate(
+                ['url' => $path],
+                [
+                    'name' => self::generateName($path),
+                    'alt_text' => self::generateAltText($path),
+                ],
+            );
         }
 
-        $this->command->info('Seeded ' . count($paths) . ' media records with relative paths.');
+        $this->command->info('Seeded '.count($paths).' media records with relative paths.');
     }
 
     /**
@@ -708,6 +701,7 @@ class MediaSeeder extends Seeder
             if (preg_match('/^(\d+)-/', $filename, $m)) {
                 return "{$country} Tourist Place {$m[1]}";
             }
+
             return "{$country} Tourist Place";
         }
 
@@ -724,12 +718,14 @@ class MediaSeeder extends Seeder
         // countries/states: "france_1_1773038620" → extract "france" and "1"
         if (preg_match('/^(.+?)_(\d+)_\d+$/', $filename, $m)) {
             $name = ucwords(str_replace('-', ' ', $m[1]));
+
             return "{$name} - Image {$m[2]}";
         }
 
         // cities: "paris-3" → "Paris - Image 3"
         if (preg_match('/^(.+?)[-_](\d+)$/', $filename, $m)) {
             $name = ucwords(str_replace('-', ' ', $m[1]));
+
             return "{$name} - Image {$m[2]}";
         }
 
@@ -739,7 +735,7 @@ class MediaSeeder extends Seeder
         }
 
         // media: random hash → "Media Upload"
-        return "Media Upload";
+        return 'Media Upload';
     }
 
     /**
@@ -752,6 +748,7 @@ class MediaSeeder extends Seeder
         if (str_starts_with($path, 'countries/random-tourist-places/')) {
             $parts = explode('/', $path);
             $country = ucwords(str_replace('-', ' ', $parts[2] ?? 'country'));
+
             return "{$country} tourist place image";
         }
 
@@ -760,11 +757,11 @@ class MediaSeeder extends Seeder
         }
 
         if (preg_match('/^(.+?)_(\d+)_\d+$/', $filename, $m)) {
-            return ucwords(str_replace('-', ' ', $m[1])) . ' travel photo';
+            return ucwords(str_replace('-', ' ', $m[1])).' travel photo';
         }
 
         if (preg_match('/^(.+?)[-_](\d+)$/', $filename, $m)) {
-            return ucwords(str_replace('-', ' ', $m[1])) . ' travel photo';
+            return ucwords(str_replace('-', ' ', $m[1])).' travel photo';
         }
 
         return 'Weelp travel image';
