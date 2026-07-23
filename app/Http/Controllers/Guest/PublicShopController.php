@@ -233,17 +233,17 @@ class PublicShopController extends Controller
         $activities = Activity::when(! empty($cityIds), fn ($query) => $query->whereHas('locations', fn ($q) => $q->whereIn('city_id', $cityIds)))
             ->when($itemType, fn ($query) => $query->where('item_type', $itemType))
             ->when($featured !== null, fn ($query) => $query->where('featured_activity', $featured))
-            ->with(['pricing', 'groupDiscounts', 'categories.category', 'locations.city.state.country.regions']);
+            ->with(['pricing', 'groupDiscounts', 'categories.category', 'locations.city.state.country.regions', 'mediaGallery.media']);
 
         $itineraries = Itinerary::when(! empty($cityIds), fn ($query) => $query->whereHas('locations', fn ($q) => $q->whereIn('city_id', $cityIds)))
             ->when($itemType, fn ($query) => $query->where('item_type', $itemType))
             ->when($featured !== null, fn ($query) => $query->where('featured_itinerary', $featured))
-            ->with(['basePricing.variations', 'categories.category', 'tags']);
+            ->with(['basePricing.variations', 'categories.category', 'tags', 'mediaGallery.media']);
 
         $packages = Package::when(! empty($cityIds), fn ($query) => $query->whereHas('locations', fn ($q) => $q->whereIn('city_id', $cityIds)))
             ->when($itemType, fn ($query) => $query->where('item_type', $itemType))
             ->when($featured !== null, fn ($query) => $query->where('featured_package', $featured))
-            ->with(['basePricing.variations', 'categories.category', 'tags']);
+            ->with(['basePricing.variations', 'categories.category', 'tags', 'mediaGallery.media']);
 
         // Apply Filters
         if (! empty($categoryIds)) {
@@ -399,12 +399,16 @@ class PublicShopController extends Controller
                 break;
         }
 
+        $featuredImage = $item->mediaGallery->firstWhere('is_featured', true)
+            ?? $item->mediaGallery->first();
+
         return [
             'id' => $item->id,
             'name' => $item->name,
             'slug' => $item->slug,
             'item_type' => $type,
             'featured' => $featured,
+            'featured_image' => $featuredImage?->media?->url,
             'city_slug' => $item->locations->first()?->city?->slug,
             'price' => $price,
             'group_discount' => $groupDiscount,
