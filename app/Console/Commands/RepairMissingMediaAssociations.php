@@ -17,6 +17,30 @@ class RepairMissingMediaAssociations extends Command
     protected $description = 'Restore deterministic MinIO media associations for local seeded records with empty galleries';
 
     private const TARGETS = [
+        'countries' => [
+            'parent' => 'countries',
+            'pivot' => 'country_media_gallery',
+            'foreign_key' => 'country_id',
+            'timestamps' => true,
+        ],
+        'states' => [
+            'parent' => 'states',
+            'pivot' => 'state_media_gallery',
+            'foreign_key' => 'state_id',
+            'timestamps' => true,
+        ],
+        'cities' => [
+            'parent' => 'cities',
+            'pivot' => 'city_media_gallery',
+            'foreign_key' => 'city_id',
+            'timestamps' => true,
+        ],
+        'places' => [
+            'parent' => 'places',
+            'pivot' => 'place_media_gallery',
+            'foreign_key' => 'place_id',
+            'timestamps' => true,
+        ],
         'activities' => [
             'parent' => 'activities',
             'pivot' => 'activity_media_gallery',

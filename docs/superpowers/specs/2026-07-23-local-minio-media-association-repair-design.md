@@ -15,7 +15,7 @@ The fix has two deliberately separate parts:
 1. `MediaSeeder` becomes additive and idempotent. It updates an existing row by stored path or creates a missing row, but never truncates `media` or a gallery table. Existing IDs and associations therefore survive standalone media repairs.
 2. A local repair command restores only records whose gallery is empty. It draws from the same first 161 curated MinIO-backed media rows used by the original seeders, assigns three stable choices per record, and marks the first choice as featured.
 
-The command covers activities, itineraries, packages, transfers, and blogs. It does not replace, reorder, or add to a record that already has at least one media association.
+The command covers countries, states, cities, places, activities, itineraries, packages, transfers, and blogs. It does not replace, reorder, or add to a record that already has at least one media association.
 
 ## Command behavior
 
@@ -65,4 +65,4 @@ Regression tests will prove:
 5. A second execution is a no-op.
 6. No usable MinIO objects produces a failure with no database writes.
 
-After focused backend tests pass, the local command will run once with `--execute`. API checks and the required headed-browser pass will confirm real `/api/media/{id}` sources across cards, item details, transfers, and blogs.
+After focused backend tests pass, the local command will run once with `--execute`. API checks and the required headed-browser pass will confirm real `/api/media/{id}` sources across destination cards and details, item cards and details, transfers, and blogs.

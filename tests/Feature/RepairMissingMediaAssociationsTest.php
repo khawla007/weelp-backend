@@ -38,7 +38,7 @@ class RepairMissingMediaAssociationsTest extends TestCase
         $targets = $this->createParentRecords();
 
         $this->artisan('media:repair-missing-associations --execute')
-            ->expectsOutputToContain('Inserted 15 media associations')
+            ->expectsOutputToContain('Inserted 27 media associations')
             ->assertSuccessful();
 
         foreach ($targets as $target) {
@@ -222,8 +222,57 @@ class RepairMissingMediaAssociationsTest extends TestCase
     private function createParentRecords(): array
     {
         $now = now();
+        $countryId = DB::table('countries')->insertGetId([
+            'name' => 'Test country',
+            'code' => 'TC',
+            'slug' => 'test-country',
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+        $stateId = DB::table('states')->insertGetId([
+            'name' => 'Test state',
+            'slug' => 'test-state',
+            'country_id' => $countryId,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+        $cityId = DB::table('cities')->insertGetId([
+            'name' => 'Test city',
+            'slug' => 'test-city',
+            'state_id' => $stateId,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+        $placeId = DB::table('places')->insertGetId([
+            'name' => 'Test place',
+            'code' => 'TP',
+            'slug' => 'test-place',
+            'city_id' => $cityId,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
 
         return [
+            'countries' => [
+                'pivot' => 'country_media_gallery',
+                'foreign_key' => 'country_id',
+                'id' => $countryId,
+            ],
+            'states' => [
+                'pivot' => 'state_media_gallery',
+                'foreign_key' => 'state_id',
+                'id' => $stateId,
+            ],
+            'cities' => [
+                'pivot' => 'city_media_gallery',
+                'foreign_key' => 'city_id',
+                'id' => $cityId,
+            ],
+            'places' => [
+                'pivot' => 'place_media_gallery',
+                'foreign_key' => 'place_id',
+                'id' => $placeId,
+            ],
             'activities' => [
                 'pivot' => 'activity_media_gallery',
                 'foreign_key' => 'activity_id',

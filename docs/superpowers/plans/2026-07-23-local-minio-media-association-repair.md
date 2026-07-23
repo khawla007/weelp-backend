@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Preserve media associations during standalone media repairs and restore deterministic MinIO-backed galleries for local activities, itineraries, packages, transfers, and blogs that currently have none.
+**Goal:** Preserve media associations during standalone media repairs and restore deterministic MinIO-backed galleries for local countries, states, cities, places, activities, itineraries, packages, transfers, and blogs that currently have none.
 
 **Architecture:** Make `MediaSeeder` additive with path-based upserts. Add one dry-run-first Artisan command that discovers empty galleries, filters the original 161-row media pool to objects that exist on MinIO, and transactionally inserts three deterministic associations per missing record.
 
@@ -172,6 +172,10 @@ Define one scoped configuration:
 
 ```php
 private const TARGETS = [
+    'countries' => ['parent' => 'countries', 'pivot' => 'country_media_gallery', 'foreign_key' => 'country_id', 'timestamps' => true],
+    'states' => ['parent' => 'states', 'pivot' => 'state_media_gallery', 'foreign_key' => 'state_id', 'timestamps' => true],
+    'cities' => ['parent' => 'cities', 'pivot' => 'city_media_gallery', 'foreign_key' => 'city_id', 'timestamps' => true],
+    'places' => ['parent' => 'places', 'pivot' => 'place_media_gallery', 'foreign_key' => 'place_id', 'timestamps' => true],
     'activities' => ['parent' => 'activities', 'pivot' => 'activity_media_gallery', 'foreign_key' => 'activity_id', 'timestamps' => true],
     'itineraries' => ['parent' => 'itineraries', 'pivot' => 'itinerary_media_gallery', 'foreign_key' => 'itinerary_id', 'timestamps' => true],
     'packages' => ['parent' => 'packages', 'pivot' => 'package_media_gallery', 'foreign_key' => 'package_id', 'timestamps' => true],
@@ -228,7 +232,7 @@ Run:
 php artisan media:repair-missing-associations
 ```
 
-Expected: non-zero missing counts for activities, itineraries, packages, transfers, and blogs; zero database writes.
+Expected: non-zero missing counts for countries, states, cities, places, activities, itineraries, packages, transfers, and blogs; zero database writes.
 
 - [ ] **Step 2: Execute the local repair once**
 
@@ -308,6 +312,8 @@ Dispatch the project code-review agent against the backend diff. Address critica
 Using session `weelp-visible`, discover representative URLs from the repaired API/database and inspect:
 
 - `http://localhost:3000/` — Top activities
+- `http://localhost:3000/` — Top Destinations city cards
+- an existing city detail page such as `http://localhost:3000/cities/dubai`
 - an existing activity detail URL using its returned primary `city_slug` and activity slug; use `/cities/abu-dhabi/activities/desert-safari-adventure` when it still resolves
 - an existing city page that returns itinerary cards
 - an existing city package listing that returns package cards
