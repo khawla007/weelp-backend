@@ -41,6 +41,7 @@ class DatabaseSeeder extends Seeder
             ItinerarySeeder::class,
             PackageSeeder::class,
             ReviewSeeder::class,
+            TransferReviewSeeder::class,
             BlogSeeder::class,
             LegalPageSeeder::class,
             RichContentFixtureSeeder::class,

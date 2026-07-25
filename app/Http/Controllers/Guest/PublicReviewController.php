@@ -67,15 +67,18 @@ class PublicReviewController extends Controller
      * Used on: City page review slider.
      *
      * Query params:
-     *   ?city=slug — filter to items in that city
+     *   ?city=slug      — filter to items in that city
+     *   ?item_type=type — optional activity, package, itinerary, or transfer filter
      */
     public function getFeaturedReviews()
     {
         request()->validate([
             'city' => 'nullable|string|max:255',
+            'item_type' => 'nullable|string|in:activity,package,itinerary,transfer',
         ]);
 
         $citySlug = request()->query('city');
+        $itemType = request()->query('item_type');
 
         $query = Review::with(['user', 'item', 'mediaGallery.media'])
             ->where('status', 'approved')
@@ -89,6 +92,10 @@ class PublicReviewController extends Controller
                 return response()->json(['success' => false, 'message' => 'City not found'], 404);
             }
             $this->applyCityFilter($query, $city->id);
+        }
+
+        if ($itemType) {
+            $query->where('item_type', $itemType);
         }
 
         $summaryQuery = clone $query;

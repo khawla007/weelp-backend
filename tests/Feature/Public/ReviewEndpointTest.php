@@ -12,6 +12,7 @@ use App\Models\Package;
 use App\Models\PackageLocation;
 use App\Models\Review;
 use App\Models\ReviewMediaGallery;
+use App\Models\Transfer;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -67,9 +68,97 @@ class ReviewEndpointTest extends TestCase
 
     public function test_featured_reviews(): void
     {
+        $user = User::factory()->create();
+        $activity = Activity::factory()->create();
+        $transfer = Transfer::factory()->create();
+
+        Review::factory()->create([
+            'user_id' => $user->id,
+            'item_type' => 'activity',
+            'item_id' => $activity->id,
+            'status' => 'approved',
+        ]);
+        Review::factory()->create([
+            'user_id' => $user->id,
+            'item_type' => 'transfer',
+            'item_id' => $transfer->id,
+            'status' => 'approved',
+        ]);
+
         $response = $this->getJson('/api/reviews/featured-reviews');
 
-        $response->assertOk();
+        $response
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonCount(2, 'data');
+
+        $this->assertEqualsCanonicalizing(
+            ['activity', 'transfer'],
+            collect($response->json('data'))->pluck('item.type')->all()
+        );
+    }
+
+    public function test_featured_reviews_can_be_filtered_to_transfers(): void
+    {
+        $user = User::factory()->create();
+        $transfer = Transfer::factory()->create([
+            'name' => 'DXB to Dubai Marina',
+            'slug' => 'dxb-to-dubai-marina',
+        ]);
+        $activity = Activity::factory()->create();
+
+        $transferReview = Review::factory()->create([
+            'user_id' => $user->id,
+            'item_type' => 'transfer',
+            'item_id' => $transfer->id,
+            'item_name_snapshot' => $transfer->name,
+            'item_slug_snapshot' => $transfer->slug,
+            'status' => 'approved',
+            'is_featured' => true,
+        ]);
+
+        Review::factory()->create([
+            'user_id' => $user->id,
+            'item_type' => 'activity',
+            'item_id' => $activity->id,
+            'item_name_snapshot' => $activity->name,
+            'item_slug_snapshot' => $activity->slug,
+            'status' => 'approved',
+            'is_featured' => true,
+        ]);
+
+        $pendingTransferReview = Review::factory()->create([
+            'user_id' => $user->id,
+            'item_type' => 'transfer',
+            'item_id' => $transfer->id,
+            'item_name_snapshot' => $transfer->name,
+            'item_slug_snapshot' => $transfer->slug,
+            'status' => 'pending',
+            'is_featured' => true,
+        ]);
+
+        $response = $this->getJson('/api/reviews/featured-reviews?item_type=transfer');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('summary.total_reviews', 1)
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.id', $transferReview->id)
+            ->assertJsonPath('data.0.item.type', 'transfer')
+            ->assertJsonPath('data.0.item.slug', 'dxb-to-dubai-marina');
+
+        $this->assertNotContains(
+            $pendingTransferReview->id,
+            collect($response->json('data'))->pluck('id')->all()
+        );
+    }
+
+    public function test_featured_reviews_reject_an_invalid_item_type(): void
+    {
+        $this->getJson('/api/reviews/featured-reviews?item_type=hotel')
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('item_type');
     }
 
     public function test_itinerary_reviews_include_media_gallery(): void
