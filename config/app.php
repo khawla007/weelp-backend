@@ -142,6 +142,7 @@ return [
         Illuminate\Translation\TranslationServiceProvider::class,
         Illuminate\Validation\ValidationServiceProvider::class,
         Illuminate\Hashing\HashServiceProvider::class,
+        Illuminate\Bus\BusServiceProvider::class,
         Illuminate\Queue\QueueServiceProvider::class,
         Illuminate\Routing\RoutingServiceProvider::class,
         Illuminate\Mail\MailServiceProvider::class,

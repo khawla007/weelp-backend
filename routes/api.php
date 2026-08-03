@@ -65,6 +65,7 @@ use App\Http\Controllers\Guest\PublicShopController;
 use App\Http\Controllers\Guest\PublicTagController;
 use App\Http\Controllers\Guest\PublicToursSearchController;
 use App\Http\Controllers\Guest\PublicTransferController;
+use App\Http\Controllers\Guest\SupportRequestController;
 use App\Http\Controllers\MediaController as PublicMediaController;
 use App\Http\Controllers\StripeController;
 use App\Http\Controllers\StripePaymentController;
@@ -76,6 +77,8 @@ use Stevebauman\Location\Facades\Location;
 // MinIO objects (avatars, logos) fall through to the public object proxy.
 Route::get('media/{media}', [MediaFileController::class, 'show'])->whereNumber('media');
 Route::get('/media/{path}', [PublicMediaController::class, 'show'])->where('path', '.*');
+Route::post('/support-requests', [SupportRequestController::class, 'store'])
+    ->middleware('throttle:support_requests');
 
 // Login - named limiter: 5/min per email+IP and 20/min per IP
 Route::middleware('throttle:login')->group(function () {

@@ -1,5 +1,7 @@
 <?php
 
+$supportEmail = env('SUPPORT_EMAIL');
+
 return [
 
     /*
@@ -112,5 +114,11 @@ return [
         'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
         'name' => env('MAIL_FROM_NAME', 'Example'),
     ],
+
+    'support_address' => $supportEmail
+        ?? env('MAIL_FROM_ADDRESS', 'hello@example.com'),
+
+    'support_address_configured' => is_string($supportEmail)
+        && trim($supportEmail) !== '',
 
 ];
