@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * @property int $id
@@ -23,6 +24,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  * @property string|null $special_requirements
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property-read \App\Models\OrderEmergencyContact|null $emergencyContact
  * @property-read \Illuminate\Database\Eloquent\Model $orderable
  * @property-read \App\Models\OrderPayment|null $payment
@@ -53,7 +55,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  */
 class Order extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'user_id', 'creator_id', 'orderable_type', 'orderable_id', 'variation_id',

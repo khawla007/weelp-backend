@@ -491,6 +491,8 @@ Route::middleware(['auth:api', 'admin', 'throttle:60,1'])->prefix('admin')->grou
         Route::get('{id}', [OrderController::class, 'show']);
         Route::put('{id}', [OrderController::class, 'updateOrder']);
         Route::delete('{id}', [OrderController::class, 'destroy']);
+        Route::post('{id}/restore', [OrderController::class, 'restore']);
+        Route::delete('{id}/force', [OrderController::class, 'forceDestroy']);
     });
 
     Route::prefix('blogs')->group(function () {

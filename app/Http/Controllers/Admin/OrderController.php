@@ -90,31 +90,28 @@ class OrderController extends Controller
 
     public function index(Request $request)
     {
+        $validated = $request->validate([
+            'page' => ['sometimes', 'integer'],
+            'view' => ['sometimes', Rule::in(['active', 'trash'])],
+        ]);
+
         $perPage = 3;
-        $page = $request->get('page', 1);
+        $page = max(1, (int) ($validated['page'] ?? 1));
+        $view = $validated['view'] ?? 'active';
         $status = $request->get('status');
 
         // Base query for pagination (filtered)
-        $query = Order::with(['user', 'orderable', 'payment', 'emergencyContact']);
+        $query = $view === 'trash'
+            ? Order::onlyTrashed()->with(['user', 'orderable', 'payment', 'emergencyContact'])
+            : Order::with(['user', 'orderable', 'payment', 'emergencyContact']);
 
         if ($status && in_array($status, ['pending', 'confirmed', 'cancelled'])) {
             $query->where('status', $status);
         }
 
-        $filteredCount = $query->count();
+        $orders = $query->paginate($perPage, ['*'], 'page', $page);
 
-        // Use pagination only if filtered results > 5
-        if ($filteredCount <= $perPage) {
-            $orders = $query->get();
-            $isPaginated = false;
-        } else {
-            $orders = $query->paginate($perPage, ['*'], 'page', $page);
-            $isPaginated = true;
-        }
-
-        $orderCollection = $isPaginated ? $orders->getCollection() : $orders;
-
-        $formatted = $orderCollection->map(function ($order) {
+        $formatted = $orders->getCollection()->map(function ($order) {
             return [
                 'id' => $order->id,
                 'order_type' => strtolower(class_basename($order->orderable_type)),
@@ -248,18 +245,17 @@ class OrderController extends Controller
             'success' => true,
             'data' => $formatted,
             'summary' => $summary,
+            'current_page' => $orders->currentPage(),
+            'per_page' => $orders->perPage(),
+            'total' => $orders->total(),
+            'last_page' => $orders->lastPage(),
+            'trash_count' => Order::onlyTrashed()->count(),
         ];
 
-        if ($isPaginated) {
-            $response['current_page'] = $orders->currentPage();
-            $response['per_page'] = $orders->perPage();
-            $response['total'] = $orders->total();
-
-            if ($formatted->isEmpty()) {
-                $response['message'] = $status
-                    ? "No more {$status} orders available."
-                    : 'No more orders available.';
-            }
+        if ($formatted->isEmpty()) {
+            $response['message'] = $status
+                ? "No more {$status} orders available."
+                : 'No more orders available.';
         }
 
         return response()->json($response);
@@ -382,11 +378,36 @@ class OrderController extends Controller
         ]);
     }
 
-    public function destroy($id)
+    public function destroy(int $id)
     {
-        $order = Order::findOrFail($id);
+        $order = Order::query()->findOrFail($id);
         $order->delete();
 
-        return response()->json(['message' => 'Order deleted successfully']);
+        return response()->json([
+            'success' => true,
+            'message' => 'Order moved to Trash.',
+        ]);
+    }
+
+    public function restore(int $id)
+    {
+        $order = Order::onlyTrashed()->findOrFail($id);
+        $order->restore();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Order restored successfully.',
+        ]);
+    }
+
+    public function forceDestroy(int $id)
+    {
+        $order = Order::onlyTrashed()->findOrFail($id);
+        $order->forceDelete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Order permanently deleted.',
+        ]);
     }
 }
