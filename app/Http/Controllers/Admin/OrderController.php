@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Request; // ✅ Ye zaruri hai
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
@@ -93,20 +95,46 @@ class OrderController extends Controller
         $validated = $request->validate([
             'page' => ['sometimes', 'integer'],
             'view' => ['sometimes', Rule::in(['active', 'trash'])],
+            'status' => ['sometimes', 'nullable', Rule::in(['pending', 'confirmed', 'completed', 'cancelled'])],
+            'search' => ['sometimes', 'nullable', 'string', 'max:100'],
         ]);
 
         $perPage = 3;
         $page = max(1, (int) ($validated['page'] ?? 1));
         $view = $validated['view'] ?? 'active';
-        $status = $request->get('status');
+        $status = $validated['status'] ?? null;
+        $search = trim((string) ($validated['search'] ?? ''));
+        $orderableTypes = array_values(Relation::morphMap());
 
         // Base query for pagination (filtered)
         $query = $view === 'trash'
             ? Order::onlyTrashed()->with(['user', 'orderable', 'payment', 'emergencyContact'])
             : Order::with(['user', 'orderable', 'payment', 'emergencyContact']);
 
-        if ($status && in_array($status, ['pending', 'confirmed', 'cancelled'])) {
+        if ($status) {
             $query->where('status', $status);
+        }
+
+        if ($search !== '') {
+            $escapedSearch = str_replace(['!', '%', '_'], ['!!', '!%', '!_'], $search);
+            $searchPattern = "%{$escapedSearch}%";
+
+            $query->where(function (Builder $searchQuery) use ($orderableTypes, $search, $searchPattern): void {
+                $searchQuery
+                    ->whereHas('user', function (Builder $userQuery) use ($searchPattern): void {
+                        $userQuery->whereRaw("LOWER(name) LIKE LOWER(?) ESCAPE '!'", [$searchPattern]);
+                    })
+                    ->orWhereHasMorph('orderable', $orderableTypes, function (Builder $orderableQuery) use ($searchPattern): void {
+                        $orderableQuery->whereRaw("LOWER(name) LIKE LOWER(?) ESCAPE '!'", [$searchPattern]);
+                    });
+
+                if (ctype_digit($search)) {
+                    $searchQuery->orWhere(
+                        $searchQuery->getModel()->qualifyColumn($searchQuery->getModel()->getKeyName()),
+                        (int) $search
+                    );
+                }
+            });
         }
 
         $orders = $query->paginate($perPage, ['*'], 'page', $page);
@@ -253,8 +281,8 @@ class OrderController extends Controller
         ];
 
         if ($formatted->isEmpty()) {
-            $response['message'] = $status
-                ? "No more {$status} orders available."
+            $response['message'] = $status || $search !== ''
+                ? 'No orders match the selected filters.'
                 : 'No more orders available.';
         }
 
