@@ -55,7 +55,7 @@ class OrderFilteringTest extends TestCase
     {
         return [
             'pending' => ['pending'],
-            'confirmed' => ['confirmed'],
+            'processing' => ['processing'],
             'completed' => ['completed'],
             'cancelled' => ['cancelled'],
         ];
@@ -77,7 +77,7 @@ class OrderFilteringTest extends TestCase
     public function test_it_rejects_invalid_filter_values(): void
     {
         $this->actingAs($this->admin, 'api')
-            ->getJson('/api/admin/orders?status=processing')
+            ->getJson('/api/admin/orders?status=confirmed')
             ->assertUnprocessable()
             ->assertJsonValidationErrors('status');
 

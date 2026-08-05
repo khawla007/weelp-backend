@@ -95,7 +95,7 @@ class OrderController extends Controller
         $validated = $request->validate([
             'page' => ['sometimes', 'integer'],
             'view' => ['sometimes', Rule::in(['active', 'trash'])],
-            'status' => ['sometimes', 'nullable', Rule::in(['pending', 'confirmed', 'completed', 'cancelled'])],
+            'status' => ['sometimes', 'nullable', Rule::in(['pending', 'processing', 'completed', 'cancelled'])],
             'search' => ['sometimes', 'nullable', 'string', 'max:100'],
         ]);
 
