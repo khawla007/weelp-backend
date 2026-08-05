@@ -101,6 +101,23 @@ class OrderFilteringTest extends TestCase
         }
     }
 
+    public function test_item_name_search_supports_legacy_class_morph_types(): void
+    {
+        $target = $this->createOrder('Legacy Customer', 'Scuba Diving Tour');
+        $target->update(['orderable_type' => Activity::class]);
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $target->id,
+            'orderable_type' => Activity::class,
+        ]);
+
+        $this->actingAs($this->admin, 'api')
+            ->getJson('/api/admin/orders?search=scuba')
+            ->assertOk()
+            ->assertJsonPath('total', 1)
+            ->assertJsonPath('data.0.id', $target->id);
+    }
+
     public function test_search_treats_like_wildcards_and_escape_marker_as_literal_characters(): void
     {
         $percentMatch = $this->createOrder('Percent Customer', 'Save 100% Adventure');

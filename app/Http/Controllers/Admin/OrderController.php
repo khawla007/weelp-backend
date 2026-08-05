@@ -123,10 +123,21 @@ class OrderController extends Controller
                 $searchQuery
                     ->whereHas('user', function (Builder $userQuery) use ($searchPattern): void {
                         $userQuery->whereRaw("LOWER(name) LIKE LOWER(?) ESCAPE '!'", [$searchPattern]);
-                    })
-                    ->orWhereHasMorph('orderable', $orderableTypes, function (Builder $orderableQuery) use ($searchPattern): void {
-                        $orderableQuery->whereRaw("LOWER(name) LIKE LOWER(?) ESCAPE '!'", [$searchPattern]);
                     });
+
+                foreach ($orderableTypes as $orderableType) {
+                    $orderable = new $orderableType;
+                    $storedMorphTypes = [$orderable->getMorphClass(), $orderableType];
+                    $matchingOrderableIds = $orderable->newQuery()
+                        ->select($orderable->qualifyColumn($orderable->getKeyName()))
+                        ->whereRaw("LOWER(name) LIKE LOWER(?) ESCAPE '!'", [$searchPattern]);
+
+                    $searchQuery->orWhere(function (Builder $orderableQuery) use ($matchingOrderableIds, $storedMorphTypes): void {
+                        $orderableQuery
+                            ->whereIn($orderableQuery->getModel()->qualifyColumn('orderable_type'), $storedMorphTypes)
+                            ->whereIn($orderableQuery->getModel()->qualifyColumn('orderable_id'), $matchingOrderableIds);
+                    });
+                }
 
                 if (ctype_digit($search)) {
                     $searchQuery->orWhere(
