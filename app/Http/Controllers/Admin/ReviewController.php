@@ -347,7 +347,7 @@ class ReviewController extends Controller
             'item_type' => 'sometimes|string|max:50',
             'item_id' => 'sometimes|integer',
             'user_id' => 'sometimes|integer|exists:users,id',
-            'order_id' => 'sometimes|integer|exists:orders,id',
+            'order_id' => 'nullable|integer|exists:orders,id',
             'rating' => 'sometimes|integer|min:1|max:5',
             'review_text' => 'nullable|string|max:5000',
             'media_gallery' => 'nullable|array',
