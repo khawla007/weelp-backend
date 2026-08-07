@@ -143,6 +143,8 @@ Route::middleware(['auth:api', 'customer'])->prefix('customer')->group(function 
 
     // 👇 Logged-in user ke orders
     Route::get('/userorders', [UserProfileController::class, 'getUserOrders']);
+    Route::get('/userorders/{order}', [UserProfileController::class, 'getUserOrder'])
+        ->whereNumber('order');
 
     Route::prefix('review')->group(function () {
         Route::get('/', [UserProfileController::class, 'reviewIndex']);
