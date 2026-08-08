@@ -118,7 +118,14 @@ class StripeController extends Controller
 
         try {
             $order = DB::transaction(function () use ($selection, $selectionHash, $quote, $data, $user, $class, $creatorId, $paymentIntentId): Order {
-                $orderable = $class::findOrFail($selection['orderable_id']);
+                $orderableQuery = $class::query();
+                if ($class === Itinerary::class) {
+                    $orderableQuery->publiclyVisible();
+                }
+                $orderable = $orderableQuery->lockForUpdate()->find($selection['orderable_id']);
+                if (! $orderable) {
+                    throw new DomainException('item_unavailable');
+                }
                 $snapshot = $this->orderSnapshot($orderable, $selection, $quote, $selectionHash);
                 $order = Order::create([
                     'user_id' => $user->id,
@@ -169,6 +176,8 @@ class StripeController extends Controller
 
                 return $order;
             }, 3);
+        } catch (DomainException $exception) {
+            return $this->quoteError($exception);
         } catch (QueryException) {
             $existing = OrderPayment::with('order')->where('payment_intent_id', $paymentIntentId)->first();
             if ($existing) {
@@ -591,7 +600,11 @@ class StripeController extends Controller
             'itinerary' => \App\Models\Itinerary::class,
         ];
         $orderableClass = $orderableMap[$data['order_type']];
-        $orderable = $orderableClass::findOrFail($data['orderable_id']);
+        $orderableQuery = $orderableClass::query();
+        if ($orderableClass === Itinerary::class) {
+            $orderableQuery->publiclyVisible();
+        }
+        $orderable = $orderableQuery->findOrFail($data['orderable_id']);
 
         // ✅ Server-side total: never trust client.
         // TODO: replace with dedicated price services per type (currently

@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * @property int $id
@@ -18,6 +20,7 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
  * @property bool $private_itinerary
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $deleted_at
  *
  * Delegated via itinerary_meta:
  * @property int|null $creator_id
@@ -29,7 +32,8 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
  * @property int $likes_count
  * @property string|null $removal_status
  * @property string|null $removal_reason
- *
+ * @property \Illuminate\Support\Carbon|null $publication_requested_at
+ * @property string|null $publication_rejection_reason
  * @property-read \App\Models\ItineraryMeta|null $meta
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ItineraryAddon> $addons
  * @property-read int|null $addons_count
@@ -66,7 +70,7 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
  */
 class Itinerary extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $table = 'itineraries';
 
@@ -87,6 +91,7 @@ class Itinerary extends Model
     protected array $metaAttributes = [
         'creator_id', 'user_id', 'parent_itinerary_id', 'draft_itinerary_id',
         'status', 'views_count', 'likes_count', 'removal_status', 'removal_reason',
+        'publication_requested_at', 'publication_rejection_reason',
     ];
 
     // ─── Meta Relationship ───────────────────────────────────────────
@@ -100,9 +105,10 @@ class Itinerary extends Model
 
     public function getAttribute($key)
     {
-        if (in_array($key, $this->metaAttributes) && !parent::getAttribute($key)) {
+        if (in_array($key, $this->metaAttributes) && ! parent::getAttribute($key)) {
             return $this->meta?->$key;
         }
+
         return parent::getAttribute($key);
     }
 
@@ -111,8 +117,8 @@ class Itinerary extends Model
         $metaAttrs = array_intersect_key($attributes, array_flip($this->metaAttributes));
         $itinAttrs = array_diff_key($attributes, array_flip($this->metaAttributes));
 
-        if (!empty($metaAttrs)) {
-            if (!$this->meta) {
+        if (! empty($metaAttrs)) {
+            if (! $this->meta) {
                 $this->setRelation('meta', new ItineraryMeta(['itinerary_id' => $this->id]));
             }
             $this->meta->fill($metaAttrs);
@@ -124,12 +130,14 @@ class Itinerary extends Model
     public function setAttribute($key, $value)
     {
         if (in_array($key, $this->metaAttributes)) {
-            if (!$this->meta) {
+            if (! $this->meta) {
                 $this->setRelation('meta', new ItineraryMeta(['itinerary_id' => $this->id]));
             }
             $this->meta->setAttribute($key, $value);
+
             return $this;
         }
+
         return parent::setAttribute($key, $value);
     }
 
@@ -151,6 +159,7 @@ class Itinerary extends Model
         foreach ($this->metaAttributes as $key) {
             $array[$key] = $this->meta?->$key;
         }
+
         return $array;
     }
 
@@ -204,6 +213,11 @@ class Itinerary extends Model
         );
     }
 
+    public function draftParentMeta(): HasOne
+    {
+        return $this->hasOne(ItineraryMeta::class, 'draft_itinerary_id');
+    }
+
     // ─── Scopes ──────────────────────────────────────────────────────
 
     public function scopeOriginal($query)
@@ -213,37 +227,57 @@ class Itinerary extends Model
 
     public function scopeCreatorCopies($query)
     {
-        return $query->whereHas('meta', fn($q) => $q->whereNotNull('creator_id'));
+        return $query->whereHas('meta', fn ($q) => $q->whereNotNull('creator_id'));
+    }
+
+    public function scopeCreatorManaged(Builder $query): Builder
+    {
+        return $query->whereHas('meta', fn (Builder $meta) => $meta->whereNotNull('status'));
+    }
+
+    public function scopeStandaloneCreator(Builder $query): Builder
+    {
+        return $query->creatorManaged()->whereDoesntHave('draftParentMeta');
     }
 
     public function scopeApproved($query)
     {
-        return $query->whereHas('meta', fn($q) => $q->where('status', 'approved'));
+        return $query->whereHas('meta', fn ($q) => $q->where('status', 'approved'));
+    }
+
+    public function scopePubliclyVisible(Builder $query): Builder
+    {
+        return $query
+            ->where('private_itinerary', false)
+            ->where(function (Builder $visibility): void {
+                $visibility->whereDoesntHave('meta')
+                    ->orWhereHas('meta', fn (Builder $meta) => $meta->where('status', 'approved'));
+            });
     }
 
     public function scopeUserCopies($query, $userId)
     {
-        return $query->whereHas('meta', fn($q) => $q->where('user_id', $userId));
+        return $query->whereHas('meta', fn ($q) => $q->where('user_id', $userId));
     }
 
     public function scopePendingApproval($query)
     {
-        return $query->whereHas('meta', fn($q) => $q->where('status', 'pending'));
+        return $query->whereHas('meta', fn ($q) => $q->where('status', 'pending'));
     }
 
     public function scopeDraft($query)
     {
-        return $query->whereHas('meta', fn($q) => $q->where('status', 'draft'));
+        return $query->whereHas('meta', fn ($q) => $q->where('status', 'draft'));
     }
 
     public function scopeEditPending($query)
     {
-        return $query->whereHas('meta', fn($q) => $q->where('status', 'edit_pending'));
+        return $query->whereHas('meta', fn ($q) => $q->where('status', 'edit_pending'));
     }
 
     public function scopeRemovalRequested($query)
     {
-        return $query->whereHas('meta', fn($q) => $q->where('removal_status', 'requested'));
+        return $query->whereHas('meta', fn ($q) => $q->where('removal_status', 'requested'));
     }
 
     // ─── Content Relationships ───────────────────────────────────────
@@ -359,9 +393,10 @@ class Itinerary extends Model
     public function getFeaturedImageAttribute(): ?string
     {
         $pickFromGallery = function ($gallery): ?string {
-            if (!$gallery) {
+            if (! $gallery) {
                 return null;
             }
+
             return $gallery->firstWhere('is_featured', true)?->media?->url
                 ?? $gallery->first()?->media?->url;
         };
@@ -401,7 +436,7 @@ class Itinerary extends Model
 
         // Helper to add image without duplicates
         $addImage = function ($media) use (&$images, &$seenUrls) {
-            if ($media?->url && !in_array($media->url, $seenUrls)) {
+            if ($media?->url && ! in_array($media->url, $seenUrls)) {
                 $images[] = [
                     'id' => $media->id,
                     'url' => $media->url,
@@ -450,7 +485,7 @@ class Itinerary extends Model
      */
     public function priceForGuests(int $adults = 1, int $children = 0): float
     {
-        if (!$this->relationLoaded('schedules')) {
+        if (! $this->relationLoaded('schedules')) {
             $this->load(
                 'schedules.activities.activity.pricing',
                 'schedules.transfers.transfer.route',
@@ -467,6 +502,7 @@ class Itinerary extends Model
                 if ($regularPrice !== null) {
                     return (float) $regularPrice * $headcount;
                 }
+
                 return (float) ($row->price ?? 0);
             });
 
@@ -480,6 +516,7 @@ class Itinerary extends Model
                 $base = (float) $transfer->computeRoutePrice($headcount);
                 $luggage = (int) ($row->bag_count ?? 0) * (float) $transfer->luggagePerBagRate();
                 $waiting = (int) ($row->waiting_minutes ?? 0) * (float) $transfer->waitingPerMinuteRate();
+
                 return $base + $luggage + $waiting;
             });
 
@@ -508,7 +545,7 @@ class Itinerary extends Model
      */
     public function pricingBreakdown(): array
     {
-        if (!$this->relationLoaded('schedules')) {
+        if (! $this->relationLoaded('schedules')) {
             $this->load(
                 'schedules.activities.activity.pricing',
                 'schedules.transfers.transfer.route',
@@ -533,6 +570,7 @@ class Itinerary extends Model
                 $transfer = $row->transfer;
                 if (! $transfer) {
                     $flat += (float) ($row->price ?? 0);
+
                     continue;
                 }
                 $unit = (float) $transfer->computeRoutePrice(1);
@@ -559,7 +597,7 @@ class Itinerary extends Model
      */
     public function getMaxGuestsAttribute(): ?int
     {
-        if (!$this->relationLoaded('schedules')) {
+        if (! $this->relationLoaded('schedules')) {
             $this->load('schedules.transfers.transfer.schedule');
         }
 
@@ -580,7 +618,7 @@ class Itinerary extends Model
     public function getScheduleTotalCurrencyAttribute(): ?string
     {
         // First check base pricing currency (non-null check)
-        if (!$this->relationLoaded('basePricing')) {
+        if (! $this->relationLoaded('basePricing')) {
             $this->load('basePricing');
         }
 
@@ -589,7 +627,7 @@ class Itinerary extends Model
         }
 
         // Fall back to first transfer's route currency (non-null check)
-        if (!$this->relationLoaded('schedules')) {
+        if (! $this->relationLoaded('schedules')) {
             $this->load('schedules.transfers.transfer.route', 'schedules.transfers.transfer.pricingAvailability');
         }
 
@@ -605,7 +643,7 @@ class Itinerary extends Model
         }
 
         // Fall back to first activity's pricing currency
-        if (!$this->relationLoaded('schedules')) {
+        if (! $this->relationLoaded('schedules')) {
             $this->load('schedules.activities.activity.pricing');
         }
 

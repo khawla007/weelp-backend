@@ -5,6 +5,7 @@ namespace Tests\Feature\Public;
 use App\Models\Itinerary;
 use App\Models\ItineraryMeta;
 use App\Models\User;
+use App\Services\CreatorItineraryLifecycleService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -51,5 +52,27 @@ class ItineraryEndpointTest extends TestCase
         $response = $this->getJson('/api/itineraries/nonexistent-slug');
 
         $response->assertNotFound();
+    }
+
+    public function test_trashed_and_restored_draft_creator_itineraries_are_not_public(): void
+    {
+        $creator = User::factory()->creator()->create();
+        $itinerary = Itinerary::factory()->create(['slug' => 'private-after-restore']);
+        ItineraryMeta::create([
+            'itinerary_id' => $itinerary->id,
+            'creator_id' => $creator->id,
+            'status' => 'approved',
+        ]);
+        $service = app(CreatorItineraryLifecycleService::class);
+        $service->trash($itinerary->id);
+
+        $this->getJson('/api/itineraries/private-after-restore')->assertNotFound();
+
+        $service->restoreToDraft($itinerary->id, $creator->id);
+
+        $this->getJson('/api/itineraries/private-after-restore')->assertNotFound();
+        $this->getJson('/api/itineraries')
+            ->assertOk()
+            ->assertJsonMissing(['id' => $itinerary->id]);
     }
 }

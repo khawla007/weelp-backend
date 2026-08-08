@@ -5,8 +5,11 @@ namespace Tests\Feature\Public;
 use App\Models\Activity;
 use App\Models\Category;
 use App\Models\Itinerary;
+use App\Models\ItineraryMeta;
 use App\Models\Media;
 use App\Models\Package;
+use App\Models\User;
+use App\Services\CreatorItineraryLifecycleService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -67,5 +70,36 @@ class ShopEndpointTest extends TestCase
                 $shopItem['featured_image'] ?? null,
             );
         }
+    }
+
+    public function test_shop_hides_trashed_and_restored_draft_creator_itineraries(): void
+    {
+        $creator = User::factory()->creator()->create();
+        $trashed = $this->creatorItinerary($creator, 'approved');
+        $restored = $this->creatorItinerary($creator, 'approved');
+        $published = $this->creatorItinerary($creator, 'approved');
+        $service = app(CreatorItineraryLifecycleService::class);
+        $service->trash($trashed->id);
+        $service->trash($restored->id);
+        $service->restoreToDraft($restored->id, $creator->id);
+
+        $response = $this->getJson('/api/shop')->assertOk();
+
+        $ids = collect($response->json('data'))->where('item_type', 'itinerary')->pluck('id');
+        $this->assertFalse($ids->contains($trashed->id));
+        $this->assertFalse($ids->contains($restored->id));
+        $this->assertTrue($ids->contains($published->id));
+    }
+
+    private function creatorItinerary(User $creator, string $status): Itinerary
+    {
+        $itinerary = Itinerary::factory()->create();
+        ItineraryMeta::create([
+            'itinerary_id' => $itinerary->id,
+            'creator_id' => $creator->id,
+            'status' => $status,
+        ]);
+
+        return $itinerary->fresh('meta');
     }
 }

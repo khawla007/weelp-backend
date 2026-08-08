@@ -27,6 +27,14 @@ class WishlistController extends Controller
         $perPage = min(max((int) $request->integer('per_page', 20), 1), 50);
         $paginated = WishlistItem::query()
             ->forUser($request->user()->id)
+            ->where(function ($query): void {
+                $query->where('item_type', '!=', WishlistItem::TYPE_ITINERARY)
+                    ->orWhere(function ($itineraryItems): void {
+                        $itineraryItems
+                            ->where('item_type', WishlistItem::TYPE_ITINERARY)
+                            ->whereIn('item_id', Itinerary::publiclyVisible()->select('id'));
+                    });
+            })
             ->latest()
             ->paginate($perPage);
 

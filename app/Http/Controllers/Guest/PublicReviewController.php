@@ -34,6 +34,7 @@ class PublicReviewController extends Controller
         $query = Review::with(['user', 'item', 'mediaGallery.media'])
             ->where('status', 'approved')
             ->orderBy('created_at', 'desc');
+        $this->excludeNonPublicItineraryReviews($query);
 
         if ($citySlug) {
             $city = City::where('slug', $citySlug)->first();
@@ -85,6 +86,7 @@ class PublicReviewController extends Controller
             ->orderByDesc('is_featured')
             ->orderByDesc('rating')
             ->orderByDesc('created_at');
+        $this->excludeNonPublicItineraryReviews($query);
 
         if ($citySlug) {
             $city = City::where('slug', $citySlug)->first();
@@ -281,7 +283,7 @@ class PublicReviewController extends Controller
      */
     public function getItineraryReviews($itinerarySlug)
     {
-        $itinerary = Itinerary::where('slug', $itinerarySlug)->first();
+        $itinerary = Itinerary::publiclyVisible()->where('slug', $itinerarySlug)->first();
 
         if (! $itinerary) {
             return response()->json(['success' => false, 'message' => 'Itinerary not found'], 404);
@@ -366,7 +368,7 @@ class PublicReviewController extends Controller
      */
     public function getItineraryFeaturedReviews($itinerarySlug)
     {
-        $itinerary = Itinerary::where('slug', $itinerarySlug)->first();
+        $itinerary = Itinerary::publiclyVisible()->where('slug', $itinerarySlug)->first();
 
         if (! $itinerary) {
             return response()->json(['success' => false, 'message' => 'Itinerary not found'], 404);
@@ -405,6 +407,18 @@ class PublicReviewController extends Controller
         ]);
     }
 
+    private function excludeNonPublicItineraryReviews($query): void
+    {
+        $query->where(function ($visibility): void {
+            $visibility->where('item_type', '!=', 'itinerary')
+                ->orWhere(function ($itineraryReviews): void {
+                    $itineraryReviews
+                        ->where('item_type', 'itinerary')
+                        ->whereIn('item_id', Itinerary::publiclyVisible()->select('id'));
+                });
+        });
+    }
+
     /**
      * Filter reviews to items located in a specific city.
      * Uses direct subqueries per item type to avoid morphTo limitations.
@@ -413,7 +427,7 @@ class PublicReviewController extends Controller
     {
         $activityIds = Activity::whereHas('locations', fn ($l) => $l->where('city_id', $cityId))->pluck('id');
         $packageIds = Package::whereHas('locations', fn ($l) => $l->where('city_id', $cityId))->pluck('id');
-        $itineraryIds = Itinerary::whereHas('locations', fn ($l) => $l->where('city_id', $cityId))->pluck('id');
+        $itineraryIds = Itinerary::publiclyVisible()->whereHas('locations', fn ($l) => $l->where('city_id', $cityId))->pluck('id');
 
         $query->where(function ($q) use ($activityIds, $packageIds, $itineraryIds) {
             $q->where(function ($sub) use ($activityIds) {

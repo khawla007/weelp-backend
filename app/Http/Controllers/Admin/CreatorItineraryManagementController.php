@@ -9,8 +9,10 @@ use App\Mail\ItineraryEditRejectedMail;
 use App\Mail\ItineraryRejectedMail;
 use App\Mail\ItineraryRemovalApprovedMail;
 use App\Mail\ItineraryRemovalRejectedMail;
+use App\Mail\ItineraryTrashedMail;
 use App\Models\Itinerary;
 use App\Models\Notification;
+use App\Services\CreatorItineraryLifecycleService;
 use App\Services\ItineraryDraftService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -22,18 +24,37 @@ class CreatorItineraryManagementController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $query = Itinerary::creatorCopies()
+        $validated = $request->validate([
+            'view' => ['sometimes', \Illuminate\Validation\Rule::in(['active', 'trash'])],
+            'status' => ['sometimes', \Illuminate\Validation\Rule::in(['draft', 'pending', 'approved', 'rejected'])],
+            'page' => ['sometimes', 'integer', 'min:1'],
+        ]);
+        $view = $validated['view'] ?? 'active';
+        $query = ($view === 'trash' ? Itinerary::onlyTrashed() : Itinerary::query())
+            ->standaloneCreator()
             ->with(['creator', 'parentItinerary.locations.city', 'locations', 'mediaGallery.media']);
 
-        if ($request->has('status')) {
-            $query->whereHas('meta', fn ($q) => $q->where('status', $request->status));
+        if ($view === 'active' && isset($validated['status'])) {
+            $query->whereHas('meta', fn ($q) => $q->where('status', $validated['status']));
         }
 
         $itineraries = $query->latest()->paginate(15);
+        $itineraries->getCollection()->transform(function (Itinerary $itinerary): Itinerary {
+            if ($itinerary->trashed()) {
+                $purgeAt = $itinerary->deleted_at->copy()->addDays(30);
+                $today = now(config('app.timezone'))->startOfDay();
+                $purgeDay = $purgeAt->copy()->timezone(config('app.timezone'))->startOfDay();
+                $itinerary->setAttribute('purge_at', $purgeAt->toIso8601String());
+                $itinerary->setAttribute('days_until_purge', max(0, $today->diffInDays($purgeDay, false)));
+            }
+
+            return $itinerary;
+        });
 
         return response()->json([
             'success' => true,
             'data' => $itineraries,
+            'trash_count' => Itinerary::onlyTrashed()->standaloneCreator()->count(),
         ]);
     }
 
@@ -164,40 +185,28 @@ class CreatorItineraryManagementController extends Controller
 
     public function approve($id): JsonResponse
     {
-        $itinerary = Itinerary::creatorCopies()->find($id);
-
-        if (! $itinerary) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Creator itinerary not found',
-            ], 404);
-        }
-
-        if ($itinerary->status !== 'pending') {
-            return response()->json([
-                'success' => false,
-                'message' => 'Only pending itineraries can be approved.',
-            ], 422);
-        }
-
-        $itinerary->update(['status' => 'approved']);
-
-        Notification::create([
-            'user_id' => $itinerary->creator_id,
-            'type' => 'itinerary_approved',
-            'title' => 'Itinerary Approved',
-            'message' => "Your itinerary \"{$itinerary->name}\" has been approved and is now visible on the Explore page.",
-            'data' => ['itinerary_id' => $itinerary->id],
-        ]);
+        $itinerary = app(CreatorItineraryLifecycleService::class)->publish(
+            (int) $id,
+            fn (Itinerary $locked) => $this->notifyCreator(
+                $locked,
+                'itinerary_approved',
+                'Itinerary Approved',
+                "Your itinerary \"{$locked->name}\" has been approved and is now visible on the Explore page.",
+            ),
+        );
 
         $itinerary->load('creator');
-        try {
-            Mail::to($itinerary->creator->email)->send(new ItineraryApprovedMail($itinerary, $itinerary->creator));
-        } catch (\Exception $e) {
-            Log::error('Failed to send itinerary approved email', [
-                'itinerary_id' => $itinerary->id,
-                'error' => $e->getMessage(),
-            ]);
+        if ($itinerary->creator) {
+            try {
+                Mail::to($itinerary->creator->email)->send(new ItineraryApprovedMail($itinerary, $itinerary->creator));
+            } catch (\Throwable $exception) {
+                Log::error('Failed to send itinerary approved email', [
+                    'itinerary_id' => $itinerary->id,
+                    'error' => $exception->getMessage(),
+                ]);
+            }
+        } else {
+            Log::warning('Skipped itinerary approved email because creator is missing', ['itinerary_id' => $itinerary->id]);
         }
 
         return response()->json([
@@ -209,101 +218,84 @@ class CreatorItineraryManagementController extends Controller
 
     public function updateAndApprove(Request $request, $id): JsonResponse
     {
-        $itinerary = Itinerary::creatorCopies()->find($id);
-        if (! $itinerary) {
-            return response()->json(['success' => false, 'message' => 'Creator itinerary not found'], 404);
-        }
+        $result = DB::transaction(function () use ($request, $id): array {
+            $itinerary = Itinerary::standaloneCreator()->lockForUpdate()->find($id);
+            if (! $itinerary) {
+                return ['response' => response()->json(['success' => false, 'message' => 'Creator itinerary not found'], 404)];
+            }
+            if ($itinerary->status !== 'pending') {
+                return ['response' => response()->json(['success' => false, 'message' => 'Only pending itineraries can be approved.'], 422)];
+            }
 
-        if ($itinerary->status !== 'pending') {
-            return response()->json(['success' => false, 'message' => 'Only pending itineraries can be approved.'], 422);
-        }
-
-        // Wrap everything in a transaction for atomicity
-        $response = DB::transaction(function () use ($request, $id, $itinerary) {
-            // Update using existing ItineraryController logic
             $adminController = app(\App\Http\Controllers\Admin\ItineraryController::class);
             $updateResponse = $adminController->update($request, $id);
 
             if ($updateResponse->getStatusCode() !== 200) {
-                // Transaction will rollback automatically
-                return $updateResponse;
+                return ['response' => $updateResponse];
             }
 
-            // Reload to get fresh data after update
-            $itinerary->fresh();
+            $published = app(CreatorItineraryLifecycleService::class)->publish(
+                (int) $id,
+                fn (Itinerary $locked) => $this->notifyCreator(
+                    $locked,
+                    'itinerary_approved',
+                    'Itinerary Approved',
+                    "Your itinerary \"{$locked->name}\" has been approved.",
+                ),
+            )->load('creator');
 
-            // Approve the itinerary
-            $itinerary->update(['status' => 'approved']);
-
-            // Send notification (within transaction for consistency)
-            Notification::create([
-                'user_id' => $itinerary->creator_id,
-                'type' => 'itinerary_approved',
-                'title' => 'Itinerary Approved',
-                'message' => "Your itinerary \"{$itinerary->name}\" has been approved.",
-                'data' => ['itinerary_id' => $itinerary->id],
-            ]);
-
-            // Load creator before exiting transaction
-            $itinerary->load('creator');
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Itinerary updated and approved.',
-                'data' => $itinerary,
-            ]);
+            return ['itinerary' => $published];
         });
 
-        // Email is sent OUTSIDE transaction (after commit)
-        // We don't want email sending failure to rollback the database changes
-        try {
-            Mail::to($itinerary->creator->email)->send(new ItineraryApprovedMail($itinerary, $itinerary->creator));
-        } catch (\Exception $e) {
-            Log::error('Failed to send itinerary approved email', [
-                'itinerary_id' => $itinerary->id,
-                'error' => $e->getMessage(),
-            ]);
+        if (isset($result['response'])) {
+            return $result['response'];
         }
 
-        return $response;
+        $itinerary = $result['itinerary'];
+        if ($itinerary->creator) {
+            try {
+                Mail::to($itinerary->creator->email)->send(new ItineraryApprovedMail($itinerary, $itinerary->creator));
+            } catch (\Throwable $exception) {
+                Log::error('Failed to send itinerary approved email', [
+                    'itinerary_id' => $itinerary->id,
+                    'error' => $exception->getMessage(),
+                ]);
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Itinerary updated and approved.',
+            'data' => $itinerary,
+        ]);
     }
 
     public function reject(Request $request, $id): JsonResponse
     {
-        $itinerary = Itinerary::creatorCopies()->find($id);
-
-        if (! $itinerary) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Creator itinerary not found',
-            ], 404);
-        }
-
-        if ($itinerary->status !== 'pending') {
-            return response()->json([
-                'success' => false,
-                'message' => 'Only pending itineraries can be rejected.',
-            ], 422);
-        }
-
-        $itinerary->update(['status' => 'rejected']);
-
-        Notification::create([
-            'user_id' => $itinerary->creator_id,
-            'type' => 'itinerary_rejected',
-            'title' => 'Itinerary Rejected',
-            'message' => "Your itinerary \"{$itinerary->name}\" was not approved.",
-            'data' => ['itinerary_id' => $itinerary->id],
-        ]);
+        $validated = $request->validate(['reason' => ['nullable', 'string', 'max:2000']]);
+        $itinerary = app(CreatorItineraryLifecycleService::class)->rejectPublication(
+            (int) $id,
+            $validated['reason'] ?? null,
+            fn (Itinerary $locked) => $this->notifyCreator(
+                $locked,
+                'itinerary_rejected',
+                'Itinerary Rejected',
+                "Your itinerary \"{$locked->name}\" was not approved.",
+            ),
+        );
 
         $itinerary->load('creator');
-        try {
-            Mail::to($itinerary->creator->email)->send(new ItineraryRejectedMail($itinerary, $itinerary->creator));
-        } catch (\Exception $e) {
-            Log::error('Failed to send itinerary rejected email', [
-                'itinerary_id' => $itinerary->id,
-                'error' => $e->getMessage(),
-            ]);
+        if ($itinerary->creator) {
+            try {
+                Mail::to($itinerary->creator->email)->send(new ItineraryRejectedMail($itinerary, $itinerary->creator));
+            } catch (\Throwable $exception) {
+                Log::error('Failed to send itinerary rejected email', [
+                    'itinerary_id' => $itinerary->id,
+                    'error' => $exception->getMessage(),
+                ]);
+            }
+        } else {
+            Log::warning('Skipped itinerary rejected email because creator is missing', ['itinerary_id' => $itinerary->id]);
         }
 
         return response()->json([
@@ -327,38 +319,91 @@ class CreatorItineraryManagementController extends Controller
 
     public function destroy($id): JsonResponse
     {
-        $itinerary = Itinerary::creatorCopies()->find($id);
-        if (! $itinerary) {
-            return response()->json(['success' => false, 'message' => 'Creator itinerary not found'], 404);
+        $itinerary = app(CreatorItineraryLifecycleService::class)->trash(
+            (int) $id,
+            function (Itinerary $locked): void {
+                $purgeAt = $locked->deleted_at->copy()->addDays(30);
+                $this->notifyCreator(
+                    $locked,
+                    'itinerary_trashed',
+                    'Itinerary Moved to Trash',
+                    "Your itinerary \"{$locked->name}\" was moved to Trash. It will be permanently removed on {$purgeAt->toFormattedDateString()} unless restored.",
+                    [
+                        'deleted_at' => $locked->deleted_at->toIso8601String(),
+                        'purge_at' => $purgeAt->toIso8601String(),
+                    ],
+                );
+            },
+        );
+        $itinerary->load('creator');
+
+        if ($itinerary->creator) {
+            try {
+                Mail::to($itinerary->creator->email)->send(new ItineraryTrashedMail(
+                    $itinerary,
+                    $itinerary->creator,
+                    $itinerary->deleted_at->copy()->addDays(30),
+                ));
+            } catch (\Throwable $exception) {
+                Log::error('Failed to send itinerary trashed email', [
+                    'itinerary_id' => $itinerary->id,
+                    'error' => $exception->getMessage(),
+                ]);
+            }
+        } else {
+            Log::warning('Skipped itinerary trashed email because creator is missing', ['itinerary_id' => $itinerary->id]);
         }
 
-        DB::transaction(function () use ($itinerary) {
-            if ($itinerary->draft_itinerary_id) {
-                $draft = Itinerary::find($itinerary->draft_itinerary_id);
-                if ($draft) {
-                    (new ItineraryDraftService)->deleteDraft($draft);
-                }
+        return response()->json(['success' => true, 'message' => 'Itinerary moved to Trash.']);
+    }
+
+    public function restore($id): JsonResponse
+    {
+        $itinerary = app(CreatorItineraryLifecycleService::class)->restoreToDraft((int) $id);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Itinerary restored to Draft.',
+            'data' => $itinerary,
+        ]);
+    }
+
+    public function publish($id): JsonResponse
+    {
+        $itinerary = app(CreatorItineraryLifecycleService::class)->publish(
+            (int) $id,
+            fn (Itinerary $locked) => $this->notifyCreator(
+                $locked,
+                'itinerary_approved',
+                'Itinerary Approved',
+                "Your itinerary \"{$locked->name}\" has been approved and is now public.",
+            ),
+        );
+        $itinerary->load('creator');
+
+        if ($itinerary->creator) {
+            try {
+                Mail::to($itinerary->creator->email)->send(new ItineraryApprovedMail($itinerary, $itinerary->creator));
+            } catch (\Throwable $exception) {
+                Log::error('Failed to send itinerary approved email', [
+                    'itinerary_id' => $itinerary->id,
+                    'error' => $exception->getMessage(),
+                ]);
             }
+        } else {
+            Log::warning('Skipped itinerary approved email because creator is missing', ['itinerary_id' => $itinerary->id]);
+        }
 
-            $itinerary->schedules()->each(function ($schedule) {
-                $schedule->activities()->delete();
-                $schedule->transfers()->delete();
-                $schedule->delete();
-            });
-            $itinerary->locations()->delete();
-            $itinerary->basePricing?->variations()?->delete();
-            $itinerary->basePricing?->delete();
-            $itinerary->inclusionsExclusions()->delete();
-            $itinerary->mediaGallery()->delete();
-            $itinerary->seo?->delete();
-            $itinerary->categories()->delete();
-            $itinerary->tags()->delete();
-            $itinerary->attributes()->delete();
-            $itinerary->addons()->delete();
-            $itinerary->delete();
-        });
+        return response()->json(['success' => true, 'message' => 'Itinerary published.', 'data' => $itinerary]);
+    }
 
-        return response()->json(['success' => true, 'message' => 'Itinerary removed.']);
+    public function forceDestroy($id): JsonResponse
+    {
+        if (! app(CreatorItineraryLifecycleService::class)->forceDelete((int) $id)) {
+            return response()->json(['success' => false, 'message' => 'Trashed creator itinerary not found.'], 404);
+        }
+
+        return response()->json(['success' => true, 'message' => 'Itinerary permanently deleted.']);
     }
 
     public function approveEdit($id): JsonResponse
@@ -435,32 +480,27 @@ class CreatorItineraryManagementController extends Controller
 
     public function approveRemoval($id): JsonResponse
     {
-        $itinerary = Itinerary::creatorCopies()->find($id);
-        if (! $itinerary || $itinerary->removal_status !== 'requested') {
-            return response()->json(['success' => false, 'message' => 'No pending removal request found.'], 404);
-        }
-
-        $itinerary->update([
-            'status' => 'deleted',
-            'removal_status' => 'approved',
-        ]);
-
-        Notification::create([
-            'user_id' => $itinerary->creator_id,
-            'type' => 'itinerary_removal_approved',
-            'title' => 'Itinerary Removed',
-            'message' => "Your itinerary \"{$itinerary->name}\" has been removed.",
-            'data' => ['itinerary_id' => $itinerary->id],
-        ]);
+        $itinerary = app(CreatorItineraryLifecycleService::class)->trash(
+            (int) $id,
+            fn (Itinerary $locked) => $this->notifyCreator(
+                $locked,
+                'itinerary_removal_approved',
+                'Itinerary Removed',
+                "Your itinerary \"{$locked->name}\" has been removed.",
+            ),
+            requireRemovalRequest: true,
+        );
 
         $itinerary->load('creator');
-        try {
-            Mail::to($itinerary->creator->email)->send(new ItineraryRemovalApprovedMail($itinerary, $itinerary->creator));
-        } catch (\Exception $e) {
-            Log::error('Failed to send removal approved email', [
-                'itinerary_id' => $itinerary->id,
-                'error' => $e->getMessage(),
-            ]);
+        if ($itinerary->creator) {
+            try {
+                Mail::to($itinerary->creator->email)->send(new ItineraryRemovalApprovedMail($itinerary, $itinerary->creator));
+            } catch (\Throwable $exception) {
+                Log::error('Failed to send removal approved email', [
+                    'itinerary_id' => $itinerary->id,
+                    'error' => $exception->getMessage(),
+                ]);
+            }
         }
 
         return response()->json(['success' => true, 'message' => 'Removal approved.']);
@@ -468,35 +508,54 @@ class CreatorItineraryManagementController extends Controller
 
     public function rejectRemoval($id): JsonResponse
     {
-        $itinerary = Itinerary::creatorCopies()->find($id);
-        if (! $itinerary || $itinerary->removal_status !== 'requested') {
-            return response()->json(['success' => false, 'message' => 'No pending removal request found.'], 404);
-        }
-
-        $itinerary->update([
-            'removal_status' => null,
-            'removal_reason' => null,
-        ]);
-
-        Notification::create([
-            'user_id' => $itinerary->creator_id,
-            'type' => 'itinerary_removal_rejected',
-            'title' => 'Removal Request Declined',
-            'message' => "Your removal request for \"{$itinerary->name}\" was declined.",
-            'data' => ['itinerary_id' => $itinerary->id],
-        ]);
+        $itinerary = app(CreatorItineraryLifecycleService::class)->rejectRemoval(
+            (int) $id,
+            fn (Itinerary $locked) => $this->notifyCreator(
+                $locked,
+                'itinerary_removal_rejected',
+                'Removal Request Declined',
+                "Your removal request for \"{$locked->name}\" was declined.",
+            ),
+        );
 
         $itinerary->load('creator');
-        try {
-            Mail::to($itinerary->creator->email)->send(new ItineraryRemovalRejectedMail($itinerary, $itinerary->creator));
-        } catch (\Exception $e) {
-            Log::error('Failed to send removal rejected email', [
-                'itinerary_id' => $itinerary->id,
-                'error' => $e->getMessage(),
-            ]);
+        if ($itinerary->creator) {
+            try {
+                Mail::to($itinerary->creator->email)->send(new ItineraryRemovalRejectedMail($itinerary, $itinerary->creator));
+            } catch (\Throwable $exception) {
+                Log::error('Failed to send removal rejected email', [
+                    'itinerary_id' => $itinerary->id,
+                    'error' => $exception->getMessage(),
+                ]);
+            }
         }
 
         return response()->json(['success' => true, 'message' => 'Removal rejected.']);
+    }
+
+    private function notifyCreator(
+        Itinerary $itinerary,
+        string $type,
+        string $title,
+        string $message,
+        array $data = [],
+    ): void {
+        if (! $itinerary->creator_id) {
+            Log::warning('Skipped creator notification because creator is missing', [
+                'itinerary_id' => $itinerary->id,
+                'notification_type' => $type,
+            ]);
+
+            return;
+        }
+
+        Notification::create([
+            'user_id' => $itinerary->creator_id,
+            'type' => $type,
+            'title' => $title,
+            'message' => $message,
+            'data' => ['itinerary_id' => $itinerary->id, ...$data],
+        ]);
     }
 
     /**

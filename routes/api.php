@@ -209,6 +209,8 @@ Route::middleware(['auth:api', 'creator'])->prefix('creator')->group(function ()
     Route::put('/itineraries/drafts/{id}', [CreatorItineraryController::class, 'updateDraft']);
     Route::put('/itineraries/drafts/{id}/submit', [CreatorItineraryController::class, 'submitDraft']);
     Route::post('/itineraries/{id}/request-removal', [CreatorItineraryController::class, 'requestRemoval']);
+    Route::post('/itineraries/{id}/restore', [CreatorItineraryController::class, 'restore']);
+    Route::post('/itineraries/{id}/request-publish', [CreatorItineraryController::class, 'requestPublish']);
 
     // Creator Itineraries - Create new draft from Explore page
     Route::post('/itineraries/create', [CreatorItineraryController::class, 'createDraft']);
@@ -554,6 +556,9 @@ Route::middleware(['auth:api', 'admin', 'throttle:60,1'])->prefix('admin')->grou
     // Admin Creator Itinerary Management
     Route::prefix('creator-itineraries')->group(function () {
         Route::get('/', [CreatorItineraryManagementController::class, 'index']);
+        Route::post('/{id}/restore', [CreatorItineraryManagementController::class, 'restore']);
+        Route::put('/{id}/publish', [CreatorItineraryManagementController::class, 'publish']);
+        Route::delete('/{id}/force', [CreatorItineraryManagementController::class, 'forceDestroy']);
         Route::get('/{id}', [CreatorItineraryManagementController::class, 'show']);
         Route::get('/{id}/original', [CreatorItineraryManagementController::class, 'original']);
         Route::put('/{id}/approve', [CreatorItineraryManagementController::class, 'approve']);

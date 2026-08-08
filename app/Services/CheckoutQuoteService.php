@@ -73,7 +73,12 @@ final class CheckoutQuoteService
         ];
         $class = $map[$selection['order_type'] ?? ''] ?? null;
         $id = filter_var($selection['orderable_id'] ?? null, FILTER_VALIDATE_INT);
-        $orderable = $class && $id ? $class::find($id) : null;
+        $orderable = null;
+        if ($class && $id) {
+            $orderable = $class === Itinerary::class
+                ? Itinerary::publiclyVisible()->find($id)
+                : $class::find($id);
+        }
 
         if (! $orderable) {
             throw new DomainException('item_unavailable');

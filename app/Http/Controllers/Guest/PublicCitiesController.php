@@ -410,7 +410,7 @@ class PublicCitiesController extends Controller
             : null;
 
         $itineraries = (! $itemType || $itemType === 'itinerary')
-            ? Itinerary::whereHas('locations', fn ($query) => $query->where('city_id', $city->id))
+            ? Itinerary::publiclyVisible()->whereHas('locations', fn ($query) => $query->where('city_id', $city->id))
                 ->with([
                     'basePricing.variations',
                     'mediaGallery.media',

@@ -7,6 +7,9 @@ use App\Mail\ItineraryEditSubmittedMail;
 use App\Mail\ItineraryRemovalRequestedMail;
 use App\Mail\ItinerarySubmittedAdminMail;
 use App\Models\Itinerary;
+use App\Models\Notification;
+use App\Models\User;
+use App\Services\CreatorItineraryLifecycleService;
 use App\Services\ItineraryDraftService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -67,6 +70,7 @@ class CreatorItineraryController extends Controller
         };
 
         $data = $draft->toArray();
+        $data['draft_mode'] = $draft->draftParentMeta()->exists() ? 'edit' : 'standalone';
         $data['schedules'] = $draft->schedules->map(function ($schedule) use ($shapeMediaGallery) {
             return [
                 'day' => $schedule->day,
@@ -294,6 +298,13 @@ class CreatorItineraryController extends Controller
             return response()->json(['success' => false, 'message' => 'Draft not found.'], 404);
         }
 
+        if (! $draft->draftParentMeta()->exists()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Standalone Drafts must use Request publish.',
+            ], 422);
+        }
+
         $draft->update(['status' => 'edit_pending']);
 
         $approved = Itinerary::whereHas('meta', fn ($q) => $q->where('draft_itinerary_id', $draft->id))->first();
@@ -314,28 +325,12 @@ class CreatorItineraryController extends Controller
 
     public function requestRemoval(Request $request, $id): JsonResponse
     {
-        $itinerary = Itinerary::whereHas('meta', fn ($q) => $q->where('creator_id', Auth::id()))
-            ->approved()
-            ->find($id);
-
-        if (! $itinerary) {
-            return response()->json(['success' => false, 'message' => 'Approved itinerary not found.'], 404);
-        }
-
-        if ($itinerary->draft_itinerary_id) {
-            return response()->json(['success' => false, 'message' => 'Cannot request removal while an edit draft exists.'], 422);
-        }
-
-        if ($itinerary->removal_status === 'requested') {
-            return response()->json(['success' => false, 'message' => 'A removal request is already pending.'], 422);
-        }
-
-        $request->validate(['reason' => 'nullable|string|max:1000']);
-
-        $itinerary->update([
-            'removal_status' => 'requested',
-            'removal_reason' => $request->reason,
-        ]);
+        $validated = $request->validate(['reason' => 'nullable|string|max:1000']);
+        $itinerary = app(CreatorItineraryLifecycleService::class)->requestRemoval(
+            (int) $id,
+            (int) Auth::id(),
+            $validated['reason'] ?? null,
+        );
 
         $creator = Auth::user();
         try {
@@ -349,6 +344,54 @@ class CreatorItineraryController extends Controller
         }
 
         return response()->json(['success' => true, 'message' => 'Removal request submitted.']);
+    }
+
+    public function restore($id): JsonResponse
+    {
+        $itinerary = app(CreatorItineraryLifecycleService::class)
+            ->restoreToDraft((int) $id, (int) Auth::id());
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Itinerary restored to Draft.',
+            'data' => $itinerary,
+        ]);
+    }
+
+    public function requestPublish($id): JsonResponse
+    {
+        $admins = User::query()->whereIn('role', [User::ROLE_ADMIN, User::ROLE_SUPER_ADMIN])->get();
+        $itinerary = app(CreatorItineraryLifecycleService::class)->requestPublication(
+            (int) $id,
+            (int) Auth::id(),
+            function (Itinerary $locked) use ($admins): void {
+                foreach ($admins as $admin) {
+                    Notification::create([
+                        'user_id' => $admin->id,
+                        'type' => 'itinerary_publication_requested',
+                        'title' => 'Itinerary Publication Requested',
+                        'message' => "A creator requested publication for \"{$locked->name}\".",
+                        'data' => ['itinerary_id' => $locked->id],
+                    ]);
+                }
+            },
+        );
+
+        try {
+            Mail::to(config('mail.admin_address', 'khawla@fanaticcoders.com'))
+                ->send(new ItinerarySubmittedAdminMail($itinerary, Auth::user()));
+        } catch (\Throwable $exception) {
+            Log::error('Failed to send itinerary publication request email', [
+                'itinerary_id' => $itinerary->id,
+                'error' => $exception->getMessage(),
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Publication request submitted.',
+            'data' => $itinerary,
+        ]);
     }
 
     /**

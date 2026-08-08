@@ -20,7 +20,7 @@ class ItineraryDraftService
 
             $draft = Itinerary::create([
                 'name' => $approved->name,
-                'slug' => $approved->slug . '-draft-' . time(),
+                'slug' => $approved->slug.'-draft-'.time(),
                 'description' => $approved->description,
                 'featured_itinerary' => false,
                 'private_itinerary' => true,
@@ -95,7 +95,7 @@ class ItineraryDraftService
                 $slug = $baseSlug;
                 $counter = 1;
                 while (Itinerary::where('slug', $slug)->where('id', '!=', $approved->id)->exists()) {
-                    $slug = $baseSlug . '-' . $counter;
+                    $slug = $baseSlug.'-'.$counter;
                     $counter++;
                 }
             }
@@ -165,6 +165,6 @@ class ItineraryDraftService
             $schedule->delete();
         });
         $draft->locations()->delete();
-        $draft->delete();
+        $draft->forceDelete();
     }
 }

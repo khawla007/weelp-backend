@@ -22,11 +22,14 @@ class ItineraryMeta extends Model
         'likes_count',
         'removal_status',
         'removal_reason',
+        'publication_requested_at',
+        'publication_rejection_reason',
     ];
 
     protected $casts = [
         'views_count' => 'integer',
         'likes_count' => 'integer',
+        'publication_requested_at' => 'datetime',
     ];
 
     public function itinerary()

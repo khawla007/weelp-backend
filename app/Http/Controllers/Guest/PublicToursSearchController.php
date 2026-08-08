@@ -169,7 +169,7 @@ class PublicToursSearchController extends Controller
      */
     private function buildItineraryQuery(array $toCityIds, ?string $startDate, ?string $endDate, ?string $quantity)
     {
-        $query = Itinerary::with([
+        $query = Itinerary::publiclyVisible()->with([
             'categories' => function ($q) {
                 $q->with('category:id,name');
             },

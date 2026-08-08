@@ -20,7 +20,6 @@ use App\Models\ItineraryLocation;
 use App\Models\ItineraryMediaGallery;
 use App\Models\ItineraryPriceVariation;
 use App\Models\ItinerarySchedule;
-use App\Models\ItinerarySeo;
 use App\Models\ItineraryTag;
 use App\Models\ItineraryTransfer;
 use App\Support\SeoPayload;
@@ -1029,13 +1028,13 @@ class ItineraryController extends Controller
      */
     public function destroy(string $id)
     {
-        $itinerary = Itinerary::find($id);
+        $itinerary = Itinerary::original()->find($id);
 
         if (! $itinerary) {
             return response()->json(['message' => 'Itinerary not found'], 404);
         }
 
-        $itinerary->delete();
+        $itinerary->forceDelete();
 
         return response()->json(['message' => 'Itinerary deleted successfully']);
     }
@@ -1118,8 +1117,19 @@ class ItineraryController extends Controller
 
         DB::beginTransaction();
         try {
-            // This will automatically cascade delete related rows if foreign keys are set correctly
-            Itinerary::whereIn('id', $validated['itinerary_ids'])->delete();
+            $itineraries = Itinerary::original()
+                ->whereIn('id', $validated['itinerary_ids'])
+                ->get();
+
+            if ($itineraries->count() !== count(array_unique($validated['itinerary_ids']))) {
+                DB::rollBack();
+
+                return response()->json([
+                    'message' => 'Only original catalog itineraries can be permanently deleted here.',
+                ], 422);
+            }
+
+            $itineraries->each->forceDelete();
 
             DB::commit();
 

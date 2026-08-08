@@ -14,6 +14,7 @@ use App\Models\Place;
 use App\Models\Transfer;
 use App\Models\TransferVendorRoute;
 use App\Models\User;
+use App\Services\CreatorItineraryLifecycleService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
@@ -295,6 +296,33 @@ class WishlistTest extends TestCase
 
         $response->assertUnprocessable()
             ->assertJson(['success' => false]);
+    }
+
+    public function test_trashed_or_restored_draft_itinerary_snapshots_are_hidden_from_wishlist(): void
+    {
+        $user = $this->customer();
+        $creator = User::factory()->creator()->create();
+        $itinerary = Itinerary::factory()->create();
+        ItineraryMeta::query()->create([
+            'itinerary_id' => $itinerary->id,
+            'creator_id' => $creator->id,
+            'status' => 'approved',
+        ]);
+        $this->insertWishlistItem($user, 'itinerary', $itinerary);
+        $service = app(CreatorItineraryLifecycleService::class);
+        $service->trash($itinerary->id);
+
+        $this->actingAs($user, 'api')
+            ->getJson('/api/customer/wishlist')
+            ->assertOk()
+            ->assertJsonMissing(['item_id' => $itinerary->id]);
+
+        $service->restoreToDraft($itinerary->id, $creator->id);
+
+        $this->actingAs($user, 'api')
+            ->getJson('/api/customer/wishlist')
+            ->assertOk()
+            ->assertJsonMissing(['item_id' => $itinerary->id]);
     }
 
     public function test_private_packages_cannot_be_added_to_wishlist(): void

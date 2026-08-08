@@ -12,7 +12,7 @@ class PublicItineraryController extends Controller
     //  -------------------Code to grt itineraries with location details-------------------
     public function index(): JsonResponse
     {
-        $itineraries = Itinerary::with([
+        $itineraries = Itinerary::publiclyVisible()->with([
             'locations.city',
             'schedules.activities',
             'schedules.transfers',
@@ -124,7 +124,7 @@ class PublicItineraryController extends Controller
     {
         $citySlug = request()->query('city');
 
-        $query = Itinerary::with([
+        $query = Itinerary::publiclyVisible()->with([
             'locations.city',
             'schedules.activities',
             'schedules.transfers',
@@ -283,7 +283,7 @@ class PublicItineraryController extends Controller
     // ---------------------------New Code to get Single itinerary with location details--------------------------
     public function show(\Illuminate\Http\Request $request, $slug): JsonResponse
     {
-        $itinerary = Itinerary::with([
+        $itinerary = Itinerary::publiclyVisible()->with([
             'locations.city',
             'schedules.activities.activity.locations.city',
             'schedules.activities.activity.mediaGallery.media',
@@ -462,7 +462,7 @@ class PublicItineraryController extends Controller
      */
     public function getAddons($slug): JsonResponse
     {
-        $itinerary = Itinerary::where('slug', $slug)->first();
+        $itinerary = Itinerary::publiclyVisible()->where('slug', $slug)->first();
 
         if (! $itinerary) {
             return response()->json([

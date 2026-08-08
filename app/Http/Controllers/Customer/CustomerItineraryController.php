@@ -9,6 +9,7 @@ use App\Services\ItineraryDeepCopyService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 
 class CustomerItineraryController extends Controller
 {
@@ -20,7 +21,7 @@ class CustomerItineraryController extends Controller
             ->select('id', 'name', 'slug', 'state_id');
 
         if ($request->has('search')) {
-            $query->where('name', 'like', '%' . $request->search . '%');
+            $query->where('name', 'like', '%'.$request->search.'%');
         }
 
         $cities = $query->orderBy('name')
@@ -46,7 +47,7 @@ class CustomerItineraryController extends Controller
             ->select('id', 'name', 'slug', 'description', 'item_type', 'featured_activity');
 
         if ($request->has('search')) {
-            $query->where('name', 'like', '%' . $request->search . '%');
+            $query->where('name', 'like', '%'.$request->search.'%');
         }
 
         $activities = $query->get()->map(function ($activity) {
@@ -64,7 +65,7 @@ class CustomerItineraryController extends Controller
                 'type' => $activity->item_type,
                 'featured_image' => $featuredMedia?->media?->url,
                 'pricing' => $activity->pricing,
-                'tags' => $activity->tags->map(fn($t) => [
+                'tags' => $activity->tags->map(fn ($t) => [
                     'id' => $t->tag?->id,
                     'name' => $t->tag?->name,
                 ]),
@@ -121,7 +122,7 @@ class CustomerItineraryController extends Controller
             'mediaGallery.media',
         ])->original()->where('slug', $slug)->first();
 
-        if (!$itinerary) {
+        if (! $itinerary) {
             return response()->json([
                 'success' => false,
                 'message' => 'Itinerary not found',
@@ -140,7 +141,7 @@ class CustomerItineraryController extends Controller
 
         $original = Itinerary::original()->findOrFail($validated['parent_itinerary_id']);
 
-        $service = new ItineraryDeepCopyService();
+        $service = new ItineraryDeepCopyService;
         $copy = $service->deepCopy(
             $original,
             $validated['schedules'],
@@ -154,21 +155,50 @@ class CustomerItineraryController extends Controller
         ], 201);
     }
 
-    public function myItineraries(): JsonResponse
+    public function myItineraries(Request $request): JsonResponse
     {
         $userId = Auth::id();
+        $validated = $request->validate([
+            'view' => ['sometimes', \Illuminate\Validation\Rule::in(['active', 'trash'])],
+            'status' => ['sometimes', \Illuminate\Validation\Rule::in(['draft'])],
+            'page' => ['sometimes', 'integer', 'min:1'],
+        ]);
+        $view = $validated['view'] ?? 'active';
+        $status = $validated['status'] ?? null;
 
-        $itineraries = Itinerary::whereHas('meta', function ($q) use ($userId) {
-                $q->where(function ($q2) use ($userId) {
-                    $q2->where('user_id', $userId)
-                       ->orWhere('creator_id', $userId);
-                })->where('status', '!=', 'draft');
-            })
+        if ($view === 'trash') {
+            $query = Itinerary::onlyTrashed()
+                ->standaloneCreator()
+                ->whereHas('meta', fn ($meta) => $meta->where('creator_id', $userId));
+        } else {
+            $query = Itinerary::query()->where(function ($query) use ($userId, $status): void {
+                if ($status === null) {
+                    $query->whereHas('meta', function ($meta) use ($userId): void {
+                        $meta->where('user_id', $userId)
+                            ->where(fn ($statusQuery) => $statusQuery
+                                ->whereNull('status')
+                                ->orWhere('status', '!=', 'draft'));
+                    });
+                }
+
+                $query->orWhere(function ($creatorQuery) use ($userId, $status): void {
+                    $creatorQuery->standaloneCreator()
+                        ->whereHas('meta', function ($meta) use ($userId, $status): void {
+                            $meta->where('creator_id', $userId);
+                            if ($status !== null) {
+                                $meta->where('status', $status);
+                            }
+                        });
+                });
+            });
+        }
+
+        $itineraries = $query
             ->with([
                 'parentItinerary',
                 'mediaGallery.media',
                 'locations.city',
-                'schedules' => fn($q) => $q->orderBy('day'),
+                'schedules' => fn ($q) => $q->orderBy('day'),
                 'schedules.activities.activity.mediaGallery.media',
                 'schedules.transfers.transfer.mediaGallery.media',
             ])
@@ -176,6 +206,17 @@ class CustomerItineraryController extends Controller
             ->paginate(15);
 
         $itineraries->getCollection()->each->append(['featured_image', 'gallery_images']);
+        $itineraries->getCollection()->transform(function (Itinerary $itinerary): Itinerary {
+            if ($itinerary->trashed()) {
+                $purgeAt = $itinerary->deleted_at->copy()->addDays(30);
+                $today = now(config('app.timezone'))->startOfDay();
+                $purgeDay = $purgeAt->copy()->timezone(config('app.timezone'))->startOfDay();
+                $itinerary->setAttribute('purge_at', $purgeAt->toIso8601String());
+                $itinerary->setAttribute('days_until_purge', max(0, $today->diffInDays($purgeDay, false)));
+            }
+
+            return $itinerary;
+        });
 
         return response()->json([
             'success' => true,
@@ -186,13 +227,19 @@ class CustomerItineraryController extends Controller
     public function bookItinerary(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'itinerary_id' => 'required|integer|exists:itineraries,id',
+            'itinerary_id' => 'required|integer',
             'travel_date' => 'required|date|after:today',
             'number_of_travelers' => 'required|integer|min:1',
             'addons' => 'array',
             'addons.*.addon_id' => 'integer|exists:addons,id',
             'addons.*.quantity' => 'integer|min:1',
         ]);
+
+        if (! Itinerary::publiclyVisible()->whereKey($validated['itinerary_id'])->exists()) {
+            throw ValidationException::withMessages([
+                'itinerary_id' => 'The selected itinerary is not available for booking.',
+            ]);
+        }
 
         // This will integrate with existing order creation flow
         // For now, return a placeholder response

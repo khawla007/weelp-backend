@@ -12,3 +12,8 @@ Schedule::command('media:prune-orphans --execute')
     ->dailyAt('03:00')
     ->name('prune-orphan-media')
     ->withoutOverlapping();
+
+Schedule::command('itineraries:prune-trash --execute --days=30')
+    ->dailyAt('03:30')
+    ->name('prune-creator-itinerary-trash')
+    ->withoutOverlapping();

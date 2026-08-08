@@ -7,6 +7,7 @@ use App\Models\ActivityLocation;
 use App\Models\City;
 use App\Models\Itinerary;
 use App\Models\ItineraryLocation;
+use App\Models\ItineraryMeta;
 use App\Models\Media;
 use App\Models\Package;
 use App\Models\PackageLocation;
@@ -14,6 +15,7 @@ use App\Models\Review;
 use App\Models\ReviewMediaGallery;
 use App\Models\Transfer;
 use App\Models\User;
+use App\Services\CreatorItineraryLifecycleService;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -64,6 +66,39 @@ class ReviewEndpointTest extends TestCase
         $response = $this->getJson('/api/reviews');
 
         $response->assertOk();
+    }
+
+    public function test_review_pagination_excludes_restored_draft_itinerary_reviews_before_counting(): void
+    {
+        $user = User::factory()->create();
+        $creator = User::factory()->creator()->create();
+        $activity = Activity::factory()->create();
+        Review::factory()->create([
+            'user_id' => $user->id,
+            'item_type' => 'activity',
+            'item_id' => $activity->id,
+            'status' => 'approved',
+        ]);
+        $itinerary = Itinerary::factory()->create();
+        ItineraryMeta::create([
+            'itinerary_id' => $itinerary->id,
+            'creator_id' => $creator->id,
+            'status' => 'approved',
+        ]);
+        $hiddenReview = Review::factory()->create([
+            'user_id' => $user->id,
+            'item_type' => 'itinerary',
+            'item_id' => $itinerary->id,
+            'status' => 'approved',
+        ]);
+        $lifecycle = app(CreatorItineraryLifecycleService::class);
+        $lifecycle->trash($itinerary->id);
+        $lifecycle->restoreToDraft($itinerary->id, $creator->id);
+
+        $this->getJson('/api/reviews?per_page=1')
+            ->assertOk()
+            ->assertJsonPath('total', 1)
+            ->assertJsonMissing(['id' => $hiddenReview->id]);
     }
 
     public function test_featured_reviews(): void
