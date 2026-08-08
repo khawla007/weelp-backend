@@ -67,6 +67,7 @@ use App\Http\Controllers\Guest\PublicToursSearchController;
 use App\Http\Controllers\Guest\PublicTransferController;
 use App\Http\Controllers\Guest\SupportRequestController;
 use App\Http\Controllers\MediaController as PublicMediaController;
+use App\Http\Controllers\Shared\SharedItineraryResourcesController;
 use App\Http\Controllers\StripeController;
 use App\Http\Controllers\StripePaymentController;
 use App\Http\Controllers\UserProfileController;
@@ -604,6 +605,9 @@ Route::get('/city/{slug}', [PublicCitiesController::class, 'getCityDetails']);
 
 // getting all items by city (filter section)
 Route::get('/cities/{city_slug}/all-items', [PublicCitiesController::class, 'getAllItemsByCity']);
+
+// Place options used by the customer itinerary transfer editor.
+Route::get('/places', [SharedItineraryResourcesController::class, 'getPlaces']);
 
 // activity api
 Route::prefix('activities')->group(function () {
