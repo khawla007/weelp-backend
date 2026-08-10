@@ -89,6 +89,11 @@ class Review extends Model
         return $this->hasMany(ReviewMediaGallery::class)->orderBy('sort_order');
     }
 
+    public function helpfulVotes(): HasMany
+    {
+        return $this->hasMany(ReviewHelpfulVote::class);
+    }
+
     /**
      * Get display name - uses snapshot if item deleted
      */

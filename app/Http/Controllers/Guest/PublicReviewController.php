@@ -178,6 +178,7 @@ class PublicReviewController extends Controller
 
         // Paginated reviews
         $query = Review::with(['user', 'mediaGallery.media'])
+            ->withCount('helpfulVotes')
             ->where('item_type', 'activity')
             ->where('item_id', $activity->id)
             ->where('status', 'approved');
@@ -199,6 +200,7 @@ class PublicReviewController extends Controller
             'rating' => $review->rating,
             'review_text' => $review->review_text,
             'is_featured' => $review->is_featured,
+            'helpful_count' => (int) $review->helpful_votes_count,
             'user' => [
                 'id' => $review->user->id,
                 'name' => $review->user->name,
@@ -239,6 +241,7 @@ class PublicReviewController extends Controller
         }
 
         $reviews = Review::with(['user', 'mediaGallery.media'])
+            ->withCount('helpfulVotes')
             ->where('item_type', 'activity')
             ->where('item_id', $activity->id)
             ->where('status', 'approved')
@@ -252,6 +255,7 @@ class PublicReviewController extends Controller
             'rating' => $review->rating,
             'review_text' => $review->review_text,
             'is_featured' => $review->is_featured,
+            'helpful_count' => (int) $review->helpful_votes_count,
             'user' => [
                 'id' => $review->user->id,
                 'name' => $review->user->name,
@@ -314,6 +318,7 @@ class PublicReviewController extends Controller
         )->count();
 
         $query = Review::with(['user', 'mediaGallery.media'])
+            ->withCount('helpfulVotes')
             ->where('item_type', 'itinerary')
             ->where('item_id', $itinerary->id)
             ->where('status', 'approved');
@@ -335,6 +340,7 @@ class PublicReviewController extends Controller
             'rating' => $review->rating,
             'review_text' => $review->review_text,
             'is_featured' => $review->is_featured,
+            'helpful_count' => (int) $review->helpful_votes_count,
             'user' => [
                 'id' => $review->user->id,
                 'name' => $review->user->name,
@@ -375,6 +381,7 @@ class PublicReviewController extends Controller
         }
 
         $reviews = Review::with(['user', 'mediaGallery.media'])
+            ->withCount('helpfulVotes')
             ->where('item_type', 'itinerary')
             ->where('item_id', $itinerary->id)
             ->where('status', 'approved')
@@ -388,6 +395,7 @@ class PublicReviewController extends Controller
             'rating' => $review->rating,
             'review_text' => $review->review_text,
             'is_featured' => $review->is_featured,
+            'helpful_count' => (int) $review->helpful_votes_count,
             'user' => [
                 'id' => $review->user->id,
                 'name' => $review->user->name,

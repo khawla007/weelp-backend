@@ -67,6 +67,7 @@ use App\Http\Controllers\Guest\PublicToursSearchController;
 use App\Http\Controllers\Guest\PublicTransferController;
 use App\Http\Controllers\Guest\SupportRequestController;
 use App\Http\Controllers\MediaController as PublicMediaController;
+use App\Http\Controllers\ReviewHelpfulController;
 use App\Http\Controllers\Shared\SharedItineraryResourcesController;
 use App\Http\Controllers\StripeController;
 use App\Http\Controllers\StripePaymentController;
@@ -124,6 +125,12 @@ Route::middleware(['auth:api', 'throttle:30,1'])->prefix('user')->group(function
     Route::get('/profile', [UserProfileController::class, 'show']);
     Route::delete('/avatar', [UserProfileController::class, 'deleteAvatar']);
     Route::middleware('throttle:10,1,avatar')->post('/avatar', [UserProfileController::class, 'uploadAvatar']);
+});
+
+Route::middleware(['auth:api', 'throttle:30,1'])->prefix('reviews')->group(function () {
+    Route::get('/helpful-status', [ReviewHelpfulController::class, 'status']);
+    Route::put('/{review}/helpful', [ReviewHelpfulController::class, 'store'])->whereNumber('review');
+    Route::delete('/{review}/helpful', [ReviewHelpfulController::class, 'destroy'])->whereNumber('review');
 });
 
 // Route::middleware('auth:api')->group(function () {

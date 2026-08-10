@@ -18,6 +18,7 @@ use App\Models\User;
 use App\Services\CreatorItineraryLifecycleService;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class ReviewEndpointTest extends TestCase
@@ -220,6 +221,7 @@ class ReviewEndpointTest extends TestCase
             'media_id' => $media->id,
             'sort_order' => 0,
         ]);
+        $this->addHelpfulVotes($review, 2);
 
         $response = $this->getJson('/api/reviews/itinerary/adventure-tour-in-dubai?photos_only=true');
 
@@ -229,6 +231,7 @@ class ReviewEndpointTest extends TestCase
             ->assertJsonPath('summary.total_reviews', 1)
             ->assertJsonPath('summary.total_photos', 1)
             ->assertJsonPath('data.0.id', $review->id)
+            ->assertJsonPath('data.0.helpful_count', 2)
             ->assertJsonPath('data.0.user.name', 'Aisha Khan')
             ->assertJsonPath('data.0.media_gallery.0.id', $media->id)
             ->assertJsonPath('data.0.media_gallery.0.url', "/api/media/{$media->id}");
@@ -263,6 +266,7 @@ class ReviewEndpointTest extends TestCase
             'media_id' => $media->id,
             'sort_order' => 0,
         ]);
+        $this->addHelpfulVotes($featuredReview, 2);
 
         $response = $this->getJson('/api/reviews/itinerary/adventure-tour-in-dubai/featured');
 
@@ -271,9 +275,63 @@ class ReviewEndpointTest extends TestCase
             ->assertJsonPath('success', true)
             ->assertJsonCount(1, 'data')
             ->assertJsonPath('data.0.id', $featuredReview->id)
+            ->assertJsonPath('data.0.helpful_count', 2)
             ->assertJsonPath('data.0.media_gallery.0.url', "/api/media/{$media->id}");
 
         $this->assertNotSame($nonFeaturedReview->id, $response->json('data.0.id'));
+    }
+
+    public function test_activity_reviews_include_helpful_count(): void
+    {
+        $activity = Activity::factory()->create(['slug' => 'helpful-activity']);
+        $review = Review::factory()->create([
+            'user_id' => User::factory()->create()->id,
+            'item_type' => 'activity',
+            'item_id' => $activity->id,
+            'status' => 'approved',
+        ]);
+        $this->addHelpfulVotes($review, 2);
+
+        $this->getJson('/api/reviews/activity/helpful-activity')
+            ->assertOk()
+            ->assertJsonPath('data.0.id', $review->id)
+            ->assertJsonPath('data.0.helpful_count', 2);
+    }
+
+    public function test_activity_featured_reviews_include_helpful_count(): void
+    {
+        $activity = Activity::factory()->create(['slug' => 'helpful-featured-activity']);
+        $review = Review::factory()->create([
+            'user_id' => User::factory()->create()->id,
+            'item_type' => 'activity',
+            'item_id' => $activity->id,
+            'status' => 'approved',
+            'is_featured' => true,
+        ]);
+        $this->addHelpfulVotes($review, 2);
+
+        $this->getJson('/api/reviews/activity/helpful-featured-activity/featured')
+            ->assertOk()
+            ->assertJsonPath('data.0.id', $review->id)
+            ->assertJsonPath('data.0.helpful_count', 2);
+    }
+
+    public function test_activity_reviews_return_integer_zero_for_a_review_without_helpful_votes(): void
+    {
+        $activity = Activity::factory()->create(['slug' => 'zero-helpful-activity']);
+        $review = Review::factory()->create([
+            'user_id' => User::factory()->create()->id,
+            'item_type' => 'activity',
+            'item_id' => $activity->id,
+            'status' => 'approved',
+        ]);
+
+        $response = $this->getJson('/api/reviews/activity/zero-helpful-activity')
+            ->assertOk()
+            ->assertJsonPath('data.0.id', $review->id)
+            ->assertJsonPath('data.0.helpful_count', 0);
+
+        $this->assertIsInt($response->json('data.0.helpful_count'));
     }
 
     public function test_city_review_showcase_returns_featured_then_top_rated_reviews_with_limit(): void
@@ -404,5 +462,17 @@ class ReviewEndpointTest extends TestCase
             'item_slug_snapshot' => $itinerary->slug,
             'status' => 'approved',
         ], $reviewAttributes));
+    }
+
+    private function addHelpfulVotes(Review $review, int $count): void
+    {
+        User::factory()->count($count)->create()->each(function (User $voter) use ($review): void {
+            DB::table('review_helpful_votes')->insert([
+                'review_id' => $review->id,
+                'user_id' => $voter->id,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        });
     }
 }
