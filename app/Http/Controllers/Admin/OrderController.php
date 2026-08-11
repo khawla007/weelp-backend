@@ -148,7 +148,10 @@ class OrderController extends Controller
             });
         }
 
-        $orders = $query->paginate($perPage, ['*'], 'page', $page);
+        $orders = $query
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->paginate($perPage, ['*'], 'page', $page);
 
         $formatted = $orders->getCollection()->map(function ($order) {
             return [
@@ -164,6 +167,7 @@ class OrderController extends Controller
                 'orderable' => $order->orderable,
                 'payment' => $order->payment,
                 'emergency_contact' => $order->emergencyContact,
+                'created_at' => $order->created_at?->toISOString(),
             ];
         });
 

@@ -38,7 +38,8 @@ class ReviewController extends Controller
             });
         }
 
-        $reviews = $query->orderBy('id', 'desc')
+        $reviews = $query->orderByDesc('created_at')
+            ->orderByDesc('id')
             ->paginate(5)
             ->appends($request->query());
 
@@ -89,7 +90,7 @@ class ReviewController extends Controller
                     'alt' => $rmg->media->alt_text,
                     'url' => $rmg->media->url,
                 ]),
-                'created_at' => $review->created_at ? $review->created_at->format('Y-m-d') : null,
+                'created_at' => $review->created_at?->toISOString(),
                 'updated_at' => $review->updated_at ? $review->updated_at->format('Y-m-d') : null,
             ];
         });

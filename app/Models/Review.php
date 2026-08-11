@@ -64,6 +64,8 @@ class Review extends Model
         'is_featured',
     ];
 
+    protected $dateFormat = 'Y-m-d H:i:s.v';
+
     protected $casts = [
         'is_featured' => 'boolean',
     ];

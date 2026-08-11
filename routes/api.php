@@ -19,6 +19,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\GlobalScriptSettingController;
 use App\Http\Controllers\Admin\ItineraryController;
 use App\Http\Controllers\Admin\MediaController;
+use App\Http\Controllers\Admin\NavigationUnseenController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\PackageController;
 use App\Http\Controllers\Admin\PageController;
@@ -253,6 +254,9 @@ Route::post('/stripe/webhook', [StripeController::class, 'handleWebhook']);
 
 // Admin group - auth + role gate run before throttle so unauth requests bail before counting
 Route::middleware(['auth:api', 'admin', 'throttle:60,1'])->prefix('admin')->group(function () {
+
+    Route::get('/navigation-unseen-counts', [NavigationUnseenController::class, 'index']);
+    Route::put('/navigation-unseen-counts/{resource}/seen', [NavigationUnseenController::class, 'markSeen']);
 
     // Dashboard Routes
     Route::prefix('dashboard')->group(function () {

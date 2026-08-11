@@ -8,6 +8,7 @@ use App\Models\Package;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
@@ -197,6 +198,40 @@ class OrderFilteringTest extends TestCase
             ->assertJsonCount(3, 'data')
             ->assertJsonPath('summary.total_orders', 5)
             ->assertJsonPath('trash_count', 1);
+    }
+
+    public function test_admin_order_list_uses_newest_first_stable_ordering_and_iso_created_at(): void
+    {
+        $middle = $this->createOrder('Middle Customer', 'Middle Trip');
+        $middle->forceFill(['created_at' => Carbon::parse('2026-08-09T10:20:30Z')])->saveQuietly();
+        $middle->refresh();
+
+        $newestLowerId = $this->createOrder('Newest Lower ID Customer', 'Newest Lower ID Trip');
+        $newestLowerId->forceFill(['created_at' => Carbon::parse('2026-08-10T10:20:30Z')])->saveQuietly();
+        $newestLowerId->refresh();
+
+        $oldest = $this->createOrder('Oldest Customer', 'Oldest Trip');
+        $oldest->forceFill(['created_at' => Carbon::parse('2026-08-08T10:20:30Z')])->saveQuietly();
+        $oldest->refresh();
+
+        $newestHigherId = $this->createOrder('Newest Higher ID Customer', 'Newest Higher ID Trip');
+        $newestHigherId->forceFill(['created_at' => $newestLowerId->created_at])->saveQuietly();
+        $newestHigherId->refresh();
+
+        $response = $this->actingAs($this->admin, 'api')
+            ->getJson('/api/admin/orders?page=1')
+            ->assertOk();
+
+        $this->assertSame(
+            [
+                'ids' => [$newestHigherId->id, $newestLowerId->id, $middle->id],
+                'created_at' => $newestHigherId->created_at->toISOString(),
+            ],
+            [
+                'ids' => array_column($response->json('data'), 'id'),
+                'created_at' => $response->json('data.0.created_at'),
+            ],
+        );
     }
 
     public function test_empty_filtered_results_keep_page_one_metadata(): void

@@ -63,6 +63,8 @@ class Order extends Model
         'number_of_children', 'status', 'special_requirements',
     ];
 
+    protected $dateFormat = 'Y-m-d H:i:s.v';
+
     public function orderable(): MorphTo
     {
         return $this->morphTo();
