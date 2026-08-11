@@ -12,10 +12,10 @@ return new class extends Migration
         if (Schema::getConnection()->getDriverName() !== 'sqlite') {
             Schema::table('users', function (Blueprint $table): void {
                 $table->timestamp('admin_orders_last_seen_at', 3)
-                    ->useCurrent()
+                    ->default(DB::raw('(UTC_TIMESTAMP(3))'))
                     ->after('notifications_last_seen_at');
                 $table->timestamp('admin_reviews_last_seen_at', 3)
-                    ->useCurrent()
+                    ->default(DB::raw('(UTC_TIMESTAMP(3))'))
                     ->after('admin_orders_last_seen_at');
             });
         } else {

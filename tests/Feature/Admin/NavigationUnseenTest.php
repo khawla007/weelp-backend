@@ -82,6 +82,33 @@ class NavigationUnseenTest extends TestCase
         $this->assertSame(['deleted_at', 'created_at'], $orderIndex['columns'] ?? null);
     }
 
+    public function test_utc_correction_clamps_future_database_watermarks_before_counting_new_records(): void
+    {
+        Carbon::setTestNow('2026-08-11 10:00:00.500');
+        $admin = $this->admin();
+        $admin->forceFill([
+            'admin_orders_last_seen_at' => '2026-08-11 15:30:00.500',
+            'admin_reviews_last_seen_at' => '2026-08-11 15:30:00.500',
+        ])->save();
+
+        $migration = require database_path(
+            'migrations/2026_08_11_000002_correct_admin_navigation_seen_at_utc_defaults.php'
+        );
+        $migration->up();
+
+        $admin->refresh();
+        $this->assertSame('2026-08-11 10:00:00.500', $admin->admin_orders_last_seen_at->format('Y-m-d H:i:s.v'));
+        $this->assertSame('2026-08-11 10:00:00.500', $admin->admin_reviews_last_seen_at->format('Y-m-d H:i:s.v'));
+
+        Carbon::setTestNow('2026-08-11 10:00:01.250');
+        Order::factory()->create();
+
+        $this->actingAs($admin, 'api')
+            ->getJson('/api/admin/navigation-unseen-counts')
+            ->assertOk()
+            ->assertJsonPath('data.orders', 1);
+    }
+
     public function test_admin_can_get_separate_unseen_order_and_review_counts(): void
     {
         Carbon::setTestNow('2026-08-11 10:10:00');
