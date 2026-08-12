@@ -38,7 +38,7 @@ class OrderTrashTest extends TestCase
             ->getJson('/api/admin/orders?page=1')
             ->assertOk()
             ->assertJsonPath('current_page', 1)
-            ->assertJsonPath('per_page', 3)
+            ->assertJsonPath('per_page', 5)
             ->assertJsonPath('total', 2)
             ->assertJsonPath('last_page', 1)
             ->assertJsonCount(2, 'data');
@@ -50,7 +50,7 @@ class OrderTrashTest extends TestCase
             ->getJson('/api/admin/orders')
             ->assertOk()
             ->assertJsonPath('current_page', 1)
-            ->assertJsonPath('per_page', 3)
+            ->assertJsonPath('per_page', 5)
             ->assertJsonPath('total', 0)
             ->assertJsonPath('last_page', 1);
     }
@@ -141,6 +141,52 @@ class OrderTrashTest extends TestCase
 
         $this->actingAs($actor, 'api')
             ->deleteJson("/api/admin/orders/{$trashed->id}")
+            ->assertNotFound();
+    }
+
+    #[DataProvider('adminRoles')]
+    public function test_both_admin_roles_can_view_trashed_order_details(string $role): void
+    {
+        $actor = User::factory()->create([
+            'role' => $role,
+            'status' => User::STATUS_ACTIVE,
+        ]);
+        $order = Order::factory()->create();
+        $order->delete();
+
+        $this->actingAs($actor, 'api')
+            ->getJson("/api/admin/orders/{$order->id}")
+            ->assertOk()
+            ->assertJsonPath('data.id', $order->id)
+            ->assertJsonPath('data.is_trashed', true)
+            ->assertJsonPath('data.created_at', $order->created_at->toISOString());
+    }
+
+    public function test_unauthenticated_and_customer_users_cannot_view_trashed_order_details(): void
+    {
+        $order = Order::factory()->create();
+        $order->delete();
+
+        $this->getJson("/api/admin/orders/{$order->id}")
+            ->assertUnauthorized();
+
+        $customer = User::factory()->create([
+            'role' => User::ROLE_CUSTOMER,
+            'status' => User::STATUS_ACTIVE,
+        ]);
+
+        $this->actingAs($customer, 'api')
+            ->getJson("/api/admin/orders/{$order->id}")
+            ->assertForbidden();
+    }
+
+    public function test_trashed_order_status_cannot_be_updated(): void
+    {
+        $order = Order::factory()->create();
+        $order->delete();
+
+        $this->actingAs($this->admin(), 'api')
+            ->putJson("/api/admin/orders/{$order->id}", ['status' => 'completed'])
             ->assertNotFound();
     }
 

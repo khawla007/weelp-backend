@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Mail;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
@@ -181,7 +182,7 @@ class OrderFilteringTest extends TestCase
 
     public function test_filtered_pagination_does_not_filter_global_metrics(): void
     {
-        foreach (range(1, 4) as $index) {
+        foreach (range(1, 6) as $index) {
             $this->createOrder("Safari Customer {$index}", "Safari Trip {$index}", 'completed');
         }
 
@@ -192,46 +193,144 @@ class OrderFilteringTest extends TestCase
             ->getJson('/api/admin/orders?page=1&status=completed&search=safari')
             ->assertOk()
             ->assertJsonPath('current_page', 1)
-            ->assertJsonPath('per_page', 3)
-            ->assertJsonPath('total', 4)
+            ->assertJsonPath('per_page', 5)
+            ->assertJsonPath('total', 6)
             ->assertJsonPath('last_page', 2)
-            ->assertJsonCount(3, 'data')
-            ->assertJsonPath('summary.total_orders', 5)
+            ->assertJsonCount(5, 'data')
+            ->assertJsonPath('summary.total_orders', 7)
             ->assertJsonPath('trash_count', 1);
     }
 
     public function test_admin_order_list_uses_newest_first_stable_ordering_and_iso_created_at(): void
     {
-        $middle = $this->createOrder('Middle Customer', 'Middle Trip');
-        $middle->forceFill(['created_at' => Carbon::parse('2026-08-09T10:20:30Z')])->saveQuietly();
-        $middle->refresh();
+        $createdAtValues = [
+            '2026-08-05T10:20:30Z',
+            '2026-08-06T10:20:30Z',
+            '2026-08-07T10:20:30Z',
+            '2026-08-08T10:20:30Z',
+            '2026-08-10T10:20:30Z',
+            '2026-08-10T10:20:30Z',
+        ];
+        $orders = [];
 
-        $newestLowerId = $this->createOrder('Newest Lower ID Customer', 'Newest Lower ID Trip');
-        $newestLowerId->forceFill(['created_at' => Carbon::parse('2026-08-10T10:20:30Z')])->saveQuietly();
-        $newestLowerId->refresh();
-
-        $oldest = $this->createOrder('Oldest Customer', 'Oldest Trip');
-        $oldest->forceFill(['created_at' => Carbon::parse('2026-08-08T10:20:30Z')])->saveQuietly();
-        $oldest->refresh();
-
-        $newestHigherId = $this->createOrder('Newest Higher ID Customer', 'Newest Higher ID Trip');
-        $newestHigherId->forceFill(['created_at' => $newestLowerId->created_at])->saveQuietly();
-        $newestHigherId->refresh();
+        foreach ($createdAtValues as $index => $createdAt) {
+            $number = $index + 1;
+            $order = $this->createOrder("Customer {$number}", "Trip {$number}");
+            $order->forceFill(['created_at' => Carbon::parse($createdAt)])->saveQuietly();
+            $orders[] = $order->refresh();
+        }
 
         $response = $this->actingAs($this->admin, 'api')
             ->getJson('/api/admin/orders?page=1')
-            ->assertOk();
+            ->assertOk()
+            ->assertJsonPath('per_page', 5)
+            ->assertJsonCount(5, 'data');
 
         $this->assertSame(
             [
-                'ids' => [$newestHigherId->id, $newestLowerId->id, $middle->id],
-                'created_at' => $newestHigherId->created_at->toISOString(),
+                'ids' => [$orders[5]->id, $orders[4]->id, $orders[3]->id, $orders[2]->id, $orders[1]->id],
+                'created_at' => $orders[5]->created_at->toISOString(),
             ],
             [
                 'ids' => array_column($response->json('data'), 'id'),
                 'created_at' => $response->json('data.0.created_at'),
             ],
         );
+    }
+
+    public function test_admin_can_view_active_order_details_with_relations_and_timestamps(): void
+    {
+        $order = $this->createOrder('Detail Customer', 'Detail Safari');
+        $order->user->profile()->create([
+            'phone' => '+15555550000',
+        ]);
+        $payment = $order->payment()->create([
+            'payment_status' => 'paid',
+            'payment_method' => 'card',
+            'total_amount' => 185,
+        ]);
+        $contact = $order->emergencyContact()->create([
+            'contact_name' => 'Emergency Person',
+            'contact_phone' => '+15555550123',
+            'relationship' => 'Sibling',
+        ]);
+        $order->refresh();
+
+        $this->actingAs($this->admin, 'api')
+            ->getJson("/api/admin/orders/{$order->id}")
+            ->assertOk()
+            ->assertJsonPath('data.id', $order->id)
+            ->assertJsonPath('data.user.id', $order->user_id)
+            ->assertJsonPath('data.user.name', 'Detail Customer')
+            ->assertJsonPath('data.user.profile.phone', '+15555550000')
+            ->assertJsonPath('data.orderable.id', $order->orderable_id)
+            ->assertJsonPath('data.orderable.name', 'Detail Safari')
+            ->assertJsonPath('data.payment.id', $payment->id)
+            ->assertJsonPath('data.emergency_contact.id', $contact->id)
+            ->assertJsonPath('data.is_trashed', false)
+            ->assertJsonPath('data.created_at', $order->created_at->toISOString());
+    }
+
+    public function test_admin_order_status_updates_enforce_payment_transition_rules(): void
+    {
+        Mail::fake();
+
+        $pendingPaymentOrder = $this->createOrder('Pending Payment Customer', 'Pending Payment Trip');
+        $pendingPaymentOrder->payment()->create([
+            'payment_status' => 'pending',
+            'payment_method' => 'card',
+            'total_amount' => 185,
+        ]);
+
+        foreach (['pending', 'processing'] as $status) {
+            $this->actingAs($this->admin, 'api')
+                ->putJson("/api/admin/orders/{$pendingPaymentOrder->id}", ['status' => $status])
+                ->assertStatus(400)
+                ->assertJsonPath('success', false);
+        }
+
+        $this->actingAs($this->admin, 'api')
+            ->putJson("/api/admin/orders/{$pendingPaymentOrder->id}", ['status' => 'completed'])
+            ->assertStatus(400)
+            ->assertJson([
+                'success' => false,
+                'message' => 'Cannot mark order as completed. Payment not paid yet.',
+            ]);
+        $this->assertSame('pending', $pendingPaymentOrder->fresh()->status);
+
+        $paidOrder = $this->createOrder('Paid Customer', 'Paid Trip');
+        $paidOrder->payment()->create([
+            'payment_status' => 'paid',
+            'payment_method' => 'card',
+            'total_amount' => 185,
+        ]);
+
+        $this->actingAs($this->admin, 'api')
+            ->putJson("/api/admin/orders/{$paidOrder->id}", ['status' => 'cancelled'])
+            ->assertStatus(400)
+            ->assertJson([
+                'success' => false,
+                'message' => 'Cannot cancel order. Payment is not pending.',
+            ]);
+        $this->assertSame('pending', $paidOrder->fresh()->status);
+
+        $this->actingAs($this->admin, 'api')
+            ->putJson("/api/admin/orders/{$pendingPaymentOrder->id}", ['status' => 'cancelled'])
+            ->assertOk()
+            ->assertJsonPath('success', true);
+        $this->assertDatabaseHas('orders', [
+            'id' => $pendingPaymentOrder->id,
+            'status' => 'cancelled',
+        ]);
+
+        $this->actingAs($this->admin, 'api')
+            ->putJson("/api/admin/orders/{$paidOrder->id}", ['status' => 'completed'])
+            ->assertOk()
+            ->assertJsonPath('success', true);
+        $this->assertDatabaseHas('orders', [
+            'id' => $paidOrder->id,
+            'status' => 'completed',
+        ]);
     }
 
     public function test_empty_filtered_results_keep_page_one_metadata(): void
@@ -242,7 +341,7 @@ class OrderFilteringTest extends TestCase
             ->getJson('/api/admin/orders?page=1&status=completed&search=missing')
             ->assertOk()
             ->assertJsonPath('current_page', 1)
-            ->assertJsonPath('per_page', 3)
+            ->assertJsonPath('per_page', 5)
             ->assertJsonPath('total', 0)
             ->assertJsonPath('last_page', 1)
             ->assertJsonCount(0, 'data')

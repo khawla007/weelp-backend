@@ -99,7 +99,7 @@ class OrderController extends Controller
             'search' => ['sometimes', 'nullable', 'string', 'max:100'],
         ]);
 
-        $perPage = 3;
+        $perPage = 5;
         $page = max(1, (int) ($validated['page'] ?? 1));
         $view = $validated['view'] ?? 'active';
         $status = $validated['status'] ?? null;
@@ -306,7 +306,9 @@ class OrderController extends Controller
 
     public function show($id)
     {
-        $order = Order::with(['user', 'orderable', 'payment', 'emergencyContact'])->findOrFail($id);
+        $order = Order::withTrashed()
+            ->with(['user.profile', 'orderable', 'payment', 'emergencyContact'])
+            ->findOrFail($id);
 
         $formatted = [
             'id' => $order->id,
@@ -321,7 +323,8 @@ class OrderController extends Controller
             'orderable' => $order->orderable,
             'payment' => $order->payment,
             'emergency_contact' => $order->emergencyContact,
-            // 'created_at'           => $order->created_at,
+            'created_at' => $order->created_at?->toISOString(),
+            'is_trashed' => $order->trashed(),
         ];
 
         return response()->json([
