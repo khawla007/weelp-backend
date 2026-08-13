@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  * @property string $slug
  * @property string $content
  * @property bool $publish
+ * @property \Illuminate\Support\Carbon|null $published_at
  * @property string $excerpt
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
@@ -50,8 +51,24 @@ class Blog extends Model
 
     protected $casts = [
         'publish' => 'boolean',
+        'published_at' => 'datetime',
         'schema_data' => 'array',
     ];
+
+    protected static function booted(): void
+    {
+        static::creating(function (Blog $blog): void {
+            if ($blog->publish && ! $blog->published_at) {
+                $blog->published_at = now();
+            }
+        });
+
+        static::updating(function (Blog $blog): void {
+            if ($blog->isDirty('publish')) {
+                $blog->published_at = $blog->publish ? now() : null;
+            }
+        });
+    }
 
     public function media(): BelongsToMany
     {

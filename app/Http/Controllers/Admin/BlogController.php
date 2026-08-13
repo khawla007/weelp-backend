@@ -10,10 +10,10 @@ use App\Models\Tag;
 use App\Support\RichTextContent;
 use App\Support\SeoPayload;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class BlogController extends Controller
 {
@@ -274,6 +274,7 @@ class BlogController extends Controller
                 'slug' => $blog->slug,
                 'excerpt' => $blog->excerpt,
                 'publish' => $blog->publish,
+                'published_at' => $blog->published_at,
                 'feature_image' => $featuredImage->url ?? null,
 
                 'media_gallery' => $blog->media->map(function ($m) {
@@ -335,6 +336,7 @@ class BlogController extends Controller
             'content' => $blog->content,
             'excerpt' => $blog->excerpt,
             'publish' => $blog->publish,
+            'published_at' => $blog->published_at,
             'feature_image' => $featuredImage->url ?? null,
             'seo' => SeoPayload::fromModel($blog),
 

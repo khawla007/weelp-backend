@@ -108,6 +108,7 @@ class PublicBlogController extends Controller
                 'slug' => $blog->slug,
                 'excerpt' => $blog->excerpt,
                 'publish' => $blog->publish,
+                'published_at' => $blog->published_at,
 
                 'media_gallery' => $blog->media->map(function ($m) {
                     return [
@@ -168,6 +169,7 @@ class PublicBlogController extends Controller
             'content' => $blog->content,
             'excerpt' => $blog->excerpt,
             'publish' => $blog->publish,
+            'published_at' => $blog->published_at,
             'seo' => SeoPayload::fromModel($blog),
 
             // ⭐ multiple media (gallery)

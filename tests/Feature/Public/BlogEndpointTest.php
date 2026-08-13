@@ -7,6 +7,7 @@ use App\Models\Category;
 use App\Models\Tag;
 use Database\Seeders\RichContentFixtureSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Tests\TestCase;
 
 class BlogEndpointTest extends TestCase
@@ -28,11 +29,13 @@ class BlogEndpointTest extends TestCase
 
     public function test_show_blog_by_slug(): void
     {
+        Carbon::setTestNow('2026-08-13 12:15:00');
         $blog = Blog::factory()->create(['slug' => 'test-blog', 'publish' => true]);
 
         $response = $this->getJson('/api/blogs/test-blog');
 
-        $response->assertOk();
+        $response->assertOk()
+            ->assertJsonPath('published_at', '2026-08-13T12:15:00.000000Z');
     }
 
     public function test_list_blogs_can_filter_by_category_slug(): void

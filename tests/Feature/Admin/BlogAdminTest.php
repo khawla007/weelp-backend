@@ -8,6 +8,7 @@ use App\Models\Media;
 use App\Models\Tag;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Tests\TestCase;
 
@@ -82,6 +83,38 @@ class BlogAdminTest extends TestCase
         $this->assertDatabaseHas('blogs', [
             'name' => 'Title Does Not Become Slug',
             'slug' => 'manual-blog-slug',
+        ]);
+    }
+
+    public function test_published_blog_records_its_publication_time(): void
+    {
+        Carbon::setTestNow('2026-08-13 10:30:00');
+        $admin = $this->admin();
+
+        $response = $this->actingAs($admin, 'api')->postJson('/api/admin/blogs', $this->validPayload());
+
+        $response->assertCreated()
+            ->assertJsonPath('Blog.published_at', '2026-08-13T10:30:00.000000Z');
+        $this->assertDatabaseHas('blogs', [
+            'id' => $response->json('Blog.id'),
+            'published_at' => '2026-08-13 10:30:00',
+        ]);
+    }
+
+    public function test_publishing_a_draft_records_the_transition_time(): void
+    {
+        $admin = $this->admin();
+        $blog = Blog::factory()->draft()->create();
+        Carbon::setTestNow('2026-08-13 11:45:00');
+
+        $this->actingAs($admin, 'api')->putJson("/api/admin/blogs/{$blog->id}", [
+            'publish' => true,
+        ])->assertOk()
+            ->assertJsonPath('blog.published_at', '2026-08-13T11:45:00.000000Z');
+
+        $this->assertDatabaseHas('blogs', [
+            'id' => $blog->id,
+            'published_at' => '2026-08-13 11:45:00',
         ]);
     }
 
