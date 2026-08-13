@@ -62,6 +62,7 @@ class OrderFilteringTest extends TestCase
             'processing' => ['processing'],
             'completed' => ['completed'],
             'cancelled' => ['cancelled'],
+            'refunded' => ['refunded'],
         ];
     }
 
