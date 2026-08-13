@@ -3,7 +3,9 @@
 namespace App\Providers;
 
 use App\Contracts\StripePaymentIntentGateway;
+use App\Contracts\StripeRefundGateway;
 use App\Services\StripePaymentIntentService;
+use App\Services\StripeRefundService;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Middleware\TrustProxies;
@@ -19,6 +21,7 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(StripePaymentIntentGateway::class, StripePaymentIntentService::class);
+        $this->app->bind(StripeRefundGateway::class, StripeRefundService::class);
     }
 
     /**

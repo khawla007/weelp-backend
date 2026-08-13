@@ -11,6 +11,7 @@ use App\Models\Review;
 use App\Models\User;
 use App\Models\UserMeta;
 use App\Models\UserProfile;
+use App\Services\CancellationRequestService;
 use App\Support\MediaStorage;
 use App\Support\UploadRules;
 use Illuminate\Database\Eloquent\Builder;
@@ -290,6 +291,7 @@ class UserProfileController extends Controller
         return [
             'payment',
             'emergencyContact',
+            'latestCancellationRequest',
             'orderable' => function (MorphTo $morphTo) use ($orderableRelations): void {
                 $morphTo->morphWith([
                     Activity::class => $orderableRelations,
@@ -321,6 +323,8 @@ class UserProfileController extends Controller
 
     private function transformCustomerOrder(Order $order, User $user, ?Review $review): array
     {
+        $cancellations = app(CancellationRequestService::class);
+        $eligibility = $cancellations->eligibility($order);
         $snapshot = $this->decodeOrderSnapshot($order->item_snapshot_json);
         $orderable = $order->orderable;
         $snapshotLocations = $snapshot['location'] ?? $snapshot['locations'] ?? null;
@@ -346,6 +350,9 @@ class UserProfileController extends Controller
             'number_of_adults' => $order->number_of_adults,
             'number_of_children' => $order->number_of_children,
             'special_requirements' => $order->special_requirements,
+            'cancellation' => $cancellations->transform($order->latestCancellationRequest),
+            'cancellation_eligible' => $eligibility['eligible'],
+            'cancellation_ineligibility_reason' => $eligibility['reason'],
             'payment' => $this->transformPayment($order->payment),
             'emergency_contact' => $order->emergencyContact,
             'item' => [

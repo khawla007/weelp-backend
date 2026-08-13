@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Payment;
 
+use App\Mail\CustomerRefundedOrderMail;
 use App\Models\Activity;
 use App\Models\Order;
 use App\Models\OrderPayment;
@@ -131,6 +132,87 @@ class StripeWebhookReplayTest extends TestCase
             'status' => 'pending',
         ]);
         $this->assertSame(1, DB::table('stripe_webhook_events')->where('id', $eventId)->count());
+    }
+
+    #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
+    #[\PHPUnit\Framework\Attributes\PreserveGlobalState(false)]
+    public function test_replayed_charge_refund_queues_one_customer_notification(): void
+    {
+        Mail::fake();
+        $intentId = 'pi_refund_replay_'.uniqid();
+        $eventId = 'evt_refund_replay_'.uniqid();
+        $data = $this->createOrderWithPayment($intentId);
+        $data['payment']->update(['payment_status' => 'paid']);
+        $event = (object) [
+            'id' => $eventId,
+            'type' => 'charge.refunded',
+            'data' => (object) [
+                'object' => (object) [
+                    'id' => 'ch_refund_replay',
+                    'payment_intent' => $intentId,
+                    'amount' => 10000,
+                    'amount_refunded' => 5000,
+                    'currency' => 'usd',
+                    'refunded' => false,
+                    'refunds' => (object) ['data' => []],
+                ],
+            ],
+        ];
+        $mock = \Mockery::mock('alias:\Stripe\Webhook');
+        $mock->shouldReceive('constructEvent')->twice()->andReturn($event);
+
+        $this->postWebhook($eventId, 'charge.refunded', $intentId)->assertOk();
+        $this->postWebhook($eventId, 'charge.refunded', $intentId)
+            ->assertOk()
+            ->assertJson(['already_processed' => true]);
+
+        Mail::assertQueued(CustomerRefundedOrderMail::class, 1);
+        $this->assertSame('50.00', $data['payment']->fresh()->refunded_amount);
+        $this->assertSame(1, DB::table('stripe_webhook_events')->where('id', $eventId)->count());
+    }
+
+    #[\PHPUnit\Framework\Attributes\RunInSeparateProcess]
+    #[\PHPUnit\Framework\Attributes\PreserveGlobalState(false)]
+    public function test_distinct_charge_events_for_same_cumulative_refund_queue_one_notification(): void
+    {
+        Mail::fake();
+        $intentId = 'pi_distinct_refund_events_'.uniqid();
+        $data = $this->createOrderWithPayment($intentId);
+        $data['payment']->update(['payment_status' => 'paid']);
+        $charge = (object) [
+            'id' => 'ch_distinct_refund_events',
+            'payment_intent' => $intentId,
+            'amount' => 10000,
+            'amount_refunded' => 5000,
+            'currency' => 'usd',
+            'refunded' => false,
+            'refunds' => (object) ['data' => [(object) [
+                'id' => 're_same_refund_identity',
+                'amount' => 5000,
+                'status' => 'succeeded',
+                'metadata' => (object) [],
+            ]]],
+        ];
+        $firstEvent = (object) [
+            'id' => 'evt_distinct_refund_first_'.uniqid(),
+            'type' => 'charge.refunded',
+            'data' => (object) ['object' => $charge],
+        ];
+        $secondEvent = (object) [
+            'id' => 'evt_distinct_refund_second_'.uniqid(),
+            'type' => 'charge.refunded',
+            'data' => (object) ['object' => $charge],
+        ];
+        $mock = \Mockery::mock('alias:\Stripe\Webhook');
+        $mock->shouldReceive('constructEvent')->twice()->andReturn($firstEvent, $secondEvent);
+
+        $this->postWebhook($firstEvent->id, 'charge.refunded', $intentId)->assertOk();
+        $this->postWebhook($secondEvent->id, 'charge.refunded', $intentId)->assertOk();
+
+        Mail::assertQueued(CustomerRefundedOrderMail::class, 1);
+        $this->assertSame('50.00', $data['payment']->fresh()->refunded_amount);
+        $this->assertDatabaseHas('stripe_webhook_events', ['id' => $firstEvent->id]);
+        $this->assertDatabaseHas('stripe_webhook_events', ['id' => $secondEvent->id]);
     }
 
     public function test_unique_index_prevents_duplicate_payment_intent_id(): void

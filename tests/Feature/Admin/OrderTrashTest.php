@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Admin;
 
+use App\Models\CancellationRequest;
 use App\Models\Commission;
 use App\Models\Order;
 use App\Models\Review;
@@ -231,6 +232,55 @@ class OrderTrashTest extends TestCase
         $this->assertDatabaseMissing('order_emergency_contacts', ['id' => $contact->id]);
         $this->assertDatabaseMissing('commissions', ['id' => $commission->id]);
         $this->assertNull($review->fresh()->order_id);
+    }
+
+    public function test_orders_with_actionable_cancellations_cannot_be_moved_to_trash(): void
+    {
+        $actor = $this->admin();
+
+        foreach (CancellationRequest::ADMIN_ATTENTION_STATUSES as $status) {
+            $order = Order::factory()->create();
+            $cancellation = CancellationRequest::factory()->for($order)->create([
+                'customer_id' => $order->user_id,
+                'status' => $status,
+            ]);
+
+            $this->actingAs($actor, 'api')
+                ->deleteJson("/api/admin/orders/{$order->id}")
+                ->assertConflict()
+                ->assertJsonPath('message', 'Resolve the customer cancellation request before moving this order to Trash.');
+
+            $this->assertNotSoftDeleted('orders', ['id' => $order->id]);
+            $this->assertDatabaseHas('cancellation_requests', ['id' => $cancellation->id]);
+        }
+    }
+
+    public function test_force_delete_is_blocked_when_any_cancellation_history_exists(): void
+    {
+        $actor = $this->admin();
+        $order = Order::factory()->create();
+        $cancellation = CancellationRequest::factory()->for($order)->create([
+            'customer_id' => $order->user_id,
+            'status' => CancellationRequest::STATUS_APPROVED,
+            'idempotency_key' => 'cancel-request-audit-history',
+            'stripe_refund_id' => 're_audit_history',
+        ]);
+
+        $this->actingAs($actor, 'api')
+            ->deleteJson("/api/admin/orders/{$order->id}")
+            ->assertOk();
+
+        $this->actingAs($actor, 'api')
+            ->deleteJson("/api/admin/orders/{$order->id}/force")
+            ->assertConflict()
+            ->assertJsonPath('message', 'Orders with cancellation history cannot be permanently deleted.');
+
+        $this->assertSoftDeleted('orders', ['id' => $order->id]);
+        $this->assertDatabaseHas('cancellation_requests', [
+            'id' => $cancellation->id,
+            'idempotency_key' => 'cancel-request-audit-history',
+            'stripe_refund_id' => 're_audit_history',
+        ]);
     }
 
     public function test_summary_excludes_trashed_orders_and_includes_restored_orders(): void

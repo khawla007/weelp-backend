@@ -9,6 +9,7 @@ use App\Mail\CustomerFailedOrderMail;
 use App\Mail\CustomerProcessingOrderMail;
 use App\Mail\CustomerRefundedOrderMail;
 use App\Models\Activity;
+use App\Models\CancellationRequest;
 use App\Models\Commission;
 use App\Models\Itinerary;
 use App\Models\Notification;
@@ -18,19 +19,24 @@ use App\Models\Package;
 use App\Models\Transfer;
 use App\Models\User;
 use App\Services\ActivityDiscountService;
+use App\Services\CancellationNotificationService;
 use App\Services\CheckoutQuoteService;
 use App\Services\PackagePricingService;
 use DomainException;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Stripe\Checkout\Session as StripeSession;
 use Stripe\Stripe;
+use Throwable;
 
 class StripeController extends Controller
 {
+    public function __construct(private readonly CancellationNotificationService $cancellationNotifications) {}
+
     public function initializePayment(
         Request $request,
         CheckoutQuoteService $quotes,
@@ -433,15 +439,37 @@ class StripeController extends Controller
         $intentId = $event->type === 'charge.refunded'
             ? $event->data->object->payment_intent
             : $event->data->object->id;
-        $payment = OrderPayment::where('payment_intent_id', $intentId)->first();
-        if (! $payment) {
+        $paymentReference = OrderPayment::query()
+            ->select(['id', 'order_id'])
+            ->where('payment_intent_id', $intentId)
+            ->first();
+        if (! $paymentReference) {
             throw new \RuntimeException('payment_record_not_found');
         }
 
-        $order = Order::with(['user', 'emergencyContact', 'payment'])->find($payment->order_id);
+        $this->beforeStripeEventOrderLock($paymentReference->order_id);
+        $order = Order::query()->lockForUpdate()->find($paymentReference->order_id);
         if (! $order) {
             throw new \RuntimeException('payment_record_not_found');
         }
+
+        $payment = OrderPayment::query()
+            ->whereKey($paymentReference->id)
+            ->lockForUpdate()
+            ->first();
+        if (! $payment) {
+            throw new \RuntimeException('payment_record_not_found');
+        }
+        $this->afterStripeEventPaymentLocked($order, $payment);
+
+        $order->load(['user', 'emergencyContact']);
+        $order->setRelation('payment', $payment);
+        $cancellation = CancellationRequest::query()
+            ->where('order_id', $order->id)
+            ->latest('requested_at')
+            ->latest('id')
+            ->lockForUpdate()
+            ->first();
 
         if ($event->type === 'payment_intent.succeeded') {
             $payment->update(['payment_status' => 'paid']);
@@ -461,9 +489,25 @@ class StripeController extends Controller
         }
 
         if ($event->type === 'charge.refunded') {
-            $payment->update(['payment_status' => 'refunded']);
-            $order->update(['status' => 'refunded']);
-            Mail::to($order->user->email)->send(new CustomerRefundedOrderMail($order));
+            $refundCurrency = (string) ($event->data->object->currency ?? $payment->currency);
+            $refundedBeforeMinor = $this->decimalToMinor(
+                (string) ($payment->refunded_amount ?? '0.00'),
+                $refundCurrency,
+            );
+            $approvedCancellation = $this->reconcileChargeRefund(
+                $event->data->object,
+                $order,
+                $payment,
+                $cancellation,
+            );
+            $refundedAfterMinor = $this->decimalToMinor(
+                (string) ($payment->fresh()->refunded_amount ?? '0.00'),
+                $refundCurrency,
+            );
+            if (! $approvedCancellation && $refundedAfterMinor > $refundedBeforeMinor
+                && (! $cancellation || $cancellation->status !== CancellationRequest::STATUS_APPROVED)) {
+                $this->queueLegacyRefundAfterCommit($order->id);
+            }
 
             return;
         }
@@ -471,6 +515,262 @@ class StripeController extends Controller
         $payment->update(['payment_status' => 'cancelled']);
         $order->update(['status' => 'cancelled']);
         Mail::to($order->user->email)->send(new CustomerCancelledOrderMail($order));
+    }
+
+    private function reconcileChargeRefund(
+        object $charge,
+        Order $order,
+        OrderPayment $payment,
+        ?CancellationRequest $cancellation,
+    ): ?CancellationRequest {
+        $paidAmount = $cancellation?->paid_amount
+            ?? ($payment->is_custom_amount ? $payment->custom_amount : ($payment->total_amount ?? $payment->amount));
+        $paidMinor = $this->decimalToMinor((string) ($paidAmount ?? '0.00'), (string) ($charge->currency ?? $payment->currency));
+        $providerRefundedMinor = isset($charge->amount_refunded)
+            ? max(0, (int) $charge->amount_refunded)
+            : $paidMinor;
+        $currency = (string) ($charge->currency ?? $payment->currency);
+        $localRefundedMinor = $this->decimalToMinor(
+            (string) ($payment->refunded_amount ?? '0.00'),
+            $currency,
+        );
+        $refundedMinor = min($paidMinor, max($providerRefundedMinor, $localRefundedMinor));
+        $refundedAmount = $this->minorToDecimal($refundedMinor, $currency);
+        $isFull = $paidMinor > 0 && $refundedMinor >= $paidMinor;
+
+        [$correlatedCancellation, $correlatedRefund] = $this->resolveCancellationRefund(
+            $charge,
+            $order,
+            $paidMinor,
+            $providerRefundedMinor,
+            $localRefundedMinor,
+        );
+
+        $payment->update([
+            'payment_status' => $isFull ? 'refunded' : 'partially_refunded',
+            'refunded_amount' => $refundedAmount,
+        ]);
+
+        if ($correlatedCancellation && $correlatedRefund) {
+            $now = now();
+            $decisionMinor = $this->decimalToMinor(
+                (string) $correlatedCancellation->final_refund_amount,
+                $currency,
+            );
+            $correlatedCancellation->update([
+                'status' => CancellationRequest::STATUS_APPROVED,
+                'final_deduction_amount' => $this->minorToDecimal(
+                    max(0, $paidMinor - $decisionMinor),
+                    $currency,
+                ),
+                'decided_at' => $correlatedCancellation->decided_at ?? $now,
+                'stripe_refund_id' => $correlatedCancellation->stripe_refund_id
+                    ?? ($correlatedRefund->id ?? null),
+                'failure_code' => null,
+                'failure_summary' => null,
+                'failure_disposition' => null,
+                'refund_outcome' => $decisionMinor >= $paidMinor ? 'full' : 'partial',
+                'refund_completed_at' => $now,
+            ]);
+            $order->update(['status' => 'cancelled']);
+
+            $correlatedCancellation = $correlatedCancellation->refresh();
+            $this->cancellationNotifications->recordApproved($correlatedCancellation);
+
+            return $correlatedCancellation;
+        }
+
+        if ($cancellation && $cancellation->status === CancellationRequest::STATUS_APPROVED) {
+            $order->update(['status' => 'cancelled']);
+        } elseif ($isFull) {
+            $order->update(['status' => 'refunded']);
+        }
+
+        return null;
+    }
+
+    /** @return array{?CancellationRequest, ?object} */
+    private function resolveCancellationRefund(
+        object $charge,
+        Order $order,
+        int $paidMinor,
+        int $providerRefundedMinor,
+        int $localRefundedMinor,
+    ): array {
+        $refunds = data_get($charge, 'refunds.data', []);
+        $allRefunds = collect(is_iterable($refunds) ? $refunds : [])
+            ->map(fn ($refund) => is_array($refund) ? (object) $refund : $refund)
+            ->filter(fn ($refund) => is_object($refund))
+            ->values();
+        $refunds = $allRefunds
+            ->filter(fn (object $refund): bool => ($refund->status ?? null) === 'succeeded'
+                && isset($refund->amount))
+            ->values();
+        if ($refunds->isEmpty()) {
+            return [null, null];
+        }
+
+        $requests = CancellationRequest::query()
+            ->where('order_id', $order->id)
+            ->lockForUpdate()
+            ->get();
+
+        // A provider refund ID is the strongest identity and wins over conflicting metadata.
+        foreach ($refunds as $refund) {
+            $refundId = trim((string) ($refund->id ?? ''));
+            if ($refundId === '') {
+                continue;
+            }
+
+            $request = $requests->first(fn (CancellationRequest $candidate): bool => $candidate->stripe_refund_id === $refundId
+                && $this->canReconcileRefund($candidate, $refund, $paidMinor, $providerRefundedMinor, $localRefundedMinor)
+            );
+            if ($request) {
+                return [$request, $refund];
+            }
+        }
+
+        // Metadata remains reliable when local finalization failed before saving the refund ID.
+        foreach ($refunds as $refund) {
+            $metadataRequestId = data_get($refund, 'metadata.cancellation_request_id');
+            if (blank($metadataRequestId)) {
+                continue;
+            }
+
+            $request = $requests->first(fn (CancellationRequest $candidate): bool => (string) $candidate->id === (string) $metadataRequestId
+                && $this->canReconcileRefund($candidate, $refund, $paidMinor, $providerRefundedMinor, $localRefundedMinor)
+            );
+            if ($request) {
+                return [$request, $refund];
+            }
+        }
+
+        // Last resort: only one stale/unresolved request may match this intent and exact amount.
+        $matches = collect();
+        foreach ($refunds as $refund) {
+            foreach ($requests as $request) {
+                if (! $this->hasExplicitRefundIdentity($request, $allRefunds)
+                    && $this->canFallbackReconcile($request)
+                    && $this->canReconcileRefund($request, $refund, $paidMinor, $providerRefundedMinor, $localRefundedMinor)) {
+                    $matches->push([$request, $refund]);
+                }
+            }
+        }
+
+        return $matches->count() === 1 ? $matches->first() : [null, null];
+    }
+
+    /** @param Collection<int, object> $refunds */
+    private function hasExplicitRefundIdentity(CancellationRequest $request, Collection $refunds): bool
+    {
+        return $refunds->contains(function (object $refund) use ($request): bool {
+            $refundId = trim((string) ($refund->id ?? ''));
+
+            return ($refundId !== '' && $refundId === $request->stripe_refund_id)
+                || (string) data_get($refund, 'metadata.cancellation_request_id') === (string) $request->id;
+        });
+    }
+
+    private function canReconcileRefund(
+        CancellationRequest $request,
+        object $refund,
+        int $paidMinor,
+        int $providerRefundedMinor,
+        int $localRefundedMinor,
+    ): bool {
+        $eligible = $request->status === CancellationRequest::STATUS_REFUND_PROCESSING
+            || ($request->status === CancellationRequest::STATUS_REFUND_FAILED
+                && $request->failure_disposition === 'indeterminate');
+        if (! $eligible || $request->final_refund_amount === null || blank($request->idempotency_key)) {
+            return false;
+        }
+
+        $decisionMinor = $this->decimalToMinor(
+            (string) $request->final_refund_amount,
+            $request->currency,
+        );
+
+        return (int) $refund->amount === $decisionMinor
+            && $providerRefundedMinor >= min($paidMinor, $localRefundedMinor + $decisionMinor);
+    }
+
+    private function canFallbackReconcile(CancellationRequest $request): bool
+    {
+        if ($request->status === CancellationRequest::STATUS_REFUND_FAILED) {
+            return $request->failure_disposition === 'indeterminate';
+        }
+
+        if ($request->status !== CancellationRequest::STATUS_REFUND_PROCESSING || ! $request->updated_at) {
+            return false;
+        }
+
+        $staleAfter = (int) config('cancellation.refund_processing_stale_after_seconds', 300);
+
+        return $request->updated_at->copy()->addSeconds($staleAfter)->lessThanOrEqualTo(now());
+    }
+
+    private function queueLegacyRefundAfterCommit(int $orderId): void
+    {
+        DB::afterCommit(function () use ($orderId): void {
+            try {
+                $order = Order::query()->with(['user', 'payment'])->find($orderId);
+                if (! $order) {
+                    return;
+                }
+
+                Mail::to($order->user->email)->queue(new CustomerRefundedOrderMail($order));
+            } catch (Throwable $exception) {
+                Log::error('Refund notification queue dispatch failed.', [
+                    'order_id' => $orderId,
+                    'notification' => 'customer_legacy_refund',
+                    'exception_class' => $exception::class,
+                ]);
+            }
+        });
+    }
+
+    private function decimalToMinor(string $amount, string $currency): int
+    {
+        $exponent = $this->currencyExponent($currency);
+        if (! preg_match('/^(\d+)(?:\.(\d+))?$/', trim($amount), $matches)) {
+            return 0;
+        }
+
+        $factor = 10 ** $exponent;
+        $fraction = $matches[2] ?? '';
+
+        return ((int) $matches[1] * $factor)
+            + (int) str_pad(substr($fraction, 0, $exponent), $exponent, '0');
+    }
+
+    private function minorToDecimal(int $minor, string $currency): string
+    {
+        $exponent = $this->currencyExponent($currency);
+        if ($exponent === 0) {
+            return $minor.'.00';
+        }
+
+        $factor = 10 ** $exponent;
+
+        return intdiv($minor, $factor).'.'.str_pad((string) ($minor % $factor), 2, '0', STR_PAD_LEFT);
+    }
+
+    private function currencyExponent(string $currency): int
+    {
+        return in_array(strtoupper($currency), [
+            'BIF', 'CLP', 'DJF', 'GNF', 'JPY', 'KMF', 'KRW', 'MGA', 'PYG',
+            'RWF', 'UGX', 'VND', 'VUV', 'XAF', 'XOF', 'XPF',
+        ], true) ? 0 : 2;
+    }
+
+    protected function beforeStripeEventOrderLock(int $orderId): void
+    {
+        // Test seam for proving webhook/cancellation database-lock ordering.
+    }
+
+    protected function afterStripeEventPaymentLocked(Order $order, OrderPayment $payment): void
+    {
+        // Test seam for proving webhook/cancellation database-lock ordering.
     }
 
     // thanku page get order details api

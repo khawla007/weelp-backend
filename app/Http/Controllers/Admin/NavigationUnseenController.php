@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\CancellationRequest;
 use App\Models\Order;
 use App\Models\Review;
 use App\Models\User;
@@ -67,7 +68,7 @@ class NavigationUnseenController extends Controller
     }
 
     /**
-     * @return array{orders: int, reviews: int}
+     * @return array{orders: int, reviews: int, has_actionable_cancellations: bool}
      */
     private function counts(User $user): array
     {
@@ -81,6 +82,13 @@ class NavigationUnseenController extends Controller
                 ->where('created_at', '>', $seenThrough)
                 ->count();
         }
+
+        $counts['has_actionable_cancellations'] = CancellationRequest::query()
+            ->whereIn('status', CancellationRequest::ADMIN_ATTENTION_STATUSES)
+            ->whereHas('order', function (Builder $query): void {
+                $query->whereNull('orders.deleted_at');
+            })
+            ->exists();
 
         return $counts;
     }

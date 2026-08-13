@@ -54,7 +54,9 @@ return [
 
     'url' => env('APP_URL', 'http://localhost'),
 
-    'frontend_url' => env('FRONTEND_URL', 'https://weelp-frontend.vercel.app'),
+    'frontend_url' => env('FRONTEND_URL'),
+
+    'frontend_fallback_url' => 'https://weelp.netlify.app',
 
     'logo_path' => env('WEELP_LOGO_PATH', 'logos/weelp-logo-icon.png'),
 

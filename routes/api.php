@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\AdminLocationSearchController;
 use App\Http\Controllers\Admin\AnnouncementController as AdminAnnouncementController;
 use App\Http\Controllers\Admin\AttributeController;
 use App\Http\Controllers\Admin\BlogController;
+use App\Http\Controllers\Admin\CancellationRequestController as AdminCancellationRequestController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CityController;
 use App\Http\Controllers\Admin\CityImportController;
@@ -44,6 +45,7 @@ use App\Http\Controllers\Creator\CreatorDashboardController;
 use App\Http\Controllers\Creator\CreatorItineraryController;
 // Public
 use App\Http\Controllers\Creator\CreatorPostController;
+use App\Http\Controllers\Customer\CancellationRequestController;
 use App\Http\Controllers\Customer\CustomerItineraryController;
 use App\Http\Controllers\Customer\WishlistController;
 use App\Http\Controllers\Guest\MediaFileController;
@@ -154,6 +156,10 @@ Route::middleware(['auth:api', 'customer'])->prefix('customer')->group(function 
     Route::get('/userorders', [UserProfileController::class, 'getUserOrders']);
     Route::get('/userorders/{order}', [UserProfileController::class, 'getUserOrder'])
         ->whereNumber('order');
+    Route::get('/userorders/{order}/cancellation-quote', [CancellationRequestController::class, 'quote'])
+        ->whereNumber('order');
+    Route::post('/userorders/{order}/cancellation-requests', [CancellationRequestController::class, 'store'])
+        ->whereNumber('order');
 
     Route::prefix('review')->group(function () {
         Route::get('/', [UserProfileController::class, 'reviewIndex']);
@@ -254,6 +260,13 @@ Route::post('/stripe/webhook', [StripeController::class, 'handleWebhook']);
 
 // Admin group - auth + role gate run before throttle so unauth requests bail before counting
 Route::middleware(['auth:api', 'admin', 'throttle:60,1'])->prefix('admin')->group(function () {
+
+    Route::post('/cancellation-requests/{cancellationRequest}/reject', [AdminCancellationRequestController::class, 'reject'])
+        ->whereNumber('cancellationRequest');
+    Route::post('/cancellation-requests/{cancellationRequest}/approve', [AdminCancellationRequestController::class, 'approve'])
+        ->whereNumber('cancellationRequest');
+    Route::post('/cancellation-requests/{cancellationRequest}/retry', [AdminCancellationRequestController::class, 'retry'])
+        ->whereNumber('cancellationRequest');
 
     Route::get('/navigation-unseen-counts', [NavigationUnseenController::class, 'index']);
     Route::put('/navigation-unseen-counts/{resource}/seen', [NavigationUnseenController::class, 'markSeen']);

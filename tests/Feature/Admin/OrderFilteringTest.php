@@ -3,12 +3,14 @@
 namespace Tests\Feature\Admin;
 
 use App\Models\Activity;
+use App\Models\CancellationRequest;
 use App\Models\Order;
 use App\Models\Package;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
@@ -61,6 +63,98 @@ class OrderFilteringTest extends TestCase
             'completed' => ['completed'],
             'cancelled' => ['cancelled'],
         ];
+    }
+
+    public static function cancellationAttentionStatuses(): array
+    {
+        return [
+            'pending' => [CancellationRequest::STATUS_PENDING, true],
+            'refund processing' => [CancellationRequest::STATUS_REFUND_PROCESSING, true],
+            'refund failed' => [CancellationRequest::STATUS_REFUND_FAILED, true],
+            'approved' => [CancellationRequest::STATUS_APPROVED, false],
+            'rejected' => [CancellationRequest::STATUS_REJECTED, false],
+        ];
+    }
+
+    public static function actionableRowCounts(): array
+    {
+        return [
+            'one row' => [1],
+            'five rows' => [5],
+        ];
+    }
+
+    #[DataProvider('cancellationAttentionStatuses')]
+    public function test_order_rows_identify_cancellation_requests_that_need_admin_attention(
+        string $cancellationStatus,
+        bool $expected,
+    ): void {
+        $order = $this->createOrder('Cancellation Customer', 'Cancellation Tour');
+        CancellationRequest::factory()->for($order)->create([
+            'customer_id' => $order->user_id,
+            'status' => $cancellationStatus,
+        ]);
+
+        $this->actingAs($this->admin, 'api')
+            ->getJson("/api/admin/orders?search={$order->id}")
+            ->assertOk()
+            ->assertJsonPath('data.0.cancellation_needs_attention', $expected);
+    }
+
+    public function test_order_rows_without_a_cancellation_request_do_not_need_admin_attention(): void
+    {
+        $order = $this->createOrder('Regular Customer', 'Regular Tour');
+
+        $this->actingAs($this->admin, 'api')
+            ->getJson("/api/admin/orders?search={$order->id}")
+            ->assertOk()
+            ->assertJsonPath('data.0.cancellation_needs_attention', false);
+    }
+
+    public function test_trashed_order_does_not_need_admin_attention_when_its_request_is_unresolved(): void
+    {
+        $order = $this->createOrder('Deleted Customer', 'Deleted Tour', trashed: true);
+        CancellationRequest::factory()->for($order)->create([
+            'customer_id' => $order->user_id,
+            'status' => CancellationRequest::STATUS_PENDING,
+        ]);
+
+        $this->actingAs($this->admin, 'api')
+            ->getJson("/api/admin/orders?view=trash&search={$order->id}")
+            ->assertOk()
+            ->assertJsonPath('data.0.cancellation_needs_attention', false);
+    }
+
+    #[DataProvider('actionableRowCounts')]
+    public function test_order_list_eager_loads_cancellation_attention_in_one_query(int $rowCount): void
+    {
+        foreach (range(1, $rowCount) as $index) {
+            $order = $this->createOrder("Customer {$index}", "Tour {$index}");
+            CancellationRequest::factory()->for($order)->create([
+                'customer_id' => $order->user_id,
+                'status' => CancellationRequest::STATUS_PENDING,
+            ]);
+        }
+
+        $queries = [];
+        DB::listen(function ($query) use (&$queries): void {
+            $sql = strtolower(ltrim($query->sql));
+
+            if (str_starts_with($sql, 'select') && str_contains($sql, 'cancellation_requests')) {
+                $queries[] = $query->sql;
+            }
+        });
+
+        $response = $this->actingAs($this->admin, 'api')
+            ->getJson('/api/admin/orders')
+            ->assertOk()
+            ->assertJsonCount($rowCount, 'data');
+
+        $this->assertSame(1, count($queries));
+        $this->assertSame(
+            array_fill(0, $rowCount, true),
+            array_column($response->json('data'), 'cancellation_needs_attention'),
+        );
     }
 
     #[DataProvider('supportedStatuses')]

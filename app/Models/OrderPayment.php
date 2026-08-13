@@ -47,11 +47,15 @@ class OrderPayment extends Model
 
     protected $fillable = [
         'order_id', 'payment_status', 'stripe_session_id', 'payment_intent_id', 'payment_method',
-        'amount', 'is_custom_amount', 'custom_amount', 'total_amount', 'currency',
+        'amount', 'is_custom_amount', 'custom_amount', 'total_amount', 'refunded_amount', 'currency',
     ];
 
     protected $casts = [
         'is_custom_amount' => 'boolean',
+        'amount' => 'decimal:2',
+        'custom_amount' => 'decimal:2',
+        'total_amount' => 'decimal:2',
+        'refunded_amount' => 'decimal:2',
     ];
 
     public function order(): BelongsTo

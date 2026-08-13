@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /**
  * @property int $id
  * @property int $user_id
+ * @property string|null $deduplication_key
  * @property string $type
  * @property string $title
  * @property string $message
@@ -17,12 +18,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\User $user
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Notification newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Notification newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Notification query()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Notification unread()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Notification whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Notification whereData($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Notification whereDeduplicationKey($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Notification whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Notification whereMessage($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Notification whereReadAt($value)
@@ -30,6 +33,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Notification whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Notification whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Notification whereUserId($value)
+ *
  * @mixin \Eloquent
  */
 class Notification extends Model
@@ -41,6 +45,7 @@ class Notification extends Model
 
     protected $fillable = [
         'user_id',
+        'deduplication_key',
         'type',
         'title',
         'message',
@@ -65,5 +70,4 @@ class Notification extends Model
     {
         return $query->whereNull('read_at');
     }
-
 }

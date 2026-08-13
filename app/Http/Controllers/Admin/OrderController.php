@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\CancellationRequest;
 use App\Models\Order;
+use App\Services\CancellationRequestService;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Relations\Relation;
-use Illuminate\Http\Request; // ✅ Ye zaruri hai
+use Illuminate\Database\Eloquent\Relations\Relation; // ✅ Ye zaruri hai
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
@@ -108,8 +110,8 @@ class OrderController extends Controller
 
         // Base query for pagination (filtered)
         $query = $view === 'trash'
-            ? Order::onlyTrashed()->with(['user', 'orderable', 'payment', 'emergencyContact'])
-            : Order::with(['user', 'orderable', 'payment', 'emergencyContact']);
+            ? Order::onlyTrashed()->with(['user', 'orderable', 'payment', 'emergencyContact', 'latestCancellationRequest'])
+            : Order::with(['user', 'orderable', 'payment', 'emergencyContact', 'latestCancellationRequest']);
 
         if ($status) {
             $query->where('status', $status);
@@ -167,6 +169,8 @@ class OrderController extends Controller
                 'orderable' => $order->orderable,
                 'payment' => $order->payment,
                 'emergency_contact' => $order->emergencyContact,
+                'cancellation_needs_attention' => ! $order->trashed()
+                    && $order->latestCancellationRequest?->needsAdminAttention() === true,
                 'created_at' => $order->created_at?->toISOString(),
             ];
         });
@@ -307,7 +311,7 @@ class OrderController extends Controller
     public function show($id)
     {
         $order = Order::withTrashed()
-            ->with(['user.profile', 'orderable', 'payment', 'emergencyContact'])
+            ->with(['user.profile', 'orderable', 'payment', 'emergencyContact', 'latestCancellationRequest'])
             ->findOrFail($id);
 
         $formatted = [
@@ -325,6 +329,8 @@ class OrderController extends Controller
             'emergency_contact' => $order->emergencyContact,
             'created_at' => $order->created_at?->toISOString(),
             'is_trashed' => $order->trashed(),
+            'cancellation' => app(CancellationRequestService::class)
+                ->transform($order->latestCancellationRequest, admin: true),
         ];
 
         return response()->json([
@@ -335,80 +341,60 @@ class OrderController extends Controller
 
     public function updateOrder(Request $request, $id)
     {
-        // ---------------- Order Fetch ----------------
-        $order = Order::with(['payment', 'user'])->findOrFail($id);
         $status = $request->status;
 
-        // ---------------- Refund Logic ----------------
-        if ($status === 'refunded') {
-            if (! $order->payment || $order->payment->payment_status !== 'paid') {
-                return response()->json([
+        $result = DB::transaction(function () use ($id, $status): array {
+            [$order, $payment, $cancellations] = $this->lockOrderWorkflow((int) $id);
+            $latestCancellation = $cancellations->first();
+
+            if ($latestCancellation?->needsAdminAttention()) {
+                return ['response' => response()->json([
                     'success' => false,
-                    'message' => 'Refund not possible. Payment not found or not paid.',
-                ], 400);
+                    'message' => 'Resolve the customer cancellation request before changing this order.',
+                ], 409)];
             }
 
-            try {
-                \Stripe\Stripe::setApiKey(config('services.stripe.secret'));
-
-                $refund = \Stripe\Refund::create([
-                    'payment_intent' => $order->payment->payment_intent_id,
-                ]);
-
-                if (isset($refund->status) && $refund->status === 'succeeded') {
-                    $order->payment->update(['payment_status' => 'refunded']);
-                    $order->update(['status' => 'refunded']);
-                }
-
-                Mail::to($order->user->email)->send(new \App\Mail\CustomerRefundedOrderMail($order));
-
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Refund initiated successfully. Status updated in table.',
-                    'refund' => $refund,
-                    'email' => $order->user->email,
-                ]);
-
-            } catch (\Exception $e) {
-                return response()->json([
+            if ($status === 'refunded') {
+                return ['response' => response()->json([
                     'success' => false,
-                    'message' => 'Refund failed.',
-                    'error' => $e->getMessage(),
-                ], 500);
+                    'message' => 'Use the cancellation request workflow to issue refunds.',
+                ], 400)];
             }
-        }
 
-        // ---------------- Manual Status Update ----------------
-        $allowedStatuses = ['completed', 'cancelled'];
-        if (! in_array($status, $allowedStatuses)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'You can only update status to: '.implode(', ', $allowedStatuses),
-            ], 400);
-        }
+            $allowedStatuses = ['completed', 'cancelled'];
+            if (! in_array($status, $allowedStatuses)) {
+                return ['response' => response()->json([
+                    'success' => false,
+                    'message' => 'You can only update status to: '.implode(', ', $allowedStatuses),
+                ], 400)];
+            }
 
-        // Completed only if payment_status is paid
-        if ($status === 'completed') {
-            if (! $order->payment || $order->payment->payment_status !== 'paid') {
-                return response()->json([
+            if ($status === 'completed' && (! $payment || $payment->payment_status !== 'paid')) {
+                return ['response' => response()->json([
                     'success' => false,
                     'message' => 'Cannot mark order as completed. Payment not paid yet.',
-                ], 400);
+                ], 400)];
             }
-        }
 
-        // Cancelled only if payment_status is pending
-        if ($status === 'cancelled') {
-            if (! $order->payment || $order->payment->payment_status !== 'pending') {
-                return response()->json([
+            if ($status === 'cancelled' && (! $payment || $payment->payment_status !== 'pending')) {
+                return ['response' => response()->json([
                     'success' => false,
                     'message' => 'Cannot cancel order. Payment is not pending.',
-                ], 400);
+                ], 400)];
             }
+
+            $order->update(['status' => $status]);
+
+            return ['order' => $order];
+        });
+
+        if (isset($result['response'])) {
+            return $result['response'];
         }
 
-        // Update order status
-        $order->update(['status' => $status]);
+        /** @var Order $order */
+        $order = $result['order'];
+        $order->load(['payment', 'user']);
 
         // Email sending
         if ($status === 'completed') {
@@ -426,8 +412,23 @@ class OrderController extends Controller
 
     public function destroy(int $id)
     {
-        $order = Order::query()->findOrFail($id);
-        $order->delete();
+        $blocked = DB::transaction(function () use ($id): bool {
+            [$order, , $cancellations] = $this->lockOrderWorkflow($id);
+            if ($cancellations->first()?->needsAdminAttention()) {
+                return true;
+            }
+
+            $order->delete();
+
+            return false;
+        });
+
+        if ($blocked) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Resolve the customer cancellation request before moving this order to Trash.',
+            ], 409);
+        }
 
         return response()->json([
             'success' => true,
@@ -437,8 +438,10 @@ class OrderController extends Controller
 
     public function restore(int $id)
     {
-        $order = Order::onlyTrashed()->findOrFail($id);
-        $order->restore();
+        DB::transaction(function () use ($id): void {
+            [$order] = $this->lockOrderWorkflow($id, trashedOnly: true);
+            $order->restore();
+        });
 
         return response()->json([
             'success' => true,
@@ -448,12 +451,52 @@ class OrderController extends Controller
 
     public function forceDestroy(int $id)
     {
-        $order = Order::onlyTrashed()->findOrFail($id);
-        $order->forceDelete();
+        $blocked = DB::transaction(function () use ($id): bool {
+            [$order, , $cancellations] = $this->lockOrderWorkflow($id, trashedOnly: true);
+            if ($cancellations->isNotEmpty()) {
+                return true;
+            }
+
+            $order->forceDelete();
+
+            return false;
+        });
+
+        if ($blocked) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Orders with cancellation history cannot be permanently deleted.',
+            ], 409);
+        }
 
         return response()->json([
             'success' => true,
             'message' => 'Order permanently deleted.',
         ]);
+    }
+
+    /**
+     * Lock an order and its workflow records in the canonical order used by refunds.
+     *
+     * @return array{Order, \App\Models\OrderPayment|null, \Illuminate\Database\Eloquent\Collection<int, CancellationRequest>}
+     */
+    private function lockOrderWorkflow(int $id, bool $trashedOnly = false): array
+    {
+        $query = $trashedOnly ? Order::onlyTrashed() : Order::query();
+        $order = $query->whereKey($id)->lockForUpdate()->firstOrFail();
+        $payment = $order->payment()->lockForUpdate()->first();
+        $cancellations = $order->cancellationRequests()
+            ->latest('requested_at')
+            ->latest('id')
+            ->lockForUpdate()
+            ->get();
+        $this->afterOrderWorkflowLocked($order);
+
+        return [$order, $payment, $cancellations];
+    }
+
+    protected function afterOrderWorkflowLocked(Order $order): void
+    {
+        // Test seam for proving real database-lock contention.
     }
 }

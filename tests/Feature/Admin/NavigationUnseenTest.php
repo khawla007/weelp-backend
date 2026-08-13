@@ -2,12 +2,16 @@
 
 namespace Tests\Feature\Admin;
 
+use App\Models\CancellationRequest;
+use App\Models\Notification;
 use App\Models\Order;
 use App\Models\Review;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class NavigationUnseenTest extends TestCase
@@ -27,6 +31,156 @@ class NavigationUnseenTest extends TestCase
             'role' => User::ROLE_ADMIN,
             'status' => User::STATUS_ACTIVE,
         ]);
+    }
+
+    public static function cancellationAttentionStatuses(): array
+    {
+        return [
+            'pending' => [CancellationRequest::STATUS_PENDING, true],
+            'refund processing' => [CancellationRequest::STATUS_REFUND_PROCESSING, true],
+            'refund failed' => [CancellationRequest::STATUS_REFUND_FAILED, true],
+            'approved' => [CancellationRequest::STATUS_APPROVED, false],
+            'rejected' => [CancellationRequest::STATUS_REJECTED, false],
+        ];
+    }
+
+    #[DataProvider('cancellationAttentionStatuses')]
+    public function test_navigation_reports_only_actionable_cancellation_statuses(
+        string $cancellationStatus,
+        bool $expected,
+    ): void {
+        $admin = $this->admin();
+        $order = Order::factory()->create();
+        CancellationRequest::factory()->for($order)->create([
+            'customer_id' => $order->user_id,
+            'status' => $cancellationStatus,
+        ]);
+
+        $this->actingAs($admin, 'api')
+            ->getJson('/api/admin/navigation-unseen-counts')
+            ->assertOk()
+            ->assertJsonPath('data.has_actionable_cancellations', $expected);
+    }
+
+    public function test_navigation_has_no_cancellation_attention_without_a_request(): void
+    {
+        $admin = $this->admin();
+        Order::factory()->create();
+
+        $this->actingAs($admin, 'api')
+            ->getJson('/api/admin/navigation-unseen-counts')
+            ->assertOk()
+            ->assertJsonPath('data.has_actionable_cancellations', false);
+    }
+
+    public function test_trashed_order_never_creates_navigation_cancellation_attention(): void
+    {
+        $admin = $this->admin();
+        $order = Order::factory()->create();
+        CancellationRequest::factory()->for($order)->create([
+            'customer_id' => $order->user_id,
+            'status' => CancellationRequest::STATUS_PENDING,
+        ]);
+        $order->delete();
+
+        $this->actingAs($admin, 'api')
+            ->getJson('/api/admin/navigation-unseen-counts')
+            ->assertOk()
+            ->assertJsonPath('data.has_actionable_cancellations', false);
+    }
+
+    public function test_navigation_attention_query_starts_from_cancellation_requests(): void
+    {
+        $admin = $this->admin();
+        $order = Order::factory()->create();
+        CancellationRequest::factory()->for($order)->create([
+            'customer_id' => $order->user_id,
+            'status' => CancellationRequest::STATUS_PENDING,
+        ]);
+
+        $attentionQueries = [];
+        DB::listen(function ($query) use (&$attentionQueries): void {
+            $sql = strtolower(ltrim($query->sql));
+
+            if (str_starts_with($sql, 'select')
+                && str_contains($sql, 'cancellation_requests')
+                && str_contains($sql, 'orders')) {
+                $attentionQueries[] = $sql;
+            }
+        });
+
+        $this->actingAs($admin, 'api')
+            ->getJson('/api/admin/navigation-unseen-counts')
+            ->assertOk()
+            ->assertJsonPath('data.has_actionable_cancellations', true);
+
+        $this->assertCount(1, $attentionQueries);
+        $this->assertStringContainsString('from "cancellation_requests"', $attentionQueries[0]);
+        $this->assertLessThan(
+            strpos($attentionQueries[0], 'orders'),
+            strpos($attentionQueries[0], 'cancellation_requests'),
+        );
+    }
+
+    public function test_marking_orders_seen_does_not_clear_attention_and_resolving_the_last_request_does(): void
+    {
+        Carbon::setTestNow('2026-08-13 10:10:00');
+        $admin = $this->admin();
+        $admin->forceFill([
+            'admin_orders_last_seen_at' => '2026-08-13 10:00:00',
+            'admin_reviews_last_seen_at' => '2026-08-13 10:00:00',
+        ])->save();
+        $order = Order::factory()->create([
+            'created_at' => '2026-08-13 10:05:00',
+            'updated_at' => '2026-08-13 10:05:00',
+        ]);
+        $cancellation = CancellationRequest::factory()->for($order)->create([
+            'customer_id' => $order->user_id,
+            'status' => CancellationRequest::STATUS_PENDING,
+        ]);
+        $notification = Notification::factory()->for($admin)->create([
+            'type' => 'custom',
+            'deduplication_key' => "cancellation:{$cancellation->id}:requested:user:{$admin->id}",
+            'data' => [
+                'event' => 'cancellation_requested',
+                'cancellation_request_id' => $cancellation->id,
+                'order_id' => $order->id,
+            ],
+        ]);
+        Review::factory()->create([
+            'created_at' => '2026-08-13 10:06:00',
+            'updated_at' => '2026-08-13 10:06:00',
+        ]);
+
+        $this->actingAs($admin, 'api')
+            ->putJson('/api/admin/navigation-unseen-counts/orders/seen', [
+                'seen_through' => '2026-08-13T10:05:00.000Z',
+            ])
+            ->assertOk()
+            ->assertJsonPath('data.orders', 0)
+            ->assertJsonPath('data.reviews', 1)
+            ->assertJsonPath('data.has_actionable_cancellations', true);
+
+        $this->actingAs($admin, 'api')
+            ->putJson("/api/notifications/{$notification->id}/read")
+            ->assertOk()
+            ->assertJsonPath('data.read_at', fn ($readAt): bool => is_string($readAt));
+
+        $this->actingAs($admin, 'api')
+            ->getJson('/api/admin/navigation-unseen-counts')
+            ->assertOk()
+            ->assertJsonPath('data.orders', 0)
+            ->assertJsonPath('data.reviews', 1)
+            ->assertJsonPath('data.has_actionable_cancellations', true);
+
+        $cancellation->update(['status' => CancellationRequest::STATUS_APPROVED]);
+
+        $this->actingAs($admin, 'api')
+            ->getJson('/api/admin/navigation-unseen-counts')
+            ->assertOk()
+            ->assertJsonPath('data.orders', 0)
+            ->assertJsonPath('data.reviews', 1)
+            ->assertJsonPath('data.has_actionable_cancellations', false);
     }
 
     public function test_admin_navigation_seen_timestamps_start_at_the_database_creation_baseline(): void
@@ -135,6 +289,7 @@ class NavigationUnseenTest extends TestCase
                 'data' => [
                     'orders' => 2,
                     'reviews' => 3,
+                    'has_actionable_cancellations' => false,
                 ],
             ]);
     }
@@ -170,6 +325,7 @@ class NavigationUnseenTest extends TestCase
                 'data' => [
                     'orders' => 1,
                     'reviews' => 1,
+                    'has_actionable_cancellations' => false,
                 ],
             ]);
     }
@@ -196,6 +352,7 @@ class NavigationUnseenTest extends TestCase
                 'data' => [
                     'orders' => 1,
                     'reviews' => 1,
+                    'has_actionable_cancellations' => false,
                 ],
             ]);
 
@@ -225,12 +382,24 @@ class NavigationUnseenTest extends TestCase
                 'seen_through' => '2026-08-11T10:05:00.000Z',
             ])
             ->assertOk()
-            ->assertExactJson(['data' => ['orders' => 0, 'reviews' => 1]]);
+            ->assertExactJson([
+                'data' => [
+                    'orders' => 0,
+                    'reviews' => 1,
+                    'has_actionable_cancellations' => false,
+                ],
+            ]);
 
         $this->actingAs($secondAdmin, 'api')
             ->getJson('/api/admin/navigation-unseen-counts')
             ->assertOk()
-            ->assertExactJson(['data' => ['orders' => 2, 'reviews' => 1]]);
+            ->assertExactJson([
+                'data' => [
+                    'orders' => 2,
+                    'reviews' => 1,
+                    'has_actionable_cancellations' => false,
+                ],
+            ]);
 
         $this->assertSame(
             '2026-08-11 10:00:00.000',
@@ -256,6 +425,7 @@ class NavigationUnseenTest extends TestCase
                 'data' => [
                     'orders' => 1,
                     'reviews' => 0,
+                    'has_actionable_cancellations' => false,
                 ],
             ]);
 
