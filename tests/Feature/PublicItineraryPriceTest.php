@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Activity;
+use App\Models\ActivityPricing;
 use App\Models\Itinerary;
 use App\Models\ItineraryActivity;
 use App\Models\ItinerarySchedule;
@@ -33,12 +34,17 @@ class PublicItineraryPriceTest extends TestCase
 
         $activity = Activity::create([
             'name' => 'Public Test Activity',
-            'slug' => 'public-test-activity-' . uniqid(),
+            'slug' => 'public-test-activity-'.uniqid(),
+        ]);
+        ActivityPricing::factory()->create([
+            'activity_id' => $activity->id,
+            'regular_price' => $activitySum,
+            'currency' => 'USD',
         ]);
 
         $transfer = Transfer::create([
             'name' => 'Public Test Transfer',
-            'slug' => 'public-test-transfer-' . uniqid(),
+            'slug' => 'public-test-transfer-'.uniqid(),
             'description' => 'A test transfer for public itinerary',
             'transfer_type' => 'private',
         ]);
@@ -64,13 +70,16 @@ class PublicItineraryPriceTest extends TestCase
     {
         $itinerary = $this->seedItineraryWithScheduleSum(100.00, 40.00);
 
-        $response = $this->getJson('/api/itineraries/' . $itinerary->slug);
+        $response = $this->getJson('/api/itineraries/'.$itinerary->slug);
 
         $response->assertOk();
         $payload = $response->json('data');
         $this->assertArrayHasKey('schedule_total_price', $payload);
         // Transfer has no route/pricing, so computeRoutePrice() returns 0, only activity price counts
         $this->assertSame(100.00, (float) $payload['schedule_total_price']);
+        $response->assertJsonPath('data.schedules.0.activities.0.pricing.unit_price', 100);
+        $response->assertJsonPath('data.schedules.0.activities.0.pricing.price_type', 'per_person');
+        $response->assertJsonPath('data.schedules.0.activities.0.pricing.currency', 'USD');
     }
 
     public function test_public_index_includes_schedule_total_price(): void

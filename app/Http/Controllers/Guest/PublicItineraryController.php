@@ -378,9 +378,16 @@ class PublicItineraryController extends Controller
                             'duration_minutes' => $primaryLocation?->duration,
                             'featured_image' => $featuredMedia?->media?->url
                                 ?? $activityModel?->mediaGallery->first()?->media?->url,
+                            'pricing' => [
+                                'unit_price' => (float) ($activityModel?->pricing?->regular_price ?? 0),
+                                'price_type' => 'per_person',
+                                'currency' => $activityModel?->pricing?->currency,
+                            ],
                         ];
                     }),
                     'transfers' => $schedule->transfers->map(function ($transfer) {
+                        $transferModel = $transfer->transfer;
+
                         return [
                             'id' => $transfer->id,
                             'transfer_id' => $transfer->transfer_id,
@@ -395,6 +402,13 @@ class PublicItineraryController extends Controller
                             'price' => $transfer->price,
                             'included' => $transfer->included,
                             'include_in_package' => $transfer->included,
+                            'pricing' => [
+                                'unit_price' => $transferModel?->computeRoutePrice(1) ?? 0,
+                                'price_type' => $transferModel?->pricingPriceType() ?? 'per_vehicle',
+                                'currency' => $transferModel?->routeCurrency(),
+                                'luggage_per_bag' => $transferModel?->luggagePerBagRate() ?? 0,
+                                'waiting_per_minute' => $transferModel?->waitingPerMinuteRate() ?? 0,
+                            ],
                         ];
                     }),
                 ];

@@ -23,9 +23,9 @@ final class CheckoutQuoteService
     /**
      * @return array{amount: float, currency: string, base_amount: float, addons: array<int, array{addon_id: int, addon_name: string, price: float}>, addons_amount: float, variation_id: int|null}
      */
-    public function quote(array $selection): array
+    public function quote(array $selection, ?int $userId = null): array
     {
-        $orderable = $this->resolveOrderable($selection);
+        $orderable = $this->resolveOrderable($selection, $userId);
         $travelDate = $this->resolveTravelDate($selection);
         $adults = (int) ($selection['number_of_adults'] ?? 0);
         $children = (int) ($selection['number_of_children'] ?? 0);
@@ -63,7 +63,7 @@ final class CheckoutQuoteService
         ];
     }
 
-    private function resolveOrderable(array $selection): Model
+    private function resolveOrderable(array $selection, ?int $userId): Model
     {
         $map = [
             'activity' => Activity::class,
@@ -75,9 +75,18 @@ final class CheckoutQuoteService
         $id = filter_var($selection['orderable_id'] ?? null, FILTER_VALIDATE_INT);
         $orderable = null;
         if ($class && $id) {
-            $orderable = $class === Itinerary::class
-                ? Itinerary::publiclyVisible()->find($id)
-                : $class::find($id);
+            if ($class === Itinerary::class) {
+                $orderable = Itinerary::query()
+                    ->where(function ($query) use ($userId): void {
+                        $query->publiclyVisible();
+                        if ($userId !== null) {
+                            $query->orWhere(fn ($ownerQuery) => $ownerQuery->userCopies($userId));
+                        }
+                    })
+                    ->find($id);
+            } else {
+                $orderable = $class::find($id);
+            }
         }
 
         if (! $orderable) {
@@ -209,6 +218,7 @@ final class CheckoutQuoteService
                 'schedules.transfers.transfer.route',
                 'schedules.transfers.transfer.pricingAvailability',
             );
+            $this->assertItineraryPricingIsCanonical($orderable);
             if ($orderable->max_guests !== null && $adults + $children > $orderable->max_guests) {
                 throw new DomainException('guests_exceed_transfer_capacity');
             }
@@ -233,6 +243,33 @@ final class CheckoutQuoteService
             null,
             round($extras, 2),
         ];
+    }
+
+    private function assertItineraryPricingIsCanonical(Itinerary $itinerary): void
+    {
+        $currencies = collect([$itinerary->basePricing?->currency])->filter();
+
+        foreach ($itinerary->schedules as $schedule) {
+            foreach ($schedule->activities as $row) {
+                $pricing = $row->activity?->pricing;
+                if (! $pricing || ! $pricing->currency) {
+                    throw new DomainException('itinerary_pricing_missing');
+                }
+                $currencies->push($pricing->currency);
+            }
+
+            foreach ($schedule->transfers as $row) {
+                $currency = $row->transfer?->routeCurrency();
+                if (! $row->transfer || ! $currency) {
+                    throw new DomainException('itinerary_pricing_missing');
+                }
+                $currencies->push($currency);
+            }
+        }
+
+        if ($currencies->map(fn ($currency) => strtoupper((string) $currency))->unique()->count() > 1) {
+            throw new DomainException('itinerary_currency_mismatch');
+        }
     }
 
     /**

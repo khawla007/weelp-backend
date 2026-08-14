@@ -139,7 +139,7 @@ class CustomerItineraryController extends Controller
     {
         $validated = $request->validated();
 
-        $original = Itinerary::original()->findOrFail($validated['parent_itinerary_id']);
+        $original = Itinerary::publiclyVisible()->findOrFail($validated['parent_itinerary_id']);
 
         $service = new ItineraryDeepCopyService;
         $copy = $service->deepCopy(

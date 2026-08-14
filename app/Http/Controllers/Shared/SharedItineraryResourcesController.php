@@ -3,9 +3,8 @@
 namespace App\Http\Controllers\Shared;
 
 use App\Http\Controllers\Controller;
-use App\Models\City;
 use App\Models\Activity;
-use App\Models\Place;
+use App\Models\City;
 use App\Models\Transfer;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -18,7 +17,7 @@ class SharedItineraryResourcesController extends Controller
             ->select('id', 'name', 'slug', 'state_id');
 
         if ($request->has('search')) {
-            $query->where('name', 'like', '%' . $request->search . '%');
+            $query->where('name', 'like', '%'.$request->search.'%');
         }
 
         $cities = $query->orderBy('name')
@@ -52,11 +51,11 @@ class SharedItineraryResourcesController extends Controller
         })
             ->with(['tags.tag', 'mediaGallery' => function ($q) {
                 $q->where('is_featured', true);
-            }, 'mediaGallery.media', 'locations.city', 'locations.place'])
+            }, 'mediaGallery.media', 'locations.city', 'locations.place', 'pricing'])
             ->select('id', 'name', 'slug', 'description', 'item_type', 'featured_activity');
 
         if ($request->has('search')) {
-            $query->where('name', 'like', '%' . $request->search . '%');
+            $query->where('name', 'like', '%'.$request->search.'%');
         }
 
         $activities = $query->get()->map(function ($activity) {
@@ -73,7 +72,12 @@ class SharedItineraryResourcesController extends Controller
                 'duration_minutes' => $primaryLocation?->duration,
                 'type' => $activity->item_type,
                 'featured_image' => $featuredMedia?->media?->url,
-                'tags' => $activity->tags->map(fn($t) => [
+                'pricing' => [
+                    'unit_price' => (float) ($activity->pricing?->regular_price ?? 0),
+                    'price_type' => 'per_person',
+                    'currency' => $activity->pricing?->currency,
+                ],
+                'tags' => $activity->tags->map(fn ($t) => [
                     'id' => $t->tag?->id,
                     'name' => $t->tag?->name,
                 ]),
@@ -92,10 +96,10 @@ class SharedItineraryResourcesController extends Controller
         $transfers = Transfer::whereHas('vendorRoutes', function ($query) use ($placeIds) {
             $query->whereIn('pickup_place_id', $placeIds);
         })
-            ->select('id', 'name', 'slug', 'transfer_type', 'description')
+            ->select('id', 'name', 'slug', 'transfer_type', 'description', 'transfer_route_id')
             ->with(['vendorRoutes.pickupPlace.city', 'vendorRoutes.dropoffPlace.city', 'mediaGallery' => function ($q) {
                 $q->where('is_featured', true);
-            }, 'mediaGallery.media'])
+            }, 'mediaGallery.media', 'route', 'pricingAvailability'])
             ->get()
             ->map(function ($transfer) {
                 $featuredMedia = $transfer->mediaGallery->where('is_featured', true)->first();
@@ -109,6 +113,13 @@ class SharedItineraryResourcesController extends Controller
                     'featured_image' => $featuredMedia?->media?->url,
                     'pickup_city_name' => $route?->pickupPlace?->city?->name,
                     'dropoff_city_name' => $route?->dropoffPlace?->city?->name,
+                    'pricing' => [
+                        'unit_price' => $transfer->computeRoutePrice(1),
+                        'price_type' => $transfer->pricingPriceType() ?? 'per_vehicle',
+                        'currency' => $transfer->routeCurrency(),
+                        'luggage_per_bag' => $transfer->luggagePerBagRate(),
+                        'waiting_per_minute' => $transfer->waitingPerMinuteRate(),
+                    ],
                 ];
             });
 

@@ -45,7 +45,7 @@ class StripeController extends Controller
         $selection = $this->validateSelection($request);
 
         try {
-            $quote = $quotes->quote($selection);
+            $quote = $quotes->quote($selection, $request->user()->id);
             $selectionHash = $this->selectionHash($selection);
             $intent = $stripe->create(
                 $this->toSmallestUnit($quote['amount'], $quote['currency']),
@@ -96,7 +96,7 @@ class StripeController extends Controller
         }
 
         try {
-            $quote = $quotes->quote($selection);
+            $quote = $quotes->quote($selection, $user->id);
             $intent = $stripe->retrieve($paymentIntentId);
         } catch (DomainException $e) {
             return $this->quoteError($e);
@@ -126,7 +126,10 @@ class StripeController extends Controller
             $order = DB::transaction(function () use ($selection, $selectionHash, $quote, $data, $user, $class, $creatorId, $paymentIntentId): Order {
                 $orderableQuery = $class::query();
                 if ($class === Itinerary::class) {
-                    $orderableQuery->publiclyVisible();
+                    $orderableQuery->where(function ($query) use ($user): void {
+                        $query->publiclyVisible()
+                            ->orWhere(fn ($ownerQuery) => $ownerQuery->userCopies($user->id));
+                    });
                 }
                 $orderable = $orderableQuery->lockForUpdate()->find($selection['orderable_id']);
                 if (! $orderable) {

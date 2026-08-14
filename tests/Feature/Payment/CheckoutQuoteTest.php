@@ -11,6 +11,7 @@ use App\Models\Itinerary;
 use App\Models\ItineraryActivity;
 use App\Models\ItineraryAvailability;
 use App\Models\ItineraryBasePricing;
+use App\Models\ItineraryMeta;
 use App\Models\ItinerarySchedule;
 use App\Models\Package;
 use App\Models\PackageBasePricing;
@@ -20,6 +21,7 @@ use App\Models\TransferPricingAvailability;
 use App\Models\TransferRoute;
 use App\Models\TransferSchedule;
 use App\Models\TransferZonePrice;
+use App\Models\User;
 use App\Services\CheckoutQuoteService;
 use DomainException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -185,6 +187,35 @@ class CheckoutQuoteTest extends TestCase
         $this->assertSame('USD', $quote['currency']);
     }
 
+    public function test_private_customer_itinerary_quote_is_available_only_to_its_owner(): void
+    {
+        $owner = User::factory()->customer()->create();
+        $other = User::factory()->customer()->create();
+        $itinerary = Itinerary::factory()->create(['private_itinerary' => true]);
+        ItineraryMeta::create([
+            'itinerary_id' => $itinerary->id,
+            'user_id' => $owner->id,
+            'parent_itinerary_id' => Itinerary::factory()->create()->id,
+        ]);
+        $schedule = ItinerarySchedule::factory()->create(['itinerary_id' => $itinerary->id]);
+        $activity = Activity::factory()->create();
+        ActivityPricing::factory()->create(['activity_id' => $activity->id, 'regular_price' => 80, 'currency' => 'USD']);
+        ItineraryActivity::factory()->create(['schedule_id' => $schedule->id, 'activity_id' => $activity->id, 'price' => 1]);
+        $selection = [
+            'order_type' => 'itinerary',
+            'orderable_id' => $itinerary->id,
+            'travel_date' => now()->addWeek()->toDateString(),
+            'number_of_adults' => 1,
+            'number_of_children' => 0,
+        ];
+
+        $this->assertSame(80.0, app(CheckoutQuoteService::class)->quote($selection, $owner->id)['amount']);
+
+        $this->expectException(DomainException::class);
+        $this->expectExceptionMessage('item_unavailable');
+        app(CheckoutQuoteService::class)->quote($selection, $other->id);
+    }
+
     public function test_itinerary_quote_rejects_catalog_quantity_overflow(): void
     {
         $itinerary = Itinerary::factory()->create();
@@ -203,6 +234,55 @@ class CheckoutQuoteTest extends TestCase
             'orderable_id' => $itinerary->id,
             'travel_date' => now()->addWeek()->toDateString(),
             'number_of_adults' => 3,
+            'number_of_children' => 0,
+        ]);
+    }
+
+    public function test_itinerary_quote_rejects_missing_canonical_activity_pricing(): void
+    {
+        $itinerary = Itinerary::factory()->create();
+        $schedule = ItinerarySchedule::factory()->create(['itinerary_id' => $itinerary->id]);
+        $activity = Activity::factory()->create();
+        ItineraryActivity::factory()->create([
+            'schedule_id' => $schedule->id,
+            'activity_id' => $activity->id,
+            'price' => 999,
+        ]);
+
+        $this->expectException(DomainException::class);
+        $this->expectExceptionMessage('itinerary_pricing_missing');
+
+        app(CheckoutQuoteService::class)->quote([
+            'order_type' => 'itinerary',
+            'orderable_id' => $itinerary->id,
+            'travel_date' => now()->addWeek()->toDateString(),
+            'number_of_adults' => 1,
+            'number_of_children' => 0,
+        ]);
+    }
+
+    public function test_itinerary_quote_rejects_mixed_schedule_currencies(): void
+    {
+        $itinerary = Itinerary::factory()->create();
+        $schedule = ItinerarySchedule::factory()->create(['itinerary_id' => $itinerary->id]);
+        foreach (['USD', 'EUR'] as $currency) {
+            $activity = Activity::factory()->create();
+            ActivityPricing::factory()->create([
+                'activity_id' => $activity->id,
+                'regular_price' => 50,
+                'currency' => $currency,
+            ]);
+            ItineraryActivity::factory()->create(['schedule_id' => $schedule->id, 'activity_id' => $activity->id]);
+        }
+
+        $this->expectException(DomainException::class);
+        $this->expectExceptionMessage('itinerary_currency_mismatch');
+
+        app(CheckoutQuoteService::class)->quote([
+            'order_type' => 'itinerary',
+            'orderable_id' => $itinerary->id,
+            'travel_date' => now()->addWeek()->toDateString(),
+            'number_of_adults' => 1,
             'number_of_children' => 0,
         ]);
     }

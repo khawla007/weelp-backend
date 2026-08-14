@@ -4,15 +4,15 @@ namespace App\Services;
 
 use App\Models\Itinerary;
 use App\Models\ItineraryActivity;
-use App\Models\ItineraryMeta;
 use App\Models\ItineraryAddon;
 use App\Models\ItineraryAttribute;
 use App\Models\ItineraryBasePricing;
-use App\Models\ItineraryPriceVariation;
 use App\Models\ItineraryCategory;
 use App\Models\ItineraryInclusionExclusion;
 use App\Models\ItineraryLocation;
 use App\Models\ItineraryMediaGallery;
+use App\Models\ItineraryMeta;
+use App\Models\ItineraryPriceVariation;
 use App\Models\ItinerarySchedule;
 use App\Models\ItinerarySeo;
 use App\Models\ItineraryTag;
@@ -24,11 +24,11 @@ class ItineraryDeepCopyService
     /**
      * Deep-copy an itinerary with modified schedules.
      *
-     * @param  Itinerary  $original        The source itinerary to copy from
-     * @param  array      $modifiedSchedules  New schedule data (not copied from original)
-     * @param  int|null   $creatorId        Creator user ID (for creator copies)
-     * @param  int|null   $userId           Customer user ID (for customer copies)
-     * @return Itinerary  The newly created copy with relations loaded
+     * @param  Itinerary  $original  The source itinerary to copy from
+     * @param  array  $modifiedSchedules  New schedule data (not copied from original)
+     * @param  int|null  $creatorId  Creator user ID (for creator copies)
+     * @param  int|null  $userId  Customer user ID (for customer copies)
+     * @return Itinerary The newly created copy with relations loaded
      */
     public function deepCopy(
         Itinerary $original,
@@ -61,7 +61,7 @@ class ItineraryDeepCopyService
     private function createCopyRecord(Itinerary $original, ?int $creatorId, ?int $userId): Itinerary
     {
         $suffix = $creatorId ? "-c{$creatorId}" : "-u{$userId}";
-        $slug = $original->slug . $suffix . '-' . time();
+        $slug = $original->slug.$suffix.'-'.time();
 
         $copy = Itinerary::create([
             'name' => $original->name,
@@ -245,7 +245,7 @@ class ItineraryDeepCopyService
                 'start_time' => $activityData['start_time'] ?? null,
                 'end_time' => $activityData['end_time'] ?? null,
                 'notes' => $activityData['notes'] ?? null,
-                'price' => $activityData['price'] ?? null,
+                'price' => null,
                 'included' => $activityData['included'] ?? true,
             ]);
         }
@@ -262,7 +262,7 @@ class ItineraryDeepCopyService
                 'start_time' => $transferData['start_time'] ?? null,
                 'end_time' => $transferData['end_time'] ?? null,
                 'notes' => $transferData['notes'] ?? null,
-                'price' => $transferData['price'] ?? null,
+                'price' => null,
                 'included' => $transferData['included'] ?? true,
                 'pax' => $transferData['pax'] ?? null,
                 'bag_count' => $transferData['bag_count'] ?? 0,
