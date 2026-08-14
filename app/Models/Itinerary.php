@@ -255,6 +255,13 @@ class Itinerary extends Model
             });
     }
 
+    public function scopeOriginalCatalog(Builder $query): Builder
+    {
+        return $query
+            ->where('private_itinerary', false)
+            ->whereDoesntHave('meta');
+    }
+
     public function scopeUserCopies($query, $userId)
     {
         return $query->whereHas('meta', fn ($q) => $q->where('user_id', $userId));

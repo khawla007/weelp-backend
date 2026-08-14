@@ -102,6 +102,45 @@ class ReviewEndpointTest extends TestCase
             ->assertJsonMissing(['id' => $hiddenReview->id]);
     }
 
+    public function test_aggregate_review_feeds_exclude_creator_itineraries(): void
+    {
+        $user = User::factory()->create();
+        $creator = User::factory()->creator()->create();
+        $original = Itinerary::factory()->create();
+        $creatorItinerary = Itinerary::factory()->create();
+        ItineraryMeta::create([
+            'itinerary_id' => $creatorItinerary->id,
+            'creator_id' => $creator->id,
+            'status' => 'approved',
+        ]);
+        $originalReview = Review::factory()->create([
+            'user_id' => $user->id,
+            'item_type' => 'itinerary',
+            'item_id' => $original->id,
+            'status' => 'approved',
+            'is_featured' => true,
+        ]);
+        $creatorReview = Review::factory()->create([
+            'user_id' => $user->id,
+            'item_type' => 'itinerary',
+            'item_id' => $creatorItinerary->id,
+            'status' => 'approved',
+            'is_featured' => true,
+        ]);
+
+        $this->getJson('/api/reviews')
+            ->assertOk()
+            ->assertJsonPath('total', 1)
+            ->assertJsonFragment(['id' => $originalReview->id])
+            ->assertJsonMissing(['id' => $creatorReview->id]);
+
+        $this->getJson('/api/reviews/featured-reviews')
+            ->assertOk()
+            ->assertJsonPath('summary.total_reviews', 1)
+            ->assertJsonFragment(['id' => $originalReview->id])
+            ->assertJsonMissing(['id' => $creatorReview->id]);
+    }
+
     public function test_featured_reviews(): void
     {
         $user = User::factory()->create();

@@ -12,7 +12,7 @@ class PublicItineraryController extends Controller
     //  -------------------Code to grt itineraries with location details-------------------
     public function index(): JsonResponse
     {
-        $itineraries = Itinerary::publiclyVisible()->with([
+        $itineraries = Itinerary::originalCatalog()->with([
             'locations.city',
             'schedules.activities',
             'schedules.transfers',
@@ -124,7 +124,7 @@ class PublicItineraryController extends Controller
     {
         $citySlug = request()->query('city');
 
-        $query = Itinerary::publiclyVisible()->with([
+        $query = Itinerary::originalCatalog()->with([
             'locations.city',
             'schedules.activities',
             'schedules.transfers',

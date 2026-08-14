@@ -126,6 +126,8 @@ Route::middleware('throttle:verify_email')->group(function () {
 // Role-agnostic authenticated routes - 30/min baseline; avatar upload also capped at 10/min for MinIO write cost
 Route::middleware(['auth:api', 'throttle:30,1'])->prefix('user')->group(function () {
     Route::get('/profile', [UserProfileController::class, 'show']);
+    Route::get('/itinerary-resources/activities', [SharedItineraryResourcesController::class, 'getActivities']);
+    Route::get('/itinerary-resources/transfers', [SharedItineraryResourcesController::class, 'getTransfers']);
     Route::delete('/avatar', [UserProfileController::class, 'deleteAvatar']);
     Route::middleware('throttle:10,1,avatar')->post('/avatar', [UserProfileController::class, 'uploadAvatar']);
 });

@@ -422,7 +422,7 @@ class PublicReviewController extends Controller
                 ->orWhere(function ($itineraryReviews): void {
                     $itineraryReviews
                         ->where('item_type', 'itinerary')
-                        ->whereIn('item_id', Itinerary::publiclyVisible()->select('id'));
+                        ->whereIn('item_id', Itinerary::originalCatalog()->select('id'));
                 });
         });
     }
@@ -435,7 +435,7 @@ class PublicReviewController extends Controller
     {
         $activityIds = Activity::whereHas('locations', fn ($l) => $l->where('city_id', $cityId))->pluck('id');
         $packageIds = Package::whereHas('locations', fn ($l) => $l->where('city_id', $cityId))->pluck('id');
-        $itineraryIds = Itinerary::publiclyVisible()->whereHas('locations', fn ($l) => $l->where('city_id', $cityId))->pluck('id');
+        $itineraryIds = Itinerary::originalCatalog()->whereHas('locations', fn ($l) => $l->where('city_id', $cityId))->pluck('id');
 
         $query->where(function ($q) use ($activityIds, $packageIds, $itineraryIds) {
             $q->where(function ($sub) use ($activityIds) {

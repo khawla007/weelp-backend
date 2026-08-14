@@ -43,7 +43,7 @@ class RegionEndpointTest extends TestCase
         $response->assertNotFound();
     }
 
-    public function test_region_lists_hide_trashed_and_restored_draft_creator_itineraries(): void
+    public function test_region_lists_hide_all_creator_itineraries(): void
     {
         $region = Region::factory()->create(['slug' => 'visibility-region']);
         $country = Country::factory()->create();
@@ -51,6 +51,8 @@ class RegionEndpointTest extends TestCase
         $state = State::factory()->create(['country_id' => $country->id]);
         $city = City::factory()->create(['state_id' => $state->id]);
         $creator = User::factory()->creator()->create();
+        $original = Itinerary::factory()->create(['featured_itinerary' => true]);
+        ItineraryLocation::create(['itinerary_id' => $original->id, 'city_id' => $city->id]);
         $trashed = $this->creatorItinerary($creator, $city, 'approved');
         $restored = $this->creatorItinerary($creator, $city, 'approved');
         $published = $this->creatorItinerary($creator, $city, 'approved');
@@ -60,14 +62,18 @@ class RegionEndpointTest extends TestCase
         $service->restoreToDraft($restored->id, $creator->id);
 
         foreach ([
+            "/api/homesearch?location={$city->slug}&item_type=itinerary",
+            "/api/toursearch?to={$city->slug}",
+            "/api/cities/{$city->slug}/all-items?item_type=itinerary",
             '/api/region/visibility-region/region-itineraries',
             '/api/region/visibility-region/region-all-items?item_type=itinerary',
         ] as $url) {
             $response = $this->getJson($url)->assertOk();
             $ids = collect($response->json('data'))->pluck('id');
+            $this->assertTrue($ids->contains($original->id), "Original itinerary missing from {$url}");
             $this->assertFalse($ids->contains($trashed->id));
             $this->assertFalse($ids->contains($restored->id));
-            $this->assertTrue($ids->contains($published->id));
+            $this->assertFalse($ids->contains($published->id));
         }
     }
 

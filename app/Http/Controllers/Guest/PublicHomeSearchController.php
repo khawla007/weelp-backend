@@ -313,7 +313,7 @@ class PublicHomeSearchController extends Controller
     // private function searchItineraries($cityIds, $startDate, $endDate, $quantity)
     private function searchItineraries($cityIds, $startDate, $endDate, $quantity, $categoryIds, $tagIds, $sortBy, $minPrice, $maxPrice, $featured, $itemType)
     {
-        $query = Itinerary::publiclyVisible()->with([
+        $query = Itinerary::originalCatalog()->with([
             'categories' => function ($q) {
                 $q->with('category:id,name');
             },

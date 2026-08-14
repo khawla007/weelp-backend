@@ -216,7 +216,7 @@ class PublicRegionController extends Controller
         }
 
         // Itineraries ke saath schedules aur related data fetch karo
-        $itineraries = $city->itineraries()->publiclyVisible()->with([
+        $itineraries = $city->itineraries()->originalCatalog()->with([
             'basePricing.variations',
             'mediaGallery.media',
             'categories.category',
@@ -439,7 +439,7 @@ class PublicRegionController extends Controller
             : null;
 
         $itineraries = (! $itemType || $itemType === 'itinerary')
-            ? Itinerary::publiclyVisible()->whereHas('locations', fn ($query) => $query->where('city_id', $city->id)
+            ? Itinerary::originalCatalog()->whereHas('locations', fn ($query) => $query->where('city_id', $city->id)
             )->with([
                 'basePricing.variations',
                 'mediaGallery.media',
@@ -639,7 +639,7 @@ class PublicRegionController extends Controller
                 });
         })->pluck('id');
 
-        $query = Itinerary::publiclyVisible()->with([
+        $query = Itinerary::originalCatalog()->with([
             'locations.city.state.country.regions',
             'schedules.activities',
             'schedules.transfers.transfer.route',
@@ -841,7 +841,7 @@ class PublicRegionController extends Controller
             : null;
 
         $itineraries = (! $itemType || $itemType === 'itinerary')
-            ? Itinerary::publiclyVisible()->whereHas('locations', fn ($query) => $query->whereIn('city_id', $cityIds))
+            ? Itinerary::originalCatalog()->whereHas('locations', fn ($query) => $query->whereIn('city_id', $cityIds))
                 ->with([
                     'basePricing.variations',
                     'mediaGallery.media',

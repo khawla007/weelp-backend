@@ -235,7 +235,7 @@ class PublicShopController extends Controller
             ->when($featured !== null, fn ($query) => $query->where('featured_activity', $featured))
             ->with(['pricing', 'groupDiscounts', 'categories.category', 'locations.city.state.country.regions', 'mediaGallery.media']);
 
-        $itineraries = Itinerary::publiclyVisible()
+        $itineraries = Itinerary::originalCatalog()
             ->when(! empty($cityIds), fn ($query) => $query->whereHas('locations', fn ($q) => $q->whereIn('city_id', $cityIds)))
             ->when($itemType, fn ($query) => $query->where('item_type', $itemType))
             ->when($featured !== null, fn ($query) => $query->where('featured_itinerary', $featured))

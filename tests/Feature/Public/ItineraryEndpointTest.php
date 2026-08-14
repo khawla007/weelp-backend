@@ -47,6 +47,38 @@ class ItineraryEndpointTest extends TestCase
             ->assertJsonPath('data.is_creator_itinerary', true);
     }
 
+    public function test_original_catalog_lists_exclude_approved_creator_itineraries(): void
+    {
+        $original = Itinerary::factory()->create([
+            'featured_itinerary' => true,
+            'slug' => 'original-catalog-itinerary',
+        ]);
+        $creator = User::factory()->creator()->create();
+        $creatorItinerary = Itinerary::factory()->create([
+            'featured_itinerary' => true,
+            'slug' => 'creator-catalog-itinerary',
+        ]);
+        ItineraryMeta::create([
+            'itinerary_id' => $creatorItinerary->id,
+            'creator_id' => $creator->id,
+            'status' => 'approved',
+        ]);
+
+        foreach (['/api/itineraries', '/api/itineraries/featured-itineraries'] as $url) {
+            $response = $this->getJson($url)->assertOk();
+            $ids = collect($response->json('data'))->pluck('id');
+
+            $this->assertTrue($ids->contains($original->id), "Original itinerary missing from {$url}");
+            $this->assertFalse($ids->contains($creatorItinerary->id), "Creator itinerary leaked into {$url}");
+        }
+
+        $this->getJson('/api/creator/explore')->assertOk()->assertJsonFragment(['id' => $creatorItinerary->id]);
+        $this->getJson("/api/creator/explore/{$creatorItinerary->id}")->assertOk();
+        $this->getJson('/api/itineraries/creator-catalog-itinerary')
+            ->assertOk()
+            ->assertJsonPath('data.is_creator_itinerary', true);
+    }
+
     public function test_show_itinerary_returns_404_for_missing_slug(): void
     {
         $response = $this->getJson('/api/itineraries/nonexistent-slug');

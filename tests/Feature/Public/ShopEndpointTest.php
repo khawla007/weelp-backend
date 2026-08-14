@@ -72,9 +72,10 @@ class ShopEndpointTest extends TestCase
         }
     }
 
-    public function test_shop_hides_trashed_and_restored_draft_creator_itineraries(): void
+    public function test_shop_hides_all_creator_itineraries(): void
     {
         $creator = User::factory()->creator()->create();
+        $original = Itinerary::factory()->create();
         $trashed = $this->creatorItinerary($creator, 'approved');
         $restored = $this->creatorItinerary($creator, 'approved');
         $published = $this->creatorItinerary($creator, 'approved');
@@ -86,9 +87,10 @@ class ShopEndpointTest extends TestCase
         $response = $this->getJson('/api/shop')->assertOk();
 
         $ids = collect($response->json('data'))->where('item_type', 'itinerary')->pluck('id');
+        $this->assertTrue($ids->contains($original->id));
         $this->assertFalse($ids->contains($trashed->id));
         $this->assertFalse($ids->contains($restored->id));
-        $this->assertTrue($ids->contains($published->id));
+        $this->assertFalse($ids->contains($published->id));
     }
 
     private function creatorItinerary(User $creator, string $status): Itinerary
