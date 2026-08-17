@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreItineraryRequest;
 use App\Models\Itinerary;
 use App\Services\ItineraryDeepCopyService;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -160,7 +161,7 @@ class CustomerItineraryController extends Controller
         $userId = Auth::id();
         $validated = $request->validate([
             'view' => ['sometimes', \Illuminate\Validation\Rule::in(['active', 'trash'])],
-            'status' => ['sometimes', \Illuminate\Validation\Rule::in(['draft'])],
+            'status' => ['sometimes', \Illuminate\Validation\Rule::in(['draft', 'under_review', 'published', 'needs_changes'])],
             'page' => ['sometimes', 'integer', 'min:1'],
         ]);
         $view = $validated['view'] ?? 'active';
@@ -183,12 +184,11 @@ class CustomerItineraryController extends Controller
 
                 $query->orWhere(function ($creatorQuery) use ($userId, $status): void {
                     $creatorQuery->standaloneCreator()
-                        ->whereHas('meta', function ($meta) use ($userId, $status): void {
-                            $meta->where('creator_id', $userId);
-                            if ($status !== null) {
-                                $meta->where('status', $status);
-                            }
-                        });
+                        ->whereHas('meta', fn ($meta) => $meta->where('creator_id', $userId));
+
+                    if ($status !== null) {
+                        $this->applyCreatorStatusFilter($creatorQuery, $status);
+                    }
                 });
             });
         }
@@ -222,6 +222,28 @@ class CustomerItineraryController extends Controller
             'success' => true,
             'data' => $itineraries,
         ]);
+    }
+
+    private function applyCreatorStatusFilter(Builder $query, string $status): void
+    {
+        match ($status) {
+            'draft' => $query->whereHas('meta', fn (Builder $meta) => $meta
+                ->where('status', 'draft')
+                ->whereNull('publication_rejection_reason')),
+            'under_review' => $query->where(function (Builder $review): void {
+                $review->whereHas('meta', fn (Builder $meta) => $meta->where('status', 'pending'))
+                    ->orWhereHas('draftItinerary.meta', fn (Builder $meta) => $meta->where('status', 'edit_pending'));
+            }),
+            'published' => $query->whereHas('meta', fn (Builder $meta) => $meta->where('status', 'approved')),
+            'needs_changes' => $query->whereHas('meta', fn (Builder $meta) => $meta
+                ->where(function (Builder $state): void {
+                    $state->where('status', 'rejected')
+                        ->orWhere(function (Builder $draft): void {
+                            $draft->where('status', 'draft')
+                                ->whereNotNull('publication_rejection_reason');
+                        });
+                })),
+        };
     }
 
     public function bookItinerary(Request $request): JsonResponse

@@ -184,7 +184,7 @@ class CreatorItineraryLifecycleService
             $itinerary->meta->update([
                 'status' => $wasPublicationRequest ? 'draft' : 'rejected',
                 'publication_requested_at' => null,
-                'publication_rejection_reason' => $wasPublicationRequest ? $reason : null,
+                'publication_rejection_reason' => $wasPublicationRequest ? ($reason ?: 'Changes requested by admin.') : null,
             ]);
             $withinTransaction?->__invoke($itinerary);
 

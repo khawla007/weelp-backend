@@ -108,6 +108,28 @@ class CreatorItineraryPublishRequestTest extends TestCase
         ]);
     }
 
+    public function test_admin_rejection_without_a_reason_keeps_a_durable_needs_changes_signal(): void
+    {
+        Mail::fake();
+        $creator = User::factory()->creator()->create();
+        $admin = User::factory()->admin()->create();
+        $draft = $this->creatorItinerary($creator, 'draft');
+
+        $this->actingAs($creator, 'api')
+            ->postJson("/api/creator/itineraries/{$draft->id}/request-publish")
+            ->assertOk();
+
+        $this->actingAs($admin, 'api')
+            ->putJson("/api/admin/creator-itineraries/{$draft->id}/reject")
+            ->assertOk();
+
+        $this->assertDatabaseHas('itinerary_meta', [
+            'itinerary_id' => $draft->id,
+            'status' => 'draft',
+            'publication_rejection_reason' => 'Changes requested by admin.',
+        ]);
+    }
+
     public function test_standalone_draft_cannot_use_the_linked_edit_submission_endpoint(): void
     {
         $creator = User::factory()->creator()->create();
