@@ -7,10 +7,12 @@ use App\Mail\CreatorApplicationApprovedMail;
 use App\Mail\CreatorApplicationRejectedMail;
 use App\Models\CreatorApplication;
 use App\Models\Notification;
+use App\Models\User;
 use App\Models\UserProfile;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 
 class CreatorApplicationManagementController extends Controller
@@ -155,20 +157,39 @@ class CreatorApplicationManagementController extends Controller
 
     public function destroy($id): JsonResponse
     {
-        $application = CreatorApplication::find($id);
+        $creatorAccessRemoved = DB::transaction(function () use ($id): ?bool {
+            $application = CreatorApplication::query()->lockForUpdate()->find($id);
 
-        if (!$application) {
+            if (! $application) {
+                return null;
+            }
+
+            $user = User::query()->lockForUpdate()->find($application->user_id);
+            $removeCreatorAccess = $user && $application->status === 'approved' && $user->is_creator;
+
+            if ($removeCreatorAccess) {
+                $user->is_creator = false;
+                $user->token_version = (int) $user->token_version + 1;
+                $user->save();
+            }
+
+            $application->delete();
+
+            return $removeCreatorAccess;
+        });
+
+        if ($creatorAccessRemoved === null) {
             return response()->json([
                 'success' => false,
                 'message' => 'Application not found',
             ], 404);
         }
 
-        $application->delete();
-
         return response()->json([
             'success' => true,
-            'message' => 'Application deleted successfully.',
+            'message' => $creatorAccessRemoved
+                ? 'Application deleted and creator access removed successfully.'
+                : 'Application deleted successfully.',
         ]);
     }
 
