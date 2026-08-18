@@ -277,6 +277,7 @@ Route::middleware(['auth:api', 'admin', 'throttle:60,1'])->prefix('admin')->grou
     Route::prefix('dashboard')->group(function () {
         Route::get('/metrics', [DashboardController::class, 'getMetrics']);
         Route::get('/overview-chart', [DashboardController::class, 'getOverviewChart']);
+        Route::get('/booking-mix', [DashboardController::class, 'getBookingMix']);
         Route::get('/recent-sales', [DashboardController::class, 'getRecentSales']);
         Route::get('/search', [DashboardController::class, 'search']);
     });

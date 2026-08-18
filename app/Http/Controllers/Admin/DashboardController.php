@@ -3,9 +3,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Activity;
+use App\Models\Itinerary;
+use App\Models\Package;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Dashboard Controller
@@ -33,6 +38,7 @@ class DashboardController extends Controller
             // Total Revenue (current month) - only completed orders
             $totalRevenue = DB::table('orders')
                 ->leftJoin('order_payments', 'orders.id', '=', 'order_payments.order_id')
+                ->whereNull('orders.deleted_at')
                 ->whereMonth('orders.created_at', $currentMonth)
                 ->whereYear('orders.created_at', $currentYear)
                 ->where('orders.status', 'completed')
@@ -41,6 +47,7 @@ class DashboardController extends Controller
             // Total Revenue (last month) for growth calculation
             $lastMonthRevenue = DB::table('orders')
                 ->leftJoin('order_payments', 'orders.id', '=', 'order_payments.order_id')
+                ->whereNull('orders.deleted_at')
                 ->whereMonth('orders.created_at', $lastMonthNum)
                 ->whereYear('orders.created_at', $lastMonthYear)
                 ->where('orders.status', 'completed')
@@ -59,6 +66,7 @@ class DashboardController extends Controller
 
             // Total Bookings (current month) - exclude cancelled orders
             $totalBookings = DB::table('orders')
+                ->whereNull('deleted_at')
                 ->whereMonth('created_at', $currentMonth)
                 ->whereYear('created_at', $currentYear)
                 ->where('status', '!=', 'cancelled')
@@ -66,6 +74,7 @@ class DashboardController extends Controller
 
             // Total Bookings (last month) for growth calculation - exclude cancelled orders
             $lastMonthBookings = DB::table('orders')
+                ->whereNull('deleted_at')
                 ->whereMonth('created_at', $lastMonthNum)
                 ->whereYear('created_at', $lastMonthYear)
                 ->where('status', '!=', 'cancelled')
@@ -151,23 +160,31 @@ class DashboardController extends Controller
 
     /**
      * Get overview chart data
-     * Returns monthly revenue data for the current year
+     * Returns monthly revenue and booking data for the current year
      */
     public function getOverviewChart(): JsonResponse
     {
         try {
             $currentYear = now()->year;
+            $monthExpression = $this->monthExpression('orders.created_at');
 
             // Get monthly revenue for current year - only completed orders
             $monthlyRevenue = DB::table('orders')
                 ->leftJoin('order_payments', 'orders.id', '=', 'order_payments.order_id')
-                ->select(
-                    DB::raw('MONTH(orders.created_at) as month'),
-                    DB::raw('SUM(order_payments.total_amount) as total')
-                )
+                ->selectRaw("{$monthExpression} as month, SUM(order_payments.total_amount) as total")
+                ->whereNull('orders.deleted_at')
                 ->whereYear('orders.created_at', $currentYear)
                 ->where('orders.status', 'completed')
-                ->groupBy(DB::raw('MONTH(orders.created_at)'))
+                ->groupByRaw($monthExpression)
+                ->orderBy('month')
+                ->get();
+
+            $monthlyBookings = DB::table('orders')
+                ->selectRaw("{$monthExpression} as month, COUNT(*) as bookings")
+                ->whereNull('orders.deleted_at')
+                ->whereYear('orders.created_at', $currentYear)
+                ->where('orders.status', '!=', 'cancelled')
+                ->groupByRaw($monthExpression)
                 ->orderBy('month')
                 ->get();
 
@@ -178,9 +195,11 @@ class DashboardController extends Controller
             foreach ($monthNames as $index => $name) {
                 $month = $index + 1;
                 $revenue = $monthlyRevenue->firstWhere('month', $month);
+                $bookings = $monthlyBookings->firstWhere('month', $month);
                 $chartData[] = [
                     'name' => $name,
                     'total' => (int) ($revenue->total ?? 0),
+                    'bookings' => (int) ($bookings->bookings ?? 0),
                 ];
             }
 
@@ -195,6 +214,144 @@ class DashboardController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    private function monthExpression(string $column): string
+    {
+        if (DB::connection()->getDriverName() === 'sqlite') {
+            return "CAST(strftime('%m', {$column}) AS INTEGER)";
+        }
+
+        return "MONTH({$column})";
+    }
+
+    public function getBookingMix(): JsonResponse
+    {
+        try {
+            $now = now();
+            $currentStart = $now->copy()->startOfMonth();
+            $currentEnd = $now->copy()->endOfMonth();
+            $previousMonth = $now->copy()->subMonthNoOverflow();
+            $previousStart = $previousMonth->copy()->startOfMonth();
+            $previousEnd = $previousMonth->copy()->endOfMonth();
+
+            $current = $this->aggregateSupportedBookings($currentStart, $currentEnd);
+            $previous = $this->aggregateSupportedBookings($previousStart, $previousEnd);
+            $categories = [
+                ['key' => 'activities', 'label' => 'Activities', 'count' => 0],
+                ['key' => 'packages', 'label' => 'Packages', 'count' => 0],
+                ['key' => 'trips', 'label' => 'Trips', 'count' => 0],
+            ];
+
+            foreach ($current as $item) {
+                $categoryIndex = match ($item['type']) {
+                    'activity' => 0,
+                    'package' => 1,
+                    'trip' => 2,
+                };
+                $categories[$categoryIndex]['count'] += $item['bookings'];
+            }
+
+            $names = $this->bookingItemNames($current);
+            $leaders = $current->map(function (array $item) use ($previous, $names): array {
+                $key = $item['type'].':'.$item['id'];
+                $previousBookings = $previous->get($key)['bookings'] ?? 0;
+
+                return [
+                    'type' => $item['type'],
+                    'id' => $item['id'],
+                    'name' => $names[$key] ?? 'Unavailable item',
+                    'bookings' => $item['bookings'],
+                    'change' => $this->bookingChange($item['bookings'], $previousBookings),
+                ];
+            })->sort(function (array $left, array $right): int {
+                return ($right['bookings'] <=> $left['bookings'])
+                    ?: strcmp($left['name'], $right['name'])
+                    ?: ($left['id'] <=> $right['id']);
+            })->take(2)->values()->all();
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'total' => array_sum(array_column($categories, 'count')),
+                    'categories' => $categories,
+                    'leaders' => $leaders,
+                ],
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('Failed to fetch booking mix', ['exception' => $e]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch booking mix',
+            ], 500);
+        }
+    }
+
+    private function aggregateSupportedBookings(\DateTimeInterface $start, \DateTimeInterface $end): Collection
+    {
+        return DB::table('orders')
+            ->select('orderable_type', 'orderable_id', DB::raw('COUNT(*) as bookings'))
+            ->whereNull('deleted_at')
+            ->whereBetween('created_at', [$start, $end])
+            ->where('status', '!=', 'cancelled')
+            ->groupBy('orderable_type', 'orderable_id')
+            ->get()
+            ->reduce(function (Collection $supported, object $row): Collection {
+                $type = $this->supportedBookingType($row->orderable_type);
+                if ($type === null) {
+                    return $supported;
+                }
+
+                $key = $type.':'.(int) $row->orderable_id;
+                $existing = $supported->get($key, ['type' => $type, 'id' => (int) $row->orderable_id, 'bookings' => 0]);
+                $existing['bookings'] += (int) $row->bookings;
+                $supported->put($key, $existing);
+
+                return $supported;
+            }, collect());
+    }
+
+    private function supportedBookingType(string $type): ?string
+    {
+        return match (strtolower(class_basename($type))) {
+            'activity' => 'activity',
+            'package' => 'package',
+            'itinerary' => 'trip',
+            default => null,
+        };
+    }
+
+    private function bookingItemNames(Collection $bookings): array
+    {
+        $modelByType = [
+            'activity' => Activity::class,
+            'package' => Package::class,
+            'trip' => Itinerary::class,
+        ];
+        $names = [];
+
+        foreach ($modelByType as $type => $model) {
+            $ids = $bookings->where('type', $type)->pluck('id')->unique()->values();
+            if ($ids->isEmpty()) {
+                continue;
+            }
+
+            foreach ($model::query()->whereIn('id', $ids)->pluck('name', 'id') as $id => $name) {
+                $names[$type.':'.$id] = $name ?: 'Unavailable item';
+            }
+        }
+
+        return $names;
+    }
+
+    private function bookingChange(int $current, int $previous): float|int
+    {
+        if ($previous > 0) {
+            return round((($current - $previous) / $previous) * 100, 1);
+        }
+
+        return $current > 0 ? 100 : 0;
     }
 
     /**
