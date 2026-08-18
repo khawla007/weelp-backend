@@ -39,3 +39,6 @@ verify_*.php
 
 # Per-user CLI configs
 .codex/
+
+# Local isolated implementation worktrees
+/.worktrees/
