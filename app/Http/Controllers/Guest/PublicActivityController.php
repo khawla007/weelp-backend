@@ -181,6 +181,7 @@ class PublicActivityController extends Controller
                     })->toArray(),
                     'attributes' => $activity->attributes->map(function ($attribute) {
                         return [
+                            'slug' => $attribute->attribute->slug,
                             'name' => $attribute->attribute->name,
                             'attribute_value' => $attribute->attribute_value,
                         ];
